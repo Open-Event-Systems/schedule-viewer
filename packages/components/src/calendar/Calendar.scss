@@ -1,0 +1,159 @@
+.Calendar-root {
+  --border-color: var(--mantine-color-dimmed);
+  --border-color-minor: #ddd;
+
+  --time-column-width: 60px;
+  --time-row-height: calc(1.75 * var(--mantine-font-size-xs));
+  
+  --column-min-width: 100px;
+  --column-min-height: 500px;
+
+  --row-min-width: 500px;
+  --row-min-height: 100px;
+}
+
+.Calendar-root {
+  display: grid;
+  overflow: auto;
+
+  &.Calendar-dirColumn {
+    grid-template-rows: auto 1fr;
+  }
+
+  &.Calendar-dirRow {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+.Calendar-columns {
+  display: grid;
+}
+
+.Calendar-columnTitles {
+  background: #fff;
+  z-index: 400;
+}
+
+.Calendar-labels {
+  background-color: #fff;
+  z-index: 100;
+}
+
+
+.Calendar-dirColumn {
+  .Calendar-columns {
+    grid-template-columns: var(--time-column-width);
+    grid-auto-columns: minmax(var(--column-min-width), 1fr);
+    grid-auto-flow: column;
+    min-height: var(--column-min-height);
+  }
+
+  .Calendar-columns.Calendar-columnTitles {
+    min-height: initial;
+    position: sticky;
+    top: 0;
+  }
+
+  .Calendar-corner {
+    border-bottom: var(--border-color) solid 1px;
+  }
+
+  .Calendar-columnTitle {
+    text-align: center;
+    border-left: var(--border-color) solid 1px;
+    border-bottom: var(--border-color) solid 1px;
+  }
+
+  .Calendar-column {
+    border-left: var(--border-color) solid 1px;
+  }
+
+  .Calendar-labels {
+    border-left: none;
+    position: sticky;
+    left: 0;
+    border-right: var(--border-color) solid 1px;
+  }
+
+  .Calendar-divider {
+    border-top: var(--border-color) solid 1px;
+  }
+
+  .Calendar-dividerMinor {
+    border-top: var(--border-color-minor) solid 1px;
+  }
+}
+
+.Calendar-dirRow {
+  .Calendar-columns {
+    grid-template-rows: var(--time-row-height);
+    grid-auto-rows: minmax(var(--row-min-height), 1fr);
+    grid-auto-flow: row;
+    min-width: var(--row-min-width);
+  }
+
+  .Calendar-columns.Calendar-columnTitles {
+    min-width: initial;
+    position: sticky;
+    left: 0;
+  }
+
+  .Calendar-corner {
+    border-bottom: var(--border-color) solid 1px;
+  }
+
+  .Calendar-columnTitle {
+    text-align: center;
+    border-top: var(--border-color) solid 1px;
+    border-right: var(--border-color) solid 1px;
+    writing-mode: vertical-lr;
+    writing-mode: sideways-lr;
+  }
+
+  .Calendar-column {
+    border-top: var(--border-color) solid 1px;
+  }
+
+  .Calendar-labels {
+    border-top: none;
+    position: sticky;
+    top: 0;
+    border-bottom: var(--border-color) solid 1px;
+  }
+
+  .Calendar-divider {
+    border-left: var(--border-color) solid 1px;
+  }
+
+  .Calendar-dividerMinor {
+    border-left: var(--border-color-minor) solid 1px;
+  }
+}
+
+.Calendar-divider {
+  color: var(--mantine-color-gray-text);
+  font-size: var(--mantine-font-size-xs);
+  padding: 2px;
+  text-wrap: nowrap;
+}
+
+.Calendar-column {
+  position: relative;
+}
+
+.Calendar-item {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.Calendar-event {
+  border: #000 solid 1px;
+  border-radius: 4px;
+  padding: 2px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+}

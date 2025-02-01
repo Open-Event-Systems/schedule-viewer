@@ -1,0 +1,49 @@
+{
+  "name": "@open-event-systems/schedule-components",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "files": [
+    "dist/src/**/*.js",
+    "dist/src/**/*.d.ts"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "devDependencies": {
+    "@mantine/core": "^7.16.1",
+    "@mantine/hooks": "^7.16.1",
+    "@open-event-systems/schedule-lib": "^0.1.0",
+    "@storybook/addon-essentials": "^8.5.1",
+    "@storybook/addon-interactions": "^8.5.1",
+    "@storybook/addon-styling-webpack": "^1.0.1",
+    "@storybook/addon-webpack5-compiler-swc": "^2.0.0",
+    "@storybook/blocks": "^8.5.1",
+    "@storybook/react": "^8.5.1",
+    "@storybook/react-webpack5": "^8.5.1",
+    "@storybook/test": "^8.5.1",
+    "@swc/core": "^1.10.9",
+    "@types/react": "18",
+    "css-loader": "^7.1.2",
+    "react": "18",
+    "sass": "^1.83.4",
+    "sass-loader": "^16.0.4",
+    "storybook": "^8.5.1",
+    "style-loader": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@mantine/core": "^7.16.1",
+    "@mantine/hooks": "^7.16.1",
+    "@open-event-systems/schedule-lib": "^0.1.0",
+    "react": "18"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0"
+  }
+}

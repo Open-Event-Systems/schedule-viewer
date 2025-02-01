@@ -1,0 +1,32 @@
+.PillBin-root {
+  margin-top: calc(0.5 * var(--mantine-spacing-xs));
+  margin-bottom: calc(0.5 * var(--mantine-spacing-xs));
+}
+
+.PillBin-divider {
+  margin-top: calc(0.5 * var(--mantine-spacing-xs));
+  margin-bottom: calc(0.75 * var(--mantine-spacing-xs));
+}
+
+.PillBin-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-top: calc(-1 * var(--mantine-spacing-xs));
+  margin-left: calc(-1 * var(--mantine-spacing-xs));
+}
+
+.PillBin-pills > * {
+  margin-left: var(--mantine-spacing-xs);
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.Pill-body {
+  background: #fff;
+  border: #000 solid 1px;
+  border-radius: 4px;
+  box-shadow: #aaa 1px 1px 1px;
+  padding: 2px;
+  text-decoration: none;
+  color: inherit;
+}
