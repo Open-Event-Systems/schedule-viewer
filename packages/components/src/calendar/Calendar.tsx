@@ -5,7 +5,7 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event } from "@open-event-systems/schedule-lib"
+import { Event, isScheduled } from "@open-event-systems/schedule-lib"
 import { forwardRef, MouseEvent, ReactNode, useContext, useMemo } from "react"
 import { CalendarContext } from "./context.js"
 import clsx from "clsx"
@@ -111,27 +111,23 @@ const CalendarColumn = ({
 }) => {
   const items = useMemo(
     () =>
-      column.events
-        ?.filter(
-          (e): e is Event & { start: Date; end: Date } => !!e.start && !!e.end
+      column.events?.filter(isScheduled).map((e) => {
+        const href = getHref ? getHref(e) : null
+        return (
+          <EventHoverCard key={e.id} event={e}>
+            <Calendar.Item
+              component="a"
+              className="Calendar-event"
+              start={e.start}
+              end={e.end}
+              href={href ?? undefined}
+              onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
+            >
+              {e.title}
+            </Calendar.Item>
+          </EventHoverCard>
         )
-        .map((e) => {
-          const href = getHref ? getHref(e) : null
-          return (
-            <EventHoverCard key={e.id} event={e}>
-              <Calendar.Item
-                component="a"
-                className="Calendar-event"
-                start={e.start}
-                end={e.end}
-                href={href ?? undefined}
-                onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
-              >
-                {e.title}
-              </Calendar.Item>
-            </EventHoverCard>
-          )
-        }),
+      }),
     [column.events, getHref, onClickEvent]
   )
 

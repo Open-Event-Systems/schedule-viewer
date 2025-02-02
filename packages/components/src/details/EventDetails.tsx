@@ -74,7 +74,7 @@ const renderTime = (start: Date, end: Date): ReactNode => {
   )
 }
 
-const renderHosts = (h: Host[]): ReactNode => {
+const renderHosts = (h: readonly Host[]): ReactNode => {
   const hosts: ReactNode[] = []
 
   h.forEach((h, i) => {
@@ -101,7 +101,7 @@ const renderHost = (h: Host): ReactElement => {
   }
 }
 
-const renderTags = (tags: string[]): ReactElement => {
+const renderTags = (tags: readonly string[]): ReactElement => {
   const els: ReactNode[] = []
 
   tags.forEach((t) => {

@@ -14,10 +14,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "@date-fns/tz": "^1.2.0",
+    "@date-fns/utc": "^2.1.0",
     "date-fns": "^4.1.0",
     "mobx": "^6.13.5"
   },
   "peerDependencies": {
+    "@date-fns/tz": "^1.2.0",
+    "@date-fns/utc": "^2.1.0",
     "date-fns": "^4.1.0",
     "mobx": "^6.13.5"
   }

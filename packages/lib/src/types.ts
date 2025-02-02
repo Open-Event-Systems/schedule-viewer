@@ -6,35 +6,35 @@ export type Timespan = Readonly<{
   end: Date
 }>
 
-export interface Host extends Record<string, unknown> {
-  name?: string
-  contact?: string
-  url?: string
+export interface Host extends Readonly<Record<string, unknown>> {
+  readonly name?: string
+  readonly url?: string
 }
 
-export interface EventJSON extends Record<string, unknown> {
-  id: string
-  title?: string
-  description?: string
-  location?: string
-  start?: string
-  end?: string
-  hosts?: Host[]
-  tags?: string[]
+export interface EventJSON extends Readonly<Record<string, unknown>> {
+  readonly id: string
+  readonly title?: string
+  readonly description?: string
+  readonly location?: string
+  readonly start?: string
+  readonly end?: string
+  readonly hosts?: readonly Host[]
+  readonly tags?: readonly string[]
 }
 
-export interface Event extends Record<string, unknown> {
-  id: string
-  title?: string
-  description?: string
-  location?: string
-  start?: Date
-  end?: Date
-  hosts?: Host[]
-  tags?: string[]
+export interface Event extends Readonly<Record<string, unknown>> {
+  readonly id: string
+  readonly title?: string
+  readonly description?: string
+  readonly location?: string
+  readonly start?: Date
+  readonly end?: Date
+  readonly hosts?: readonly Host[]
+  readonly tags?: readonly string[]
 }
 
-export type ScheduledEvent = Event & {
-  start: Date
-  end: Date
-}
+export type ScheduledEvent = Event &
+  Readonly<{
+    start: Date
+    end: Date
+  }>
