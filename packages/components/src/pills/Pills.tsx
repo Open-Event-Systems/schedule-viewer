@@ -8,7 +8,7 @@ import {
 } from "@mantine/core"
 import { Event } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { add, format, isBefore, parseISO } from "date-fns"
+import { format, parseISO } from "date-fns"
 import { MouseEvent, ReactNode, useMemo } from "react"
 import { EventHoverCard } from "../hovercard/EventHoverCard.js"
 

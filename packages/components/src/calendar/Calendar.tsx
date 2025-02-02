@@ -137,7 +137,7 @@ const CalendarColumn = ({
 
   const dividers = useMemo(
     () =>
-      makeDividers(start, end, (s, e) => (
+      makeDividers(start, end, (s) => (
         <Calendar.Item
           key={s.toISOString()}
           start={s}
@@ -165,6 +165,7 @@ export type CalendarItemProps = {
 } & BoxProps
 
 const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
+  // eslint-disable-next-line react/display-name
   forwardRef<HTMLDivElement, CalendarItemProps>((props, ref) => {
     const { className, start, end, ...other } = useProps(
       "CalendarItem",
@@ -197,6 +198,8 @@ const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
     )
   })
 )
+
+CalendarItem.displayName = "Calendar.Item"
 
 Calendar.Item = CalendarItem
 

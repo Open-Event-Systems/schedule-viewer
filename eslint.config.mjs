@@ -13,8 +13,19 @@ export default [
   {
     settings: {
       react: {
-        version: "19"
-      }
-    }
-  }
+        version: "19",
+      },
+    },
+    rules: {
+      "react/react-in-jsx-scope": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 ]

@@ -22,6 +22,16 @@ export const Default: StoryObj<typeof EventHoverCard> = {
           location: "Room A",
           title: "Event A",
           description: "An example event.",
+          hosts: [
+            {
+              name: "Test Person 1",
+              url: "https://example.net",
+            },
+            {
+              name: "Test Person 2",
+              url: "https://example.net",
+            },
+          ],
         }}
       >
         <Button>Open</Button>
