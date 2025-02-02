@@ -36,7 +36,8 @@ export const Pills = (props: PillsProps) => {
       const items = evs.map((e) => (
         <Pills.Pill
           key={e.id}
-          event={e}
+          children={e.title}
+          renderContent={(c) => <EventHoverCard event={e}>{c}</EventHoverCard>}
           href={(getHref ? getHref(e) : undefined) ?? undefined}
           indicator={(getIndicator ? getIndicator(e) : undefined) || undefined}
           onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
@@ -76,10 +77,14 @@ const PillBin = (props: PillBinProps) => {
 
   return (
     <Box className={clsx("PillBin-root", className)} {...other}>
-      <Title order={6} className="PillBin-title">
-        {title}
-      </Title>
-      <Divider className="PillBin-divider" />
+      {title ? (
+        <>
+          <Title order={6} className="PillBin-title">
+            {title}
+          </Title>
+          <Divider className="PillBin-divider" />
+        </>
+      ) : null}
       <Box className="PillBin-pills">{children}</Box>
     </Box>
   )
@@ -88,26 +93,48 @@ const PillBin = (props: PillBinProps) => {
 Pills.Bin = PillBin
 
 export type PillProps = {
-  event: Event
   indicator?: ReactNode
   href?: string
+  button?: boolean
+  children?: ReactNode
+  renderContent?: (children: ReactNode) => ReactNode
   onClick?: (e: MouseEvent) => void
 } & BoxProps
 
 const Pill = (props: PillProps) => {
-  const { className, event, indicator, href, onClick, ...other } = useProps(
-    "Pill",
-    {},
-    props
+  const {
+    className,
+    indicator,
+    href,
+    button,
+    children,
+    renderContent = (c: ReactNode) => c,
+    onClick,
+    ...other
+  } = useProps("Pill", {}, props)
+
+  const childText = typeof children == "string" ? textToClass(children) : null
+
+  let inner: ReactNode = button ? (
+    <Box
+      component="button"
+      className="Pill-body Pill-button"
+      onClick={onClick}
+    >
+      {children}
+    </Box>
+  ) : (
+    <Box
+      component="a"
+      className="Pill-body"
+      href={href}
+      onClick={onClick}
+    >
+      {children}
+    </Box>
   )
 
-  const inner = (
-    <EventHoverCard event={event}>
-      <Box component="a" className="Pill-body" href={href} onClick={onClick}>
-        {event.title}
-      </Box>
-    </EventHoverCard>
-  )
+  inner = renderContent(inner)
 
   const wrapped = indicator ? (
     <Indicator label={indicator} className="Pill-indicator">
@@ -118,7 +145,7 @@ const Pill = (props: PillProps) => {
   )
 
   return (
-    <Box className={clsx("Pill-root", className)} {...other}>
+    <Box className={clsx("Pill-root", childText, className)} {...other}>
       {wrapped}
     </Box>
   )
@@ -157,4 +184,10 @@ const binDate = (d: Date): Date => {
   )
 
   return rounded
+}
+
+const textToClass = (text: string): string => {
+  const re = new RegExp("\\s+", "g")
+  const suffix = text.trim().replaceAll(re, "-").toLowerCase()
+  return `Pill-value-${suffix}`
 }

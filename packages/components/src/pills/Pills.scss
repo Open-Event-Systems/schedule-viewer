@@ -16,6 +16,10 @@
   margin-left: calc(-1 * var(--mantine-spacing-xs));
 }
 
+.Pill-button {
+  cursor: pointer;
+}
+
 .PillBin-pills > * {
   margin-left: var(--mantine-spacing-xs);
   margin-top: var(--mantine-spacing-xs);

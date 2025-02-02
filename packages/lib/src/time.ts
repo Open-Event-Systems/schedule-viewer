@@ -1,4 +1,4 @@
-import { add, isAfter, isBefore } from "date-fns"
+import { add, isAfter, isBefore, isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import { Timespan } from "./types.js"
 
@@ -58,26 +58,31 @@ export const makeDayFilter = (
   day: Date,
   dayChangeHour = 0
 ): ((e: Readonly<{ start?: Date | null }>) => boolean) => {
-  const minDate = new Date(
-    day.getFullYear(),
-    day.getMonth(),
-    day.getDate(),
+  const dayStart = getDay(day, dayChangeHour)
+  return (e) => {
+    if (!e.start) {
+      return false
+    }
+    const d = getDay(e.start, dayChangeHour)
+    return isEqual(dayStart, d)
+  }
+}
+
+/**
+ * Get a Date representing the day an event occurs on, subject to the day change
+ * hour.
+ */
+export const getDay = (d: Date, dayChangeHour = 0): TZDate => {
+  const tzD = new TZDate(d)
+  const shift = add(tzD, { hours: -dayChangeHour })
+  return new TZDate(
+    shift.getFullYear(),
+    shift.getMonth(),
+    shift.getDate(),
+    dayChangeHour,
     0,
     0,
     0,
-    0
+    tzD.timeZone
   )
-  const maxDate = new Date(
-    day.getFullYear(),
-    day.getMonth(),
-    day.getDate() + 1,
-    0,
-    0,
-    0,
-    0
-  )
-  const shiftedMin = add(minDate, { hours: dayChangeHour })
-  const shiftedMax = add(maxDate, { hours: dayChangeHour })
-  return (e) =>
-    !!e.start && !isBefore(e.start, shiftedMin) && isBefore(e.start, shiftedMax)
 }

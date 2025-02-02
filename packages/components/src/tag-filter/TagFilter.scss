@@ -1,0 +1,7 @@
+.TagFilter-disabled {
+  filter: brightness(50%);
+
+  & .Pill-body {
+    border-style: dotted;
+  }
+}
