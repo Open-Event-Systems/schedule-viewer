@@ -9,7 +9,7 @@ const meta: Meta<typeof EventDetails> = {
     event: {
       id: "e1",
       title: "Example Event",
-      description: "Example event description.",
+      description: "Example event **description** [with Markdown](#).",
       start: new Date(2020, 1, 1, 12),
       end: new Date(2020, 1, 1, 13),
       hosts: [

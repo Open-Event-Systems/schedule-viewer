@@ -4,11 +4,11 @@ import { parseISO } from "date-fns"
 
 const dateStr = "2025-01-01T17:00:00Z"
 
-export type TZStoryProps = {
+type TZStoryProps = {
   timezone: string
 }
 
-export const TZStory = ({ timezone }: TZStoryProps) => {
+const TZStory = ({ timezone }: TZStoryProps) => {
   try {
     const date = parseISO(dateStr)
     const asTz = toTimezone(date, timezone)

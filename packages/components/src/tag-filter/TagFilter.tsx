@@ -47,7 +47,11 @@ const TagFilterTag = ({
 
   return (
     <Pills.Pill
-      className={clsx("TagFilter-tag", { "TagFilter-disabled": !enabled })}
+      className={clsx(
+        "TagFilter-tag",
+        { "TagFilter-disabled": !enabled },
+        textToClass("Pill-tag-", tag)
+      )}
       button
       onClick={() => {
         const newSet = new Set(disabledTagsSet)
@@ -65,3 +69,9 @@ const TagFilterTag = ({
 }
 
 TagFilter.Tag = TagFilterTag
+
+const textToClass = (prefix: string, text: string): string => {
+  const re = new RegExp("\\s+", "g")
+  const suffix = text.trim().replaceAll(re, "-").toLowerCase()
+  return `${prefix}${suffix}`
+}

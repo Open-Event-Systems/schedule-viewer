@@ -17,6 +17,7 @@ import {
 import clsx from "clsx"
 import { format } from "date-fns"
 import { Fragment, ReactElement, ReactNode } from "react"
+import { Markdown } from "../markdown/Markdown.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -41,7 +42,9 @@ export const EventDetails = (props: EventDetailsProps) => {
       {timeEl}
       {locationEl}
       {hostsEl}
-      <Text className="EventDetails-description">{event.description}</Text>
+      <Markdown className="EventDetails-description">
+        {event.description}
+      </Markdown>
       {tagsEl}
     </Box>
   )

@@ -8,9 +8,11 @@ import {
 } from "@mantine/core"
 import { Event } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { format, parseISO } from "date-fns"
+import { format, formatISO, parseISO } from "date-fns"
 import { MouseEvent, ReactNode, useMemo } from "react"
 import { EventHoverCard } from "../hovercard/EventHoverCard.js"
+import { TZDate } from "@date-fns/tz"
+import { useScheduleConfig } from "../config/context.js"
 
 export type PillsProps = {
   events?: Event[]
@@ -29,7 +31,9 @@ export const Pills = (props: PillsProps) => {
     ...other
   } = useProps("Pills", {}, props)
 
-  const bins = useMemo(() => makeBins(events), [events])
+  const config = useScheduleConfig()
+
+  const bins = useMemo(() => makeBins(events, config.timeZone), [events])
   const binEls = useMemo(() => {
     const res: ReactNode[] = []
     bins.forEach((evs, b) => {
@@ -38,6 +42,7 @@ export const Pills = (props: PillsProps) => {
           key={e.id}
           children={e.title}
           renderContent={(c) => <EventHoverCard event={e}>{c}</EventHoverCard>}
+          className={clsx(textToClass("Pill-event-", e.id), ...getTagClasses(e))}
           href={(getHref ? getHref(e) : undefined) ?? undefined}
           indicator={(getIndicator ? getIndicator(e) : undefined) || undefined}
           onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
@@ -113,23 +118,12 @@ const Pill = (props: PillProps) => {
     ...other
   } = useProps("Pill", {}, props)
 
-  const childText = typeof children == "string" ? textToClass(children) : null
-
   let inner: ReactNode = button ? (
-    <Box
-      component="button"
-      className="Pill-body Pill-button"
-      onClick={onClick}
-    >
+    <Box component="button" className="Pill-body Pill-button" onClick={onClick}>
       {children}
     </Box>
   ) : (
-    <Box
-      component="a"
-      className="Pill-body"
-      href={href}
-      onClick={onClick}
-    >
+    <Box component="a" className="Pill-body" href={href} onClick={onClick}>
       {children}
     </Box>
   )
@@ -145,7 +139,7 @@ const Pill = (props: PillProps) => {
   )
 
   return (
-    <Box className={clsx("Pill-root", childText, className)} {...other}>
+    <Box className={clsx("Pill-root", className)} {...other}>
       {wrapped}
     </Box>
   )
@@ -153,11 +147,14 @@ const Pill = (props: PillProps) => {
 
 Pills.Pill = Pill
 
-const makeBins = (events: Iterable<Event>): Map<string, Event[]> => {
+const makeBins = (
+  events: Iterable<Event>,
+  tz: string
+): Map<string, Event[]> => {
   const map = new Map<string, Event[]>()
   for (const event of events) {
     if (event.start) {
-      const binStr = binDate(event.start).toISOString()
+      const binStr = formatISO(binDate(event.start, tz))
       let bin = map.get(binStr)
 
       if (!bin) {
@@ -172,22 +169,27 @@ const makeBins = (events: Iterable<Event>): Map<string, Event[]> => {
   return map
 }
 
-const binDate = (d: Date): Date => {
-  const rounded = new Date(
+const binDate = (d: Date, tz: string): Date => {
+  const rounded = new TZDate(
     d.getFullYear(),
     d.getMonth(),
     d.getDate(),
     d.getHours(),
     d.getMinutes() >= 30 ? 30 : 0,
     0,
-    0
+    0,
+    tz
   )
 
   return rounded
 }
 
-const textToClass = (text: string): string => {
+const getTagClasses = (event: Event): string[] => {
+  return event.tags?.map((t) => textToClass("Pill-tag-", t)) ?? []
+}
+
+const textToClass = (prefix: string, text: string): string => {
   const re = new RegExp("\\s+", "g")
   const suffix = text.trim().replaceAll(re, "-").toLowerCase()
-  return `Pill-value-${suffix}`
+  return `${prefix}${suffix}`
 }
