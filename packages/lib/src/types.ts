@@ -18,7 +18,7 @@ export interface EventJSON extends Readonly<Record<string, unknown>> {
   readonly location?: string
   readonly start?: string
   readonly end?: string
-  readonly hosts?: readonly Host[]
+  readonly hosts?: readonly (string | Host)[]
   readonly tags?: readonly string[]
 }
 
@@ -29,7 +29,7 @@ export interface Event extends Readonly<Record<string, unknown>> {
   readonly location?: string
   readonly start?: Date
   readonly end?: Date
-  readonly hosts?: readonly Host[]
+  readonly hosts?: readonly (string | Host)[]
   readonly tags?: readonly string[]
 }
 
@@ -38,3 +38,21 @@ export type ScheduledEvent = Event &
     start: Date
     end: Date
   }>
+
+export type TagIndicatorEntry = readonly [string | readonly string[], string]
+
+export interface ScheduleConfig {
+  readonly url?: string
+  readonly title?: string
+  readonly dayChangeHour?: number
+  readonly timeZone?: string
+  readonly tagIndicators?: readonly TagIndicatorEntry[]
+}
+
+export type RequiredScheduleConfig = ScheduleConfig &
+  Required<
+    Pick<
+      ScheduleConfig,
+      "url" | "title" | "dayChangeHour" | "timeZone" | "tagIndicators"
+    >
+  >

@@ -77,7 +77,7 @@ const renderTime = (start: Date, end: Date): ReactNode => {
   )
 }
 
-const renderHosts = (h: readonly Host[]): ReactNode => {
+const renderHosts = (h: readonly (string | Host)[]): ReactNode => {
   const hosts: ReactNode[] = []
 
   h.forEach((h, i) => {
@@ -91,7 +91,11 @@ const renderHosts = (h: readonly Host[]): ReactNode => {
   return <IconText icon={<IconUser size={18} />}>{hosts}</IconText>
 }
 
-const renderHost = (h: Host): ReactElement => {
+const renderHost = (h: string | Host): ReactElement => {
+  if (typeof h == "string") {
+    return <>{h}</>
+  }
+
   const name = h.name || h.url
   if (h.url) {
     return (

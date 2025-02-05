@@ -4,11 +4,17 @@
   "description": "",
   "type": "module",
   "exports": {
-    ".": "./dist/src/index.js"
+    "./styles.scss": "./src/styles.scss",
+    "./*.scss": "./*.scss",
+    "./*": "./dist/src/*.js"
   },
   "files": [
     "dist/src/**/*.js",
-    "dist/src/**/*.d.ts"
+    "dist/src/**/*.d.ts",
+    "!dist/src/test-data.js",
+    "!dist/src/test-data.d.ts",
+    "!dist/src/**/*.stories.*",
+    "src/**/*.scss"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

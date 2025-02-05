@@ -14,6 +14,8 @@
   align-items: stretch;
   margin-top: calc(-1 * var(--mantine-spacing-xs));
   margin-left: calc(-1 * var(--mantine-spacing-xs));
+  font-size: var(--mantine-font-size-sm);
+  line-height: var(--mantine-line-height-sm);
 }
 
 .Pill-button {
@@ -26,6 +28,7 @@
 }
 
 .Pill-body {
+  display: block;
   background: #fff;
   border: #000 solid 1px;
   border-radius: 4px;

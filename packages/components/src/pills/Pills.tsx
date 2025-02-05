@@ -8,62 +8,18 @@ import {
 } from "@mantine/core"
 import { Event } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { format, formatISO, parseISO } from "date-fns"
-import { MouseEvent, ReactNode, useMemo } from "react"
-import { EventHoverCard } from "../hovercard/EventHoverCard.js"
+import { formatISO } from "date-fns"
+import { MouseEvent, ReactNode } from "react"
 import { TZDate } from "@date-fns/tz"
-import { useScheduleConfig } from "../config/context.js"
 
-export type PillsProps = {
-  events?: Event[]
-  getHref?: (event: Event) => string | null | undefined
-  getIndicator?: (event: Event) => ReactNode
-  onClickEvent?: (e: MouseEvent, event: Event) => void
-} & BoxProps
+export type PillsProps = BoxProps & { children?: ReactNode }
 
 export const Pills = (props: PillsProps) => {
-  const {
-    className,
-    events = [],
-    getHref,
-    getIndicator,
-    onClickEvent,
-    ...other
-  } = useProps("Pills", {}, props)
-
-  const config = useScheduleConfig()
-
-  const bins = useMemo(() => makeBins(events, config.timeZone), [events])
-  const binEls = useMemo(() => {
-    const res: ReactNode[] = []
-    bins.forEach((evs, b) => {
-      const items = evs.map((e) => (
-        <Pills.Pill
-          key={e.id}
-          children={e.title}
-          renderContent={(c) => <EventHoverCard event={e}>{c}</EventHoverCard>}
-          className={clsx(textToClass("Pill-event-", e.id), ...getTagClasses(e))}
-          href={(getHref ? getHref(e) : undefined) ?? undefined}
-          indicator={(getIndicator ? getIndicator(e) : undefined) || undefined}
-          onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
-        />
-      ))
-
-      const label = format(parseISO(b), "h:mm aaa")
-
-      res.push(
-        <Pills.Bin key={b} title={label}>
-          {items}
-        </Pills.Bin>
-      )
-    })
-
-    return res
-  }, [bins, getHref, getIndicator, onClickEvent])
+  const { className, children, ...other } = useProps("Pills", {}, props)
 
   return (
     <Box className={clsx("Pills-root", className)} {...other}>
-      {binEls}
+      {children}
     </Box>
   )
 }
@@ -182,14 +138,4 @@ const binDate = (d: Date, tz: string): Date => {
   )
 
   return rounded
-}
-
-const getTagClasses = (event: Event): string[] => {
-  return event.tags?.map((t) => textToClass("Pill-tag-", t)) ?? []
-}
-
-const textToClass = (prefix: string, text: string): string => {
-  const re = new RegExp("\\s+", "g")
-  const suffix = text.trim().replaceAll(re, "-").toLowerCase()
-  return `${prefix}${suffix}`
 }

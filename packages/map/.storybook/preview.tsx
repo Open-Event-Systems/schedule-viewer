@@ -1,11 +1,7 @@
 import type { Preview } from "@storybook/react"
-import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
 import React from "react"
-
-import { ScheduleConfigProvider } from "../src/config/context.js"
-import { config } from "../src/test-data.js"
-
 import "@mantine/core/styles.css"
+import { MantineProvider, DEFAULT_THEME } from "@mantine/core"
 
 const preview: Preview = {
   parameters: {
@@ -17,13 +13,6 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => {
-      return (
-        <ScheduleConfigProvider value={config}>
-          <Story />
-        </ScheduleConfigProvider>
-      )
-    },
     (Story) => {
       return (
         <MantineProvider theme={DEFAULT_THEME}>

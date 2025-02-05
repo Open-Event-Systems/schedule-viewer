@@ -1,24 +1,13 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { EventDetails } from "./EventDetails.js"
+import { events } from "../test-data.js"
 
 import "./EventDetails.scss"
 
 const meta: Meta<typeof EventDetails> = {
   component: EventDetails,
   args: {
-    event: {
-      id: "e1",
-      title: "Example Event",
-      description: "Example event **description** [with Markdown](#).",
-      start: new Date(2020, 1, 1, 12),
-      end: new Date(2020, 1, 1, 13),
-      hosts: [
-        { name: "Person A", url: "https://example.net" },
-        { name: "Person B", url: "https://example.net" },
-      ],
-      location: "Room A",
-      tags: ["hobby", "photography"],
-    },
+    event: events[1],
   },
 }
 
@@ -26,6 +15,6 @@ export default meta
 
 export const Default: StoryObj<typeof EventDetails> = {
   args: {
-    h: 200
-  }
+    h: 200,
+  },
 }

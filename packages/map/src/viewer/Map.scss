@@ -1,0 +1,45 @@
+// Map styles
+
+:root {
+  --map-isometric-x-offset: 0px;
+  --map-isometric-y-offset: 0px;
+  --map-isometric-rotation: 45deg;
+  --map-isometric-x-rotation: -54.7deg;
+  --map-isometric-transition-duration: 0.5s;
+}
+
+// Levels
+
+.Map-level {
+  display: none;
+  transition: transform var(--map-isometric-transition-duration) ease-in-out;
+  transform: translate(50%, 50%) translateY(0px) translateX(0px) rotateX(0deg)
+    rotate(0deg) translate(-50%, -50%);
+
+  &.Map-visible {
+    display: initial;
+  }
+
+  .Map-isometric & {
+    // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
+    transform: translate(50%, 50%) translateY(var(--map-isometric-y-offset))
+      translateX(var(--map-isometric-x-offset))
+      rotateX(var(--map-isometric-x-rotation))
+      rotate(var(--map-isometric-rotation)) translate(-50%, -50%);
+  }
+}
+
+.Map-layer {
+  &.Map-hidden {
+    display: none;
+  }
+}
+
+// Specific map element styles
+
+.Map-level-id-lobby {
+  --map-isometric-y-offset: -6000px;
+}
+.Map-level-id-lower {
+  --map-isometric-y-offset: 8000px;
+}

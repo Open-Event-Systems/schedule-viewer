@@ -1,12 +1,15 @@
-import { useProps } from "@mantine/core"
+import { Pill, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { PillBinProps, Pills } from "../pills/Pills.js"
+import { PillBinProps, Pills, PillsProps } from "../pills/Pills.js"
+import { makeId } from "@open-event-systems/schedule-lib"
+import { getIndicator } from "../pills/EventPills.js"
+import { useScheduleConfig } from "../config/context.js"
 
 export type TagFilterProps = {
   tags?: Iterable<string>
   disabledTags?: Iterable<string>
   onChangeTags?: (tags: Set<string>) => void
-} & PillBinProps
+} & PillsProps
 
 export const TagFilter = (props: TagFilterProps) => {
   const {
@@ -31,7 +34,11 @@ export const TagFilter = (props: TagFilterProps) => {
     )
   }
 
-  return <Pills.Bin {...other}>{tagEls}</Pills.Bin>
+  return (
+    <Pills {...other}>
+      <Pills.Bin>{tagEls}</Pills.Bin>
+    </Pills>
+  )
 }
 
 const TagFilterTag = ({
@@ -44,15 +51,17 @@ const TagFilterTag = ({
   onChangeTags?: (tags: Set<string>) => void
 }) => {
   const enabled = !disabledTagsSet.has(tag)
+  const config = useScheduleConfig()
 
   return (
     <Pills.Pill
       className={clsx(
         "TagFilter-tag",
         { "TagFilter-disabled": !enabled },
-        textToClass("Pill-tag-", tag)
+        `Pill-event-tag-${makeId(tag)}`
       )}
       button
+      indicator={getIndicator(config.tagIndicators, [tag])}
       onClick={() => {
         const newSet = new Set(disabledTagsSet)
         if (enabled) {
@@ -69,9 +78,3 @@ const TagFilterTag = ({
 }
 
 TagFilter.Tag = TagFilterTag
-
-const textToClass = (prefix: string, text: string): string => {
-  const re = new RegExp("\\s+", "g")
-  const suffix = text.trim().replaceAll(re, "-").toLowerCase()
-  return `${prefix}${suffix}`
-}

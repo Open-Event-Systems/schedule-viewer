@@ -1,9 +1,5 @@
+import { RequiredScheduleConfig } from "@open-event-systems/schedule-lib"
 import { createContext, useContext } from "react"
-
-export type ScheduleConfigContextData = {
-  dayChangeHour: number
-  timeZone: string
-}
 
 const getDefaultTZ = (): string => {
   try {
@@ -13,12 +9,15 @@ const getDefaultTZ = (): string => {
   }
 }
 
-export const ScheduleConfigContext = createContext<ScheduleConfigContextData>({
+export const ScheduleConfigContext = createContext<RequiredScheduleConfig>({
+  url: "events.json",
+  title: "Event",
   dayChangeHour: 6,
   timeZone: getDefaultTZ(),
+  tagIndicators: [],
 })
 
 export const ScheduleConfigProvider = ScheduleConfigContext.Provider
 
-export const useScheduleConfig = (): ScheduleConfigContextData =>
+export const useScheduleConfig = (): RequiredScheduleConfig =>
   useContext(ScheduleConfigContext)

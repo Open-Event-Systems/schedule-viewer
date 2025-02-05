@@ -8,7 +8,7 @@ import "./TagFilter.scss"
 const meta: Meta<typeof TagFilter> = {
   component: TagFilter,
   args: {
-    tags: ["main-event", "hobby", "music", "gaming"],
+    tags: ["Main Event", "Hobby", "Music", "Mature", "Gaming"],
   },
 }
 

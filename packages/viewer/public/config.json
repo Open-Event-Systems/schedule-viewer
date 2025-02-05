@@ -1,0 +1,9 @@
+{
+  "url": "events.json",
+  "title": "Example Event",
+  "dayChangeHour": 6,
+  "timeZone": "America/New_York",
+  "tagIndicators": [
+    ["Mature", "18+"]
+  ]
+}

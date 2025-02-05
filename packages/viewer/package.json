@@ -1,0 +1,34 @@
+{
+  "name": "@open-event-systems/schedule-viewer",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@date-fns/tz": "^1.2.0",
+    "@date-fns/utc": "^2.1.0",
+    "@mantine/core": "^7.16.1",
+    "@mantine/hooks": "^7.16.1",
+    "@open-event-systems/schedule-components": "^0.1.0",
+    "@open-event-systems/schedule-lib": "^0.1.0",
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-router": "^1.99.6",
+    "date-fns": "^4.1.0",
+    "react": "18",
+    "react-dom": "18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "18",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "sass-loader": "^16.0.4",
+    "style-loader": "^4.0.0",
+    "swc-loader": "^0.2.6",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  }
+}
