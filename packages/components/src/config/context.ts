@@ -10,6 +10,7 @@ const getDefaultTZ = (): string => {
 }
 
 export const ScheduleConfigContext = createContext<RequiredScheduleConfig>({
+  id: "schedule",
   url: "events.json",
   title: "Event",
   dayChangeHour: 6,

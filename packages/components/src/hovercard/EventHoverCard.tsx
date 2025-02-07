@@ -5,11 +5,17 @@ import { EventDetails } from "../details/EventDetails.js"
 
 export type EventHoverCardProps = HoverCardProps & {
   event: Event
+  bookmarked?: boolean
+  setBookmarked?: (set: boolean) => void
   children?: ReactNode
 }
 
 export const EventHoverCard = (props: EventHoverCardProps) => {
-  const { children, event, ...other } = useProps("EventHoverCard", {}, props)
+  const { children, event, bookmarked, setBookmarked, ...other } = useProps(
+    "EventHoverCard",
+    {},
+    props
+  )
 
   return (
     <HoverCard
@@ -19,7 +25,11 @@ export const EventHoverCard = (props: EventHoverCardProps) => {
     >
       <HoverCard.Target>{children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        <EventDetails event={event} />
+        <EventDetails
+          event={event}
+          bookmarked={bookmarked}
+          setBookmarked={setBookmarked}
+        />
       </HoverCard.Dropdown>
     </HoverCard>
   )

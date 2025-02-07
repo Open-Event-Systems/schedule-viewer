@@ -1,4 +1,4 @@
-import { add, isAfter, isBefore, isEqual } from "date-fns"
+import { add, isAfter, isBefore } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import { Timespan } from "./types.js"
 
@@ -19,7 +19,7 @@ export const intersects = (a: Timespan, b: Timespan): boolean => {
 /**
  * Convert a date into a timezone-specific date.
  */
-export const toTimezone = (d: Date, tz: string): TZDate => {
+export const toTimezone = (d: Date, tz?: string): TZDate => {
   return new TZDate(d, tz)
 }
 
@@ -52,30 +52,12 @@ export const sortByDate = <
 }
 
 /**
- * Get a filter function for events on the given date's day.
- */
-export const makeDayFilter = (
-  day: Date,
-  dayChangeHour = 0
-): ((e: Readonly<{ start?: Date | null }>) => boolean) => {
-  const dayStart = getDay(day, dayChangeHour)
-  return (e) => {
-    if (!e.start) {
-      return false
-    }
-    const d = getDay(e.start, dayChangeHour)
-    return isEqual(dayStart, d)
-  }
-}
-
-/**
- * Get a Date representing the day an event occurs on, subject to the day change
+ * Get a Date representing the day a date occurs on, subject to the day change
  * hour.
  */
-export const getDay = (d: Date, dayChangeHour = 0): TZDate => {
-  const tzD = new TZDate(d)
-  const shift = add(tzD, { hours: -dayChangeHour })
-  return new TZDate(
+export const getDay = (d: Date, tz: string, dayChangeHour = 0): Timespan => {
+  const shift = add(d, { hours: -dayChangeHour })
+  const start = new TZDate(
     shift.getFullYear(),
     shift.getMonth(),
     shift.getDate(),
@@ -83,6 +65,7 @@ export const getDay = (d: Date, dayChangeHour = 0): TZDate => {
     0,
     0,
     0,
-    tzD.timeZone
+    tz
   )
+  return { start, end: add(start, { days: 1 }) }
 }

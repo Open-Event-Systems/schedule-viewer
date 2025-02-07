@@ -1,14 +1,17 @@
 import {
+  ActionIcon,
   Anchor,
   Box,
   BoxProps,
   Flex,
+  Stack,
   Text,
   Title,
   useProps,
 } from "@mantine/core"
 import { Event, Host } from "@open-event-systems/schedule-lib"
 import {
+  IconBookmark,
   IconClockHour4,
   IconMapPin,
   IconTag,
@@ -21,10 +24,16 @@ import { Markdown } from "../markdown/Markdown.js"
 
 export type EventDetailsProps = {
   event: Event
+  bookmarked?: boolean
+  setBookmarked?: (set: boolean) => void
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
-  const { className, event, ...other } = useProps("EventDetails", {}, props)
+  const { className, event, bookmarked, setBookmarked, ...other } = useProps(
+    "EventDetails",
+    {},
+    props
+  )
 
   const timeEl =
     event.start && event.end ? renderTime(event.start, event.end) : null
@@ -38,10 +47,24 @@ export const EventDetails = (props: EventDetailsProps) => {
 
   return (
     <Box className={clsx("EventDetails-root", className)} {...other}>
-      <Title order={6}>{event.title}</Title>
-      {timeEl}
-      {locationEl}
-      {hostsEl}
+      <Flex gap="xs" justify="space-between">
+        <Box>
+          <Title order={6}>{event.title}</Title>
+          {timeEl}
+          {locationEl}
+          {hostsEl}
+        </Box>
+        <Stack>
+          <ActionIcon
+            size="sm"
+            variant={bookmarked ? "filled" : "default"}
+            onClick={() => setBookmarked && setBookmarked(!bookmarked)}
+          >
+            <IconBookmark />
+          </ActionIcon>
+        </Stack>
+      </Flex>
+
       <Markdown className="EventDetails-description">
         {event.description}
       </Markdown>

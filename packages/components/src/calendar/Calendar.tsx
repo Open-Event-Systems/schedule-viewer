@@ -5,7 +5,7 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event, isScheduled } from "@open-event-systems/schedule-lib"
+import { Event, isScheduled, Scheduled } from "@open-event-systems/schedule-lib"
 import { forwardRef, MouseEvent, ReactNode, useContext, useMemo } from "react"
 import { CalendarContext } from "./context.js"
 import clsx from "clsx"

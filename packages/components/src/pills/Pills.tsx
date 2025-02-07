@@ -6,11 +6,8 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { formatISO } from "date-fns"
 import { MouseEvent, ReactNode } from "react"
-import { TZDate } from "@date-fns/tz"
 
 export type PillsProps = BoxProps & { children?: ReactNode }
 
@@ -102,40 +99,3 @@ const Pill = (props: PillProps) => {
 }
 
 Pills.Pill = Pill
-
-const makeBins = (
-  events: Iterable<Event>,
-  tz: string
-): Map<string, Event[]> => {
-  const map = new Map<string, Event[]>()
-  for (const event of events) {
-    if (event.start) {
-      const binStr = formatISO(binDate(event.start, tz))
-      let bin = map.get(binStr)
-
-      if (!bin) {
-        bin = []
-        map.set(binStr, bin)
-      }
-
-      bin.push(event)
-    }
-  }
-
-  return map
-}
-
-const binDate = (d: Date, tz: string): Date => {
-  const rounded = new TZDate(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate(),
-    d.getHours(),
-    d.getMinutes() >= 30 ? 30 : 0,
-    0,
-    0,
-    tz
-  )
-
-  return rounded
-}

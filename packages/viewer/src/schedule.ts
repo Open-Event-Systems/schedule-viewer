@@ -1,47 +1,11 @@
 import {
   Event,
   EventJSON,
+  EventStore,
+  makeEvent,
   RequiredScheduleConfig,
-  toTimezone,
 } from "@open-event-systems/schedule-lib"
 import { UseQueryOptions } from "@tanstack/react-query"
-import { parseISO } from "date-fns"
-
-export class ScheduleStore {
-  private _events: readonly Event[]
-  constructor(public readonly config: RequiredScheduleConfig) {
-    this._events = []
-  }
-
-  get events(): readonly Event[] {
-    return this._events
-  }
-
-  setEvents(events: readonly Event[]) {
-    this._events = events
-  }
-
-  async load(): Promise<readonly Event[]> {
-    const resp = await fetch(this.config.url)
-    if (!resp.ok) {
-      throw new Error(`Schedule fetch returned ${resp.status}`)
-    }
-    const json: EventJSON[] = await resp.json()
-    const events: Event[] = []
-
-    for (const eventJSON of json) {
-      try {
-        events.push(parseEvent(eventJSON, this.config.timeZone))
-      } catch (e) {
-        console.warn(`Error parsing event: ${e}`)
-      }
-    }
-
-    this._events = events
-
-    return events
-  }
-}
 
 export const getScheduleConfigQueryOptions = (
   url: string
@@ -62,7 +26,7 @@ export const getScheduleConfigQueryOptions = (
 export const getEventsQueryOptions = (
   url: string,
   timeZone: string
-): UseQueryOptions<readonly Event[]> => {
+): UseQueryOptions<EventStore> => {
   return {
     queryKey: ["events", { url: url }],
     async queryFn() {
@@ -75,25 +39,16 @@ export const getEventsQueryOptions = (
 
       for (const eventJSON of json) {
         try {
-          events.push(parseEvent(eventJSON, timeZone))
+          events.push(makeEvent(eventJSON, timeZone))
         } catch (e) {
           console.warn(`Error parsing event: ${e}`)
         }
       }
 
-      return events
+      const store = new EventStore(events)
+
+      return store
     },
     staleTime: 300000,
   }
-}
-
-export const parseEvent = (eventJSON: EventJSON, tz: string): Event => {
-  const event = {
-    ...eventJSON,
-    start: eventJSON.start
-      ? toTimezone(parseISO(eventJSON.start), tz)
-      : undefined,
-    end: eventJSON.end ? toTimezone(parseISO(eventJSON.end), tz) : undefined,
-  }
-  return event
 }

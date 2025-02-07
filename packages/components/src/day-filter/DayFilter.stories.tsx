@@ -1,55 +1,41 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { DayFilter } from "./DayFilter.js"
-import { Event } from "@open-event-systems/schedule-lib"
 import { useState } from "react"
 
 import "./DayFilter.scss"
 
 const meta: Meta<typeof DayFilter> = {
   component: DayFilter,
-  args: {
-    events: [
-      {
-        id: "e1",
-        location: "Room A",
-        start: new Date(2020, 0, 1, 12),
-        end: new Date(2020, 0, 1, 13),
-        title: "Event A",
-      },
-      {
-        id: "e2",
-        location: "Room B",
-        start: new Date(2020, 0, 1, 12, 30),
-        end: new Date(2020, 0, 1, 13, 30),
-        title: "Event B",
-      },
-      {
-        id: "e3",
-        location: "Room B",
-        start: new Date(2020, 0, 2, 12, 45),
-        end: new Date(2020, 0, 2, 13, 45),
-        title: "Event C",
-      },
-      {
-        id: "e4",
-        location: "Room B",
-        start: new Date(2020, 0, 3, 14, 0),
-        end: new Date(2020, 0, 3, 15, 30),
-        title: "Event D",
-      },
-    ] as Event[],
-  },
 }
 
 export default meta
 
 export const Default: StoryObj<typeof DayFilter> = {
+  args: {
+    days: [
+      {
+        key: "2025-01-01",
+        start: new Date(2025, 0, 1, 6),
+        end: new Date(2025, 0, 2, 6),
+      },
+      {
+        key: "2025-01-02",
+        start: new Date(2025, 0, 2, 6),
+        end: new Date(2025, 0, 3, 6),
+      },
+      {
+        key: "2025-01-03",
+        start: new Date(2025, 0, 3, 6),
+        end: new Date(2025, 0, 4, 6),
+      },
+    ],
+  },
   render(args) {
-    const [selectedDay, setSelectedDay] = useState("")
+    const [selectedDay, setSelectedDay] = useState("2025-01-01")
     return (
       <DayFilter
         selectedDay={selectedDay}
-        onSelectDay={setSelectedDay}
+        onSelectDay={(d) => setSelectedDay(d.key)}
         {...args}
       />
     )

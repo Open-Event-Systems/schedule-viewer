@@ -1,72 +1,56 @@
-import {
-  Grid,
-  GridProps,
-  Switch,
-  TextInput,
-  useProps,
-} from "@mantine/core"
+import { Grid, GridProps, Switch, TextInput, useProps } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/TagFilter.js"
 
-export type FilterOptions = {
-  text?: string
-  disabledTags?: Iterable<string>
-  showPastEvents?: boolean
-}
-
 export type FilterProps = {
   tags?: Iterable<string>
-  options?: FilterOptions
-  onChangeOptions?: (newOptions: FilterOptions) => void
+  disabledTags?: Iterable<string>
+  text?: string
+  showPastEvents?: boolean
+  onChangeTags?: (tags: Set<string>) => void
+  onChangeText?: (text: string) => void
+  onChangeShowPastEvents?: (show: boolean) => void
 } & GridProps
 
 export const Filter = (props: FilterProps) => {
-  const { className, tags, options, onChangeOptions, ...other } = useProps(
-    "Filter",
-    {},
-    props
-  )
+  const {
+    className,
+    tags,
+    disabledTags,
+    text,
+    showPastEvents,
+    onChangeTags,
+    onChangeText,
+    onChangeShowPastEvents,
+    ...other
+  } = useProps("Filter", {}, props)
 
   return (
     <Grid className={clsx("Filter-root", className)} {...other}>
       <Grid.Col span={{ xs: 12 }}>
         <TextInput
           leftSection={<IconSearch />}
-          value={options?.text || ""}
+          value={text || ""}
           onChange={(e) => {
-            onChangeOptions &&
-              onChangeOptions({
-                ...options,
-                text: e.target.value,
-              })
+            onChangeText && onChangeText(e.target.value)
           }}
         />
       </Grid.Col>
       <Grid.Col span={{ xs: 12 }}>
         <Switch
           label="Show past events"
-          checked={!!options?.showPastEvents}
+          checked={!!showPastEvents}
           onChange={(e) => {
-            onChangeOptions &&
-              onChangeOptions({
-                ...options,
-                showPastEvents: e.target.checked,
-              })
+            onChangeShowPastEvents && onChangeShowPastEvents(e.target.checked)
           }}
         />
       </Grid.Col>
       <Grid.Col span={{ xs: 12 }}>
         <TagFilter
           tags={tags}
-          disabledTags={options?.disabledTags ?? []}
-          onChangeTags={(tags) => {
-            onChangeOptions &&
-              onChangeOptions({
-                ...options,
-                disabledTags: tags,
-              })
-          }}
+          disabledTags={disabledTags ?? []}
+          onChangeTags={onChangeTags}
         />
       </Grid.Col>
     </Grid>

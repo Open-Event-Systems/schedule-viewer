@@ -3,6 +3,7 @@ import { useState } from "react"
 import { router } from "./router.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
+import { BookmarkStore } from "./bookmarks.js"
 
 export const App = ({ configURL }: { configURL: string }) => {
   const [history] = useState(() => {
@@ -14,6 +15,10 @@ export const App = ({ configURL }: { configURL: string }) => {
     return new QueryClient({})
   })
 
+  const [bookmarkStore] = useState(() => {
+    return new BookmarkStore()
+  })
+
   return (
     <MantineProvider theme={DEFAULT_THEME}>
       <QueryClientProvider client={queryClient}>
@@ -23,6 +28,7 @@ export const App = ({ configURL }: { configURL: string }) => {
           context={{
             configURL,
             queryClient,
+            bookmarkStore,
           }}
         />
       </QueryClientProvider>

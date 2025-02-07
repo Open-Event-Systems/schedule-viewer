@@ -33,7 +33,7 @@ export interface Event extends Readonly<Record<string, unknown>> {
   readonly tags?: readonly string[]
 }
 
-export type ScheduledEvent = Event &
+export type Scheduled<T extends Partial<Timespan>> = T &
   Readonly<{
     start: Date
     end: Date
@@ -42,6 +42,7 @@ export type ScheduledEvent = Event &
 export type TagIndicatorEntry = readonly [string | readonly string[], string]
 
 export interface ScheduleConfig {
+  readonly id: string
   readonly url?: string
   readonly title?: string
   readonly dayChangeHour?: number
@@ -53,6 +54,6 @@ export type RequiredScheduleConfig = ScheduleConfig &
   Required<
     Pick<
       ScheduleConfig,
-      "url" | "title" | "dayChangeHour" | "timeZone" | "tagIndicators"
+      "id" | "url" | "title" | "dayChangeHour" | "timeZone" | "tagIndicators"
     >
   >

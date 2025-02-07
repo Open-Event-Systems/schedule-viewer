@@ -1,6 +1,6 @@
-import { Pill, useProps } from "@mantine/core"
+import { useProps } from "@mantine/core"
 import clsx from "clsx"
-import { PillBinProps, Pills, PillsProps } from "../pills/Pills.js"
+import { Pills, PillsProps } from "../pills/Pills.js"
 import { makeId } from "@open-event-systems/schedule-lib"
 import { getIndicator } from "../pills/EventPills.js"
 import { useScheduleConfig } from "../config/context.js"

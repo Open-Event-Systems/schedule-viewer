@@ -11,10 +11,12 @@ import {
 } from "../schedule.js"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
 import { EventsRoute } from "./EventsRoute.js"
+import { BookmarkStore } from "../bookmarks.js"
 
 export type RouterContext = {
   configURL: string
   queryClient: QueryClient
+  bookmarkStore: BookmarkStore
 }
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({})

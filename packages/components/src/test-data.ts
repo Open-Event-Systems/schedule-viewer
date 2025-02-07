@@ -40,6 +40,7 @@ export const events = [
 ] satisfies readonly Event[]
 
 export const config = {
+  id: "example-event",
   title: "Example Event",
   dayChangeHour: 6,
   tagIndicators: [["Mature", "18+"]],

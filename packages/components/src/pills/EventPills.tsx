@@ -1,12 +1,12 @@
 import {
   Event,
+  isScheduled,
   makeId,
   TagIndicatorEntry,
-  toTimezone,
 } from "@open-event-systems/schedule-lib"
 import { Pills, PillsProps } from "./Pills.js"
 import { useProps } from "@mantine/core"
-import { format, formatISO, parseISO } from "date-fns"
+import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import { useScheduleConfig } from "../config/context.js"
 import { MouseEvent, ReactNode, useMemo } from "react"
@@ -14,17 +14,23 @@ import { EventHoverCard } from "../hovercard/EventHoverCard.js"
 import clsx from "clsx"
 
 export type EventPillsProps = PillsProps & {
-  events: readonly Event[]
+  events: Iterable<Event>
   getHref?: (event: Event) => string | null | undefined
+  getIsBookmarked?: (event: Event) => boolean | undefined
+  setBookmarked?: (event: Event, set: boolean) => void
   onClickEvent?: (e: MouseEvent, event: Event) => void
 }
 
 export const EventPills = (props: EventPillsProps) => {
-  const { className, events, getHref, onClickEvent, ...other } = useProps(
-    "EventPills",
-    {},
-    props
-  )
+  const {
+    className,
+    events,
+    getHref,
+    getIsBookmarked,
+    setBookmarked,
+    onClickEvent,
+    ...other
+  } = useProps("EventPills", {}, props)
 
   const config = useScheduleConfig()
 
@@ -32,12 +38,20 @@ export const EventPills = (props: EventPillsProps) => {
 
   const binEls = useMemo(() => {
     const res: ReactNode[] = []
-    bins.forEach((evs, b) => {
+    bins.forEach(([date, evs], b) => {
       const items = evs.map((e) => (
         <Pills.Pill
           key={e.id}
           children={e.title}
-          renderContent={(c) => <EventHoverCard event={e}>{c}</EventHoverCard>}
+          renderContent={(c) => (
+            <EventHoverCard
+              event={e}
+              bookmarked={getIsBookmarked ? getIsBookmarked(e) : undefined}
+              setBookmarked={(set) => setBookmarked && setBookmarked(e, set)}
+            >
+              {c}
+            </EventHoverCard>
+          )}
           className={clsx(
             `Pill-event-id-${e.id}`,
             e.tags?.map((t) => `Pill-event-tag-${makeId(t)}`)
@@ -48,7 +62,7 @@ export const EventPills = (props: EventPillsProps) => {
         />
       ))
 
-      const label = format(toTimezone(parseISO(b), config.timeZone), "h:mm aaa")
+      const label = format(date, "h:mm aaa")
 
       res.push(
         <Pills.Bin key={b} title={label}>
@@ -57,7 +71,14 @@ export const EventPills = (props: EventPillsProps) => {
       )
     })
     return res
-  }, [bins, getHref, getIndicator, onClickEvent])
+  }, [
+    bins,
+    getHref,
+    getIndicator,
+    getIsBookmarked,
+    setBookmarked,
+    onClickEvent,
+  ])
 
   return <Pills {...other}>{binEls}</Pills>
 }
@@ -65,19 +86,20 @@ export const EventPills = (props: EventPillsProps) => {
 const makeBins = (
   events: Iterable<Event>,
   tz: string
-): Map<string, Event[]> => {
-  const map = new Map<string, Event[]>()
+): Map<string, [Date, Event[]]> => {
+  const map = new Map<string, [Date, Event[]]>()
   for (const event of events) {
-    if (event.start) {
-      const binStr = formatISO(binDate(event.start, tz))
+    if (isScheduled(event)) {
+      const date = binDate(event.start, tz)
+      const binStr = formatISO(date)
       let bin = map.get(binStr)
 
       if (!bin) {
-        bin = []
+        bin = [date, []]
         map.set(binStr, bin)
       }
 
-      bin.push(event)
+      bin[1].push(event)
     }
   }
 
@@ -91,8 +113,6 @@ const binDate = (d: Date, tz: string): Date => {
     d.getDate(),
     d.getHours(),
     d.getMinutes() >= 30 ? 30 : 0,
-    0,
-    0,
     tz
   )
 

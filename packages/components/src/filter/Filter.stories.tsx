@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react"
-import { Filter, FilterOptions } from "./Filter.js"
+import { Filter } from "./Filter.js"
 import { useState } from "react"
 
 import "../pills/Pills.scss"
@@ -16,8 +16,20 @@ export default meta
 
 export const Default: StoryObj<typeof Filter> = {
   render(args) {
-    const [options, setOptions] = useState<FilterOptions>({})
+    const [text, setText] = useState("")
+    const [disabledTags, setDisabledTags] = useState<Set<string>>(new Set())
+    const [showPast, setShowPast] = useState(false)
 
-    return <Filter {...args} options={options} onChangeOptions={setOptions} />
+    return (
+      <Filter
+        {...args}
+        text={text}
+        disabledTags={disabledTags}
+        showPastEvents={showPast}
+        onChangeText={setText}
+        onChangeTags={setDisabledTags}
+        onChangeShowPastEvents={setShowPast}
+      />
+    )
   },
 }
