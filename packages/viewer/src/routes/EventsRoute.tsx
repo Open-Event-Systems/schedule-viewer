@@ -1,8 +1,11 @@
 import { EventPills } from "@open-event-systems/schedule-components/pills/EventPills"
-import { eventsDataRoute } from "./index.js"
-import { Grid, Text } from "@mantine/core"
-import { DayFilter } from "@open-event-systems/schedule-components/day-filter/DayFilter"
-import { useCallback, useMemo, useState } from "react"
+import { eventRoute, eventsDataRoute, eventsRoute } from "./index.js"
+import { Anchor, Grid, SegmentedControl, Stack, Text } from "@mantine/core"
+import {
+  DayFilter,
+  DayFilterDay,
+} from "@open-event-systems/schedule-components/day-filter/DayFilter"
+import { MouseEvent, useCallback, useMemo, useState } from "react"
 import {
   Event,
   isScheduled,
@@ -10,11 +13,15 @@ import {
   makePastEventFilter,
   makeTagFilter,
   makeTitleFilter,
+  Scheduled,
   toTimezone,
 } from "@open-event-systems/schedule-lib"
 import { Filter } from "@open-event-systems/schedule-components/filter/Filter"
 import { observer } from "mobx-react-lite"
 import { getDays, getDefaultDay } from "../utils.js"
+import { createICS } from "../ical.js"
+import { useLocation, useRouter } from "@tanstack/react-router"
+import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
 
 export const EventsRoute = observer(() => {
   const { events: allEvents, config } = eventsDataRoute.useLoaderData()
@@ -24,6 +31,7 @@ export const EventsRoute = observer(() => {
     new Set()
   )
   const [showPast, setShowPast] = useState(false)
+  const [onlyBookmarked, setOnlyBookmarked] = useState(false)
 
   const days = useMemo(
     () =>
@@ -35,18 +43,72 @@ export const EventsRoute = observer(() => {
     [allEvents, config.timeZone, config.dayChangeHour]
   )
 
+  const rooms = useMemo(() => {
+    const set = new Set<string>()
+    for (const event of allEvents) {
+      if (event.location) {
+        set.add(event.location)
+      }
+    }
+    return Array.from(set)
+  }, [allEvents])
+
   const defaultDay = useMemo(
     () => getDefaultDay(days, toTimezone(new Date(), config.timeZone)),
     [days, config.timeZone]
   )
 
-  const [selectedDay, setSelectedDay] = useState(defaultDay)
+  const loc = useLocation()
+  const navigate = eventsRoute.useNavigate()
+  const router = useRouter()
+
+  const hashParams = new URLSearchParams(loc.hash)
+  const selectedDayKey = hashParams.get("day")
+
+  const setSelectedDay = useCallback(
+    (day: DayFilterDay) => {
+      navigate({
+        hash: `day=${day.key}`,
+        replace: true,
+      })
+    },
+    [navigate]
+  )
+
+  const selectedDay = days.find((d) => d.key == selectedDayKey) || defaultDay
+
+  const getHref = useCallback(
+    (event: Event) => {
+      return router.history.createHref(
+        router.buildLocation({
+          to: eventRoute.to,
+          params: {
+            eventId: event.id,
+          },
+        }).href
+      )
+    },
+    [router]
+  )
+
+  const onClick = useCallback(
+    (e: MouseEvent, event: Event) => {
+      e.preventDefault()
+      navigate({
+        to: eventRoute.to,
+        params: {
+          eventId: event.id,
+        },
+      })
+    },
+    [navigate]
+  )
 
   const getIsBookmarked = useCallback(
     (event: Event) => {
-      return bookmarkStore.bookmarkedEvents.has(event.id)
+      return bookmarkStore.events.has(event.id)
     },
-    [bookmarkStore.bookmarkedEvents]
+    [bookmarkStore.events]
   )
 
   const setBookmarked = useCallback(
@@ -61,7 +123,7 @@ export const EventsRoute = observer(() => {
   )
 
   const dayFiltered = useMemo(() => {
-    const arr = Array.from(allEvents)
+    const arr = Array.from(allEvents).filter(isScheduled)
     if (!selectedDay) {
       return arr
     }
@@ -69,14 +131,20 @@ export const EventsRoute = observer(() => {
     return arr.filter(makeDateFilter(selectedDay))
   }, [allEvents, selectedDay])
 
+  const bookmarkFiltered = useMemo(() => {
+    return onlyBookmarked
+      ? dayFiltered.filter(bookmarkStore.makeFilter())
+      : dayFiltered
+  }, [dayFiltered, bookmarkStore.events, onlyBookmarked])
+
   const pastFiltered = useMemo(
     () =>
       showPast
-        ? dayFiltered
-        : dayFiltered.filter(
+        ? bookmarkFiltered
+        : bookmarkFiltered.filter(
             makePastEventFilter(toTimezone(new Date(), config.timeZone))
           ),
-    [dayFiltered, showPast, config.timeZone]
+    [bookmarkFiltered, showPast, config.timeZone]
   )
 
   const tagFiltered = useMemo(
@@ -95,36 +163,146 @@ export const EventsRoute = observer(() => {
   return (
     <Grid>
       <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
-        <DayFilter
-          days={days}
-          selectedDay={selectedDay?.key}
-          onSelectDay={setSelectedDay}
-        />
-        {titleFiltered.length > 0 ? (
-          <EventPills
-            events={titleFiltered}
-            getIsBookmarked={getIsBookmarked}
-            setBookmarked={setBookmarked}
+        <Stack>
+          <SegmentedControl
+            fullWidth
+            data={[
+              { label: "All Events", value: "all" },
+              { label: "My Schedule", value: "bookmarked" },
+            ]}
+            value={onlyBookmarked ? "bookmarked" : "all"}
+            onChange={(v) => {
+              setOnlyBookmarked(v == "bookmarked")
+            }}
           />
-        ) : (
-          <Text c="dimmed" ta="center" p="md">
-            No events
-          </Text>
-        )}
+          <DayFilter
+            days={days}
+            selectedDay={selectedDay?.key}
+            onSelectDay={setSelectedDay}
+          />
+          {titleFiltered.length > 0 ? (
+            <CalendarView
+              rooms={rooms}
+              direction="row"
+              events={titleFiltered}
+              getIsBookmarked={getIsBookmarked}
+              setBookmarked={setBookmarked}
+              getHref={getHref}
+              onClickEvent={onClick}
+            />
+          ) : (
+            <Text c="dimmed" ta="center">
+              No events
+            </Text>
+          )}
+        </Stack>
       </Grid.Col>
       <Grid.Col span={{ xs: 12, sm: 4 }} order={{ base: 1, xs: 1, sm: 2 }}>
-        <Filter
-          text={filterText}
-          tags={allEvents.tags}
-          disabledTags={disabledTags}
-          showPastEvents={showPast}
-          onChangeText={setFilterText}
-          onChangeTags={setDisabledTags}
-          onChangeShowPastEvents={setShowPast}
-        />
+        <Stack align="end" gap="xs">
+          <Filter
+            text={filterText}
+            tags={allEvents.tags}
+            disabledTags={disabledTags}
+            showPastEvents={showPast}
+            onChangeText={setFilterText}
+            onChangeTags={setDisabledTags}
+            onChangeShowPastEvents={setShowPast}
+          />
+          <Anchor
+            component="button"
+            onClick={() => {
+              let events = Array.from(allEvents).filter(isScheduled)
+
+              if (filterText) {
+                events = events.filter(makeTitleFilter(filterText))
+              }
+
+              events = events.filter(makeTagFilter(disabledTags))
+
+              if (onlyBookmarked) {
+                events = events.filter(bookmarkStore.makeFilter)
+              }
+
+              const data = createICS(
+                events,
+                `schedule-${config.icalPrefix || "event"}`,
+                config.icalDomain || window.location.hostname
+              )
+              const blob = new Blob([data], { type: "text/calendar" })
+              const dataURL = URL.createObjectURL(blob)
+              const el = document.createElement("a")
+              el.setAttribute("href", dataURL)
+              el.setAttribute("download", `${config.id}-schedule.ics`)
+              el.click()
+              URL.revokeObjectURL(dataURL)
+            }}
+          >
+            Export Calendar
+          </Anchor>
+        </Stack>
       </Grid.Col>
     </Grid>
   )
 })
 
 EventsRoute.displayName = "EventsRoute"
+
+type ViewProps = {
+  events: readonly Scheduled<Event>[]
+  getIsBookmarked: (event: Event) => boolean
+  setBookmarked: (event: Event, set: boolean) => void
+  getHref: (event: Event) => string
+  onClickEvent: (e: MouseEvent, event: Event) => void
+}
+
+const PillsView = (props: ViewProps) => {
+  const { events, getIsBookmarked, setBookmarked, getHref, onClickEvent } =
+    props
+  return (
+    <EventPills
+      events={events}
+      getIsBookmarked={getIsBookmarked}
+      setBookmarked={setBookmarked}
+      getHref={getHref}
+      onClickEvent={onClickEvent}
+    />
+  )
+}
+
+const CalendarView = (
+  props: ViewProps & { direction?: "row" | "column"; rooms: readonly string[] }
+) => {
+  const {
+    rooms,
+    events,
+    direction,
+    getIsBookmarked,
+    setBookmarked,
+    getHref,
+    onClickEvent,
+  } = props
+
+  const earliest = events[0]
+  const latest = events[events.length - 1]
+
+  const cols = rooms.map((r) => {
+    const roomEvents = events.filter((e) => e.location == r)
+    return {
+      title: r,
+      events: roomEvents,
+    }
+  })
+
+  return (
+    <Calendar
+      direction={direction}
+      start={earliest.start}
+      end={latest.end}
+      columns={cols}
+      getIsBookmarked={getIsBookmarked}
+      setBookmarked={setBookmarked}
+      getHref={getHref}
+      onClickEvent={onClickEvent}
+    />
+  )
+}

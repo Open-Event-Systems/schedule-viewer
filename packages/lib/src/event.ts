@@ -22,7 +22,9 @@ export const makeEvent = (data: EventT | EventJSON, tz?: string): EventT => {
 /**
  * Return whether an event has a start/end time set.
  */
-export const isScheduled = <T extends Partial<Timespan>>(t: T): t is Scheduled<T> => {
+export const isScheduled = <T extends Partial<Timespan>>(
+  t: T
+): t is Scheduled<T> => {
   return t.start != null && t.end != null
 }
 
@@ -64,10 +66,8 @@ export const makePastEventFilter = (
  */
 export const makeDateFilter = (
   range: Timespan
-): ((
-  event: Pick<EventT, "start">
-) => event is Required<Pick<EventT, "start">>) => {
-  return (e): e is Required<Pick<EventT, "start">> => {
+): (<T extends Pick<EventT, "start">>(event: T) => event is Scheduled<T>) => {
+  return <T extends Pick<EventT, "start">>(e: T): e is Scheduled<T> => {
     if (!e.start) {
       return false
     }

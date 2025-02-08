@@ -1,16 +1,14 @@
 import { Event } from "@open-event-systems/schedule-lib"
-import { action, makeAutoObservable } from "mobx"
+import { makeAutoObservable } from "mobx"
 
 export class BookmarkStore {
-  private eventIds = new Set<string>()
+  private eventIds: ReadonlySet<string> = new Set()
 
   constructor() {
-    makeAutoObservable(this, {
-      // add: action
-    })
+    makeAutoObservable(this)
   }
 
-  get bookmarkedEvents(): Set<string> {
+  get events(): ReadonlySet<string> {
     return this.eventIds
   }
 
@@ -26,7 +24,7 @@ export class BookmarkStore {
     this.eventIds = newSet
   }
 
-  makeFilter(): (event: Event) => boolean {
+  makeFilter(): (event: Required<Pick<Event, "id">>) => boolean {
     return (event) => this.eventIds.has(event.id)
   }
 }

@@ -26,14 +26,18 @@ export type EventDetailsProps = {
   event: Event
   bookmarked?: boolean
   setBookmarked?: (set: boolean) => void
+  large?: boolean
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
-  const { className, event, bookmarked, setBookmarked, ...other } = useProps(
-    "EventDetails",
-    {},
-    props
-  )
+  const {
+    className,
+    event,
+    bookmarked,
+    setBookmarked,
+    large = false,
+    ...other
+  } = useProps("EventDetails", {}, props)
 
   const timeEl =
     event.start && event.end ? renderTime(event.start, event.end) : null
@@ -46,29 +50,37 @@ export const EventDetails = (props: EventDetailsProps) => {
     event.tags && event.tags.length > 0 ? renderTags(event.tags) : null
 
   return (
-    <Box className={clsx("EventDetails-root", className)} {...other}>
-      <Flex gap="xs" justify="space-between">
-        <Box>
-          <Title order={6}>{event.title}</Title>
-          {timeEl}
-          {locationEl}
-          {hostsEl}
-        </Box>
-        <Stack>
-          <ActionIcon
-            size="sm"
-            variant={bookmarked ? "filled" : "default"}
-            onClick={() => setBookmarked && setBookmarked(!bookmarked)}
-          >
-            <IconBookmark />
-          </ActionIcon>
-        </Stack>
-      </Flex>
-
-      <Markdown className="EventDetails-description">
-        {event.description}
-      </Markdown>
-      {tagsEl}
+    <Box
+      className={clsx(
+        "EventDetails-root",
+        { "EventDetails-large": large },
+        className
+      )}
+      {...other}
+    >
+      <Stack gap="xs">
+        <Flex gap="xs" justify="space-between">
+          <Box>
+            <Title order={large ? 3 : 6}>{event.title}</Title>
+            {timeEl}
+            {locationEl}
+            {hostsEl}
+          </Box>
+          <Stack>
+            <ActionIcon
+              size={large ? "md" : "sm"}
+              variant={bookmarked ? "filled" : "default"}
+              onClick={() => setBookmarked && setBookmarked(!bookmarked)}
+            >
+              <IconBookmark />
+            </ActionIcon>
+          </Stack>
+        </Flex>
+        <Markdown className="EventDetails-description">
+          {event.description}
+        </Markdown>
+        {tagsEl}
+      </Stack>
     </Box>
   )
 }

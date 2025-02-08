@@ -1,5 +1,5 @@
 import { Event, Scheduled } from "@open-event-systems/schedule-lib"
-import ics, { EventAttributes } from "ics"
+import * as ics from "ics"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
@@ -13,7 +13,7 @@ export const createICS = (
   prefix: string,
   domain: string
 ): string => {
-  const eventAttrs: EventAttributes[] = []
+  const eventAttrs: ics.EventAttributes[] = []
   for (const event of events) {
     eventAttrs.push({
       uid: `${prefix}-${event.id}@${domain}`,

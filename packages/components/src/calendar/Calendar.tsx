@@ -23,6 +23,8 @@ export type CalendarProps = {
   direction?: "column" | "row"
   start: Date
   end: Date
+  getIsBookmarked?: (event: Event) => boolean
+  setBookmarked?: (event: Event, set: boolean) => void
   getHref?: (event: Event) => string | null | undefined
   onClickEvent?: (e: MouseEvent, event: Event) => void
 } & BoxProps
@@ -34,6 +36,8 @@ export const Calendar = (props: CalendarProps) => {
     direction = "column",
     start,
     end,
+    getIsBookmarked,
+    setBookmarked,
     getHref,
     onClickEvent,
     ...other
@@ -53,6 +57,8 @@ export const Calendar = (props: CalendarProps) => {
       end={end}
       getHref={getHref}
       onClickEvent={onClickEvent}
+      getIsBookmarked={getIsBookmarked}
+      setBookmarked={setBookmarked}
     />
   ))
 
@@ -106,7 +112,17 @@ const CalendarColumn = ({
   end,
   getHref,
   onClickEvent,
-}: Pick<CalendarProps, "getHref" | "onClickEvent" | "start" | "end"> & {
+  getIsBookmarked,
+  setBookmarked,
+}: Pick<
+  CalendarProps,
+  | "getHref"
+  | "onClickEvent"
+  | "getIsBookmarked"
+  | "setBookmarked"
+  | "start"
+  | "end"
+> & {
   column: CalendarColumnData
 }) => {
   const items = useMemo(
@@ -114,7 +130,14 @@ const CalendarColumn = ({
       column.events?.filter(isScheduled).map((e) => {
         const href = getHref ? getHref(e) : null
         return (
-          <EventHoverCard key={e.id} event={e}>
+          <EventHoverCard
+            key={e.id}
+            event={e}
+            bookmarked={getIsBookmarked ? getIsBookmarked(e) : undefined}
+            setBookmarked={
+              setBookmarked ? (s) => setBookmarked(e, s) : undefined
+            }
+          >
             <Calendar.Item
               component="a"
               className="Calendar-event"
@@ -182,7 +205,6 @@ const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
       boxProps.left = `${100 * startPct}%`
       boxProps.right = `${100 * endPct}%`
     }
-
     return (
       <Box
         className={clsx("Calendar-item", className)}
