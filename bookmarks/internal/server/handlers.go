@@ -1,0 +1,151 @@
+package server
+
+import (
+	"bookmarks/internal/config"
+	"bookmarks/internal/db"
+	"bookmarks/internal/selection"
+	"bookmarks/internal/structs"
+	"bookmarks/internal/validator"
+	"encoding/json"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+)
+
+type server struct {
+	db        *db.DB
+	config    *config.Config
+	validator *validator.Validator
+}
+
+var emptySelectionResponse = func() *structs.SessionBookmarksResponse {
+	sel := selection.NewSelection([]string{})
+	return &structs.SessionBookmarksResponse{
+		Id:     sel.Hash(),
+		Date:   time.Unix(0, 0).Format(time.RFC3339),
+		Events: sel.GetEventIds(),
+	}
+}()
+
+func (s *server) getSelectionHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+	hash := chi.URLParam(req, "hash")
+
+	sel, err := s.db.GetSelection(scheduleId, hash)
+	if err != nil {
+		http.NotFound(w, req)
+		return
+	}
+
+	resp := structs.BookmarksResponse{
+		Id: hash, Events: sel.GetEventIds(),
+	}
+	jsonResponse(w, resp)
+}
+
+func (s *server) setupSessionHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+	if _, ok := s.config.ScheduleURLs[scheduleId]; !ok {
+		httpError(w, http.StatusNotFound)
+		return
+	}
+
+	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	if err != nil {
+		sessionId = newSessionId(s.config.Secret)
+	}
+
+	sessionId.SetCookie(w, s.config.Domain)
+	w.WriteHeader(204)
+}
+
+func (s *server) setSelectionHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	var reqBody structs.BookmarksRequest
+	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
+		httpError(w, http.StatusUnprocessableEntity)
+		return
+	}
+
+	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	if err != nil {
+		httpError(w, http.StatusUnauthorized)
+		return
+	}
+
+	validatedEvents, err := s.validator.ValidateEvents(scheduleId, reqBody.Events)
+	if err == validator.ErrNoSchedule {
+		http.NotFound(w, req)
+		return
+	} else if err != nil {
+		log.Println(err)
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	sel := selection.NewSelection(validatedEvents)
+
+	hash, err := s.db.SaveSelection(scheduleId, sel)
+	if err != nil {
+		panic(err)
+	}
+
+	date, err := s.db.SetSessionSelection(sessionId.Id, scheduleId, hash)
+	if err != nil {
+		panic(err)
+	}
+
+	sessionId.SetCookie(w, s.config.Domain)
+
+	respBody := structs.SessionBookmarksResponse{
+		Id:     hash,
+		Date:   date,
+		Events: sel.GetEventIds(),
+	}
+	jsonResponse(w, respBody)
+}
+
+func (s *server) getSessionSelectionHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	if err != nil {
+		jsonResponse(w, emptySelectionResponse)
+		return
+	}
+
+	selections, date, err := s.db.GetSessionSelection(sessionId.Id, scheduleId)
+	if err != nil {
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+	if selections == nil {
+		jsonResponse(w, emptySelectionResponse)
+		return
+	}
+
+	respBody := &structs.SessionBookmarksResponse{
+		Id:     selections.Hash(),
+		Date:   date,
+		Events: selections.GetEventIds(),
+	}
+	jsonResponse(w, respBody)
+}
+
+func (s *server) getEventSelectionCountsHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	res, err := s.db.GetEventSelectionCounts(scheduleId)
+	if err != nil {
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	respBody := structs.EventSelectionCountsResponse{
+		Counts: res,
+	}
+	jsonResponse(w, respBody)
+}
