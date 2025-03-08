@@ -22,10 +22,12 @@ import { getDays, getDefaultDay } from "../utils.js"
 import { createICS } from "../ical.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
 import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
+import { useBookmarkStore } from "../bookmarks.js"
+import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 
 export const EventsRoute = observer(() => {
   const { events: allEvents, config } = eventsDataRoute.useLoaderData()
-  const { bookmarkStore } = eventsDataRoute.useRouteContext()
+  const bookmarkStore = useBookmarkStore()
   const [filterText, setFilterText] = useState("")
   const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
     new Set()
@@ -106,9 +108,9 @@ export const EventsRoute = observer(() => {
 
   const getIsBookmarked = useCallback(
     (event: Event) => {
-      return bookmarkStore.events.has(event.id)
+      return bookmarkStore.has(event.id)
     },
-    [bookmarkStore.events]
+    [bookmarkStore.eventIds]
   )
 
   const setBookmarked = useCallback(
@@ -116,7 +118,7 @@ export const EventsRoute = observer(() => {
       if (set) {
         bookmarkStore.add(event.id)
       } else {
-        bookmarkStore.remove(event.id)
+        bookmarkStore.delete(event.id)
       }
     },
     [bookmarkStore]
@@ -133,9 +135,9 @@ export const EventsRoute = observer(() => {
 
   const bookmarkFiltered = useMemo(() => {
     return onlyBookmarked
-      ? dayFiltered.filter(bookmarkStore.makeFilter())
+      ? dayFiltered.filter(makeBookmarkFilter(bookmarkStore))
       : dayFiltered
-  }, [dayFiltered, bookmarkStore.events, onlyBookmarked])
+  }, [dayFiltered, bookmarkStore.eventIds, onlyBookmarked])
 
   const pastFiltered = useMemo(
     () =>
@@ -181,9 +183,7 @@ export const EventsRoute = observer(() => {
             onSelectDay={setSelectedDay}
           />
           {titleFiltered.length > 0 ? (
-            <CalendarView
-              rooms={rooms}
-              direction="row"
+            <PillsView
               events={titleFiltered}
               getIsBookmarked={getIsBookmarked}
               setBookmarked={setBookmarked}
@@ -220,7 +220,7 @@ export const EventsRoute = observer(() => {
               events = events.filter(makeTagFilter(disabledTags))
 
               if (onlyBookmarked) {
-                events = events.filter(bookmarkStore.makeFilter)
+                events = events.filter(makeBookmarkFilter(bookmarkStore))
               }
 
               const data = createICS(

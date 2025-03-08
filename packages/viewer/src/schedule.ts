@@ -3,6 +3,7 @@ import {
   EventJSON,
   EventStore,
   makeEvent,
+  makeEventStore,
   RequiredScheduleConfig,
 } from "@open-event-systems/schedule-lib"
 import { UseQueryOptions } from "@tanstack/react-query"
@@ -45,7 +46,7 @@ export const getEventsQueryOptions = (
         }
       }
 
-      const store = new EventStore(events)
+      const store = makeEventStore(events)
 
       return store
     },

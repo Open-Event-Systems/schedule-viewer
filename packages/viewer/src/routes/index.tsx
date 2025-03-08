@@ -2,7 +2,6 @@ import { QueryClient } from "@tanstack/react-query"
 import {
   createRootRouteWithContext,
   createRoute,
-  isNotFound,
   notFound,
   Outlet,
 } from "@tanstack/react-router"
@@ -12,14 +11,16 @@ import {
 } from "../schedule.js"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
 import { EventsRoute } from "./EventsRoute.js"
-import { BookmarkStore } from "../bookmarks.js"
 import { EventRoute } from "./EventRoute.js"
 import { Layout } from "../Layout.js"
+import { BookmarkStore } from "@open-event-systems/schedule-lib"
+import { BookmarkStoreProvider } from "../bookmarks.js"
+import { useState } from "react"
 
 export type RouterContext = {
   configURL: string
   queryClient: QueryClient
-  bookmarkStore: BookmarkStore
+  bookmarkStoreFactory: (scheduleId: string) => BookmarkStore
 }
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
@@ -43,10 +44,17 @@ export const eventsDataRoute = createRoute({
     return { config, events }
   },
   component: () => {
+    const { bookmarkStoreFactory } = eventsDataRoute.useRouteContext()
     const { config } = eventsDataRoute.useLoaderData()
+    const [bookmarksStore] = useState(() => {
+      return bookmarkStoreFactory(config.id)
+    })
+
     return (
       <ScheduleConfigProvider value={config}>
-        <Outlet />
+        <BookmarkStoreProvider value={bookmarksStore}>
+          <Outlet />
+        </BookmarkStoreProvider>
       </ScheduleConfigProvider>
     )
   },

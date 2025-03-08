@@ -57,3 +57,24 @@ export type RequiredScheduleConfig = ScheduleConfig &
       "id" | "url" | "title" | "dayChangeHour" | "timeZone" | "tagIndicators"
     >
   >
+
+export type EventStore = {
+  get(id: string): Event | undefined
+  [Symbol.iterator](): Iterator<Event>
+  get events(): readonly Event[]
+  get tags(): ReadonlySet<string>
+  get first(): Event | undefined
+  get last(): Event | undefined
+}
+
+export type BookmarkStore = {
+  get eventIds(): readonly string[]
+  get dateUpdated(): Date
+  add(eventId: string): void
+  delete(eventId: string): void
+  [Symbol.iterator](): Iterator<string>
+
+  keys(): Iterator<string>
+  has(eventId: string): boolean
+  get size(): number
+}
