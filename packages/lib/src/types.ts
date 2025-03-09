@@ -67,17 +67,30 @@ export type EventStore = {
   get last(): Event | undefined
 }
 
-export type BookmarkStore = {
-  get eventIds(): readonly string[]
-  get dateUpdated(): Date
-  add(eventId: string): void
-  delete(eventId: string): void
-  [Symbol.iterator](): Iterator<string>
-
-  keys(): Iterator<string>
+export type Selections = {
+  readonly dateUpdated: Date
   has(eventId: string): boolean
-  get size(): number
+  [Symbol.iterator](): Iterator<string>
+  add(eventId: string): Selections
+  delete(eventId: string): Selections
 }
+
+export type BookmarkStore = {
+  get(): Promise<readonly [Iterable<string>, Date]>
+  put(eventIds: Iterable<string>): Promise<readonly [Iterable<string>, Date]>
+}
+
+// export type BookmarkStore = {
+//   get eventIds(): readonly string[]
+//   get dateUpdated(): Date
+//   add(eventId: string): void
+//   delete(eventId: string): void
+//   [Symbol.iterator](): Iterator<string>
+
+//   keys(): Iterator<string>
+//   has(eventId: string): boolean
+//   get size(): number
+// }
 
 export type BookmarksRequest = Readonly<{
   events: readonly string[]

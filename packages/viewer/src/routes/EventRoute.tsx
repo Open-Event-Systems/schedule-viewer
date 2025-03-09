@@ -3,23 +3,27 @@ import { eventRoute, eventsRoute } from "./index.js"
 import { Link } from "@tanstack/react-router"
 import { Anchor } from "@mantine/core"
 import { observer } from "mobx-react-lite"
-import { useBookmarkStore } from "../bookmarks.js"
 import { useCallback } from "react"
+import { useBookmarks, useUpdateBookmarks } from "../bookmarks.js"
 
 export const EventRoute = observer(() => {
+  const { config } = eventRoute.useRouteContext()
   const { event } = eventRoute.useLoaderData()
-  const bookmarkStore = useBookmarkStore()
+  const selections = useBookmarks(config.id)
+  const updateSelections = useUpdateBookmarks(config.id)
 
-  const bookmarked = bookmarkStore.has(event.id)
+  const bookmarked = selections.has(event.id)
   const setBookmarked = useCallback(
     (set: boolean) => {
+      let newSelections
       if (set) {
-        bookmarkStore.add(event.id)
+        newSelections = selections.add(event.id)
       } else {
-        bookmarkStore.delete(event.id)
+        newSelections = selections.delete(event.id)
       }
+      updateSelections(newSelections)
     },
-    [bookmarkStore]
+    [selections, updateSelections]
   )
 
   return (

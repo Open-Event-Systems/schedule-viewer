@@ -10,13 +10,18 @@ import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/
 import { EventsRoute } from "./EventsRoute.js"
 import { EventRoute } from "./EventRoute.js"
 import { Layout } from "../Layout.js"
-import { BookmarkAPIProvider, BookmarkStoreProvider } from "../bookmarks.js"
-import { useState } from "react"
-import { getAppContextQueryOptions } from "../config.js"
+import {
+  BookmarkAPIProvider,
+  getSessionBookmarksQueryOptions,
+  getStoredBookmarksQueryOptions,
+} from "../bookmarks.js"
+import { AppContext } from "../config.js"
+import { chooseNewer } from "@open-event-systems/schedule-lib"
 
 export type RouterContext = {
   configURL: string
   queryClient: QueryClient
+  appContextPromise: Promise<AppContext>
 }
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
@@ -27,44 +32,44 @@ export const eventsDataRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "events",
   async beforeLoad({ context }) {
-    const { configURL, queryClient } = context
-    const appCtx = await queryClient.fetchQuery(
-      getAppContextQueryOptions(queryClient, configURL)
-    )
-    
+    const { appContextPromise } = context
+    const appCtx = await appContextPromise
+
     return {
       config: appCtx.config,
-      bookmarkStore: appCtx.bookmarkStore,
       bookmarkAPI: appCtx.bookmarkAPI,
     }
   },
   async loader({ context }) {
-    const { configURL, queryClient } = context
+    const { queryClient, appContextPromise } = context
 
     // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await queryClient.fetchQuery(
-      getAppContextQueryOptions(queryClient, configURL)
-    )
-    
-    const {config} = appCtx
+    const appCtx = await appContextPromise
+    const { config, bookmarkAPI } = appCtx
 
-    const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config.url, config.timeZone)
-    )
+    const [events, localSelections, sessionSelections] = await Promise.all([
+      queryClient.fetchQuery(
+        getEventsQueryOptions(config.url, config.timeZone)
+      ),
+      queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
+      queryClient.fetchQuery(
+        getSessionBookmarksQueryOptions(bookmarkAPI, config.id)
+      ),
+    ])
 
-    return { events }
+    return {
+      events,
+      selections: chooseNewer(localSelections, sessionSelections),
+    }
   },
   component: () => {
-    const { bookmarkStore, bookmarkAPI } = eventsDataRoute.useRouteContext()
-    const { config } = eventsDataRoute.useRouteContext()
+    const { bookmarkAPI, config } = eventsDataRoute.useRouteContext()
 
     return (
       <ScheduleConfigProvider value={config}>
-        <BookmarkStoreProvider value={bookmarkStore}>
-          <BookmarkAPIProvider value={bookmarkAPI}>
-            <Outlet />
-          </BookmarkAPIProvider>
-        </BookmarkStoreProvider>
+        <BookmarkAPIProvider value={bookmarkAPI}>
+          <Outlet />
+        </BookmarkAPIProvider>
       </ScheduleConfigProvider>
     )
   },
@@ -82,14 +87,11 @@ export const eventRoute = createRoute({
   component: EventRoute,
   async loader({ context, params }) {
     const { eventId } = params
-    const { queryClient, configURL } = context
+    const { queryClient, appContextPromise } = context
 
     // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await queryClient.fetchQuery(
-      getAppContextQueryOptions(queryClient, configURL)
-    )
-    
-    const {config} = appCtx
+    const appCtx = await appContextPromise
+    const { config } = appCtx
 
     const events = await queryClient.fetchQuery(
       getEventsQueryOptions(config.url, config.timeZone)

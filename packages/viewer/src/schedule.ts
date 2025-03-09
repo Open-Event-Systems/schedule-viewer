@@ -1,26 +1,24 @@
+import wretch from "wretch"
 import {
   Event,
   EventJSON,
   EventStore,
   makeEvent,
   makeEventStore,
-  RequiredScheduleConfig,
 } from "@open-event-systems/schedule-lib"
-import { UseQueryOptions } from "@tanstack/react-query"
-
+import {
+  useSuspenseQuery,
+  UseSuspenseQueryOptions,
+} from "@tanstack/react-query"
 
 export const getEventsQueryOptions = (
   url: string,
   timeZone: string
-): UseQueryOptions<EventStore> => {
+): UseSuspenseQueryOptions<EventStore> => {
   return {
     queryKey: ["events", { url: url }],
     async queryFn() {
-      const resp = await fetch(url)
-      if (!resp.ok) {
-        throw new Error(`Schedule fetch returned ${resp.status}`)
-      }
-      const json: EventJSON[] = await resp.json()
+      const json = await wretch(url).get().json<EventJSON[]>()
       const events: Event[] = []
 
       for (const eventJSON of json) {
@@ -37,4 +35,9 @@ export const getEventsQueryOptions = (
     },
     staleTime: 300000,
   }
+}
+
+export const useEvents = (url: string, timeZone: string): EventStore => {
+  const query = useSuspenseQuery(getEventsQueryOptions(url, timeZone))
+  return query.data
 }

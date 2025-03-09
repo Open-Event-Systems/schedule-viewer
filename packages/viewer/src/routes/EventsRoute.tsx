@@ -22,13 +22,15 @@ import { getDays, getDefaultDay } from "../utils.js"
 import { createICS } from "../ical.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
 import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
-import { useBookmarkStore } from "../bookmarks.js"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
+import { useEvents } from "../schedule.js"
+import { useBookmarks, useUpdateBookmarks } from "../bookmarks.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
-  const { events: allEvents } = eventsDataRoute.useLoaderData()
-  const bookmarkStore = useBookmarkStore()
+  const allEvents = useEvents(config.url, config.timeZone)
+  const selections = useBookmarks(config.id)
+  const updateSelections = useUpdateBookmarks(config.id)
   const [filterText, setFilterText] = useState("")
   const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
     new Set()
@@ -46,15 +48,15 @@ export const EventsRoute = observer(() => {
     [allEvents, config.timeZone, config.dayChangeHour]
   )
 
-  const rooms = useMemo(() => {
-    const set = new Set<string>()
-    for (const event of allEvents) {
-      if (event.location) {
-        set.add(event.location)
-      }
-    }
-    return Array.from(set)
-  }, [allEvents])
+  // const rooms = useMemo(() => {
+  //   const set = new Set<string>()
+  //   for (const event of allEvents) {
+  //     if (event.location) {
+  //       set.add(event.location)
+  //     }
+  //   }
+  //   return Array.from(set)
+  // }, [allEvents])
 
   const defaultDay = useMemo(
     () => getDefaultDay(days, toTimezone(new Date(), config.timeZone)),
@@ -109,20 +111,22 @@ export const EventsRoute = observer(() => {
 
   const getIsBookmarked = useCallback(
     (event: Event) => {
-      return bookmarkStore.has(event.id)
+      return selections.has(event.id)
     },
-    [bookmarkStore.eventIds]
+    [selections]
   )
 
   const setBookmarked = useCallback(
     (event: Event, set: boolean) => {
+      let newSelections
       if (set) {
-        bookmarkStore.add(event.id)
+        newSelections = selections.add(event.id)
       } else {
-        bookmarkStore.delete(event.id)
+        newSelections = selections.delete(event.id)
       }
+      updateSelections(newSelections)
     },
-    [bookmarkStore]
+    [selections, updateSelections]
   )
 
   const dayFiltered = useMemo(() => {
@@ -136,9 +140,9 @@ export const EventsRoute = observer(() => {
 
   const bookmarkFiltered = useMemo(() => {
     return onlyBookmarked
-      ? dayFiltered.filter(makeBookmarkFilter(bookmarkStore))
+      ? dayFiltered.filter(makeBookmarkFilter(selections))
       : dayFiltered
-  }, [dayFiltered, bookmarkStore.eventIds, onlyBookmarked])
+  }, [dayFiltered, selections, onlyBookmarked])
 
   const pastFiltered = useMemo(
     () =>
@@ -221,7 +225,7 @@ export const EventsRoute = observer(() => {
               events = events.filter(makeTagFilter(disabledTags))
 
               if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(bookmarkStore))
+                events = events.filter(makeBookmarkFilter(selections))
               }
 
               const data = createICS(

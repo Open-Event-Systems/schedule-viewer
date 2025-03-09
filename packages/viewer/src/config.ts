@@ -1,23 +1,12 @@
-import {
-  makeBookmarkAPI,
-  makeBookmarkStore,
-  SessionBookmarksResponse,
-} from "@open-event-systems/schedule-lib"
+import wretch from "wretch"
 import {
   BookmarkAPI,
-  BookmarkStore,
+  makeBookmarkAPI,
   RequiredScheduleConfig,
 } from "@open-event-systems/schedule-lib"
-import { QueryClient, UseQueryOptions } from "@tanstack/react-query"
-import {
-  BookmarkAPIBookmarkStore,
-  getSessionBookmarksMutationOptions,
-  getSessionBookmarksQueryOptions,
-  LocalStorageBookmarkStore,
-  makeBookmarkAPIBookmarkStoreFactory,
-  withUseNewerData,
-} from "./bookmarks.js"
-import { isAfter, parseISO } from "date-fns"
+import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
+import { listenForStorageUpdates } from "./local-storage.js"
+import { getStoredBookmarksMutationOptions } from "./bookmarks.js"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
@@ -29,85 +18,52 @@ declare module "@open-event-systems/schedule-lib" {
 
 export type AppContext = {
   config: RequiredScheduleConfig
-  bookmarkStore: BookmarkStore
   bookmarkAPI: BookmarkAPI | undefined
 }
 
-export const getAppContextQueryOptions = (
+export const loadApp = async (
   queryClient: QueryClient,
   configURL: string
-): UseQueryOptions<AppContext> => {
+): Promise<AppContext> => {
+  const config = await queryClient.fetchQuery(
+    getScheduleConfigQueryOptions(configURL)
+  )
+
+  let bookmarkAPI: BookmarkAPI | undefined
+
+  if (config.bookmarks) {
+    bookmarkAPI = makeBookmarkAPI(config.bookmarks)
+    try {
+      await bookmarkAPI.setup()
+    } catch (_) {
+      bookmarkAPI = undefined
+    }
+  }
+
+  // local storage sync
+  listenForStorageUpdates(config.id, (selections) => {
+    queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getStoredBookmarksMutationOptions(queryClient, config.id)
+      )
+      .execute(selections)
+  })
+
   return {
-    queryKey: ["app", { url: configURL }],
-    async queryFn() {
-      const config = await queryClient.fetchQuery(
-        getScheduleConfigQueryOptions(configURL)
-      )
-
-      let bookmarkAPI: BookmarkAPI | undefined
-      let fetchedBookmarks: SessionBookmarksResponse | undefined
-      let factory = makeBookmarkStore
-
-      if (config.bookmarks) {
-        bookmarkAPI = makeBookmarkAPI(config.bookmarks)
-        try {
-          await bookmarkAPI.setup()
-          fetchedBookmarks = await queryClient.fetchQuery(
-            getSessionBookmarksQueryOptions(bookmarkAPI, config.id)
-          )
-
-          const mutation = queryClient
-            .getMutationCache()
-            .build(
-              queryClient,
-              getSessionBookmarksMutationOptions(
-                queryClient,
-                bookmarkAPI,
-                config.id
-              )
-            )
-          factory = makeBookmarkAPIBookmarkStoreFactory(
-            makeBookmarkStore,
-            (ids: Iterable<string>) => mutation.execute(ids)
-          )
-        } catch (_) {
-          bookmarkAPI = undefined
-        }
-      }
-
-      const fetchedDate = fetchedBookmarks?.date
-        ? parseISO(fetchedBookmarks.date)
-        : undefined
-      const bookmarkStore = LocalStorageBookmarkStore.load(
-        withUseNewerData(factory, fetchedBookmarks?.events, fetchedDate),
-        config.id
-      )
-
-      console.log("bookmarks", bookmarkStore.eventIds)
-
-      const api = {
-        config,
-        bookmarkAPI,
-        bookmarkStore,
-      }
-
-      return api
-    },
-    staleTime: Infinity,
+    config,
+    bookmarkAPI,
   }
 }
 
 export const getScheduleConfigQueryOptions = (
   url: string
-): UseQueryOptions<RequiredScheduleConfig> => {
+): UseSuspenseQueryOptions<RequiredScheduleConfig> => {
   return {
     queryKey: ["config", { url: url }],
     async queryFn() {
-      const resp = await fetch(url)
-      if (!resp.ok) {
-        throw new Error(`Schedule config request returned ${resp.status}`)
-      }
-      return (await resp.json()) as RequiredScheduleConfig
+      return await wretch(url).get().json<RequiredScheduleConfig>()
     },
     staleTime: Infinity,
   }

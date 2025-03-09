@@ -20,7 +20,8 @@
     "mobx": "^6.13.5",
     "mobx-react-lite": "^4.1.0",
     "react": "18",
-    "react-dom": "18"
+    "react-dom": "18",
+    "wretch": "^2.11.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",
