@@ -78,3 +78,25 @@ export type BookmarkStore = {
   has(eventId: string): boolean
   get size(): number
 }
+
+export type BookmarksRequest = Readonly<{
+  events: readonly string[]
+}>
+
+export type BookmarksResponse = Readonly<{
+  id: string
+  events: readonly string[]
+}>
+
+export type SessionBookmarksResponse = Readonly<{
+  id: string
+  date: string
+  events: readonly string[]
+}>
+
+export type BookmarkAPI = {
+  setup(): Promise<void>
+  getBookmarks(selectionId: string): Promise<BookmarksResponse>
+  getSessionBookmarks(): Promise<SessionBookmarksResponse>
+  setBookmarks(events: Iterable<string>): Promise<SessionBookmarksResponse>
+}

@@ -1,5 +1,6 @@
 {
   "id": "example-event",
+  "bookmarks": "http://localhost:8000/schedule/example-event",
   "icalPrefix": "example",
   "icalDomain": "example.net",
   "url": "events.json",

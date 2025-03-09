@@ -1,20 +1,131 @@
 import {
+  BookmarkAPI,
   BookmarkStore,
   makeBookmarkStore,
+  SessionBookmarksResponse,
 } from "@open-event-systems/schedule-lib"
-import { makeAutoObservable, reaction, toJS } from "mobx"
+import {
+  MutationOptions,
+  QueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query"
+import { isAfter } from "date-fns"
+import { makeAutoObservable, toJS } from "mobx"
 import { createContext, useContext } from "react"
 
 const LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-v1-"
 
+export const getSessionBookmarksQueryOptions = (
+  bookmarkAPI: BookmarkAPI,
+  scheduleId: string
+): UseQueryOptions<SessionBookmarksResponse> => {
+  return {
+    queryKey: ["schedule", scheduleId, "bookmarks"],
+    async queryFn() {
+      return bookmarkAPI.getSessionBookmarks()
+    },
+    staleTime: Infinity,
+  }
+}
+
+export const getSessionBookmarksMutationOptions = (
+  queryClient: QueryClient,
+  bookmarkAPI: BookmarkAPI,
+  scheduleId: string
+): MutationOptions<SessionBookmarksResponse, Error, Iterable<string>> => {
+  return {
+    mutationKey: ["schedule", scheduleId, "bookmarks"],
+    async mutationFn(eventIds) {
+      return await bookmarkAPI.setBookmarks(eventIds)
+    },
+    onSuccess(data) {
+      queryClient.setQueryData(["schedule", scheduleId, "bookmarks"], data)
+    },
+  }
+}
+
+type StoreFactory = (
+  eventIds?: Iterable<string>,
+  dateUpdated?: Date
+) => BookmarkStore
+
+export const withUseNewerData = (
+  factory: StoreFactory,
+  curEventIds?: Iterable<string>,
+  curDateUpdated?: Date
+): StoreFactory => {
+  const wrapped = (
+    eventIds?: Iterable<string>,
+    dateUpdated?: Date
+  ): BookmarkStore => {
+    if (
+      curEventIds &&
+      isAfter(curDateUpdated || new Date(0), dateUpdated || new Date(0))
+    ) {
+      return factory(curEventIds, curDateUpdated)
+    } else {
+      return factory(eventIds, dateUpdated)
+    }
+  }
+
+  return wrapped
+}
+
+export class BookmarkAPIBookmarkStore {
+  constructor(
+    public store: BookmarkStore,
+    private updater: (eventIds: Iterable<string>) => void
+  ) {}
+
+  get eventIds(): readonly string[] {
+    return this.store.eventIds
+  }
+
+  get dateUpdated(): Date {
+    return this.store.dateUpdated
+  }
+
+  add(eventId: string) {
+    this.store.add(eventId)
+    this.updater(this.eventIds)
+  }
+
+  delete(eventId: string) {
+    this.store.delete(eventId)
+    this.updater(this.eventIds)
+  }
+
+  keys(): Iterator<string> {
+    return this.store.keys()
+  }
+
+  [Symbol.iterator](): Iterator<string> {
+    return this.store[Symbol.iterator]()
+  }
+
+  has(eventId: string): boolean {
+    return this.store.has(eventId)
+  }
+
+  get size(): number {
+    return this.store.size
+  }
+}
+
+export const makeBookmarkAPIBookmarkStoreFactory = (
+  factory: StoreFactory,
+  updater: (eventIds: Iterable<string>) => void
+): StoreFactory => {
+  const wrapped: StoreFactory = (eventIds, dateUpdated) => {
+    const inner = factory(eventIds, dateUpdated)
+    return new BookmarkAPIBookmarkStore(inner, updater)
+  }
+  return wrapped
+}
+
 export class LocalStorageBookmarkStore {
   constructor(public store: BookmarkStore, public scheduleId: string) {
     makeAutoObservable(this)
-
-    reaction(
-      () => [],
-      () => {}
-    )
   }
 
   get eventIds(): readonly string[] {
@@ -103,6 +214,13 @@ export const makeLocalStorageBookmarkStore = (
 ): BookmarkStore => {
   return new LocalStorageBookmarkStore(store, scheduleId)
 }
+
+export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
+  undefined
+)
+export const BookmarkAPIProvider = BookmarkAPIContext.Provider
+export const useBookmarkAPI = (): BookmarkAPI | undefined =>
+  useContext(BookmarkAPIContext)
 
 export const BookmarkStoreContext = createContext(makeBookmarkStore())
 export const BookmarkStoreProvider = BookmarkStoreContext.Provider

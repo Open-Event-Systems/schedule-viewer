@@ -26,7 +26,8 @@ import { useBookmarkStore } from "../bookmarks.js"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 
 export const EventsRoute = observer(() => {
-  const { events: allEvents, config } = eventsDataRoute.useLoaderData()
+  const { config } = eventsDataRoute.useRouteContext()
+  const { events: allEvents } = eventsDataRoute.useLoaderData()
   const bookmarkStore = useBookmarkStore()
   const [filterText, setFilterText] = useState("")
   const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
