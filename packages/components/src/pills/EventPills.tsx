@@ -18,6 +18,7 @@ export type EventPillsProps = PillsProps & {
   getHref?: (event: Event) => string | null | undefined
   getIsBookmarked?: (event: Event) => boolean | undefined
   setBookmarked?: (event: Event, set: boolean) => void
+  getBookmarkCount?: (event: Event) => number | undefined | null
   onClickEvent?: (e: MouseEvent, event: Event) => void
 }
 
@@ -28,6 +29,7 @@ export const EventPills = (props: EventPillsProps) => {
     getHref,
     getIsBookmarked,
     setBookmarked,
+    getBookmarkCount,
     onClickEvent,
     ...other
   } = useProps("EventPills", {}, props)
@@ -48,6 +50,7 @@ export const EventPills = (props: EventPillsProps) => {
               event={e}
               bookmarked={getIsBookmarked ? getIsBookmarked(e) : undefined}
               setBookmarked={(set) => setBookmarked && setBookmarked(e, set)}
+              bookmarkCount={getBookmarkCount ? getBookmarkCount(e) : undefined}
             >
               {c}
             </EventHoverCard>

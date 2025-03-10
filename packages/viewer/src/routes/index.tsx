@@ -12,6 +12,7 @@ import { EventRoute } from "./EventRoute.js"
 import { Layout } from "../Layout.js"
 import {
   BookmarkAPIProvider,
+  getBookmarkCountsQueryOptions,
   getSessionBookmarksQueryOptions,
   getStoredBookmarksQueryOptions,
 } from "../bookmarks.js"
@@ -47,19 +48,24 @@ export const eventsDataRoute = createRoute({
     const appCtx = await appContextPromise
     const { config, bookmarkAPI } = appCtx
 
-    const [events, localSelections, sessionSelections] = await Promise.all([
-      queryClient.fetchQuery(
-        getEventsQueryOptions(config.url, config.timeZone)
-      ),
-      queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
-      queryClient.fetchQuery(
-        getSessionBookmarksQueryOptions(bookmarkAPI, config.id)
-      ),
-    ])
+    const [events, localSelections, sessionSelections, counts] =
+      await Promise.all([
+        queryClient.fetchQuery(
+          getEventsQueryOptions(config.url, config.timeZone)
+        ),
+        queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
+        queryClient.fetchQuery(
+          getSessionBookmarksQueryOptions(bookmarkAPI, config.id)
+        ),
+        queryClient.fetchQuery(
+          getBookmarkCountsQueryOptions(bookmarkAPI, config.id)
+        ),
+      ])
 
     return {
       events,
       selections: chooseNewer(localSelections, sessionSelections),
+      counts,
     }
   },
   component: () => {

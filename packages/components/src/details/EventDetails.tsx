@@ -27,6 +27,7 @@ export type EventDetailsProps = {
   bookmarked?: boolean
   setBookmarked?: (set: boolean) => void
   large?: boolean
+  bookmarkCount?: number | null
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
@@ -36,6 +37,7 @@ export const EventDetails = (props: EventDetailsProps) => {
     bookmarked,
     setBookmarked,
     large = false,
+    bookmarkCount,
     ...other
   } = useProps("EventDetails", {}, props)
 
@@ -66,7 +68,7 @@ export const EventDetails = (props: EventDetailsProps) => {
             {locationEl}
             {hostsEl}
           </Box>
-          <Stack>
+          <Stack gap="xs" align="center">
             <ActionIcon
               size={large ? "md" : "sm"}
               variant={bookmarked ? "filled" : "default"}
@@ -74,6 +76,11 @@ export const EventDetails = (props: EventDetailsProps) => {
             >
               <IconBookmark />
             </ActionIcon>
+            {bookmarkCount != null && bookmarkCount >= 0 && (
+              <Text span size="xs" c="dimmed" fw="bold">
+                {bookmarkCount}
+              </Text>
+            )}
           </Stack>
         </Flex>
         <Markdown className="EventDetails-description">

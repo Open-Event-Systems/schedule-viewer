@@ -75,23 +75,6 @@ export type Selections = {
   delete(eventId: string): Selections
 }
 
-export type BookmarkStore = {
-  get(): Promise<readonly [Iterable<string>, Date]>
-  put(eventIds: Iterable<string>): Promise<readonly [Iterable<string>, Date]>
-}
-
-// export type BookmarkStore = {
-//   get eventIds(): readonly string[]
-//   get dateUpdated(): Date
-//   add(eventId: string): void
-//   delete(eventId: string): void
-//   [Symbol.iterator](): Iterator<string>
-
-//   keys(): Iterator<string>
-//   has(eventId: string): boolean
-//   get size(): number
-// }
-
 export type BookmarksRequest = Readonly<{
   events: readonly string[]
 }>
@@ -107,9 +90,14 @@ export type SessionBookmarksResponse = Readonly<{
   events: readonly string[]
 }>
 
+export type BookmarkCountsResponse = Readonly<{
+  counts: Readonly<Record<string, number>>
+}>
+
 export type BookmarkAPI = {
   setup(): Promise<void>
   getBookmarks(selectionId: string): Promise<BookmarksResponse>
   getSessionBookmarks(): Promise<SessionBookmarksResponse>
   setBookmarks(events: Iterable<string>): Promise<SessionBookmarksResponse>
+  getBookmarkCounts(): Promise<BookmarkCountsResponse>
 }

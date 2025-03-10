@@ -27,6 +27,7 @@ export const Default: StoryObj<typeof EventDetails> = {
         {...args}
         bookmarked={bookmarked}
         setBookmarked={setBookmarked}
+        bookmarkCount={bookmarked ? 18 : 17}
       />
     )
   },

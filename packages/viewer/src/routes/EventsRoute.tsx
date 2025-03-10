@@ -24,12 +24,17 @@ import { useLocation, useRouter } from "@tanstack/react-router"
 import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { useEvents } from "../schedule.js"
-import { useBookmarks, useUpdateBookmarks } from "../bookmarks.js"
+import {
+  useBookmarkCounts,
+  useBookmarks,
+  useUpdateBookmarks,
+} from "../bookmarks.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const allEvents = useEvents(config.url, config.timeZone)
   const selections = useBookmarks(config.id)
+  const counts = useBookmarkCounts(config.id)
   const updateSelections = useUpdateBookmarks(config.id)
   const [filterText, setFilterText] = useState("")
   const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
@@ -129,6 +134,13 @@ export const EventsRoute = observer(() => {
     [selections, updateSelections]
   )
 
+  const getBookmarkCount = useCallback(
+    (event: Event) => {
+      return counts.get(event.id)
+    },
+    [counts]
+  )
+
   const dayFiltered = useMemo(() => {
     const arr = Array.from(allEvents).filter(isScheduled)
     if (!selectedDay) {
@@ -192,6 +204,7 @@ export const EventsRoute = observer(() => {
               events={titleFiltered}
               getIsBookmarked={getIsBookmarked}
               setBookmarked={setBookmarked}
+              getBookmarkCount={getBookmarkCount}
               getHref={getHref}
               onClickEvent={onClick}
             />
@@ -256,18 +269,26 @@ type ViewProps = {
   events: readonly Scheduled<Event>[]
   getIsBookmarked: (event: Event) => boolean
   setBookmarked: (event: Event, set: boolean) => void
+  getBookmarkCount: (event: Event) => number | null | undefined
   getHref: (event: Event) => string
   onClickEvent: (e: MouseEvent, event: Event) => void
 }
 
 const PillsView = (props: ViewProps) => {
-  const { events, getIsBookmarked, setBookmarked, getHref, onClickEvent } =
-    props
+  const {
+    events,
+    getIsBookmarked,
+    setBookmarked,
+    getBookmarkCount,
+    getHref,
+    onClickEvent,
+  } = props
   return (
     <EventPills
       events={events}
       getIsBookmarked={getIsBookmarked}
       setBookmarked={setBookmarked}
+      getBookmarkCount={getBookmarkCount}
       getHref={getHref}
       onClickEvent={onClickEvent}
     />

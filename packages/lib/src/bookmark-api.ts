@@ -1,5 +1,6 @@
 import {
   BookmarkAPI,
+  BookmarkCountsResponse,
   BookmarksRequest,
   BookmarksResponse,
   SessionBookmarksResponse,
@@ -36,6 +37,12 @@ export const makeBookmarkAPI = (baseURL: string): BookmarkAPI => {
         .put()
         .json<SessionBookmarksResponse>()
       return res
+    },
+    async getBookmarkCounts() {
+      return await baseWretch
+        .url("/counts")
+        .get()
+        .json<BookmarkCountsResponse>()
     },
   }
 }

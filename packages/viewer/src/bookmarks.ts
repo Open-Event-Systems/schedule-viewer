@@ -95,6 +95,27 @@ export const getSessionBookmarksMutationOptions = (
   }
 }
 
+export const getBookmarkCountsQueryOptions = (
+  bookmarkAPI: BookmarkAPI | null | undefined,
+  scheduleId: string
+): UseSuspenseQueryOptions<ReadonlyMap<string, number>> => {
+  return {
+    queryKey: ["schedule", scheduleId, "counts"],
+    async queryFn() {
+      if (bookmarkAPI) {
+        const resp = await bookmarkAPI.getBookmarkCounts()
+        const map = new Map<string, number>()
+        for (const [eventId, count] of Object.entries(resp.counts)) {
+          map.set(eventId, count)
+        }
+        return map
+      }
+      return new Map<string, number>()
+    },
+    staleTime: Infinity,
+  }
+}
+
 export const useBookmarks = (scheduleId: string): Selections => {
   const bookmarkAPI = useBookmarkAPI()
   const local = useSuspenseQuery(getStoredBookmarksQueryOptions(scheduleId))
@@ -134,4 +155,22 @@ export const useUpdateBookmarks = (
   )
 
   return updater
+}
+
+export const useBookmarkCounts = (
+  scheduleId: string
+): ReadonlyMap<string, number> => {
+  const bookmarkAPI = useBookmarkAPI()
+  const query = useSuspenseQuery(
+    getBookmarkCountsQueryOptions(bookmarkAPI, scheduleId)
+  )
+  return query.data
+}
+
+export const useBookmarkCount = (
+  scheduleId: string,
+  eventId: string
+): number | undefined => {
+  const counts = useBookmarkCounts(scheduleId)
+  return counts.get(eventId)
 }
