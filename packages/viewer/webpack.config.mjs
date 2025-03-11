@@ -10,7 +10,7 @@ export default (env, argv) => {
     entry: "./src/main.tsx",
     output: {
       path: path.resolve("./dist"),
-      filename: isProd ? "js/[name].[contenthash].js" : undefined,
+      filename: "schedule.js",
       clean: true,
     },
     module: {
@@ -43,18 +43,13 @@ export default (env, argv) => {
     },
     plugins: [
       new MiniCssExtractPlugin({
-        filename: "css/[name].[contenthash].css",
+        filename: "schedule.css",
       }),
       new HtmlWebpackPlugin({
         template: "./index.html",
         title: "Schedule",
       }),
     ],
-    optimization: {
-      splitChunks: {
-        chunks: "all",
-      },
-    },
     devServer: {
       port: 9000,
     },

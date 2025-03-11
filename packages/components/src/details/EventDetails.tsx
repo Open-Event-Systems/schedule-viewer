@@ -68,20 +68,27 @@ export const EventDetails = (props: EventDetailsProps) => {
             {locationEl}
             {hostsEl}
           </Box>
-          <Stack gap="xs" align="center">
+          <Box className="EventDetails-bookmark">
             <ActionIcon
               size={large ? "md" : "sm"}
               variant={bookmarked ? "filled" : "default"}
+              className="EventDetails-bookmarkButton"
               onClick={() => setBookmarked && setBookmarked(!bookmarked)}
             >
               <IconBookmark />
             </ActionIcon>
-            {bookmarkCount != null && bookmarkCount >= 0 && (
-              <Text span size="xs" c="dimmed" fw="bold">
+            {bookmarkCount != null && bookmarkCount >= 1 && (
+              <Text
+                span
+                size="xs"
+                c="dimmed"
+                fw="bold"
+                className="EventDetails-bookmarkCount"
+              >
                 {bookmarkCount}
               </Text>
             )}
-          </Stack>
+          </Box>
         </Flex>
         <Markdown className="EventDetails-description">
           {event.description}

@@ -6,3 +6,13 @@
 .EventDetails-description {
   flex: auto;
 }
+
+.EventDetails-bookmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.EventDetails-bookmarkCount {
+  margin-top: 4px;
+}

@@ -5,7 +5,7 @@ import {
   DayFilter,
   DayFilterDay,
 } from "@open-event-systems/schedule-components/day-filter/DayFilter"
-import { MouseEvent, useCallback, useMemo, useState } from "react"
+import { MouseEvent, useCallback, useContext, useMemo, useState } from "react"
 import {
   Event,
   isScheduled,
@@ -29,6 +29,7 @@ import {
   useBookmarks,
   useUpdateBookmarks,
 } from "../bookmarks.js"
+import { FilterContext } from "../App.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
@@ -36,12 +37,9 @@ export const EventsRoute = observer(() => {
   const selections = useBookmarks(config.id)
   const counts = useBookmarkCounts(config.id)
   const updateSelections = useUpdateBookmarks(config.id)
-  const [filterText, setFilterText] = useState("")
-  const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
-    new Set()
-  )
-  const [showPast, setShowPast] = useState(false)
-  const [onlyBookmarked, setOnlyBookmarked] = useState(false)
+
+  const [filter, setFilter] = useContext(FilterContext)
+  const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
 
   const days = useMemo(
     () =>
@@ -191,7 +189,7 @@ export const EventsRoute = observer(() => {
             ]}
             value={onlyBookmarked ? "bookmarked" : "all"}
             onChange={(v) => {
-              setOnlyBookmarked(v == "bookmarked")
+              setFilter({ ...filter, onlyBookmarked: v == "bookmarked" })
             }}
           />
           <DayFilter
@@ -222,9 +220,13 @@ export const EventsRoute = observer(() => {
             tags={allEvents.tags}
             disabledTags={disabledTags}
             showPastEvents={showPast}
-            onChangeText={setFilterText}
-            onChangeTags={setDisabledTags}
-            onChangeShowPastEvents={setShowPast}
+            onChangeText={(text: string) => setFilter({ ...filter, text })}
+            onChangeTags={(disabledTags: Set<string>) =>
+              setFilter({ ...filter, disabledTags })
+            }
+            onChangeShowPastEvents={(showPast: boolean) =>
+              setFilter({ ...filter, showPast })
+            }
           />
           <Anchor
             component="button"
@@ -295,40 +297,40 @@ const PillsView = (props: ViewProps) => {
   )
 }
 
-const CalendarView = (
-  props: ViewProps & { direction?: "row" | "column"; rooms: readonly string[] }
-) => {
-  const {
-    rooms,
-    events,
-    direction,
-    getIsBookmarked,
-    setBookmarked,
-    getHref,
-    onClickEvent,
-  } = props
+// const CalendarView = (
+//   props: ViewProps & { direction?: "row" | "column"; rooms: readonly string[] }
+// ) => {
+//   const {
+//     rooms,
+//     events,
+//     direction,
+//     getIsBookmarked,
+//     setBookmarked,
+//     getHref,
+//     onClickEvent,
+//   } = props
 
-  const earliest = events[0]
-  const latest = events[events.length - 1]
+//   const earliest = events[0]
+//   const latest = events[events.length - 1]
 
-  const cols = rooms.map((r) => {
-    const roomEvents = events.filter((e) => e.location == r)
-    return {
-      title: r,
-      events: roomEvents,
-    }
-  })
+//   const cols = rooms.map((r) => {
+//     const roomEvents = events.filter((e) => e.location == r)
+//     return {
+//       title: r,
+//       events: roomEvents,
+//     }
+//   })
 
-  return (
-    <Calendar
-      direction={direction}
-      start={earliest.start}
-      end={latest.end}
-      columns={cols}
-      getIsBookmarked={getIsBookmarked}
-      setBookmarked={setBookmarked}
-      getHref={getHref}
-      onClickEvent={onClickEvent}
-    />
-  )
-}
+//   return (
+//     <Calendar
+//       direction={direction}
+//       start={earliest.start}
+//       end={latest.end}
+//       columns={cols}
+//       getIsBookmarked={getIsBookmarked}
+//       setBookmarked={setBookmarked}
+//       getHref={getHref}
+//       onClickEvent={onClickEvent}
+//     />
+//   )
+// }
