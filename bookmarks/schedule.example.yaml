@@ -1,0 +1,8 @@
+---
+db_url: server.sqlite
+allowed_origins:
+  - http://localhost:8000
+domain: "localhost"
+schedule_urls:
+  example-event: http://localhost:8080/events.json
+secret: changeit
