@@ -6,7 +6,9 @@ export const makeId = (s: string): string => {
   return slugify(s.toLowerCase())
 }
 
-export const makeBookmarkFilter = (eventIds: Iterable<string>): ((e: { readonly id: string }) => boolean) => {
+export const makeBookmarkFilter = (
+  eventIds: Iterable<string>,
+): ((e: { readonly id: string }) => boolean) => {
   const selections = makeSelections(eventIds)
   return (e) => {
     return selections.has(e.id)

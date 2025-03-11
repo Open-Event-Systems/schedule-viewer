@@ -4,10 +4,9 @@
 
 .DayFilter-root {
   display: grid;
-  grid-template: "prev title next" 1fr / auto minmax(
-      var(--title-min-width),
-      max-content
-    ) auto;
+  grid-template:
+    "prev title next" 1fr / auto minmax(var(--title-min-width), max-content)
+    auto;
   justify-content: center;
   align-items: center;
 }

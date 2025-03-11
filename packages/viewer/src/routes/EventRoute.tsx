@@ -28,7 +28,7 @@ export const EventRoute = observer(() => {
       }
       updateSelections(newSelections)
     },
-    [selections, updateSelections]
+    [selections, updateSelections],
   )
 
   return (

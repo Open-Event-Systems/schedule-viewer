@@ -18,7 +18,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
         control.mount(el)
       }
     },
-    [control]
+    [control],
   )
 
   return (

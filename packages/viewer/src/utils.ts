@@ -14,7 +14,7 @@ import { format, isBefore } from "date-fns"
 export const getDays = (
   events: Iterable<Required<Pick<Event, "start">>>,
   tz: string,
-  dayChangeHour?: number
+  dayChangeHour?: number,
 ): readonly DayFilterDay[] => {
   const days = new Map<string, DayFilterDay>()
 
@@ -36,7 +36,7 @@ export const getDays = (
  */
 export const getDefaultDay = (
   days: readonly DayFilterDay[],
-  now: Date
+  now: Date,
 ): DayFilterDay | undefined => {
   if (days.length == 0) {
     return

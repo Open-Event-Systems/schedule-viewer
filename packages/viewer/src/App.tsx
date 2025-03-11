@@ -25,7 +25,7 @@ export const App = ({ configURL }: { configURL: string }) => {
       disabledTags: new Set(),
       showPast: false,
       onlyBookmarked: false,
-    })
+    }),
   )
 
   return (

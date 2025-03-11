@@ -1,11 +1,10 @@
 import { Event, Scheduled } from "@open-event-systems/schedule-lib"
 import * as ics from "ics"
 
-
 export const createICS = (
   events: Iterable<Scheduled<Event>>,
   prefix: string,
-  domain: string
+  domain: string,
 ): string => {
   const eventAttrs: ics.EventAttributes[] = []
   for (const event of events) {

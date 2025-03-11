@@ -79,7 +79,7 @@ export const Calendar = (props: CalendarProps) => {
           {s.getMinutes() == 0 ? format(s, "h aaa") : null}
         </Calendar.Item>
       )),
-    [start, end]
+    [start, end],
   )
 
   return (
@@ -151,7 +151,7 @@ const CalendarColumn = ({
           </EventHoverCard>
         )
       }),
-    [column.events, getHref, onClickEvent]
+    [column.events, getHref, onClickEvent],
   )
 
   const dividers = useMemo(
@@ -166,7 +166,7 @@ const CalendarColumn = ({
           })}
         />
       )),
-    [start, end]
+    [start, end],
   )
 
   return (
@@ -189,7 +189,7 @@ const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
     const { className, start, end, ...other } = useProps(
       "CalendarItem",
       {},
-      props
+      props,
     )
 
     const ctx = useContext(CalendarContext)
@@ -214,7 +214,7 @@ const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
         {...other}
       />
     )
-  })
+  }),
 )
 
 CalendarItem.displayName = "Calendar.Item"
@@ -224,7 +224,7 @@ Calendar.Item = CalendarItem
 const makeDividers = (
   start: Date,
   end: Date,
-  f: (start: Date, end: Date) => ReactNode
+  f: (start: Date, end: Date) => ReactNode,
 ): ReactNode[] => {
   let cur = new Date(
     start.getFullYear(),
@@ -233,7 +233,7 @@ const makeDividers = (
     start.getHours(),
     start.getMinutes() >= 30 ? 30 : 0,
     0,
-    0
+    0,
   )
   const results: ReactNode[] = []
 

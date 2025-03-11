@@ -30,7 +30,7 @@ const PillBin = (props: PillBinProps) => {
   const { className, children, title, ...other } = useProps(
     "PillBin",
     {},
-    props
+    props,
   )
 
   return (

@@ -27,9 +27,9 @@ export const toTimezone = (d: Date, tz?: string): TZDate => {
  * Sort an array of timestamps by date, in place.
  */
 export const sortByDate = <
-  T extends Readonly<{ start?: Date | null; end?: Date | null }>[]
+  T extends Readonly<{ start?: Date | null; end?: Date | null }>[],
 >(
-  arr: T
+  arr: T,
 ): T => {
   arr.sort((a, b) => {
     if (a.start && b.start) {
@@ -65,7 +65,7 @@ export const getDay = (d: Date, tz: string, dayChangeHour = 0): Timespan => {
     0,
     0,
     0,
-    tz
+    tz,
   )
   return { start, end: add(start, { days: 1 }) }
 }

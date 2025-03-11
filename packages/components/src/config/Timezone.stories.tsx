@@ -29,8 +29,8 @@ const meta: Meta<typeof TZStory> = {
     timezone: {
       control: "select",
       options: ["America/New_York", "America/Los_Angeles"],
-    }
-  }
+    },
+  },
 }
 
 export default meta
@@ -38,5 +38,5 @@ export default meta
 export const Default: StoryObj<typeof TZStory> = {
   args: {
     timezone: "America/New_York",
-  }
+  },
 }

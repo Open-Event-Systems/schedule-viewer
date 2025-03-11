@@ -17,7 +17,7 @@ import { loadSelections, saveSelections } from "./local-storage.js"
 import { createContext, useCallback, useContext } from "react"
 
 export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
-  undefined
+  undefined,
 )
 export const BookmarkAPIProvider = BookmarkAPIContext.Provider
 export const useBookmarkAPI = (): BookmarkAPI | undefined =>
@@ -25,7 +25,7 @@ export const useBookmarkAPI = (): BookmarkAPI | undefined =>
 
 export const getSessionBookmarksQueryOptions = (
   bookmarkAPI: BookmarkAPI | null | undefined,
-  scheduleId: string
+  scheduleId: string,
 ): UseSuspenseQueryOptions<Selections> => {
   return {
     queryKey: ["schedule", scheduleId, "bookmarks"],
@@ -42,7 +42,7 @@ export const getSessionBookmarksQueryOptions = (
 }
 
 export const getStoredBookmarksQueryOptions = (
-  scheduleId: string
+  scheduleId: string,
 ): UseSuspenseQueryOptions<Selections> => {
   return {
     queryKey: ["schedule", scheduleId, "stored-bookmarks"],
@@ -55,7 +55,7 @@ export const getStoredBookmarksQueryOptions = (
 
 export const getStoredBookmarksMutationOptions = (
   queryClient: QueryClient,
-  scheduleId: string
+  scheduleId: string,
 ): UseMutationOptions<Selections, Error, Selections> => {
   return {
     mutationKey: ["schedule", scheduleId, "stored-bookmarks"],
@@ -66,7 +66,7 @@ export const getStoredBookmarksMutationOptions = (
     onSuccess(selections) {
       queryClient.setQueryData(
         ["schedule", scheduleId, "stored-bookmarks"],
-        selections
+        selections,
       )
     },
   }
@@ -75,7 +75,7 @@ export const getStoredBookmarksMutationOptions = (
 export const getSessionBookmarksMutationOptions = (
   queryClient: QueryClient,
   bookmarkAPI: BookmarkAPI | null | undefined,
-  scheduleId: string
+  scheduleId: string,
 ): UseMutationOptions<Selections, Error, Selections> => {
   return {
     mutationKey: ["schedule", scheduleId, "bookmarks"],
@@ -89,7 +89,7 @@ export const getSessionBookmarksMutationOptions = (
     onSuccess(selections) {
       queryClient.setQueryData(
         ["schedule", scheduleId, "bookmarks"],
-        selections
+        selections,
       )
     },
   }
@@ -97,7 +97,7 @@ export const getSessionBookmarksMutationOptions = (
 
 export const getBookmarkCountsQueryOptions = (
   bookmarkAPI: BookmarkAPI | null | undefined,
-  scheduleId: string
+  scheduleId: string,
 ): UseSuspenseQueryOptions<ReadonlyMap<string, number>> => {
   return {
     queryKey: ["schedule", scheduleId, "counts"],
@@ -120,21 +120,21 @@ export const useBookmarks = (scheduleId: string): Selections => {
   const bookmarkAPI = useBookmarkAPI()
   const local = useSuspenseQuery(getStoredBookmarksQueryOptions(scheduleId))
   const session = useSuspenseQuery(
-    getSessionBookmarksQueryOptions(bookmarkAPI, scheduleId)
+    getSessionBookmarksQueryOptions(bookmarkAPI, scheduleId),
   )
   return chooseNewer(local.data, session.data)
 }
 
 export const useUpdateBookmarks = (
-  scheduleId: string
+  scheduleId: string,
 ): ((selections: Selections) => Promise<Selections>) => {
   const queryClient = useQueryClient()
   const bookmarkAPI = useBookmarkAPI()
   const localMutation = useMutation(
-    getStoredBookmarksMutationOptions(queryClient, scheduleId)
+    getStoredBookmarksMutationOptions(queryClient, scheduleId),
   )
   const sessionMutation = useMutation(
-    getSessionBookmarksMutationOptions(queryClient, bookmarkAPI, scheduleId)
+    getSessionBookmarksMutationOptions(queryClient, bookmarkAPI, scheduleId),
   )
 
   const updater = useCallback(
@@ -151,25 +151,25 @@ export const useUpdateBookmarks = (
       localMutation.mutateAsync,
       sessionMutation.mutateAsync,
       scheduleId,
-    ]
+    ],
   )
 
   return updater
 }
 
 export const useBookmarkCounts = (
-  scheduleId: string
+  scheduleId: string,
 ): ReadonlyMap<string, number> => {
   const bookmarkAPI = useBookmarkAPI()
   const query = useSuspenseQuery(
-    getBookmarkCountsQueryOptions(bookmarkAPI, scheduleId)
+    getBookmarkCountsQueryOptions(bookmarkAPI, scheduleId),
   )
   return query.data
 }
 
 export const useBookmarkCount = (
   scheduleId: string,
-  eventId: string
+  eventId: string,
 ): number | undefined => {
   const counts = useBookmarkCounts(scheduleId)
   return counts.get(eventId)

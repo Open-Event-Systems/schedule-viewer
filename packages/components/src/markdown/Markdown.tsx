@@ -1,6 +1,11 @@
 import { forwardRef, ReactNode, useMemo } from "react"
 import markdownit from "markdown-it"
-import { Box, BoxProps, createPolymorphicComponent, TypographyStylesProvider } from "@mantine/core"
+import {
+  Box,
+  BoxProps,
+  createPolymorphicComponent,
+  TypographyStylesProvider,
+} from "@mantine/core"
 import clsx from "clsx"
 
 export type MarkdownProps = { children?: string } & BoxProps
@@ -38,7 +43,7 @@ export const Markdown = createPolymorphicComponent<"div", MarkdownProps>(
         dangerouslySetInnerHTML={{ __html: result }}
       />
     )
-  })
+  }),
 )
 
 Markdown.displayName = "Markdown"

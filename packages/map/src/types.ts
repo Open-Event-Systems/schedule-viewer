@@ -1,4 +1,3 @@
-
 export type MapLevel = Readonly<{
   id: string
   title: string

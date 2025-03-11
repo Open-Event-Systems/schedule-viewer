@@ -31,7 +31,7 @@ export const Default: StoryObj<typeof MapViewer> = {
           ],
           defaultLevel: "lobby",
           layers: [{ id: "background", title: "Background" }],
-        })
+        }),
     )
 
     useEffect(() => {

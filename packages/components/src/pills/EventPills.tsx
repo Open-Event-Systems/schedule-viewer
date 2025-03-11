@@ -57,7 +57,7 @@ export const EventPills = (props: EventPillsProps) => {
           )}
           className={clsx(
             `Pill-event-id-${e.id}`,
-            e.tags?.map((t) => `Pill-event-tag-${makeId(t)}`)
+            e.tags?.map((t) => `Pill-event-tag-${makeId(t)}`),
           )}
           href={(getHref ? getHref(e) : undefined) ?? undefined}
           indicator={getIndicator(config.tagIndicators, e.tags ?? [])}
@@ -70,7 +70,7 @@ export const EventPills = (props: EventPillsProps) => {
       res.push(
         <Pills.Bin key={b} title={label}>
           {items}
-        </Pills.Bin>
+        </Pills.Bin>,
       )
     })
     return res
@@ -88,7 +88,7 @@ export const EventPills = (props: EventPillsProps) => {
 
 const makeBins = (
   events: Iterable<Event>,
-  tz: string
+  tz: string,
 ): Map<string, [Date, Event[]]> => {
   const map = new Map<string, [Date, Event[]]>()
   for (const event of events) {
@@ -116,7 +116,7 @@ const binDate = (d: Date, tz: string): Date => {
     d.getDate(),
     d.getHours(),
     d.getMinutes() >= 30 ? 30 : 0,
-    tz
+    tz,
   )
 
   return rounded
@@ -124,7 +124,7 @@ const binDate = (d: Date, tz: string): Date => {
 
 export const getIndicator = (
   tagEntries: readonly TagIndicatorEntry[],
-  tags: readonly string[]
+  tags: readonly string[],
 ): ReactNode => {
   let cur = null
 

@@ -1,7 +1,4 @@
-import {
-  makeSelections,
-  Selections,
-} from "@open-event-systems/schedule-lib"
+import { makeSelections, Selections } from "@open-event-systems/schedule-lib"
 import { parseISO } from "date-fns"
 
 const LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-v1-"
@@ -40,7 +37,7 @@ const parseSelections = (dataStr: string): Selections => {
 export const saveSelections = (scheduleId: string, selections: Selections) => {
   window.localStorage.setItem(
     getKey(scheduleId),
-    stringifySelections(selections)
+    stringifySelections(selections),
   )
 }
 
@@ -63,7 +60,7 @@ export const loadSelections = (scheduleId: string): Selections => {
  */
 export const listenForStorageUpdates = (
   scheduleId: string,
-  handler: (selections: Selections) => void
+  handler: (selections: Selections) => void,
 ): (() => void) => {
   const key = getKey(scheduleId)
   const eventHandler = (e: StorageEvent) => {

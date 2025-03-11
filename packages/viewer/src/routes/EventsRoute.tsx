@@ -46,9 +46,9 @@ export const EventsRoute = observer(() => {
       getDays(
         Array.from(allEvents).filter(isScheduled),
         config.timeZone,
-        config.dayChangeHour
+        config.dayChangeHour,
       ),
-    [allEvents, config.timeZone, config.dayChangeHour]
+    [allEvents, config.timeZone, config.dayChangeHour],
   )
 
   // const rooms = useMemo(() => {
@@ -63,7 +63,7 @@ export const EventsRoute = observer(() => {
 
   const defaultDay = useMemo(
     () => getDefaultDay(days, toTimezone(new Date(), config.timeZone)),
-    [days, config.timeZone]
+    [days, config.timeZone],
   )
 
   const loc = useLocation()
@@ -80,7 +80,7 @@ export const EventsRoute = observer(() => {
         replace: true,
       })
     },
-    [navigate]
+    [navigate],
   )
 
   const selectedDay = days.find((d) => d.key == selectedDayKey) || defaultDay
@@ -93,10 +93,10 @@ export const EventsRoute = observer(() => {
           params: {
             eventId: event.id,
           },
-        }).href
+        }).href,
       )
     },
-    [router]
+    [router],
   )
 
   const onClick = useCallback(
@@ -109,14 +109,14 @@ export const EventsRoute = observer(() => {
         },
       })
     },
-    [navigate]
+    [navigate],
   )
 
   const getIsBookmarked = useCallback(
     (event: Event) => {
       return selections.has(event.id)
     },
-    [selections]
+    [selections],
   )
 
   const setBookmarked = useCallback(
@@ -129,14 +129,14 @@ export const EventsRoute = observer(() => {
       }
       updateSelections(newSelections)
     },
-    [selections, updateSelections]
+    [selections, updateSelections],
   )
 
   const getBookmarkCount = useCallback(
     (event: Event) => {
       return counts.get(event.id)
     },
-    [counts]
+    [counts],
   )
 
   const dayFiltered = useMemo(() => {
@@ -159,14 +159,14 @@ export const EventsRoute = observer(() => {
       showPast
         ? bookmarkFiltered
         : bookmarkFiltered.filter(
-            makePastEventFilter(toTimezone(new Date(), config.timeZone))
+            makePastEventFilter(toTimezone(new Date(), config.timeZone)),
           ),
-    [bookmarkFiltered, showPast, config.timeZone]
+    [bookmarkFiltered, showPast, config.timeZone],
   )
 
   const tagFiltered = useMemo(
     () => pastFiltered.filter(makeTagFilter(disabledTags)),
-    [pastFiltered, disabledTags]
+    [pastFiltered, disabledTags],
   )
 
   const titleFiltered = useMemo(
@@ -174,7 +174,7 @@ export const EventsRoute = observer(() => {
       filterText
         ? tagFiltered.filter(makeTitleFilter(filterText))
         : tagFiltered,
-    [tagFiltered, filterText]
+    [tagFiltered, filterText],
   )
 
   return (
@@ -246,7 +246,7 @@ export const EventsRoute = observer(() => {
               const data = createICS(
                 events,
                 `schedule-${config.icalPrefix || "event"}`,
-                config.icalDomain || window.location.hostname
+                config.icalDomain || window.location.hostname,
               )
               const blob = new Blob([data], { type: "text/calendar" })
               const dataURL = URL.createObjectURL(blob)

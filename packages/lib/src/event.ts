@@ -23,7 +23,7 @@ export const makeEvent = (data: EventT | EventJSON, tz?: string): EventT => {
  * Return whether an event has a start/end time set.
  */
 export const isScheduled = <T extends Partial<Timespan>>(
-  t: T
+  t: T,
 ): t is Scheduled<T> => {
   return t.start != null && t.end != null
 }
@@ -32,9 +32,9 @@ export const isScheduled = <T extends Partial<Timespan>>(
  * Return a filter for events matching the given search string.
  */
 export const makeTitleFilter = (
-  title: string
+  title: string,
 ): ((
-  event: Pick<EventT, "title">
+  event: Pick<EventT, "title">,
 ) => event is Required<Pick<EventT, "title">>) => {
   const lowerTitle = title.trim().toLowerCase()
   return (event): event is Required<Pick<EventT, "title">> =>
@@ -45,7 +45,7 @@ export const makeTitleFilter = (
  * Return a filter for events not containing disabled tags.
  */
 export const makeTagFilter = (
-  tags: Iterable<string>
+  tags: Iterable<string>,
 ): ((event: Pick<EventT, "tags">) => boolean) => {
   const tagSet = new Set(tags)
   return (event) => !event.tags || !event.tags.some((t) => tagSet.has(t))
@@ -55,7 +55,7 @@ export const makeTagFilter = (
  * Return a filter for events that have not passed.
  */
 export const makePastEventFilter = (
-  now: Date
+  now: Date,
 ): ((event: Pick<EventT, "end">) => event is Required<Pick<EventT, "end">>) => {
   return (event): event is Required<Pick<EventT, "end">> =>
     !event.end || isBefore(now, event.end)
@@ -65,7 +65,7 @@ export const makePastEventFilter = (
  * Get a filter function for events beginning in the given {@link Timespan}.
  */
 export const makeDateFilter = (
-  range: Timespan
+  range: Timespan,
 ): (<T extends Pick<EventT, "start">>(event: T) => event is Scheduled<T>) => {
   return <T extends Pick<EventT, "start">>(e: T): e is Scheduled<T> => {
     if (!e.start) {

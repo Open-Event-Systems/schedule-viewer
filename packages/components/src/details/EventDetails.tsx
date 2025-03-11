@@ -56,7 +56,7 @@ export const EventDetails = (props: EventDetailsProps) => {
       className={clsx(
         "EventDetails-root",
         { "EventDetails-large": large },
-        className
+        className,
       )}
       {...other}
     >

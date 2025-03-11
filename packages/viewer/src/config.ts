@@ -23,10 +23,10 @@ export type AppContext = {
 
 export const loadApp = async (
   queryClient: QueryClient,
-  configURL: string
+  configURL: string,
 ): Promise<AppContext> => {
   const config = await queryClient.fetchQuery(
-    getScheduleConfigQueryOptions(configURL)
+    getScheduleConfigQueryOptions(configURL),
   )
 
   let bookmarkAPI: BookmarkAPI | undefined
@@ -46,7 +46,7 @@ export const loadApp = async (
       .getMutationCache()
       .build(
         queryClient,
-        getStoredBookmarksMutationOptions(queryClient, config.id)
+        getStoredBookmarksMutationOptions(queryClient, config.id),
       )
       .execute(selections)
   })
@@ -58,7 +58,7 @@ export const loadApp = async (
 }
 
 export const getScheduleConfigQueryOptions = (
-  url: string
+  url: string,
 ): UseSuspenseQueryOptions<RequiredScheduleConfig> => {
   return {
     queryKey: ["config", { url: url }],

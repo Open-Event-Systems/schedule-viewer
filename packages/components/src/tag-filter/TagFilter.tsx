@@ -30,7 +30,7 @@ export const TagFilter = (props: TagFilterProps) => {
         tag={tag}
         disabledTagsSet={disabledTagsSet}
         onChangeTags={onChangeTags}
-      />
+      />,
     )
   }
 
@@ -58,7 +58,7 @@ const TagFilterTag = ({
       className={clsx(
         "TagFilter-tag",
         { "TagFilter-disabled": !enabled },
-        `Pill-event-tag-${makeId(tag)}`
+        `Pill-event-tag-${makeId(tag)}`,
       )}
       button
       indicator={getIndicator(config.tagIndicators, [tag])}

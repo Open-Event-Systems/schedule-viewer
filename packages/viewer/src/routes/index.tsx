@@ -51,14 +51,14 @@ export const eventsDataRoute = createRoute({
     const [events, localSelections, sessionSelections, counts] =
       await Promise.all([
         queryClient.fetchQuery(
-          getEventsQueryOptions(config.url, config.timeZone)
+          getEventsQueryOptions(config.url, config.timeZone),
         ),
         queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
         queryClient.fetchQuery(
-          getSessionBookmarksQueryOptions(bookmarkAPI, config.id)
+          getSessionBookmarksQueryOptions(bookmarkAPI, config.id),
         ),
         queryClient.fetchQuery(
-          getBookmarkCountsQueryOptions(bookmarkAPI, config.id)
+          getBookmarkCountsQueryOptions(bookmarkAPI, config.id),
         ),
       ])
 
@@ -100,7 +100,7 @@ export const eventRoute = createRoute({
     const { config } = appCtx
 
     const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config.url, config.timeZone)
+      getEventsQueryOptions(config.url, config.timeZone),
     )
 
     const event = events.get(eventId)

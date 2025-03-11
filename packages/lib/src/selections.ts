@@ -3,7 +3,10 @@ import { Selections } from "./types.js"
 
 class _Selections {
   private eventIds: ReadonlySet<string>
-  constructor(eventIds: Iterable<string>, public readonly dateUpdated: Date) {
+  constructor(
+    eventIds: Iterable<string>,
+    public readonly dateUpdated: Date,
+  ) {
     this.eventIds = new Set(eventIds)
   }
 
@@ -30,7 +33,7 @@ class _Selections {
 
 export const makeSelections = (
   eventIds?: Iterable<string>,
-  dateUpdated?: Date
+  dateUpdated?: Date,
 ): Selections => {
   return new _Selections(eventIds ?? [], dateUpdated ?? new Date(0))
 }

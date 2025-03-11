@@ -13,7 +13,7 @@ import {
 
 export const getEventsQueryOptions = (
   url: string,
-  timeZone: string
+  timeZone: string,
 ): UseSuspenseQueryOptions<EventStore> => {
   return {
     queryKey: ["events", { url: url }],

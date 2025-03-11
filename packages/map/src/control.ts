@@ -112,7 +112,7 @@ export class MapControl {
 
   syncLevels() {
     const levelEls = (this.svgElement?.getElementsByClassName(
-      MAP_LEVEL_CLASS
+      MAP_LEVEL_CLASS,
     ) ?? []) as HTMLCollectionOf<SVGElement>
     for (const el of levelEls) {
       el.style.display = "" // hack: unset any inline display styles
@@ -132,7 +132,7 @@ export class MapControl {
 
   syncLayers() {
     const layerEls = (this.svgElement?.getElementsByClassName(
-      MAP_LAYER_CLASS
+      MAP_LAYER_CLASS,
     ) ?? []) as HTMLCollectionOf<SVGElement>
     for (const el of layerEls) {
       el.style.display = "" // hack: unset any inline display styles
