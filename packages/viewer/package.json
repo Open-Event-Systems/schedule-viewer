@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "webpack-dev-server --mode=development",
+    "build": "tsc --build && webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

@@ -1,4 +1,7 @@
 {
+  "env": {
+    "targets": "since 2017"
+  },
   "jsc": {
     "parser": {
       "syntax": "typescript"
@@ -7,8 +10,7 @@
       "react": {
         "runtime": "automatic"
       }
-    },
-    "target": "es5"
+    }
   },
   "minify": false
 }

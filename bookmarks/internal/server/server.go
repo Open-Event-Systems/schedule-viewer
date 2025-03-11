@@ -11,14 +11,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/phuslu/lru"
 )
 
 func Run(port int, db *db.DB, config *config.Config) {
 
 	serverCfg := server{
-		db:        db,
-		config:    config,
-		validator: validator.NewValidator(config.ScheduleURLs),
+		db:         db,
+		config:     config,
+		validator:  validator.NewValidator(config.ScheduleURLs),
+		countCache: lru.NewTTLCache[string, map[string]int](16),
 	}
 
 	r := chi.NewRouter()

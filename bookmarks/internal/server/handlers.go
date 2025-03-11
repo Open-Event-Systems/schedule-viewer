@@ -6,18 +6,21 @@ import (
 	"bookmarks/internal/selection"
 	"bookmarks/internal/structs"
 	"bookmarks/internal/validator"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/phuslu/lru"
 )
 
 type server struct {
-	db        *db.DB
-	config    *config.Config
-	validator *validator.Validator
+	db         *db.DB
+	config     *config.Config
+	validator  *validator.Validator
+	countCache *lru.TTLCache[string, map[string]int]
 }
 
 var emptySelectionResponse = func() *structs.SessionBookmarksResponse {
@@ -138,7 +141,20 @@ func (s *server) getSessionSelectionHandler(w http.ResponseWriter, req *http.Req
 func (s *server) getEventSelectionCountsHandler(w http.ResponseWriter, req *http.Request) {
 	scheduleId := chi.URLParam(req, "scheduleId")
 
-	res, err := s.db.GetEventSelectionCounts(scheduleId)
+	if _, ok := s.config.ScheduleURLs[scheduleId]; !ok {
+		httpError(w, http.StatusNotFound)
+		return
+	}
+
+	res, err, _ := s.countCache.GetOrLoad(req.Context(), scheduleId, func(ctx context.Context, key string) (map[string]int, time.Duration, error) {
+		res, err := s.db.GetEventSelectionCounts(key)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		return res, 60 * time.Second, nil
+	})
+
 	if err != nil {
 		httpError(w, http.StatusInternalServerError)
 		return

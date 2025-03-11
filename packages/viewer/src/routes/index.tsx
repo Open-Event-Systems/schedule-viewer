@@ -18,6 +18,7 @@ import {
 } from "../bookmarks.js"
 import { AppContext } from "../config.js"
 import { chooseNewer } from "@open-event-systems/schedule-lib"
+import { Box, Flex, Loader, Skeleton } from "@mantine/core"
 
 export type RouterContext = {
   configURL: string
@@ -77,6 +78,15 @@ export const eventsDataRoute = createRoute({
           <Outlet />
         </BookmarkAPIProvider>
       </ScheduleConfigProvider>
+    )
+  },
+  pendingComponent() {
+    return (
+      <>
+        <Flex mih={500} justify="center" align="center">
+          <Loader type="dots" />
+        </Flex>
+      </>
     )
   },
 })

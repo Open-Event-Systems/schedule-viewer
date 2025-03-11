@@ -45,10 +45,12 @@ export default (env, argv) => {
       new MiniCssExtractPlugin({
         filename: "schedule.css",
       }),
-      new HtmlWebpackPlugin({
-        template: "./index.html",
-        title: "Schedule",
-      }),
+      isProd
+        ? false
+        : new HtmlWebpackPlugin({
+            template: "./index.html",
+            title: "Schedule",
+          }),
     ],
     devServer: {
       port: 9000,
