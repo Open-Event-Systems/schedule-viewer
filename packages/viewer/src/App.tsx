@@ -2,10 +2,20 @@ import { createHashHistory, RouterProvider } from "@tanstack/react-router"
 import { createContext, useState } from "react"
 import { router } from "./router.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
+import {
+  DEFAULT_THEME,
+  MantineProvider,
+  MantineThemeOverride,
+} from "@mantine/core"
 import { loadApp } from "./config.js"
 
-export const App = ({ configURL }: { configURL: string }) => {
+export const App = ({
+  configURL,
+  theme,
+}: {
+  configURL: string
+  theme: MantineThemeOverride
+}) => {
   const [history] = useState(() => {
     const history = createHashHistory()
     return history
@@ -28,8 +38,13 @@ export const App = ({ configURL }: { configURL: string }) => {
     }),
   )
 
+  const fullTheme = {
+    DEFAULT_THEME,
+    ...theme,
+  }
+
   return (
-    <MantineProvider theme={DEFAULT_THEME}>
+    <MantineProvider theme={fullTheme}>
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
