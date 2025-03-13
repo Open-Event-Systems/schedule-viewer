@@ -46,6 +46,7 @@ export interface ScheduleConfig {
   readonly url?: string
   readonly title?: string
   readonly dayChangeHour?: number
+  readonly binMinutes?: number
   readonly timeZone?: string
   readonly tagIndicators?: readonly TagIndicatorEntry[]
 }

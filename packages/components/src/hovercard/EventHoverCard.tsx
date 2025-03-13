@@ -24,6 +24,7 @@ export const EventHoverCard = (props: EventHoverCardProps) => {
   return (
     <HoverCard
       classNames={{ dropdown: "EventHoverCard-dropdown" }}
+      position="top"
       withArrow
       {...other}
     >

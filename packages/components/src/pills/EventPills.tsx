@@ -15,6 +15,7 @@ import clsx from "clsx"
 
 export type EventPillsProps = PillsProps & {
   events: Iterable<Event>
+  binMinutes?: number
   getHref?: (event: Event) => string | null | undefined
   getIsBookmarked?: (event: Event) => boolean | undefined
   setBookmarked?: (event: Event, set: boolean) => void
@@ -26,6 +27,7 @@ export const EventPills = (props: EventPillsProps) => {
   const {
     className,
     events,
+    binMinutes = 30,
     getHref,
     getIsBookmarked,
     setBookmarked,
@@ -36,7 +38,10 @@ export const EventPills = (props: EventPillsProps) => {
 
   const config = useScheduleConfig()
 
-  const bins = useMemo(() => makeBins(events, config.timeZone), [events])
+  const bins = useMemo(
+    () => makeBins(events, binMinutes, config.timeZone),
+    [events],
+  )
 
   const binEls = useMemo(() => {
     const res: ReactNode[] = []
@@ -88,12 +93,13 @@ export const EventPills = (props: EventPillsProps) => {
 
 const makeBins = (
   events: Iterable<Event>,
+  binMinutes: number,
   tz: string,
 ): Map<string, [Date, Event[]]> => {
   const map = new Map<string, [Date, Event[]]>()
   for (const event of events) {
     if (isScheduled(event)) {
-      const date = binDate(event.start, tz)
+      const date = binDate(event.start, binMinutes, tz)
       const binStr = formatISO(date)
       let bin = map.get(binStr)
 
@@ -109,13 +115,14 @@ const makeBins = (
   return map
 }
 
-const binDate = (d: Date, tz: string): Date => {
+const binDate = (d: Date, binMinutes: number, tz: string): Date => {
+  const roundedMinutes = Math.floor(d.getMinutes() / binMinutes) * binMinutes
   const rounded = new TZDate(
     d.getFullYear(),
     d.getMonth(),
     d.getDate(),
     d.getHours(),
-    d.getMinutes() >= 30 ? 30 : 0,
+    roundedMinutes,
     tz,
   )
 

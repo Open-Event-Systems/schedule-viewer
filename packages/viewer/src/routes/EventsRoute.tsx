@@ -200,6 +200,7 @@ export const EventsRoute = observer(() => {
           {titleFiltered.length > 0 ? (
             <PillsView
               events={titleFiltered}
+              binMinutes={config.binMinutes}
               getIsBookmarked={getIsBookmarked}
               setBookmarked={setBookmarked}
               getBookmarkCount={getBookmarkCount}
@@ -269,6 +270,7 @@ EventsRoute.displayName = "EventsRoute"
 
 type ViewProps = {
   events: readonly Scheduled<Event>[]
+  binMinutes?: number
   getIsBookmarked: (event: Event) => boolean
   setBookmarked: (event: Event, set: boolean) => void
   getBookmarkCount: (event: Event) => number | null | undefined
@@ -279,6 +281,7 @@ type ViewProps = {
 const PillsView = (props: ViewProps) => {
   const {
     events,
+    binMinutes,
     getIsBookmarked,
     setBookmarked,
     getBookmarkCount,
@@ -288,6 +291,7 @@ const PillsView = (props: ViewProps) => {
   return (
     <EventPills
       events={events}
+      binMinutes={binMinutes}
       getIsBookmarked={getIsBookmarked}
       setBookmarked={setBookmarked}
       getBookmarkCount={getBookmarkCount}
