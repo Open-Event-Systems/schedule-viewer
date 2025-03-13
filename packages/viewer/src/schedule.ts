@@ -18,10 +18,10 @@ export const getEventsQueryOptions = (
   return {
     queryKey: ["events", { url: url }],
     async queryFn() {
-      const json = await wretch(url).get().json<EventJSON[]>()
+      const json = await wretch(url).get().json<{ events: EventJSON[] }>()
       const events: Event[] = []
 
-      for (const eventJSON of json) {
+      for (const eventJSON of json.events) {
         try {
           events.push(makeEvent(eventJSON, timeZone))
         } catch (e) {

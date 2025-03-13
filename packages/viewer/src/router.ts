@@ -14,6 +14,7 @@ const routeTree = rootRoute.addChildren([
 export const router = createRouter({
   routeTree,
   context: {} as RouterContext,
+  scrollRestoration: true,
   defaultPendingComponent: () => "Pending",
 })
 

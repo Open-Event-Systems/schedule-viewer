@@ -3,7 +3,7 @@ import { App } from "./App.js"
 
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-components/styles.scss"
-import { MantineThemeOverride } from "@mantine/core"
+import { MantineColorScheme, MantineThemeOverride } from "@mantine/core"
 
 document.addEventListener("DOMContentLoaded", () => {
   const scheduleEl = document.querySelector("[data-schedule]")
@@ -21,6 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const app = (
       <App
         configURL={scheduleEl.getAttribute("data-schedule") ?? ""}
+        colorScheme={
+          (scheduleEl.getAttribute("data-color-scheme") || undefined) as
+            | MantineColorScheme
+            | undefined
+        }
         theme={theme}
       />
     )

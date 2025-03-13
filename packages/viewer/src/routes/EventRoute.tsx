@@ -31,9 +31,15 @@ export const EventRoute = observer(() => {
     [selections, updateSelections],
   )
 
+  const scroll = useCallback((el: HTMLElement | null) => {
+    if (el) {
+      el.scrollIntoView()
+    }
+  }, [])
+
   return (
     <>
-      <Anchor component={Link} to={eventsRoute.to} size="sm">
+      <Anchor component={Link} to={eventsRoute.to} size="sm" ref={scroll}>
         &laquo; Back to schedule
       </Anchor>
       <EventDetails

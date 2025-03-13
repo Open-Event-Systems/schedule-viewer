@@ -4,6 +4,7 @@ import { router } from "./router.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   DEFAULT_THEME,
+  MantineColorScheme,
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core"
@@ -12,9 +13,11 @@ import { loadApp } from "./config.js"
 export const App = ({
   configURL,
   theme,
+  colorScheme,
 }: {
   configURL: string
-  theme: MantineThemeOverride
+  theme?: MantineThemeOverride
+  colorScheme?: MantineColorScheme
 }) => {
   const [history] = useState(() => {
     const history = createHashHistory()
@@ -44,7 +47,7 @@ export const App = ({
   }
 
   return (
-    <MantineProvider theme={fullTheme}>
+    <MantineProvider theme={fullTheme} defaultColorScheme={colorScheme}>
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
