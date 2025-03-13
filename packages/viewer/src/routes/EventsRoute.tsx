@@ -217,7 +217,7 @@ export const EventsRoute = observer(() => {
         <Stack align="end" gap="xs">
           <Filter
             text={filterText}
-            tags={allEvents.tags}
+            tags={Array.from(allEvents.tags).sort()}
             disabledTags={disabledTags}
             showPastEvents={showPast}
             onChangeText={(text: string) => setFilter({ ...filter, text })}
