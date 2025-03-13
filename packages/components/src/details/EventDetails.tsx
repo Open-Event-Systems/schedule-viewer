@@ -21,6 +21,7 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import { Fragment, ReactElement, ReactNode } from "react"
 import { Markdown } from "../markdown/Markdown.js"
+import { IconText } from "../icon-text/icon-text.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -44,7 +45,9 @@ export const EventDetails = (props: EventDetailsProps) => {
   const timeEl =
     event.start && event.end ? renderTime(event.start, event.end) : null
   const locationEl = event.location ? (
-    <IconText icon={<IconMapPin size={18} />}>{event.location}</IconText>
+    <IconText icon={<IconMapPin size={18} />} c="dimmed">
+      {event.location}
+    </IconText>
   ) : null
   const hostsEl =
     event.hosts && event.hosts.length > 0 ? renderHosts(event.hosts) : null
@@ -99,28 +102,11 @@ export const EventDetails = (props: EventDetailsProps) => {
   )
 }
 
-const IconText = ({
-  children,
-  icon,
-}: {
-  children?: ReactNode
-  icon?: ReactNode
-}) => {
-  return (
-    <Flex align="center" c="dimmed" gap={4}>
-      {icon}
-      <Text size="sm" lh={1}>
-        {children}
-      </Text>
-    </Flex>
-  )
-}
-
 const renderTime = (start: Date, end: Date): ReactNode => {
   const startStr = format(start, "EEE h:mm aaa")
   const endStr = format(end, "h:mm aaa")
   return (
-    <IconText icon={<IconClockHour4 size={18} />}>
+    <IconText icon={<IconClockHour4 size={18} />} c="dimmed">
       {startStr} &ndash; {endStr}
     </IconText>
   )
@@ -137,7 +123,11 @@ const renderHosts = (h: readonly (string | Host)[]): ReactNode => {
     hosts.push(<Fragment key={i}>{el}</Fragment>)
   })
 
-  return <IconText icon={<IconUser size={18} />}>{hosts}</IconText>
+  return (
+    <IconText icon={<IconUser size={18} />} c="dimmed">
+      {hosts}
+    </IconText>
+  )
 }
 
 const renderHost = (h: string | Host): ReactElement => {
@@ -167,5 +157,9 @@ const renderTags = (tags: readonly string[]): ReactElement => {
     els.push(t)
   })
 
-  return <IconText icon={<IconTag size={18} />}>{els}</IconText>
+  return (
+    <IconText icon={<IconTag size={18} />} c="dimmed">
+      {els}
+    </IconText>
+  )
 }

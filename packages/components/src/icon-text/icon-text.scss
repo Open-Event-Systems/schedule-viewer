@@ -1,0 +1,15 @@
+.IconText-root {
+  display: flex;
+  align-items: center;
+}
+
+.IconText-icon {
+  flex: 0 0 0%;
+  line-height: 0;
+}
+
+.IconText-text {
+  flex: 1 1 100%;
+  margin-left: 4px;
+  line-height: 1;
+}
