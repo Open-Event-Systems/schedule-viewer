@@ -1,6 +1,6 @@
 import { Box, BoxProps, Button, Stack, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { ReactNode, useCallback, useEffect, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { MapControl } from "../control.js"
 import { observer } from "mobx-react-lite"
 import { MapLevel } from "../types.js"
@@ -8,7 +8,6 @@ import {
   ReactZoomPanPinchContentRef,
   TransformComponent,
   TransformWrapper,
-  useControls,
 } from "react-zoom-pan-pinch"
 
 export type MapViewerProps = {
@@ -18,23 +17,8 @@ export type MapViewerProps = {
 
 export const MapViewer = observer((props: MapViewerProps) => {
   const { className, src, control, ...other } = useProps("MapViewer", {}, props)
-  // const [el, setEl] = useState<SVGSVGElement | null>(null)
   const [svgData, setSVGData] = useState<string | null>(null)
   const [ctx, setCtx] = useState<ReactZoomPanPinchContentRef | null>(null)
-
-  // useEffect(() => {
-  //   if (el) {
-  //     const promise = control.load(el)
-  //     return () => {
-  //       promise.then((dispose) => dispose())
-  //     }
-  //   }
-  // }, [control, el])
-
-  // const controls = useControls
-
-  // const [svgData, setSVGData] = useState<string | null>(null)
-  // const [wrapperEl, setWrapperEl] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
     fetch(src)
@@ -47,13 +31,18 @@ export const MapViewer = observer((props: MapViewerProps) => {
   }, [src])
 
   useEffect(() => {
-    if (svgData && ctx?.instance.contentComponent) {
-      ctx.instance.contentComponent.innerHTML = svgData
-      const els = ctx.instance.contentComponent.getElementsByTagName("svg")
+    const el = ctx?.instance.contentComponent
+    if (svgData && el) {
+      el.innerHTML = svgData
+      const els = el.getElementsByTagName("svg")
       if (els.length > 0) {
-        // docs say you can't zoom to svgelement, but appears to work?
-        // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-        control.setup(els[0] as SVGSVGElement, ctx)
+        const focusFunc = (el: SVGElement) => {
+          // docs say you can't zoom to svgelement, but appears to work?
+          // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
+          ctx.zoomToElement(el as Element as HTMLElement)
+        }
+
+        control.setup(els[0] as SVGSVGElement, focusFunc)
       }
     }
   }, [control, svgData, ctx])
