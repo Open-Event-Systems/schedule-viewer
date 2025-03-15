@@ -5,6 +5,7 @@ import "./Map.scss"
 import svgMap from "../../../../map/ao-map.svg"
 import { useEffect, useState } from "react"
 import { MapControl } from "../control.js"
+import { action } from "mobx"
 
 const meta: Meta<typeof MapViewer> = {
   component: MapViewer,
@@ -23,21 +24,31 @@ export const Default: StoryObj<typeof MapViewer> = {
   render(args) {
     const [control] = useState(
       () =>
-        new MapControl({
-          src: svgMap,
-          levels: [
-            { id: "lobby", title: "Lobby" },
-            { id: "lower", title: "Lower Level" },
-          ],
-          defaultLevel: "lobby",
-          layers: [{ id: "background", title: "Background" }],
-        }),
+        new MapControl(
+          {
+            src: svgMap,
+            levels: [
+              { id: "lobby", title: "Lobby" },
+              { id: "lower", title: "Lower Level" },
+            ],
+            defaultLevel: "lobby",
+            layers: [{ id: "background", title: "Background" }],
+          },
+          (id) => {
+            control.highlight = id
+            if (id) {
+              control.zoomTo(id)
+            }
+          },
+        ),
     )
 
     useEffect(() => {
-      control.ready.then((control) => {})
+      return () => {
+        control.dispose()
+      }
     }, [control])
 
-    return <MapViewer {...args} control={control} />
+    return <MapViewer {...args} src={svgMap} control={control} />
   },
 }

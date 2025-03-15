@@ -20,7 +20,7 @@
     display: initial;
   }
 
-  .Map-isometric & {
+  .Map-isometric-transform & {
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
     transform: translate(50%, 50%) translateY(var(--map-isometric-y-offset))
       translateX(var(--map-isometric-x-offset))
@@ -35,6 +35,19 @@
   }
 }
 
+.Map-isometric .Map-isometric-hidden {
+  display: none;
+}
+
+.Map-isometric .Map-level {
+  display: initial;
+}
+
+.Map-click {
+  opacity: 0;
+  cursor: pointer;
+}
+
 // Specific map element styles
 
 .Map-level-id-lobby {
@@ -42,4 +55,29 @@
 }
 .Map-level-id-lower {
   --map-isometric-y-offset: 8000px;
+}
+
+// Example map styles
+
+@keyframes pulse {
+  0% {
+    // fill: currentColor;
+  }
+
+  50% {
+    fill: #66af;
+  }
+
+  100% {
+    // fill: currentColor;
+  }
+}
+
+.Map-area {
+  &.Map-highlight {
+    animation-name: pulse;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
 }
