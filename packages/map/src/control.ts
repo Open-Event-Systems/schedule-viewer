@@ -22,14 +22,19 @@ export const MAP_CLASSES = {
 export class MapControl {
   private mapEl: SVGSVGElement | null = null
   private focusFunc: ((el: SVGElement) => void) | null = null
+  private clickHandler: ((id: string | null) => void) | null = null
   public level: string
   public hiddenLayers: ReadonlySet<string> = new Set()
   public isometric = false
   public highlight: string | null = null
   private disposeFuncs: (() => void)[] = []
 
-  constructor(public config: MapConfig) {
+  constructor(
+    public config: MapConfig,
+    clickHandler?: (id: string | null) => void,
+  ) {
     this.level = config.defaultLevel
+    this.clickHandler = clickHandler ?? null
     makeAutoObservable<this, "mapEl" | "focusFunc" | "hiddenLayers">(this, {
       config: false,
       mapEl: observable.ref,
@@ -87,15 +92,19 @@ export class MapControl {
     this.isometric = isometric
   }
 
+  setHighlight(highlight: string | null) {
+    this.highlight = highlight
+  }
+
   setup(
     element: SVGSVGElement,
     focusFunc: (el: SVGElement) => void,
   ): () => void {
     const disposeFuncs: (() => void)[] = []
 
-    element.addEventListener("click", this.clickHandler)
+    element.addEventListener("click", this.clickEventHandler)
     disposeFuncs.push(() =>
-      element.removeEventListener("click", this.clickHandler),
+      element.removeEventListener("click", this.clickEventHandler),
     )
 
     element.addEventListener("transitionend", this.transitionHandler)
@@ -115,7 +124,7 @@ export class MapControl {
     return disposer
   }
 
-  private clickHandler = (event: MouseEvent) => {
+  private clickEventHandler = (event: MouseEvent) => {
     const el = event.target
     if (el instanceof SVGElement && el.classList.contains(MAP_CLASSES.click)) {
       const clickIds = Array.from(el.classList, (cls) =>
@@ -124,10 +133,10 @@ export class MapControl {
       const clickId = clickIds.find((cls) => !!cls)
       if (clickId) {
         event.stopPropagation()
-        this.highlight = clickId
+        this.clickHandler && this.clickHandler(clickId)
       }
     } else {
-      this.highlight = null
+      this.clickHandler && this.clickHandler(null)
     }
   }
 

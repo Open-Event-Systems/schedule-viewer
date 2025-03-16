@@ -23,15 +23,20 @@ export const Default: StoryObj<typeof MapViewer> = {
   render(args) {
     const [control] = useState(
       () =>
-        new MapControl({
-          src: svgMap,
-          levels: [
-            { id: "lobby", title: "Lobby" },
-            { id: "lower", title: "Lower Level" },
-          ],
-          defaultLevel: "lobby",
-          layers: [{ id: "background", title: "Background" }],
-        }),
+        new MapControl(
+          {
+            src: svgMap,
+            levels: [
+              { id: "lobby", title: "Lobby" },
+              { id: "lower", title: "Lower Level" },
+            ],
+            defaultLevel: "lobby",
+            layers: [{ id: "background", title: "Background" }],
+          },
+          (id: string | null) => {
+            control.setHighlight(id)
+          },
+        ),
     )
 
     useEffect(() => {
