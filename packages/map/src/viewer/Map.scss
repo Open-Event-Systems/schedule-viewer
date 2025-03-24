@@ -13,8 +13,8 @@
 .Map-level {
   display: none;
   transition: transform var(--map-isometric-transition-duration) ease-in-out;
-  transform: translate(50%, 50%) translateY(0px) translateX(0px) rotateX(0deg)
-    rotate(0deg) translate(-50%, -50%);
+  transform: translate(50%, 50%) translateY(0px) translateX(0px)
+    rotate3d(1, 0, 0, 0deg) rotate(0deg) translate(-50%, -50%);
 
   &.Map-visible {
     display: initial;
@@ -24,7 +24,7 @@
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
     transform: translate(50%, 50%) translateY(var(--map-isometric-y-offset))
       translateX(var(--map-isometric-x-offset))
-      rotateX(var(--map-isometric-x-rotation))
+      rotate3d(1, 0, 0, var(--map-isometric-x-rotation))
       rotate(var(--map-isometric-rotation)) translate(-50%, -50%);
   }
 }
@@ -50,11 +50,24 @@
 
 // Specific map element styles
 
-.Map-level-id-lobby {
-  --map-isometric-y-offset: -6000px;
+.Map-level-id-3f {
+  --map-isometric-y-offset: -85in;
 }
+
+.Map-level-id-2f {
+  --map-isometric-y-offset: -46in;
+}
+
+.Map-level-id-lobby {
+  --map-isometric-y-offset: -15in;
+}
+
 .Map-level-id-lower {
-  --map-isometric-y-offset: 8000px;
+  --map-isometric-y-offset: 30in;
+}
+
+.height-indicator {
+  display: none;
 }
 
 // Example map styles
@@ -81,3 +94,107 @@
     animation-timing-function: linear;
   }
 }
+
+// .height-indicator-bottom {
+//   transform-box: content-box;
+//   transition: transform var(--map-isometric-transition-duration) ease-in-out;
+//   transform: translate(50%, 100%) rotate3d(1, 1, 0, 0deg) rotate(0deg)
+//     translate(-50%, -100%);
+// }
+
+// .height-indicator-top {
+//   transform-box: content-box;
+//   transition: transform var(--map-isometric-transition-duration) ease-in-out;
+//   transform: translate(50%, 0%) rotate3d(1, 1, 0, 0deg) rotate(0deg)
+//     translate(-50%, 0%);
+// }
+
+// .Map-isometric .height-indicator-bottom {
+//   transform: translate(50%, 100%)
+//     rotate3d(1, 1, 0, calc(-1 * var(--map-isometric-x-rotation)))
+//     rotate(calc(-1 * var(--map-isometric-rotation))) translate(-50%, -100%);
+// }
+
+// .Map-isometric .height-indicator-top {
+//   transform: translate(50%, 0%)
+//     rotate3d(1, 1, 0, calc(-1 * var(--map-isometric-x-rotation)))
+//     rotate(calc(-1 * var(--map-isometric-rotation))) translate(-50%, 0%);
+// }
+
+// .Map-level {
+//   filter: drop-shadow(0.25in 0.25in 1in #000000aa);
+// }
+
+// Stair effects
+
+// .fyr-stairs-1f {
+//   --stair-offset-base-y: 86.788574px;
+//   --stair-offset: -0.5in;
+// }
+
+// .fyr-stairs-1f > * {
+//   transition: transform var(--map-isometric-transition-duration) ease-in-out;
+// }
+
+// .Map-isometric .fyr-stairs-1f > *:nth-child(1) {
+//   --stair-n: 0;
+// }
+
+// .Map-isometric .fyr-stairs-1f > *:nth-child(2) {
+//   --stair-n: 1;
+// }
+
+// .Map-isometric .fyr-stairs-1f > *:nth-child(3) {
+//   --stair-n: 2;
+// }
+
+// .Map-isometric .fyr-stairs-1f > *:nth-child(4) {
+//   --stair-n: 3;
+// }
+
+// .Map-isometric .fyr-stairs-1f > *:nth-child(5) {
+//   --stair-n: 4;
+// }
+
+// .Map-isometric .fyr-stairs-1f > * {
+//   transform: translate(
+//     calc(var(--stair-n) * var(--stair-offset)),
+//     calc(var(--stair-n) * (var(--stair-offset) + var(--stair-offset-base-y)))
+//   );
+// }
+
+// .fyr-stairs-2f {
+//   --stair-offset-base-y: 86.788574px;
+//   --stair-offset: 0.5in;
+// }
+
+// .fyr-stairs-2f > * {
+//   transition: transform var(--map-isometric-transition-duration) ease-in-out;
+// }
+
+// .Map-isometric .fyr-stairs-2f > *:nth-child(1) {
+//   --stair-n: 0;
+// }
+
+// .Map-isometric .fyr-stairs-2f > *:nth-child(2) {
+//   --stair-n: 1;
+// }
+
+// .Map-isometric .fyr-stairs-2f > *:nth-child(3) {
+//   --stair-n: 2;
+// }
+
+// .Map-isometric .fyr-stairs-2f > *:nth-child(4) {
+//   --stair-n: 3;
+// }
+
+// .Map-isometric .fyr-stairs-2f > *:nth-child(5) {
+//   --stair-n: 4;
+// }
+
+// .Map-isometric .fyr-stairs-2f > * {
+//   transform: translate(
+//     calc(var(--stair-n) * var(--stair-offset)),
+//     calc(var(--stair-n) * (var(--stair-offset) + var(--stair-offset-base-y)))
+//   );
+// }
