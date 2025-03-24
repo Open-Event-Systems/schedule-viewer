@@ -66,10 +66,6 @@
   --map-isometric-y-offset: 30in;
 }
 
-.height-indicator {
-  display: none;
-}
-
 // Example map styles
 
 @keyframes pulse {
@@ -93,6 +89,10 @@
     animation-iteration-count: infinite;
     animation-timing-function: linear;
   }
+}
+
+.height-indicator {
+  display: none;
 }
 
 // .height-indicator-bottom {
