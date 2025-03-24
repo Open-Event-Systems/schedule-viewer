@@ -99,6 +99,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
       }, 50)
     } else if (el && !isometric) {
       el.classList.remove(MAP_CLASSES.isometricTransform)
+      el.classList.remove(MAP_CLASSES.isometricTransformFinished)
     }
   }, [el, isometric])
 
@@ -108,6 +109,8 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
       const handler = () => {
         if (!isometricRef.current) {
           el.classList.remove(MAP_CLASSES.isometric)
+        } else {
+          el.classList.add(MAP_CLASSES.isometricTransformFinished)
         }
       }
       el.addEventListener("transitionend", handler)

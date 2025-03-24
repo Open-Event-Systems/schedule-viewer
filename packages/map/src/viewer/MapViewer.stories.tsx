@@ -29,6 +29,8 @@ export const Default: StoryObj<typeof MapViewer> = {
       src: svgMap,
       layers: [{ id: "background", title: "Background" }],
       levels: [
+        { id: "3f", title: "3F" },
+        { id: "2f", title: "2F" },
         { id: "lobby", title: "Lobby" },
         { id: "lower", title: "Lower Level" },
       ],

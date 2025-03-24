@@ -11,6 +11,7 @@ export const MAP_CLASSES = {
   layerPrefix: "Map-layer-id-",
   isometric: "Map-isometric",
   isometricTransform: "Map-isometric-transform",
+  isometricTransformFinished: "Map-isometric-transform-finished",
   visible: "Map-visible",
   hidden: "Map-hidden",
   highlight: "Map-highlight",
