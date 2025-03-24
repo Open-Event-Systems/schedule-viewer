@@ -1,16 +1,20 @@
 import HtmlWebpackPlugin from "html-webpack-plugin"
 import path from "path"
 import MiniCssExtractPlugin from "mini-css-extract-plugin"
+import { GenerateSW } from "workbox-webpack-plugin"
+import CopyPlugin from "copy-webpack-plugin"
 
 export default (env, argv) => {
   const isProd = argv.mode != "development"
   /** @type import("webpack").Configuration */
   const config = {
     mode: isProd ? "production" : "development",
-    entry: "./src/main.tsx",
+    entry: {
+      schedule: "./src/main.tsx",
+    },
     output: {
       path: path.resolve("./dist"),
-      filename: "schedule.js",
+      filename: "js/[name].[contenthash].js",
       clean: true,
     },
     module: {
@@ -42,16 +46,84 @@ export default (env, argv) => {
       },
     },
     plugins: [
-      new MiniCssExtractPlugin({
-        filename: "schedule.css",
+      new CopyPlugin({
+        patterns: [
+          {
+            from: "schedule.webmanifest",
+            to: "schedule.webmanifest",
+          },
+          {
+            from: "config.js",
+            to: "config.js",
+            info: {
+              minimized: false,
+            },
+          },
+          {
+            from: "theme.js",
+            to: "theme.js",
+            info: {
+              minimized: false,
+            },
+          },
+          {
+            from: "custom.css",
+            to: "custom.css",
+          },
+        ],
       }),
-      isProd
-        ? false
-        : new HtmlWebpackPlugin({
-            template: "./index.html",
-            title: "Schedule",
-          }),
+      new GenerateSW({
+        cacheId: "schedule",
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+        mode: isProd ? "production" : "development",
+        exclude: [
+          /\.map$/,
+          /^LICENSE.*\.txt$/,
+          /^manifest.*\.js$/,
+          /theme\.js$/,
+          /config\.js$/,
+          /custom\.css$/,
+        ],
+        runtimeCaching: [
+          {
+            urlPattern: /theme\.js$/,
+            handler: "NetworkFirst",
+          },
+          {
+            urlPattern: /config\.js$/,
+            handler: "NetworkFirst",
+          },
+          {
+            urlPattern: /custom\.css$/,
+            handler: "NetworkFirst",
+          },
+          {
+            urlPattern: /\.json$/,
+            handler: "NetworkFirst",
+          },
+        ],
+        skipWaiting: true,
+        maximumFileSizeToCacheInBytes: isProd ? undefined : 20000000,
+        swDest: "sw.js",
+      }),
+      new MiniCssExtractPlugin({
+        filename: "css/[name].[contenthash].css",
+      }),
+      new HtmlWebpackPlugin({
+        template: "./index.html",
+        title: "Schedule",
+        chunks: ["config", "schedule"],
+        minify: false,
+        inject: false,
+      }),
     ],
+    optimization: {
+      splitChunks: {
+        chunks: "all",
+      },
+    },
     devServer: {
       port: 9000,
     },

@@ -3,12 +3,15 @@ import {
   eventRoute,
   eventsDataRoute,
   eventsRoute,
+  layoutRoute,
   rootRoute,
   RouterContext,
 } from "./routes/index.js"
 
 const routeTree = rootRoute.addChildren([
-  eventsDataRoute.addChildren([eventsRoute, eventRoute]),
+  eventsDataRoute.addChildren([
+    layoutRoute.addChildren([eventsRoute, eventRoute]),
+  ]),
 ])
 
 export const router = createRouter({

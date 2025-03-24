@@ -2,52 +2,40 @@ import { QueryClient } from "@tanstack/react-query"
 import {
   createRootRouteWithContext,
   createRoute,
+  lazyRouteComponent,
   notFound,
   Outlet,
 } from "@tanstack/react-router"
 import { getEventsQueryOptions } from "../schedule.js"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
-import { EventsRoute } from "./EventsRoute.js"
-import { EventRoute } from "./EventRoute.js"
-import { Layout } from "../Layout.js"
+import { Layout } from "../components/Layout.js"
 import {
   BookmarkAPIProvider,
   getBookmarkCountsQueryOptions,
   getSessionBookmarksQueryOptions,
   getStoredBookmarksQueryOptions,
 } from "../bookmarks.js"
-import { AppContext } from "../config.js"
-import { chooseNewer } from "@open-event-systems/schedule-lib"
-import { Box, Flex, Loader, Skeleton } from "@mantine/core"
+import {
+  BookmarkAPI,
+  chooseNewer,
+  RequiredScheduleConfig,
+} from "@open-event-systems/schedule-lib"
+import { Flex, Loader } from "@mantine/core"
+import { Loading } from "../components/Loading.js"
 
 export type RouterContext = {
-  configURL: string
+  config: RequiredScheduleConfig
   queryClient: QueryClient
-  appContextPromise: Promise<AppContext>
+  bookmarkAPI?: BookmarkAPI
 }
 
-export const rootRoute = createRootRouteWithContext<RouterContext>()({
-  component: Layout,
-})
+export const rootRoute = createRootRouteWithContext<RouterContext>()({})
 
 export const eventsDataRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "events",
-  async beforeLoad({ context }) {
-    const { appContextPromise } = context
-    const appCtx = await appContextPromise
-
-    return {
-      config: appCtx.config,
-      bookmarkAPI: appCtx.bookmarkAPI,
-    }
-  },
   async loader({ context }) {
-    const { queryClient, appContextPromise } = context
-
-    // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await appContextPromise
-    const { config, bookmarkAPI } = appCtx
+    const { config, queryClient, bookmarkAPI } = context
 
     const [events, localSelections, sessionSelections, counts] =
       await Promise.all([
@@ -80,35 +68,31 @@ export const eventsDataRoute = createRoute({
       </ScheduleConfigProvider>
     )
   },
-  pendingComponent() {
-    return (
-      <>
-        <Flex mih={500} justify="center" align="center">
-          <Loader type="dots" />
-        </Flex>
-      </>
-    )
-  },
+  pendingComponent: Loading,
+})
+
+export const layoutRoute = createRoute({
+  getParentRoute: () => eventsDataRoute,
+  id: "layoutRoute",
+  component: Layout,
 })
 
 export const eventsRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => layoutRoute,
   path: "/",
-  component: EventsRoute,
+  component: lazyRouteComponent(
+    () => import("./EventsRoute.js"),
+    "EventsRoute",
+  ),
 })
 
 export const eventRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => layoutRoute,
   path: "events/$eventId",
-  component: EventRoute,
+  component: lazyRouteComponent(() => import("./EventRoute.js"), "EventRoute"),
   async loader({ context, params }) {
     const { eventId } = params
-    const { queryClient, appContextPromise } = context
-
-    // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await appContextPromise
-    const { config } = appCtx
-
+    const { queryClient, config } = context
     const events = await queryClient.fetchQuery(
       getEventsQueryOptions(config.url, config.timeZone),
     )

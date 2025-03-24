@@ -1,6 +1,13 @@
 import { Event, Scheduled } from "@open-event-systems/schedule-lib"
 import * as ics from "ics"
 
+declare module "@open-event-systems/schedule-lib" {
+  interface ScheduleConfig {
+    icalPrefix?: string
+    icalDomain?: string
+  }
+}
+
 export const createICS = (
   events: Iterable<Scheduled<Event>>,
   prefix: string,

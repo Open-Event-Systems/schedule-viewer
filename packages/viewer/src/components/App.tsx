@@ -1,6 +1,5 @@
 import { createHashHistory, RouterProvider } from "@tanstack/react-router"
 import { createContext, useState } from "react"
-import { router } from "./router.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   DEFAULT_THEME,
@@ -8,14 +7,19 @@ import {
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core"
-import { loadApp } from "./config.js"
+import {
+  BookmarkAPI,
+  makeBookmarkAPI,
+  RequiredScheduleConfig,
+} from "@open-event-systems/schedule-lib"
+import { router } from "../router.js"
 
 export const App = ({
-  configURL,
+  config,
   theme,
   colorScheme,
 }: {
-  configURL: string
+  config: RequiredScheduleConfig
   theme?: MantineThemeOverride
   colorScheme?: MantineColorScheme
 }) => {
@@ -28,8 +32,12 @@ export const App = ({
     return new QueryClient({})
   })
 
-  const [appContextPromise] = useState(() => {
-    return loadApp(queryClient, configURL)
+  const [bookmarkAPI] = useState<BookmarkAPI | undefined>(() => {
+    if (config.bookmarks) {
+      return makeBookmarkAPI(config.bookmarks)
+    } else {
+      return
+    }
   })
 
   const [filterSettings, setFilterSettings] = useState(
@@ -54,9 +62,9 @@ export const App = ({
             router={router}
             history={history}
             context={{
-              configURL,
+              config,
               queryClient,
-              appContextPromise,
+              bookmarkAPI,
             }}
           />
         </FilterContext.Provider>
