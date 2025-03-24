@@ -50,6 +50,8 @@ const MapDetailsDrawer = (props: MapDetailsDrawerProps) => {
       className={clsx("MapDetailsDrawer-root", className)}
       position="bottom"
       title={title}
+      withOverlay={false}
+      size="33%"
       {...other}
     >
       <MapDetails description={description} />

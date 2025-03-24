@@ -22,3 +22,25 @@ export interface MapConfig {
   readonly layers: readonly MapLayer[]
   readonly locations: readonly MapLocation[]
 }
+
+export type MapState = {
+  readonly config: MapConfig
+  readonly locations: ReadonlyMap<string, MapLocation>
+
+  get level(): string
+  setLevel(level: string): void
+
+  get hiddenLayers(): ReadonlySet<string>
+  setHiddenLayers(hidden: Iterable<string>): void
+
+  get isometric(): boolean
+  setIsometric(set: boolean): void
+
+  get highlightId(): string | null
+  setHighlightId(id: string | null): void
+
+  get selectedId(): string | null
+  setSelectedId(id: string | null): void
+
+  zoomTo(id: string): void
+}

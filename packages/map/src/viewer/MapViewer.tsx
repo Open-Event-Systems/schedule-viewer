@@ -1,55 +1,123 @@
 import { Box, BoxProps, Button, Stack, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { ReactNode, useEffect, useState } from "react"
-import { MapControl } from "../control.js"
+import {
+  MutableRefObject,
+  ReactNode,
+  Ref,
+  RefCallback,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { observer } from "mobx-react-lite"
-import { MapLevel } from "../types.js"
+import { MapConfig, MapLevel, MapLocation } from "../types.js"
 import {
   ReactZoomPanPinchContentRef,
   TransformComponent,
   TransformWrapper,
 } from "react-zoom-pan-pinch"
+import { getMapSVGProps, MapSVG } from "../svg/map-svg.js"
+import { getMapClass, MAP_CLASSES } from "../map-classes.js"
+import { getMapLocations } from "../map.js"
+import { MapDetails } from "../details/map-details.js"
 
 export type MapViewerProps = {
-  src: string
-  control: MapControl
+  config: MapConfig
+  level?: string | null
+  onSetLevel?: (level: string) => void
+  highlightId?: string | null
+  onSelectLocation?: (id: string | null) => void
+  selectionId?: string | null
+  zoomFuncRef?:
+    | MutableRefObject<((id: string) => void) | null>
+    | RefCallback<((id: string) => void) | null>
 } & BoxProps
 
 export const MapViewer = observer((props: MapViewerProps) => {
-  const { className, src, control, ...other } = useProps("MapViewer", {}, props)
+  const {
+    className,
+    config,
+    level,
+    onSetLevel,
+    highlightId,
+    onSelectLocation,
+    selectionId,
+    zoomFuncRef,
+    ...other
+  } = useProps("MapViewer", {}, props)
+
   const [svgData, setSVGData] = useState<string | null>(null)
-  const [ctx, setCtx] = useState<ReactZoomPanPinchContentRef | null>(null)
+  const [isometric, setIsometric] = useState(false)
+
+  const [svgProps, svgStr] = useMemo(() => {
+    return svgData ? getMapSVGProps(svgData) : [null, ""]
+  }, [svgData])
+  const [svgEl, setSVGEl] = useState<SVGSVGElement | null>(null)
+
+  const locations = useMemo(() => getMapLocations(config), [config])
+
+  const selectedLoc = selectionId ? locations.get(selectionId) : null
+
+  const lastSelectedLoc = useRef<MapLocation | null>(selectedLoc ?? null)
+  if (selectedLoc) {
+    lastSelectedLoc.current = selectedLoc
+  }
+
+  const curSelectedLoc = selectedLoc ?? lastSelectedLoc.current
 
   useEffect(() => {
-    fetch(src)
-      .then((res) => {
-        return res.text()
+    fetch(config.src)
+      .then((resp) => resp.text())
+      .then((body) => {
+        setSVGData(body)
       })
-      .then((svg) => {
-        setSVGData(svg)
-      })
-  }, [src])
+  }, [config.src])
 
-  useEffect(() => {
-    const el = ctx?.instance.contentComponent
-    if (svgData && el) {
-      el.innerHTML = svgData
-      const els = el.getElementsByTagName("svg")
-      if (els.length > 0) {
-        const focusFunc = (el: SVGElement) => {
+  const setZoomRef = useCallback(
+    (ctx: ReactZoomPanPinchContentRef) => {
+      const zoomFunc = (id: string) => {
+        const areaEls =
+          svgEl?.getElementsByClassName(
+            getMapClass(MAP_CLASSES.areaPrefix, id),
+          ) ?? []
+        if (areaEls[0]) {
           // docs say you can't zoom to svgelement, but appears to work?
           // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-          ctx.zoomToElement(el as Element as HTMLElement)
+          ctx.zoomToElement(areaEls[0] as Element as HTMLElement, 2)
         }
-
-        control.setup(els[0] as SVGSVGElement, focusFunc)
       }
-    }
-  }, [control, svgData, ctx])
+
+      if (typeof zoomFuncRef == "function") {
+        zoomFuncRef(zoomFunc)
+      } else if (zoomFuncRef && typeof zoomFuncRef == "object") {
+        zoomFuncRef.current = zoomFunc
+      }
+    },
+    [zoomFuncRef, svgEl],
+  )
+
+  // useEffect(() => {
+  //   const el = ctx?.instance.contentComponent
+  //   if (svgData && el) {
+  //     el.innerHTML = svgData
+  //     const els = el.getElementsByTagName("svg")
+  //     if (els.length > 0) {
+  //       const focusFunc = (el: SVGElement) => {
+  //         // docs say you can't zoom to svgelement, but appears to work?
+  //         // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
+  //         ctx.zoomToElement(el as Element as HTMLElement)
+  //       }
+
+  //       control.setup(els[0] as SVGSVGElement, focusFunc)
+  //     }
+  //   }
+  // }, [control, svgData, ctx])
 
   return (
     <TransformWrapper
-      ref={setCtx}
+      ref={setZoomRef}
       limitToBounds={false}
       minScale={0.1}
       centerOnInit
@@ -59,30 +127,48 @@ export const MapViewer = observer((props: MapViewerProps) => {
           wrapperClass="MapViewer-wrapper"
           contentClass="MapViewer-content"
         >
-          {null}
+          {svgProps ? (
+            <MapSVG
+              {...svgProps}
+              ref={setSVGEl}
+              level={level ?? config.defaultLevel}
+              highlightId={highlightId}
+              onSelectLocation={(id) => {
+                onSelectLocation && onSelectLocation(id)
+              }}
+              isometric={isometric}
+              dangerouslySetInnerHTML={{ __html: svgStr }}
+            />
+          ) : null}
         </TransformComponent>
 
-        {!!control && (
-          <ControlsRight>
-            <Button
-              variant={control.isometric ? "filled" : "default"}
-              size="compact-xs"
-              onClick={() => {
-                control.isometric = !control.isometric
+        <ControlsRight>
+          <Button
+            variant={isometric ? "filled" : "default"}
+            size="compact-xs"
+            onClick={() => {
+              setIsometric(!isometric)
+            }}
+          >
+            3D Layout
+          </Button>
+          {!isometric && (
+            <LevelButtons
+              levels={config.levels}
+              selected={level ?? config.defaultLevel}
+              onChangeLevel={(lvl) => {
+                onSetLevel && onSetLevel(lvl)
               }}
-            >
-              3D Layout
-            </Button>
-            {!control.isometric && (
-              <LevelButtons
-                levels={control.config.levels}
-                selected={control.level}
-                onChangeLevel={(lvl) => (control.level = lvl)}
-              />
-            )}
-          </ControlsRight>
-        )}
+            />
+          )}
+        </ControlsRight>
       </Box>
+      <MapDetails.Drawer
+        title={curSelectedLoc?.title}
+        description={curSelectedLoc?.description}
+        opened={!!selectedLoc}
+        onClose={() => onSelectLocation && onSelectLocation(null)}
+      />
     </TransformWrapper>
   )
 })
