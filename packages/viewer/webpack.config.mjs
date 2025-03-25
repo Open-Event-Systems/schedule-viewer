@@ -14,7 +14,7 @@ export default (env, argv) => {
     },
     output: {
       path: path.resolve("./dist"),
-      filename: "js/[name].[contenthash].js",
+      filename: isProd ? "js/[name].[contenthash].js" : undefined,
       clean: true,
     },
     module: {
@@ -53,13 +53,6 @@ export default (env, argv) => {
             to: "schedule.webmanifest",
           },
           {
-            from: "config.js",
-            to: "config.js",
-            info: {
-              minimized: false,
-            },
-          },
-          {
             from: "theme.js",
             to: "theme.js",
             info: {
@@ -70,44 +63,47 @@ export default (env, argv) => {
             from: "custom.css",
             to: "custom.css",
           },
+          {
+            from: "config.json",
+            to: "config.json",
+          },
         ],
       }),
-      new GenerateSW({
-        cacheId: "schedule",
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        mode: isProd ? "production" : "development",
-        exclude: [
-          /\.map$/,
-          /^LICENSE.*\.txt$/,
-          /^manifest.*\.js$/,
-          /theme\.js$/,
-          /config\.js$/,
-          /custom\.css$/,
-        ],
-        runtimeCaching: [
-          {
-            urlPattern: /theme\.js$/,
-            handler: "NetworkFirst",
-          },
-          {
-            urlPattern: /config\.js$/,
-            handler: "NetworkFirst",
-          },
-          {
-            urlPattern: /custom\.css$/,
-            handler: "NetworkFirst",
-          },
-          {
-            urlPattern: /\.json$/,
-            handler: "NetworkFirst",
-          },
-        ],
-        skipWaiting: true,
-        maximumFileSizeToCacheInBytes: isProd ? undefined : 20000000,
-        swDest: "sw.js",
-      }),
+      isProd
+        ? new GenerateSW({
+            cacheId: "schedule",
+            cleanupOutdatedCaches: true,
+            mode: isProd ? "production" : "development",
+            exclude: [
+              /\.map$/,
+              /^LICENSE.*\.txt$/,
+              /^manifest.*\.js$/,
+              /theme\.js$/,
+              /config\.json$/,
+              /custom\.css$/,
+            ],
+            runtimeCaching: [
+              {
+                urlPattern: /theme\.js$/,
+                handler: "NetworkFirst",
+              },
+              {
+                urlPattern: /custom\.css$/,
+                handler: "NetworkFirst",
+              },
+              {
+                urlPattern: /config\.json$/,
+                handler: "NetworkFirst",
+              },
+              {
+                urlPattern: /\.json$/,
+                handler: "NetworkFirst",
+              },
+            ],
+            maximumFileSizeToCacheInBytes: isProd ? undefined : 20000000,
+            swDest: "sw.js",
+          })
+        : null,
       new MiniCssExtractPlugin({
         filename: "css/[name].[contenthash].css",
       }),

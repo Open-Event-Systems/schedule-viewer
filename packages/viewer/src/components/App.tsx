@@ -2,24 +2,19 @@ import { createHashHistory, RouterProvider } from "@tanstack/react-router"
 import { createContext, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
-  DEFAULT_THEME,
   MantineColorScheme,
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core"
-import {
-  BookmarkAPI,
-  makeBookmarkAPI,
-  RequiredScheduleConfig,
-} from "@open-event-systems/schedule-lib"
+import { BookmarkAPI, makeBookmarkAPI } from "@open-event-systems/schedule-lib"
 import { router } from "../router.js"
+import { makeAppConfig } from "../config.js"
+import { useSWStore } from "../service-worker.js"
 
 export const App = ({
-  config,
   theme,
   colorScheme,
 }: {
-  config: RequiredScheduleConfig
   theme?: MantineThemeOverride
   colorScheme?: MantineColorScheme
 }) => {
@@ -32,14 +27,6 @@ export const App = ({
     return new QueryClient({})
   })
 
-  const [bookmarkAPI] = useState<BookmarkAPI | undefined>(() => {
-    if (config.bookmarks) {
-      return makeBookmarkAPI(config.bookmarks)
-    } else {
-      return
-    }
-  })
-
   const [filterSettings, setFilterSettings] = useState(
     (): FilterSettings => ({
       text: "",
@@ -49,22 +36,27 @@ export const App = ({
     }),
   )
 
-  const fullTheme = {
-    DEFAULT_THEME,
-    ...theme,
-  }
+  const swStore = useSWStore()
+
+  const [appConfigPromise] = useState(() => {
+    return makeAppConfig(queryClient, "config.json").then((ctx) => {
+      if (ctx.config.serviceWorker) {
+        swStore.register()
+      }
+      return ctx
+    })
+  })
 
   return (
-    <MantineProvider theme={fullTheme} defaultColorScheme={colorScheme}>
+    <MantineProvider theme={theme} defaultColorScheme={colorScheme}>
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
             router={router}
             history={history}
             context={{
-              config,
+              appConfigPromise: appConfigPromise,
               queryClient,
-              bookmarkAPI,
             }}
           />
         </FilterContext.Provider>

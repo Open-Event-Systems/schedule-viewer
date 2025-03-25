@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router"
 import {
+  configRoute,
   eventRoute,
   eventsDataRoute,
   eventsRoute,
@@ -9,8 +10,10 @@ import {
 } from "./routes/index.js"
 
 const routeTree = rootRoute.addChildren([
-  eventsDataRoute.addChildren([
-    layoutRoute.addChildren([eventsRoute, eventRoute]),
+  configRoute.addChildren([
+    eventsDataRoute.addChildren([
+      layoutRoute.addChildren([eventsRoute, eventRoute]),
+    ]),
   ]),
 ])
 
