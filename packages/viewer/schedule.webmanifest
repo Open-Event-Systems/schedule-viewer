@@ -1,0 +1,14 @@
+{
+  "short_name": "Schedule",
+  "name": "Event Schedule",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#228be6",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "example-icon.svg",
+      "sizes": "any"
+    }
+  ]
+}

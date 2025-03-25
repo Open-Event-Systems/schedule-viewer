@@ -21,7 +21,6 @@ import { observer } from "mobx-react-lite"
 import { getDays, getDefaultDay } from "../utils.js"
 import { createICS } from "../ical.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
-import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { useEvents } from "../schedule.js"
 import {
@@ -29,7 +28,7 @@ import {
   useBookmarks,
   useUpdateBookmarks,
 } from "../bookmarks.js"
-import { FilterContext } from "../App.js"
+import { FilterContext } from "../components/App.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
