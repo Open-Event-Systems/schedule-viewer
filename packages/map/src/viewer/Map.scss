@@ -97,6 +97,10 @@
   display: initial;
 }
 
+.vendor-icon {
+  fill: url(http://localhost:9001/tm.png);
+}
+
 // .height-indicator-bottom {
 //   transform-box: content-box;
 //   transition: transform var(--map-isometric-transition-duration) ease-in-out;

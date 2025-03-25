@@ -39,6 +39,30 @@ export const Default: StoryObj<typeof MapViewer> = {
           id: "registration",
           title: "Registration",
         },
+        {
+          id: "hospitality",
+          title: "Hospitality",
+        },
+        {
+          id: "video-games",
+          title: "Video Games",
+        },
+        {
+          id: "board-games",
+          title: "Board Games",
+        },
+        {
+          id: "stage",
+          title: "Stage",
+        },
+        {
+          id: "panel-1",
+          title: "Panel Room One",
+        },
+        {
+          id: "panel-2",
+          title: "Panel Room Two",
+        },
       ],
       defaultLevel: "lobby",
     }))
