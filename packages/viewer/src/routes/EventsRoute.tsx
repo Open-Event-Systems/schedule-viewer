@@ -5,7 +5,7 @@ import {
   DayFilter,
   DayFilterDay,
 } from "@open-event-systems/schedule-components/day-filter/DayFilter"
-import { MouseEvent, useCallback, useContext, useMemo, useState } from "react"
+import { MouseEvent, useCallback, useContext, useMemo } from "react"
 import {
   Event,
   isScheduled,
@@ -21,7 +21,6 @@ import { observer } from "mobx-react-lite"
 import { getDays, getDefaultDay } from "../utils.js"
 import { createICS } from "../ical.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
-import { Calendar } from "@open-event-systems/schedule-components/calendar/Calendar"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { useEvents } from "../schedule.js"
 import {
@@ -33,7 +32,7 @@ import { FilterContext } from "../App.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
-  const allEvents = useEvents(config.url, config.timeZone)
+  const allEvents = useEvents(config.events, config.timeZone)
   const selections = useBookmarks(config.id)
   const counts = useBookmarkCounts(config.id)
   const updateSelections = useUpdateBookmarks(config.id)
@@ -50,16 +49,6 @@ export const EventsRoute = observer(() => {
       ),
     [allEvents, config.timeZone, config.dayChangeHour],
   )
-
-  // const rooms = useMemo(() => {
-  //   const set = new Set<string>()
-  //   for (const event of allEvents) {
-  //     if (event.location) {
-  //       set.add(event.location)
-  //     }
-  //   }
-  //   return Array.from(set)
-  // }, [allEvents])
 
   const defaultDay = useMemo(
     () => getDefaultDay(days, toTimezone(new Date(), config.timeZone)),
@@ -218,7 +207,6 @@ export const EventsRoute = observer(() => {
         <Stack align="end" gap="xs">
           <Filter
             text={filterText}
-            tags={Array.from(allEvents.tags).sort()}
             disabledTags={disabledTags}
             showPastEvents={showPast}
             onChangeText={(text: string) => setFilter({ ...filter, text })}
@@ -273,7 +261,7 @@ type ViewProps = {
   binMinutes?: number
   getIsBookmarked: (event: Event) => boolean
   setBookmarked: (event: Event, set: boolean) => void
-  getBookmarkCount: (event: Event) => number | null | undefined
+  getBookmarkCount: (event: Event) => number | undefined
   getHref: (event: Event) => string
   onClickEvent: (e: MouseEvent, event: Event) => void
 }
@@ -300,41 +288,3 @@ const PillsView = (props: ViewProps) => {
     />
   )
 }
-
-// const CalendarView = (
-//   props: ViewProps & { direction?: "row" | "column"; rooms: readonly string[] }
-// ) => {
-//   const {
-//     rooms,
-//     events,
-//     direction,
-//     getIsBookmarked,
-//     setBookmarked,
-//     getHref,
-//     onClickEvent,
-//   } = props
-
-//   const earliest = events[0]
-//   const latest = events[events.length - 1]
-
-//   const cols = rooms.map((r) => {
-//     const roomEvents = events.filter((e) => e.location == r)
-//     return {
-//       title: r,
-//       events: roomEvents,
-//     }
-//   })
-
-//   return (
-//     <Calendar
-//       direction={direction}
-//       start={earliest.start}
-//       end={latest.end}
-//       columns={cols}
-//       getIsBookmarked={getIsBookmarked}
-//       setBookmarked={setBookmarked}
-//       getHref={getHref}
-//       onClickEvent={onClickEvent}
-//     />
-//   )
-// }

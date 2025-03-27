@@ -2,7 +2,7 @@ import wretch from "wretch"
 import {
   BookmarkAPI,
   makeBookmarkAPI,
-  RequiredScheduleConfig,
+  ScheduleConfig,
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import { listenForStorageUpdates } from "./local-storage.js"
@@ -17,7 +17,7 @@ declare module "@open-event-systems/schedule-lib" {
 }
 
 export type AppContext = {
-  config: RequiredScheduleConfig
+  config: ScheduleConfig
   bookmarkAPI: BookmarkAPI | undefined
 }
 
@@ -59,11 +59,11 @@ export const loadApp = async (
 
 export const getScheduleConfigQueryOptions = (
   url: string,
-): UseSuspenseQueryOptions<RequiredScheduleConfig> => {
+): UseSuspenseQueryOptions<ScheduleConfig> => {
   return {
     queryKey: ["config", { url: url }],
     async queryFn() {
-      return await wretch(url).get().json<RequiredScheduleConfig>()
+      return await wretch(url).get().json<ScheduleConfig>()
     },
     staleTime: Infinity,
   }

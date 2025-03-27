@@ -9,7 +9,7 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event, Host } from "@open-event-systems/schedule-lib"
+import { Event, Host, TagEntry } from "@open-event-systems/schedule-lib"
 import {
   IconBookmark,
   IconClockHour4,
@@ -19,9 +19,14 @@ import {
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { format } from "date-fns"
-import { Fragment, ReactElement, ReactNode } from "react"
+import { Fragment, ReactElement, ReactNode, useCallback, useMemo } from "react"
 import { Markdown } from "../markdown/Markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
+import {
+  makeTagFormatter,
+  makeValidTagsFilter,
+  useScheduleConfig,
+} from "../config/context.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -42,6 +47,8 @@ export const EventDetails = (props: EventDetailsProps) => {
     ...other
   } = useProps("EventDetails", {}, props)
 
+  const config = useScheduleConfig()
+
   const timeEl =
     event.start && event.end ? renderTime(event.start, event.end) : null
   const locationEl = event.location ? (
@@ -52,7 +59,9 @@ export const EventDetails = (props: EventDetailsProps) => {
   const hostsEl =
     event.hosts && event.hosts.length > 0 ? renderHosts(event.hosts) : null
   const tagsEl =
-    event.tags && event.tags.length > 0 ? renderTags(event.tags) : null
+    event.tags && event.tags.length > 0
+      ? renderTags(config.tags, event.tags)
+      : null
 
   return (
     <Box
@@ -147,15 +156,26 @@ const renderHost = (h: string | Host): ReactElement => {
   }
 }
 
-const renderTags = (tags: readonly string[]): ReactElement => {
+const renderTags = (
+  validTags: readonly TagEntry[],
+  tags: readonly string[],
+): ReactElement => {
+  const isValidTag = makeValidTagsFilter(validTags)
+  const formatTag = makeTagFormatter(validTags)
+  const filteredTags = tags.filter(isValidTag)
+  const formattedTags = filteredTags.map(formatTag)
   const els: ReactNode[] = []
 
-  tags.forEach((t) => {
+  formattedTags.forEach((t) => {
     if (els.length > 0) {
       els.push(", ")
     }
     els.push(t)
   })
+
+  if (els.length == 0) {
+    return <></>
+  }
 
   return (
     <IconText icon={<IconTag size={18} />} c="dimmed">
