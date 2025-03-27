@@ -1,70 +1,45 @@
-import wretch from "wretch"
 import {
   BookmarkAPI,
   makeBookmarkAPI,
   ScheduleConfig,
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
-import { listenForStorageUpdates } from "./local-storage.js"
-import { getStoredBookmarksMutationOptions } from "./bookmarks.js"
+import wretch from "wretch"
 
-declare module "@open-event-systems/schedule-lib" {
-  interface ScheduleConfig {
-    bookmarks?: string
-    icalPrefix?: string
-    icalDomain?: string
+export type AppConfig = Readonly<{
+  config: ScheduleConfig
+  bookmarkAPI?: BookmarkAPI
+}>
+
+export const getConfigQueryOptions = (
+  configURL: string,
+): UseSuspenseQueryOptions<ScheduleConfig> => {
+  return {
+    queryKey: ["schedule-config"],
+    async queryFn() {
+      const res = await wretch(configURL).get().json<ScheduleConfig>()
+      return res
+    },
+    staleTime: Infinity,
   }
 }
 
-export type AppContext = {
-  config: ScheduleConfig
-  bookmarkAPI: BookmarkAPI | undefined
-}
-
-export const loadApp = async (
+export const makeAppConfig = async (
   queryClient: QueryClient,
   configURL: string,
-): Promise<AppContext> => {
-  const config = await queryClient.fetchQuery(
-    getScheduleConfigQueryOptions(configURL),
-  )
+): Promise<AppConfig> => {
+  const config = await queryClient.fetchQuery(getConfigQueryOptions(configURL))
+  let bookmarkAPI = config.bookmarks
+    ? makeBookmarkAPI(config.bookmarks)
+    : undefined
 
-  let bookmarkAPI: BookmarkAPI | undefined
-
-  if (config.bookmarks) {
-    bookmarkAPI = makeBookmarkAPI(config.bookmarks)
+  if (bookmarkAPI) {
     try {
       await bookmarkAPI.setup()
-    } catch (_) {
+    } catch (_e) {
       bookmarkAPI = undefined
     }
   }
 
-  // local storage sync
-  listenForStorageUpdates(config.id, (selections) => {
-    queryClient
-      .getMutationCache()
-      .build(
-        queryClient,
-        getStoredBookmarksMutationOptions(queryClient, config.id),
-      )
-      .execute(selections)
-  })
-
-  return {
-    config,
-    bookmarkAPI,
-  }
-}
-
-export const getScheduleConfigQueryOptions = (
-  url: string,
-): UseSuspenseQueryOptions<ScheduleConfig> => {
-  return {
-    queryKey: ["config", { url: url }],
-    async queryFn() {
-      return await wretch(url).get().json<ScheduleConfig>()
-    },
-    staleTime: Infinity,
-  }
+  return { config, bookmarkAPI }
 }

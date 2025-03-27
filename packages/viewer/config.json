@@ -12,5 +12,6 @@
     ["gaming", "Gaming"],
     ["mature", "Mature"]
   ],
-  "tagIndicators": [["mature", "18+"]]
+  "tagIndicators": [["mature", "18+"]],
+  "serviceWorker": true
 }

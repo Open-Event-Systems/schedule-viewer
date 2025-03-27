@@ -16,6 +16,12 @@ import { parseISO } from "date-fns"
 import { loadSelections, saveSelections } from "./local-storage.js"
 import { createContext, useCallback, useContext } from "react"
 
+declare module "@open-event-systems/schedule-lib" {
+  interface ScheduleConfig {
+    bookmarks?: string
+  }
+}
+
 export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
   undefined,
 )

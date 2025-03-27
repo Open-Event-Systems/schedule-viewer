@@ -28,7 +28,7 @@ import {
   useBookmarks,
   useUpdateBookmarks,
 } from "../bookmarks.js"
-import { FilterContext } from "../App.js"
+import { FilterContext } from "../components/App.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
