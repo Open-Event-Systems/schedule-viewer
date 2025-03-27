@@ -12,7 +12,7 @@ import {
   makeSelections,
   makeTagFilter,
   makeTitleFilter,
-  RequiredScheduleConfig,
+  ScheduleConfig,
   Scheduled,
   Selections,
   toTimezone,
@@ -25,7 +25,7 @@ import { Stack, Text } from "@mantine/core"
 import { EventPills } from "@open-event-systems/schedule-components/pills/EventPills"
 
 export type ScheduleViewProps = {
-  config: RequiredScheduleConfig
+  config: ScheduleConfig
   events: EventStore
   filter: FilterSettings
   selections?: Selections
@@ -168,7 +168,7 @@ type ViewProps = {
   binMinutes?: number
   getIsBookmarked: (event: Event) => boolean
   setBookmarked: (event: Event, set: boolean) => void
-  getBookmarkCount: (event: Event) => number | null | undefined
+  getBookmarkCount: (event: Event) => number | undefined
   getHref?: (event: Event) => string
   onClickEvent?: (e: MouseEvent, event: Event) => void
 }

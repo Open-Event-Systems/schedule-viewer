@@ -8,7 +8,7 @@
       "end": "2025-01-17T12:00:00-05:00",
       "location": "Main Ballroom",
       "hosts": ["Events Team"],
-      "tags": ["Main Event"]
+      "tags": ["main-event"]
     },
     {
       "id": "e2",
@@ -18,7 +18,7 @@
       "end": "2025-01-18T16:30:00-05:00",
       "location": "Panel Room 1",
       "hosts": ["Person"],
-      "tags": ["Gaming"]
+      "tags": ["gaming", "mature"]
     }
   ]
 }

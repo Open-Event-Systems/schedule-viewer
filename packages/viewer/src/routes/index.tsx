@@ -56,7 +56,7 @@ export const eventsDataRoute = createRoute({
     const [events, localSelections, sessionSelections, counts] =
       await Promise.all([
         queryClient.fetchQuery(
-          getEventsQueryOptions(config.url, config.timeZone),
+          getEventsQueryOptions(config.events, config.timeZone),
         ),
         queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
         queryClient.fetchQuery(
@@ -113,7 +113,7 @@ export const eventRoute = createRoute({
     const { eventId } = params
     const { queryClient, config } = context
     const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config.url, config.timeZone),
+      getEventsQueryOptions(config.events, config.timeZone),
     )
 
     const event = events.get(eventId)

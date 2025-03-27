@@ -1,11 +1,17 @@
 {
   "id": "example-event",
-  "title": "Example Event",
-  "url": "events.json",
-  "dayChangeHour": 6,
-  "timeZone": "America/New_York",
-  "tagIndicators": [["Mature", "18+"]],
+  "bookmarks": "http://localhost:8000/schedule/example-event",
   "icalPrefix": "example",
   "icalDomain": "example.net",
+  "events": "events.json",
+  "title": "Example Event",
+  "dayChangeHour": 6,
+  "timeZone": "America/New_York",
+  "tags": [
+    ["main-event", "Main Event"],
+    ["gaming", "Gaming"],
+    ["mature", "Mature"]
+  ],
+  "tagIndicators": [["mature", "18+"]],
   "serviceWorker": true
 }

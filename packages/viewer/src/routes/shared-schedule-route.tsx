@@ -25,7 +25,7 @@ import { ScheduleView } from "../components/schedule-view.js"
 export const SharedScheduleRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const { selectionId } = sharedScheduleRoute.useParams()
-  const allEvents = useEvents(config.url, config.timeZone)
+  const allEvents = useEvents(config.events, config.timeZone)
   const selections = useBookmarksById(config.id, selectionId)
   if (!selections) {
     throw notFound()
@@ -104,7 +104,6 @@ export const SharedScheduleRoute = observer(() => {
         <Stack align="end" gap="xs">
           <Filter
             text={filterText}
-            tags={Array.from(allEvents.tags).sort()}
             disabledTags={disabledTags}
             showPastEvents={showPast}
             onChangeText={(text: string) => setFilter({ ...filter, text })}

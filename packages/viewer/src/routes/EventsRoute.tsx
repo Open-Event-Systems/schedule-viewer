@@ -7,7 +7,7 @@ import {
   shareScheduleRoute,
   syncScheduleRoute,
 } from "./index.js"
-import { Anchor, Grid, SegmentedControl, Stack } from "@mantine/core"
+import { Grid, SegmentedControl, Stack } from "@mantine/core"
 import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
 import { MouseEvent, useCallback, useContext, useRef } from "react"
 import { Event } from "@open-event-systems/schedule-lib"
@@ -29,7 +29,7 @@ import { ScheduleView } from "../components/schedule-view.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
-  const allEvents = useEvents(config.url, config.timeZone)
+  const allEvents = useEvents(config.events, config.timeZone)
   const selections = useBookmarks(config.id)
   const counts = useBookmarkCounts(config.id)
   const updateSelections = useUpdateBookmarks(config.id)
@@ -160,7 +160,6 @@ export const EventsRoute = observer(() => {
         <Stack align="end" gap="xs">
           <Filter
             text={filterText}
-            tags={Array.from(allEvents.tags).sort()}
             disabledTags={disabledTags}
             showPastEvents={showPast}
             onChangeText={(text: string) => setFilter({ ...filter, text })}
@@ -273,41 +272,3 @@ export const EventsRoute = observer(() => {
 })
 
 EventsRoute.displayName = "EventsRoute"
-
-// const CalendarView = (
-//   props: ViewProps & { direction?: "row" | "column"; rooms: readonly string[] }
-// ) => {
-//   const {
-//     rooms,
-//     events,
-//     direction,
-//     getIsBookmarked,
-//     setBookmarked,
-//     getHref,
-//     onClickEvent,
-//   } = props
-
-//   const earliest = events[0]
-//   const latest = events[events.length - 1]
-
-//   const cols = rooms.map((r) => {
-//     const roomEvents = events.filter((e) => e.location == r)
-//     return {
-//       title: r,
-//       events: roomEvents,
-//     }
-//   })
-
-//   return (
-//     <Calendar
-//       direction={direction}
-//       start={earliest.start}
-//       end={latest.end}
-//       columns={cols}
-//       getIsBookmarked={getIsBookmarked}
-//       setBookmarked={setBookmarked}
-//       getHref={getHref}
-//       onClickEvent={onClickEvent}
-//     />
-//   )
-// }
