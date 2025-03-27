@@ -29,12 +29,14 @@ export const ShareMenu = (props: ShareMenuProps) => {
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Import/Export</Menu.Label>
-        <Menu.Item
-          leftSection={<IconShare3 />}
-          onClick={() => onShare && onShare()}
-        >
-          Share My Schedule
-        </Menu.Item>
+        {enableSync && (
+          <Menu.Item
+            leftSection={<IconShare3 />}
+            onClick={() => onShare && onShare()}
+          >
+            Share My Schedule
+          </Menu.Item>
+        )}
         {enableSync && (
           <Menu.Item
             leftSection={<IconTransfer />}

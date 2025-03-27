@@ -1,18 +1,30 @@
 import { createRouter } from "@tanstack/react-router"
 import {
   configRoute,
+  confirmSyncScheduleRoute,
   eventRoute,
   eventsDataRoute,
   eventsRoute,
   layoutRoute,
   rootRoute,
   RouterContext,
+  sharedScheduleRoute,
+  shareScheduleRoute,
+  syncScheduleRoute,
 } from "./routes/index.js"
 
 const routeTree = rootRoute.addChildren([
   configRoute.addChildren([
     eventsDataRoute.addChildren([
-      layoutRoute.addChildren([eventsRoute, eventRoute]),
+      layoutRoute.addChildren([
+        eventsRoute.addChildren([
+          shareScheduleRoute,
+          syncScheduleRoute,
+          confirmSyncScheduleRoute,
+        ]),
+        eventRoute,
+        sharedScheduleRoute,
+      ]),
     ]),
   ]),
 ])

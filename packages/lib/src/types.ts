@@ -80,6 +80,10 @@ export type BookmarksRequest = Readonly<{
   events: readonly string[]
 }>
 
+export type BookmarkSetupResponse = Readonly<{
+  sessionId: string
+}>
+
 export type BookmarksResponse = Readonly<{
   id: string
   events: readonly string[]
@@ -96,8 +100,8 @@ export type BookmarkCountsResponse = Readonly<{
 }>
 
 export type BookmarkAPI = {
-  setup(): Promise<void>
-  getBookmarks(selectionId: string): Promise<BookmarksResponse>
+  setup(sessionId?: string): Promise<BookmarkSetupResponse>
+  getBookmarks(selectionId: string): Promise<BookmarksResponse | null>
   getSessionBookmarks(): Promise<SessionBookmarksResponse>
   setBookmarks(events: Iterable<string>): Promise<SessionBookmarksResponse>
   getBookmarkCounts(): Promise<BookmarkCountsResponse>

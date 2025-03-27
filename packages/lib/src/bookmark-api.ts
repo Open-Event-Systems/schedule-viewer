@@ -1,6 +1,7 @@
 import {
   BookmarkAPI,
   BookmarkCountsResponse,
+  BookmarkSetupResponse,
   BookmarksRequest,
   BookmarksResponse,
   SessionBookmarksResponse,
@@ -10,14 +11,19 @@ import wretch from "wretch"
 export const makeBookmarkAPI = (baseURL: string): BookmarkAPI => {
   const baseWretch = wretch(baseURL, { credentials: "include" })
   return {
-    async setup() {
-      await baseWretch.url("/setup-bookmarks").put().res()
+    async setup(sessionId) {
+      let req = baseWretch.url("/setup-bookmarks")
+      if (sessionId) {
+        req = req.json({ sessionId })
+      }
+      return await req.put().json<BookmarkSetupResponse>()
     },
     async getBookmarks(selectionId: string) {
       const res = await baseWretch
         .url(`/bookmarks/${selectionId}`)
         .get()
-        .json<BookmarksResponse>()
+        .notFound(() => null)
+        .json<BookmarksResponse | null>()
       return res
     },
     async getSessionBookmarks() {

@@ -9,6 +9,7 @@ import wretch from "wretch"
 export type AppConfig = Readonly<{
   config: RequiredScheduleConfig
   bookmarkAPI?: BookmarkAPI
+  sessionId?: string
 }>
 
 export const getConfigQueryOptions = (
@@ -33,5 +34,12 @@ export const makeAppConfig = async (
     ? makeBookmarkAPI(config.bookmarks)
     : undefined
 
-  return { config, bookmarkAPI }
+  let sessionId: string | undefined
+
+  if (bookmarkAPI) {
+    const res = await bookmarkAPI.setup()
+    sessionId = res.sessionId
+  }
+
+  return { config, bookmarkAPI, sessionId }
 }

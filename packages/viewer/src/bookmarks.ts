@@ -29,6 +29,24 @@ export const BookmarkAPIProvider = BookmarkAPIContext.Provider
 export const useBookmarkAPI = (): BookmarkAPI | undefined =>
   useContext(BookmarkAPIContext)
 
+export const getBookmarksByIdQueryOptions = (
+  bookmarkAPI: BookmarkAPI | null | undefined,
+  scheduleId: string,
+  selectionId: string,
+): UseSuspenseQueryOptions<Selections | null> => {
+  return {
+    queryKey: ["schedule", scheduleId, "bookmarks", selectionId],
+    async queryFn() {
+      if (bookmarkAPI) {
+        const resp = await bookmarkAPI.getBookmarks(selectionId)
+        return resp ? makeSelections(resp.events) : null
+      } else {
+        return null
+      }
+    },
+  }
+}
+
 export const getSessionBookmarksQueryOptions = (
   bookmarkAPI: BookmarkAPI | null | undefined,
   scheduleId: string,
@@ -82,15 +100,15 @@ export const getSessionBookmarksMutationOptions = (
   queryClient: QueryClient,
   bookmarkAPI: BookmarkAPI | null | undefined,
   scheduleId: string,
-): UseMutationOptions<Selections, Error, Selections> => {
+): UseMutationOptions<[string, Selections], Error, Selections> => {
   return {
     mutationKey: ["schedule", scheduleId, "bookmarks"],
     async mutationFn(selections) {
       if (bookmarkAPI) {
         const res = await bookmarkAPI.setBookmarks(selections)
-        return makeSelections(res.events, parseISO(res.date))
+        return [res.id, makeSelections(res.events, parseISO(res.date))]
       }
-      return selections
+      return ["", selections]
     },
     onSuccess(selections) {
       queryClient.setQueryData(
@@ -131,9 +149,20 @@ export const useBookmarks = (scheduleId: string): Selections => {
   return chooseNewer(local.data, session.data)
 }
 
+export const useBookmarksById = (
+  scheduleId: string,
+  selectionId: string,
+): Selections | null => {
+  const bookmarkAPI = useBookmarkAPI()
+  const query = useSuspenseQuery(
+    getBookmarksByIdQueryOptions(bookmarkAPI, scheduleId, selectionId),
+  )
+  return query.data
+}
+
 export const useUpdateBookmarks = (
   scheduleId: string,
-): ((selections: Selections) => Promise<Selections>) => {
+): ((selections: Selections) => Promise<[string, Selections]>) => {
   const queryClient = useQueryClient()
   const bookmarkAPI = useBookmarkAPI()
   const localMutation = useMutation(
@@ -144,12 +173,15 @@ export const useUpdateBookmarks = (
   )
 
   const updater = useCallback(
-    async (selections: Selections) => {
-      const res = await Promise.all([
+    async (selections: Selections): Promise<[string, Selections]> => {
+      // update both local+remote simultaneously
+      const [_localRes, [remoteId, remoteRes]] = await Promise.all([
         localMutation.mutateAsync(selections),
         sessionMutation.mutateAsync(selections),
       ])
-      return chooseNewer(res[0], res[1])
+
+      // return the remote version
+      return [remoteId, remoteRes]
     },
     [
       queryClient,

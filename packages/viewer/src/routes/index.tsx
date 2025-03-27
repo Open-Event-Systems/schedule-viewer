@@ -12,18 +12,15 @@ import { ScheduleLayout } from "../components/schedule-layout.js"
 import {
   BookmarkAPIProvider,
   getBookmarkCountsQueryOptions,
+  getBookmarksByIdQueryOptions,
+  getSessionBookmarksMutationOptions,
   getSessionBookmarksQueryOptions,
   getStoredBookmarksQueryOptions,
 } from "../bookmarks.js"
-import {
-  BookmarkAPI,
-  chooseNewer,
-  makeBookmarkAPI,
-  RequiredScheduleConfig,
-} from "@open-event-systems/schedule-lib"
-import { Flex, Loader } from "@mantine/core"
 import { Loading } from "../components/Loading.js"
-import { AppConfig, getConfigQueryOptions } from "../config.js"
+import { AppConfig } from "../config.js"
+import { chooseNewer } from "@open-event-systems/schedule-lib"
+import { saveSelections } from "../local-storage.js"
 
 export type RouterContext = {
   appConfigPromise: Promise<AppConfig>
@@ -40,7 +37,11 @@ export const configRoute = createRoute({
 
     const appConfig = await appConfigPromise
 
-    return { config: appConfig.config, bookmarkAPI: appConfig.bookmarkAPI }
+    return {
+      config: appConfig.config,
+      bookmarkAPI: appConfig.bookmarkAPI,
+      sessionId: appConfig.sessionId,
+    }
   },
   staleTime: Infinity,
   pendingComponent: Loading,
@@ -66,9 +67,13 @@ export const eventsDataRoute = createRoute({
         ),
       ])
 
+    // update local selections
+    const newer = chooseNewer(localSelections, sessionSelections)
+    saveSelections(config.id, newer)
+
     return {
       events,
-      selections: chooseNewer(localSelections, sessionSelections),
+      selections: newer,
       counts,
     }
   },
@@ -116,5 +121,71 @@ export const eventRoute = createRoute({
       throw notFound()
     }
     return { event }
+  },
+})
+
+export const shareScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "share",
+  async loader({ context }) {
+    const { config, queryClient, bookmarkAPI } = context
+    if (!bookmarkAPI) {
+      throw notFound()
+    }
+
+    const [local, remote] = await Promise.all([
+      queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
+      queryClient.fetchQuery(
+        getSessionBookmarksQueryOptions(bookmarkAPI, config.id),
+      ),
+    ])
+    const newer = chooseNewer(local, remote)
+
+    const mutation = queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getSessionBookmarksMutationOptions(queryClient, bookmarkAPI, config.id),
+      )
+
+    const result = await mutation.execute(newer)
+
+    return { shareId: result[0] }
+  },
+})
+
+export const syncScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "sync",
+  async loader({ context }) {
+    const { bookmarkAPI } = context
+    if (!bookmarkAPI) {
+      throw notFound()
+    }
+    return { syncId: context.sessionId }
+  },
+})
+
+export const confirmSyncScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "sync/$syncId",
+})
+
+export const sharedScheduleRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: "shared/$selectionId",
+  component: lazyRouteComponent(
+    () => import("./shared-schedule-route.js"),
+    "SharedScheduleRoute",
+  ),
+  async loader({ context, params }) {
+    const { config, queryClient, bookmarkAPI } = context
+    const selections = await queryClient.fetchQuery(
+      getBookmarksByIdQueryOptions(bookmarkAPI, config.id, params.selectionId),
+    )
+    if (!selections) {
+      throw notFound()
+    }
+    return { selections }
   },
 })

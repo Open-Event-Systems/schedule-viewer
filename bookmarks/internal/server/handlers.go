@@ -8,6 +8,7 @@ import (
 	"bookmarks/internal/validator"
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -55,13 +56,37 @@ func (s *server) setupSessionHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	sessionReq := structs.BookmarkSetupRequest{}
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	var sessionId sessionId
+
+	if len(body) > 0 {
+		err = json.Unmarshal(body, &sessionReq)
+		if err != nil {
+			httpError(w, http.StatusUnprocessableEntity)
+			return
+		}
+
+		sessionId, err = verifySessionId(sessionReq.SessionID, s.config.Secret)
+	} else {
+		sessionId, err = getSessionIdFromCookie(req, s.config.Secret)
+	}
+
 	if err != nil {
 		sessionId = newSessionId(s.config.Secret)
 	}
 
 	sessionId.SetCookie(w, s.config.Domain)
-	w.WriteHeader(204)
+	resp := structs.BookmarkSetupResponse{
+		SessionID: sessionId.String(),
+	}
+	jsonResponse(w, resp)
 }
 
 func (s *server) setSelectionHandler(w http.ResponseWriter, req *http.Request) {
