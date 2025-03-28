@@ -11,7 +11,7 @@ export const events = [
     start: new TZDate(2025, 0, 17, 11, timeZone),
     end: new TZDate(2025, 0, 17, 12, timeZone),
     location: "Main Ballroom",
-    tags: ["Main Event"],
+    tags: ["main-event"],
     hosts: ["Events Team"],
   },
   {
@@ -21,7 +21,7 @@ export const events = [
     start: new TZDate(2025, 0, 18, 12, timeZone),
     end: new TZDate(2025, 0, 18, 13, timeZone),
     location: "Panel Room 1",
-    tags: ["Photography", "Hobby"],
+    tags: ["photography", "hobby"],
     hosts: [{ name: "Person", url: "https://example.net" }],
   },
   {
@@ -31,7 +31,7 @@ export const events = [
     start: new TZDate(2025, 0, 18, 14, timeZone),
     end: new TZDate(2025, 0, 18, 16, 30, timeZone),
     location: "Panel Room 2",
-    tags: ["Art", "Mature"],
+    tags: ["art", "mature"],
     hosts: [
       { name: "Artist", url: "https://example.net" },
       { name: "Model", url: "https://example.net" },
@@ -43,6 +43,13 @@ export const config = {
   id: "example-event",
   title: "Example Event",
   dayChangeHour: 6,
-  tagIndicators: [["Mature", "18+"]],
+  tags: [
+    ["main-event", "Main Event"],
+    ["hobby", "Hobby"],
+    ["photography", "Photography"],
+    ["art", "Art"],
+    ["mature", "Mature"],
+  ],
+  tagIndicators: [["mature", "18+"]],
   timeZone,
-} satisfies ScheduleConfig
+} satisfies Partial<ScheduleConfig>

@@ -57,7 +57,9 @@
   },
   "dependencies": {
     "@tabler/icons-react": "^3.29.0",
+    "@types/qrcode": "^1.5.5",
     "clsx": "^2.1.1",
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^14.1.0",
+    "qrcode": "^1.5.4"
   }
 }

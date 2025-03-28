@@ -39,25 +39,21 @@ export type Scheduled<T extends Partial<Timespan>> = T &
     end: Date
   }>
 
+export type TagEntry = readonly [string, string]
+
 export type TagIndicatorEntry = readonly [string | readonly string[], string]
 
 export interface ScheduleConfig {
   readonly id: string
-  readonly url?: string
-  readonly title?: string
-  readonly dayChangeHour?: number
-  readonly binMinutes?: number
-  readonly timeZone?: string
-  readonly tagIndicators?: readonly TagIndicatorEntry[]
+  readonly events: string | readonly EventJSON[]
+  readonly title: string
+  readonly description: string
+  readonly dayChangeHour: number
+  readonly binMinutes: number
+  readonly timeZone: string
+  readonly tags: readonly TagEntry[]
+  readonly tagIndicators: readonly TagIndicatorEntry[]
 }
-
-export type RequiredScheduleConfig = ScheduleConfig &
-  Required<
-    Pick<
-      ScheduleConfig,
-      "id" | "url" | "title" | "dayChangeHour" | "timeZone" | "tagIndicators"
-    >
-  >
 
 export type EventStore = {
   get(id: string): Event | undefined
@@ -80,6 +76,10 @@ export type BookmarksRequest = Readonly<{
   events: readonly string[]
 }>
 
+export type BookmarkSetupResponse = Readonly<{
+  sessionId: string
+}>
+
 export type BookmarksResponse = Readonly<{
   id: string
   events: readonly string[]
@@ -96,8 +96,8 @@ export type BookmarkCountsResponse = Readonly<{
 }>
 
 export type BookmarkAPI = {
-  setup(): Promise<void>
-  getBookmarks(selectionId: string): Promise<BookmarksResponse>
+  setup(sessionId?: string): Promise<BookmarkSetupResponse>
+  getBookmarks(selectionId: string): Promise<BookmarksResponse | null>
   getSessionBookmarks(): Promise<SessionBookmarksResponse>
   setBookmarks(events: Iterable<string>): Promise<SessionBookmarksResponse>
   getBookmarkCounts(): Promise<BookmarkCountsResponse>

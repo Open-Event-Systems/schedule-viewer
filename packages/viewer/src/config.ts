@@ -1,70 +1,61 @@
-import wretch from "wretch"
 import {
   BookmarkAPI,
   makeBookmarkAPI,
-  RequiredScheduleConfig,
+  ScheduleConfig,
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
-import { listenForStorageUpdates } from "./local-storage.js"
-import { getStoredBookmarksMutationOptions } from "./bookmarks.js"
+import wretch from "wretch"
+import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
 
-declare module "@open-event-systems/schedule-lib" {
-  interface ScheduleConfig {
-    bookmarks?: string
-    icalPrefix?: string
-    icalDomain?: string
+export type AppConfig = Readonly<{
+  config: ScheduleConfig
+  bookmarkAPI?: BookmarkAPI
+  sessionId?: string
+}>
+
+export const getConfigQueryOptions = (
+  configURL: string,
+): UseSuspenseQueryOptions<ScheduleConfig> => {
+  return {
+    queryKey: ["schedule-config"],
+    async queryFn() {
+      const res = await wretch(configURL).get().json<ScheduleConfig>()
+      return res
+    },
+    staleTime: Infinity,
   }
 }
 
-export type AppContext = {
-  config: RequiredScheduleConfig
-  bookmarkAPI: BookmarkAPI | undefined
-}
-
-export const loadApp = async (
+export const makeAppConfig = async (
   queryClient: QueryClient,
   configURL: string,
-): Promise<AppContext> => {
-  const config = await queryClient.fetchQuery(
-    getScheduleConfigQueryOptions(configURL),
-  )
+): Promise<AppConfig> => {
+  const config = await queryClient.fetchQuery(getConfigQueryOptions(configURL))
+  let bookmarkAPI = config.bookmarks
+    ? makeBookmarkAPI(config.bookmarks)
+    : undefined
 
-  let bookmarkAPI: BookmarkAPI | undefined
+  let sessionId: string | undefined
 
-  if (config.bookmarks) {
-    bookmarkAPI = makeBookmarkAPI(config.bookmarks)
+  if (bookmarkAPI) {
     try {
-      await bookmarkAPI.setup()
-    } catch (_) {
+      const res = await bookmarkAPI.setup()
+      sessionId = res.sessionId
+    } catch (_e) {
       bookmarkAPI = undefined
     }
   }
 
-  // local storage sync
-  listenForStorageUpdates(config.id, (selections) => {
-    queryClient
-      .getMutationCache()
-      .build(
-        queryClient,
-        getStoredBookmarksMutationOptions(queryClient, config.id),
-      )
-      .execute(selections)
-  })
-
-  return {
-    config,
+  // load bookmarks
+  const [local, remote] = await loadBookmarks(
+    queryClient,
+    config.id,
     bookmarkAPI,
+  )
+  // sync bookmarks
+  if (bookmarkAPI) {
+    await syncBookmarks(queryClient, config.id, bookmarkAPI, local, remote)
   }
-}
 
-export const getScheduleConfigQueryOptions = (
-  url: string,
-): UseSuspenseQueryOptions<RequiredScheduleConfig> => {
-  return {
-    queryKey: ["config", { url: url }],
-    async queryFn() {
-      return await wretch(url).get().json<RequiredScheduleConfig>()
-    },
-    staleTime: Infinity,
-  }
+  return { config, bookmarkAPI, sessionId }
 }
