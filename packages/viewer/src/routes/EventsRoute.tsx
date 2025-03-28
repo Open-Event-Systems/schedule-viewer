@@ -10,7 +10,13 @@ import {
 import { Grid, SegmentedControl, Stack } from "@mantine/core"
 import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
 import { MouseEvent, useCallback, useContext, useRef } from "react"
-import { Event } from "@open-event-systems/schedule-lib"
+import {
+  Event,
+  isScheduled,
+  makeBookmarkFilter,
+  makeTagFilter,
+  makeTitleFilter,
+} from "@open-event-systems/schedule-lib"
 import { Filter } from "@open-event-systems/schedule-components/filter/Filter"
 import { ConfirmSyncDialog } from "@open-event-systems/schedule-components/confirm-sync-dialog/confirm-sync-dialog"
 import { ShareDialog } from "@open-event-systems/schedule-components/share-dialog/share-dialog"
@@ -26,6 +32,7 @@ import {
 } from "../bookmarks.js"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
+import { createICS } from "../ical.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
@@ -181,6 +188,32 @@ export const EventsRoute = observer(() => {
               navigate({
                 to: syncScheduleRoute.to,
               })
+            }}
+            onExport={() => {
+              let events = Array.from(allEvents).filter(isScheduled)
+
+              if (filterText) {
+                events = events.filter(makeTitleFilter(filterText))
+              }
+
+              events = events.filter(makeTagFilter(disabledTags))
+
+              if (onlyBookmarked) {
+                events = events.filter(makeBookmarkFilter(selections))
+              }
+
+              const data = createICS(
+                events,
+                `schedule-${config.icalPrefix || "event"}`,
+                config.icalDomain || window.location.hostname,
+              )
+              const blob = new Blob([data], { type: "text/calendar" })
+              const dataURL = URL.createObjectURL(blob)
+              const el = document.createElement("a")
+              el.setAttribute("href", dataURL)
+              el.setAttribute("download", `${config.id}-schedule.ics`)
+              el.click()
+              URL.revokeObjectURL(dataURL)
             }}
           />
           <ShareDialog

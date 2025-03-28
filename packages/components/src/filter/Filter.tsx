@@ -1,4 +1,11 @@
-import { Grid, GridProps, Switch, TextInput, useProps } from "@mantine/core"
+import {
+  Grid,
+  GridProps,
+  Switch,
+  Text,
+  TextInput,
+  useProps,
+} from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/TagFilter.js"
@@ -27,6 +34,7 @@ export const Filter = (props: FilterProps) => {
     <Grid className={clsx("Filter-root", className)} {...other}>
       <Grid.Col span={{ xs: 12 }}>
         <TextInput
+          title="Search"
           leftSection={<IconSearch />}
           value={text || ""}
           onChange={(e) => {
@@ -44,6 +52,9 @@ export const Filter = (props: FilterProps) => {
         />
       </Grid.Col>
       <Grid.Col span={{ xs: 12 }}>
+        <Text size="xs" c="dimmed">
+          Filter Tags
+        </Text>
         <TagFilter
           disabledTags={disabledTags ?? []}
           onChangeTags={onChangeTags}

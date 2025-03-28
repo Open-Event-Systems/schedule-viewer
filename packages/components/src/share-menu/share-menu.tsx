@@ -1,4 +1,4 @@
-import { ActionIcon, Menu, MenuProps, useProps } from "@mantine/core"
+import { ActionIcon, Button, Menu, MenuProps, useProps } from "@mantine/core"
 import {
   IconCalendarDown,
   IconSettings,
@@ -23,9 +23,9 @@ export const ShareMenu = (props: ShareMenuProps) => {
   return (
     <Menu {...other}>
       <Menu.Target>
-        <ActionIcon variant="transparent">
-          <IconSettings />
-        </ActionIcon>
+        <Button leftSection={<IconSettings />} variant="subtle" size="xs">
+          Options
+        </Button>
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Import/Export</Menu.Label>

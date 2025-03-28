@@ -21,6 +21,7 @@ import {
 } from "../bookmarks.js"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
+import { ShareMenu } from "@open-event-systems/schedule-components/share-menu/share-menu"
 
 export const SharedScheduleRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
@@ -114,9 +115,8 @@ export const SharedScheduleRoute = observer(() => {
               setFilter({ ...filter, showPast })
             }
           />
-          <Anchor
-            component="button"
-            onClick={() => {
+          <ShareMenu
+            onExport={() => {
               let events = Array.from(allEvents).filter(isScheduled)
 
               if (filterText) {
@@ -142,9 +142,7 @@ export const SharedScheduleRoute = observer(() => {
               el.click()
               URL.revokeObjectURL(dataURL)
             }}
-          >
-            Export Calendar
-          </Anchor>
+          />
         </Stack>
       </Grid.Col>
     </Grid>
