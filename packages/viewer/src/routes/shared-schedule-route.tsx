@@ -11,7 +11,12 @@ import {
 import { Filter } from "@open-event-systems/schedule-components/filter/Filter"
 import { observer } from "mobx-react-lite"
 import { createICS } from "../ical.js"
-import { notFound, useLocation, useRouter } from "@tanstack/react-router"
+import {
+  notFound,
+  rootRouteId,
+  useLocation,
+  useRouter,
+} from "@tanstack/react-router"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { useEvents } from "../schedule.js"
 import {
@@ -29,7 +34,7 @@ export const SharedScheduleRoute = observer(() => {
   const allEvents = useEvents(config.events, config.timeZone)
   const selections = useBookmarksById(config.id, selectionId)
   if (!selections) {
-    throw notFound()
+    throw notFound({ routeId: rootRouteId })
   }
   const counts = useBookmarkCounts(config.id)
   const updateSelections = useUpdateBookmarks(config.id)

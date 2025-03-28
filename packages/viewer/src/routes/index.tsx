@@ -2,9 +2,12 @@ import { QueryClient } from "@tanstack/react-query"
 import {
   createRootRouteWithContext,
   createRoute,
+  HeadContent,
   lazyRouteComponent,
   notFound,
   Outlet,
+  rootRouteId,
+  Scripts,
 } from "@tanstack/react-router"
 import { getEventsQueryOptions } from "../schedule.js"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
@@ -21,13 +24,27 @@ import { Loading } from "../components/Loading.js"
 import { AppConfig } from "../config.js"
 import { chooseNewer } from "@open-event-systems/schedule-lib"
 import { saveSelections } from "../local-storage.js"
+import { NotFoundRoute } from "./NotFoundRoute.js"
 
 export type RouterContext = {
   appConfigPromise: Promise<AppConfig>
   queryClient: QueryClient
 }
 
-export const rootRoute = createRootRouteWithContext<RouterContext>()({})
+export const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component() {
+    return (
+      <>
+        <HeadContent />
+        <Outlet />
+        <Scripts />
+      </>
+    )
+  },
+  notFoundComponent() {
+    return <NotFoundRoute />
+  },
+})
 
 export const configRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -41,6 +58,19 @@ export const configRoute = createRoute({
       config: appConfig.config,
       bookmarkAPI: appConfig.bookmarkAPI,
       sessionId: appConfig.sessionId,
+      pageTitle: `${appConfig.config.title} Schedule`,
+    }
+  },
+  async loader({ context }) {
+    return { config: context.config }
+  },
+  head({ match }) {
+    return {
+      meta: [
+        {
+          title: match.context.pageTitle,
+        },
+      ],
     }
   },
   staleTime: Infinity,
@@ -118,9 +148,24 @@ export const eventRoute = createRoute({
 
     const event = events.get(eventId)
     if (!event) {
-      throw notFound()
+      throw notFound({ routeId: rootRouteId })
     }
     return { event }
+  },
+  head({ loaderData }) {
+    return {
+      meta: [
+        {
+          title: `${loaderData.event.title || "Event"}`,
+        },
+        loaderData.event.description
+          ? {
+              name: "description",
+              content: loaderData.event.description,
+            }
+          : undefined,
+      ],
+    }
   },
 })
 
@@ -130,7 +175,7 @@ export const shareScheduleRoute = createRoute({
   async loader({ context }) {
     const { config, queryClient, bookmarkAPI } = context
     if (!bookmarkAPI) {
-      throw notFound()
+      throw notFound({ routeId: rootRouteId })
     }
 
     const [local, remote] = await Promise.all([
@@ -160,7 +205,7 @@ export const syncScheduleRoute = createRoute({
   async loader({ context }) {
     const { bookmarkAPI } = context
     if (!bookmarkAPI) {
-      throw notFound()
+      throw notFound({ routeId: rootRouteId })
     }
     return { syncId: context.sessionId }
   },
@@ -184,7 +229,7 @@ export const sharedScheduleRoute = createRoute({
       getBookmarksByIdQueryOptions(bookmarkAPI, config.id, params.selectionId),
     )
     if (!selections) {
-      throw notFound()
+      throw notFound({ routeId: rootRouteId })
     }
     return { selections }
   },
