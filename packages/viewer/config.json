@@ -5,6 +5,7 @@
   "icalDomain": "example.net",
   "events": "events.json",
   "title": "Example Event",
+  "description": "Example event schedule.",
   "dayChangeHour": 6,
   "timeZone": "America/New_York",
   "tags": [

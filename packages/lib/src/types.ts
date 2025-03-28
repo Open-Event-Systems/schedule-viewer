@@ -47,6 +47,7 @@ export interface ScheduleConfig {
   readonly id: string
   readonly events: string | readonly EventJSON[]
   readonly title: string
+  readonly description: string
   readonly dayChangeHour: number
   readonly binMinutes: number
   readonly timeZone: string

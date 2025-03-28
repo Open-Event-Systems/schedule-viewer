@@ -4,6 +4,7 @@ import {
   Box,
   Modal,
   ModalProps,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -11,7 +12,6 @@ import {
 } from "@mantine/core"
 import { IconAlertTriangle, IconCopy } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
-import qrcode from "qrcode"
 
 export type ShareDialogProps = ModalProps & {
   shareURL?: string
@@ -27,16 +27,25 @@ export const ShareDialog = (props: ShareDialogProps) => {
   } = useProps("ShareDialog", {}, props)
 
   const textRef = useRef<HTMLInputElement | null>(null)
+  const curRef = useRef<string>()
+  curRef.current = shareURL
 
-  const [svg, setSvg] = useState("")
+  const [[svgFor, svg], setSvg] = useState<[string, string]>(["", ""])
 
   useEffect(() => {
     if (shareURL) {
-      qrcode
-        .toString(shareURL, {
-          type: "svg",
-        })
-        .then((res) => setSvg(res))
+      import("qrcode").then((qrcode) =>
+        qrcode
+          .toString(shareURL, {
+            type: "svg",
+            width: 200,
+          })
+          .then((res) => {
+            if (shareURL == curRef.current) {
+              setSvg([shareURL, res])
+            }
+          }),
+      )
     }
   }, [shareURL])
 
@@ -56,7 +65,17 @@ export const ShareDialog = (props: ShareDialogProps) => {
             </Alert>
           </>
         )}
-        <Box dangerouslySetInnerHTML={{ __html: svg }} w={200} m="auto"></Box>
+        {svg && shareURL == svgFor ? (
+          <Box
+            dangerouslySetInnerHTML={{ __html: svg }}
+            w={200}
+            h={200}
+            m="auto"
+          ></Box>
+        ) : (
+          <Skeleton w={200} h={200} m="auto" />
+        )}
+
         <TextInput
           readOnly
           title="Share URL"

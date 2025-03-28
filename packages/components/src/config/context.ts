@@ -16,6 +16,7 @@ const getDefaultTZ = (): string => {
 export const DEFAULT_SCHEDULE_CONFIG = {
   id: "schedule",
   title: "Event",
+  description: "",
   events: [],
   binMinutes: 30,
   dayChangeHour: 6,
