@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react"
 import { MapViewer } from "./MapViewer.js"
 import "./MapViewer.scss"
 import "./Map.scss"
-import svgMap from "../../../../map/ao-map-2.svg"
+import svgMap from "../../../../map/ao-map-2-relabel.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
 

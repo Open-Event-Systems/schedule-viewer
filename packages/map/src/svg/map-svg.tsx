@@ -10,10 +10,17 @@ import {
 } from "react"
 import { getIDFromMapClass, getMapClass, MAP_CLASSES } from "../map-classes.js"
 
+export type MapSVGVendor = Readonly<{
+  location: string
+  name: string
+  icon?: string
+}>
+
 export type MapSVGProps = ComponentPropsWithoutRef<"svg"> & {
   level: string
   hiddenLayers?: Iterable<string>
   highlightId?: string | null
+  vendors?: readonly MapSVGVendor[]
   isometric?: boolean
   onSelectLocation?: (id: string | null) => void
 }
@@ -24,6 +31,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     level,
     hiddenLayers = [],
     highlightId,
+    vendors = [],
     isometric = false,
     onSelectLocation,
     ...other
@@ -153,6 +161,54 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
       }
     }
   }, [el, onSelectLocation])
+
+  // set vendor icons
+  useLayoutEffect(() => {
+    const els = el?.getElementsByClassName(MAP_CLASSES.vendorIcon) ?? []
+    for (const el of els) {
+      removeInlineDisplay(el)
+    }
+
+    for (const vendor of vendors) {
+      const els =
+        el?.getElementsByClassName(
+          getMapClass(MAP_CLASSES.vendorIconPrefix, vendor.location),
+        ) ?? []
+      for (const el of els) {
+        removeInlineDisplay(el)
+        if (vendor.icon) {
+          el.classList.add(MAP_CLASSES.visible)
+          if (el.tagName == "image") {
+            el.setAttributeNS(
+              "http://www.w3.org/1999/xlink",
+              "href",
+              vendor.icon,
+            )
+          }
+        } else {
+          el.classList.remove(MAP_CLASSES.visible)
+        }
+      }
+    }
+  }, [el, vendors])
+
+  // set vendor names
+  useLayoutEffect(() => {
+    const els = el?.getElementsByClassName(MAP_CLASSES.vendorName) ?? []
+    for (const el of els) {
+      el.innerHTML = ""
+    }
+
+    for (const vendor of vendors) {
+      const els =
+        el?.getElementsByClassName(
+          getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location),
+        ) ?? []
+      for (const el of els) {
+        el.innerHTML = vendor.name
+      }
+    }
+  }, [el, vendors])
 
   return (
     <svg className={clsx("MapSVG-root", className)} ref={setRef} {...other} />

@@ -44,8 +44,16 @@
 }
 
 .Map-click {
-  opacity: 0;
+  // opacity: 0;
   cursor: pointer;
+}
+
+.Map-vendor-icon {
+  display: none;
+}
+
+.Map-vendor-icon.Map-visible {
+  display: initial;
 }
 
 // Specific map element styles

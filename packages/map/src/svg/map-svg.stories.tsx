@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { getMapSVGProps, MapSVG } from "./map-svg.js"
 import { useEffect, useMemo, useState } from "react"
-import svgMap from "../../../../map/ao-map-2.svg"
+import svgMap from "../../../../map/ao-map-2-relabel.svg"
 
 const meta: Meta<typeof MapSVG> = {
   component: MapSVG,
@@ -11,7 +11,14 @@ export default meta
 
 export const Default: StoryObj<typeof MapSVG> = {
   args: {
-    level: "lobby",
+    level: "lower",
+    vendors: [
+      {
+        location: "vendor-26",
+        name: "Test",
+        icon: "http://localhost:9001/tm.png",
+      },
+    ],
   },
   render(args) {
     const [data, setData] = useState<string | null>(null)
