@@ -13,14 +13,23 @@ import "./styles.scss"
 declare global {
   var scheduleTheme: MantineThemeOverride | undefined
   var scheduleColorScheme: MantineColorScheme | undefined
+  var scheduleBasePath: string | undefined
+  var __webpack_public_path__: string | undefined
 }
+
+__webpack_public_path__ = scheduleBasePath ?? "/"
 
 const scheduleEl = document.getElementById("schedule")
 if (scheduleEl) {
   const root = createRoot(scheduleEl)
 
   const theme = createTheme({ ...scheduleTheme })
-
-  const app = <App theme={theme} colorScheme={scheduleColorScheme} />
+  const app = (
+    <App
+      basePath={scheduleBasePath}
+      theme={theme}
+      colorScheme={scheduleColorScheme}
+    />
+  )
   root.render(app)
 }

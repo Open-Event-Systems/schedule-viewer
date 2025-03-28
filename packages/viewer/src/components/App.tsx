@@ -1,4 +1,4 @@
-import { createHashHistory, RouterProvider } from "@tanstack/react-router"
+import { createBrowserHistory, RouterProvider } from "@tanstack/react-router"
 import { createContext, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
@@ -6,20 +6,21 @@ import {
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core"
-import { BookmarkAPI, makeBookmarkAPI } from "@open-event-systems/schedule-lib"
 import { router } from "../router.js"
 import { makeAppConfig } from "../config.js"
 import { useSWStore } from "../service-worker.js"
 
 export const App = ({
+  basePath,
   theme,
   colorScheme,
 }: {
+  basePath?: string
   theme?: MantineThemeOverride
   colorScheme?: MantineColorScheme
 }) => {
   const [history] = useState(() => {
-    const history = createHashHistory()
+    const history = createBrowserHistory()
     return history
   })
 
@@ -39,9 +40,9 @@ export const App = ({
   const swStore = useSWStore()
 
   const [appConfigPromise] = useState(() => {
-    return makeAppConfig(queryClient, "config.json").then((ctx) => {
+    return makeAppConfig(queryClient, getConfigURL(basePath)).then((ctx) => {
       if (ctx.config.serviceWorker) {
-        swStore.register()
+        swStore.register(basePath)
       }
       return ctx
     })
@@ -52,6 +53,7 @@ export const App = ({
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
+            basepath={basePath}
             router={router}
             history={history}
             context={{
@@ -83,3 +85,13 @@ export const FilterContext = createContext<
   },
   () => {},
 ])
+
+const getConfigURL = (basePath = "") => {
+  if (basePath == "") {
+    return "config.json"
+  } else if (basePath == "/") {
+    return "/config.json"
+  } else {
+    return `${basePath}/config.json`
+  }
+}

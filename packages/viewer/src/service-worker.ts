@@ -18,10 +18,18 @@ export class SWStore {
     })
   }
 
-  register() {
+  register(basePath = "") {
     if ("serviceWorker" in navigator) {
       import("workbox-window").then(({ Workbox }) => {
-        const workbox = new Workbox("sw.js")
+        let swpath
+        if (basePath == "") {
+          swpath = "sw.js"
+        } else if (basePath == "/") {
+          swpath = "/sw.js"
+        } else {
+          swpath = `${basePath}/sw.js`
+        }
+        const workbox = new Workbox(swpath)
 
         workbox.addEventListener(
           "waiting",

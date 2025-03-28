@@ -14,6 +14,7 @@ export default (env, argv) => {
     },
     output: {
       path: path.resolve("./dist"),
+      publicPath: "/",
       filename: isProd ? "js/[name].[contenthash].js" : undefined,
       clean: true,
     },
@@ -119,6 +120,7 @@ export default (env, argv) => {
     },
     devServer: {
       port: 9000,
+      historyApiFallback: true,
     },
   }
   return config

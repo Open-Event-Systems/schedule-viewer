@@ -3,7 +3,7 @@
   "bookmarks": "http://localhost:8000/schedule/example-event",
   "icalPrefix": "example",
   "icalDomain": "example.net",
-  "events": "events.json",
+  "events": "/events.json",
   "title": "Example Event",
   "description": "Example event schedule.",
   "dayChangeHour": 6,
@@ -14,5 +14,5 @@
     ["mature", "Mature"]
   ],
   "tagIndicators": [["mature", "18+"]],
-  "serviceWorker": true
+  "serviceWorker": false
 }
