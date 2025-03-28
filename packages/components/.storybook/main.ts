@@ -9,7 +9,6 @@ const config: StorybookConfig = {
     "@storybook/addon-interactions",
     {
       name: "@storybook/addon-styling-webpack",
-
       options: {
         rules: [
           {
