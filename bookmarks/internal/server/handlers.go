@@ -75,14 +75,14 @@ func (s *server) setupSessionHandler(w http.ResponseWriter, req *http.Request) {
 
 		sessionId, err = verifySessionId(sessionReq.SessionID, s.config.Secret)
 	} else {
-		sessionId, err = getSessionIdFromCookie(req, s.config.Secret)
+		sessionId, err = getSessionIdFromCookie(req, s.config.Secret, scheduleId)
 	}
 
 	if err != nil {
 		sessionId = newSessionId(s.config.Secret)
 	}
 
-	sessionId.SetCookie(w, s.config.Domain)
+	sessionId.SetCookie(w, s.config.Domain, scheduleId)
 	resp := structs.BookmarkSetupResponse{
 		SessionID: sessionId.String(),
 	}
@@ -98,7 +98,7 @@ func (s *server) setSelectionHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	sessionId, err := getSessionIdFromCookie(req, s.config.Secret, scheduleId)
 	if err != nil {
 		httpError(w, http.StatusUnauthorized)
 		return
@@ -126,7 +126,7 @@ func (s *server) setSelectionHandler(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
-	sessionId.SetCookie(w, s.config.Domain)
+	sessionId.SetCookie(w, s.config.Domain, scheduleId)
 
 	respBody := structs.SessionBookmarksResponse{
 		Id:     hash,
@@ -139,7 +139,7 @@ func (s *server) setSelectionHandler(w http.ResponseWriter, req *http.Request) {
 func (s *server) getSessionSelectionHandler(w http.ResponseWriter, req *http.Request) {
 	scheduleId := chi.URLParam(req, "scheduleId")
 
-	sessionId, err := getSessionIdFromCookie(req, s.config.Secret)
+	sessionId, err := getSessionIdFromCookie(req, s.config.Secret, scheduleId)
 	if err != nil {
 		jsonResponse(w, emptySelectionResponse)
 		return

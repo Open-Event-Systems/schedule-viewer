@@ -12,7 +12,7 @@ import {
   useSuspenseQuery,
   UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
-import { parseISO } from "date-fns"
+import { isAfter, parseISO } from "date-fns"
 import { loadSelections, saveSelections } from "./local-storage.js"
 import { createContext, useCallback, useContext } from "react"
 
@@ -175,10 +175,15 @@ export const useUpdateBookmarks = (
   const updater = useCallback(
     async (selections: Selections): Promise<[string, Selections]> => {
       // update both local+remote simultaneously
-      const [_localRes, [remoteId, remoteRes]] = await Promise.all([
+      const [localRes, [remoteId, remoteRes]] = await Promise.all([
         localMutation.mutateAsync(selections),
         sessionMutation.mutateAsync(selections),
       ])
+
+      // update the local version again with the remote version
+      if (isAfter(remoteRes.dateUpdated, localRes.dateUpdated)) {
+        await localMutation.mutateAsync(localRes)
+      }
 
       // return the remote version
       return [remoteId, remoteRes]
@@ -211,4 +216,61 @@ export const useBookmarkCount = (
 ): number | undefined => {
   const counts = useBookmarkCounts(scheduleId)
   return counts.get(eventId)
+}
+
+export const loadBookmarks = async (
+  queryClient: QueryClient,
+  scheduleId: string,
+  bookmarkAPI?: BookmarkAPI,
+): Promise<[Selections, Selections]> => {
+  return await Promise.all([
+    queryClient.fetchQuery(getStoredBookmarksQueryOptions(scheduleId)),
+    queryClient.fetchQuery(
+      getSessionBookmarksQueryOptions(bookmarkAPI, scheduleId),
+    ),
+  ])
+}
+
+export const syncBookmarks = async (
+  queryClient: QueryClient,
+  scheduleId: string,
+  bookmarkAPI: BookmarkAPI,
+  local: Selections,
+  remote: Selections,
+): Promise<Selections> => {
+  // local to remote
+  if (isAfter(local.dateUpdated, remote.dateUpdated)) {
+    const [_, result] = await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getSessionBookmarksMutationOptions(
+          queryClient,
+          bookmarkAPI,
+          scheduleId,
+        ),
+      )
+      .execute(local)
+
+    await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getStoredBookmarksMutationOptions(queryClient, scheduleId),
+      )
+      .execute(result)
+    return result
+  } else if (isAfter(remote.dateUpdated, local.dateUpdated)) {
+    // remote to local
+    await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getStoredBookmarksMutationOptions(queryClient, scheduleId),
+      )
+      .execute(remote)
+    return remote
+  } else {
+    return local
+  }
 }

@@ -5,6 +5,7 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
+import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
 
 export type AppConfig = Readonly<{
   config: ScheduleConfig
@@ -37,15 +38,23 @@ export const makeAppConfig = async (
   let sessionId: string | undefined
 
   if (bookmarkAPI) {
-  }
-
-  if (bookmarkAPI) {
     try {
       const res = await bookmarkAPI.setup()
       sessionId = res.sessionId
     } catch (_e) {
       bookmarkAPI = undefined
     }
+  }
+
+  // load bookmarks
+  const [local, remote] = await loadBookmarks(
+    queryClient,
+    config.id,
+    bookmarkAPI,
+  )
+  // sync bookmarks
+  if (bookmarkAPI) {
+    await syncBookmarks(queryClient, config.id, bookmarkAPI, local, remote)
   }
 
   return { config, bookmarkAPI, sessionId }
