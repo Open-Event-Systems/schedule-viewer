@@ -9,18 +9,16 @@ import {
   MantineThemeOverride,
 } from "@mantine/core"
 declare global {
-  interface Window {
-    scheduleTheme?: MantineThemeOverride
-    scheduleColorScheme?: MantineColorScheme
-  }
+  var scheduleTheme: MantineThemeOverride | undefined
+  var scheduleColorScheme: MantineColorScheme | undefined
 }
 
 const scheduleEl = document.getElementById("schedule")
 if (scheduleEl) {
   const root = createRoot(scheduleEl)
 
-  const theme = createTheme({ ...window.scheduleTheme })
+  const theme = createTheme({ ...scheduleTheme })
 
-  const app = <App theme={theme} colorScheme={window.scheduleColorScheme} />
+  const app = <App theme={theme} colorScheme={scheduleColorScheme} />
   root.render(app)
 }

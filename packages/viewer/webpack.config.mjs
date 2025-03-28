@@ -53,11 +53,8 @@ export default (env, argv) => {
             to: "schedule.webmanifest",
           },
           {
-            from: "theme.js",
-            to: "theme.js",
-            info: {
-              minimized: false,
-            },
+            from: "config.js",
+            to: "config.js",
           },
           {
             from: "custom.css",
@@ -78,13 +75,13 @@ export default (env, argv) => {
               /\.map$/,
               /^LICENSE.*\.txt$/,
               /^manifest.*\.js$/,
-              /theme\.js$/,
+              /config\.js$/,
               /config\.json$/,
               /custom\.css$/,
             ],
             runtimeCaching: [
               {
-                urlPattern: /theme\.js$/,
+                urlPattern: /config\.js$/,
                 handler: "NetworkFirst",
               },
               {
