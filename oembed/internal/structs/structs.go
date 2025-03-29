@@ -1,9 +1,17 @@
 package structs
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type ScheduleConfig struct {
-	URL string `json:"url"`
+	Title  string     `json:"title"`
+	Events eventOrURL `json:"events"`
+}
+
+type eventOrURL struct {
+	URL    string
+	Events []Event
 }
 
 type EventsResponse struct {
@@ -28,6 +36,24 @@ type Host struct {
 type _host struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
+}
+
+func (e *eventOrURL) UnmarshalJSON(data []byte) error {
+	var asStr string
+	err := json.Unmarshal(data, &asStr)
+	if err == nil {
+		e.URL = asStr
+		return nil
+	}
+
+	var asEvents []Event
+	err = json.Unmarshal(data, &asEvents)
+	if err == nil {
+		e.Events = asEvents
+		return nil
+	}
+
+	return err
 }
 
 func (h *Host) UnmarshalJSON(data []byte) error {
