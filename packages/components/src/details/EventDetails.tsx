@@ -14,6 +14,7 @@ import {
   IconBookmark,
   IconClockHour4,
   IconMapPin,
+  IconShare3,
   IconTag,
   IconUser,
 } from "@tabler/icons-react"
@@ -27,6 +28,7 @@ import {
   makeValidTagsFilter,
   useScheduleConfig,
 } from "../config/context.js"
+import { ShareButton } from "../share-button/share-button.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -34,6 +36,8 @@ export type EventDetailsProps = {
   setBookmarked?: (set: boolean) => void
   large?: boolean
   bookmarkCount?: number | null
+  showShare?: boolean
+  url?: string
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
@@ -44,6 +48,8 @@ export const EventDetails = (props: EventDetailsProps) => {
     setBookmarked,
     large = false,
     bookmarkCount,
+    showShare,
+    url,
     ...other
   } = useProps("EventDetails", {}, props)
 
@@ -80,27 +86,31 @@ export const EventDetails = (props: EventDetailsProps) => {
             {locationEl}
             {hostsEl}
           </Box>
-          <Box className="EventDetails-bookmark">
-            <ActionIcon
-              size={large ? "md" : "sm"}
-              variant={bookmarked ? "filled" : "default"}
-              className="EventDetails-bookmarkButton"
-              onClick={() => setBookmarked && setBookmarked(!bookmarked)}
-            >
-              <IconBookmark />
-            </ActionIcon>
-            {bookmarkCount != null && bookmarkCount >= 1 && (
-              <Text
-                span
-                size="xs"
-                c="dimmed"
-                fw="bold"
-                className="EventDetails-bookmarkCount"
+          <Stack className="EventDetails-buttons" align="center" gap={4}>
+            {showShare && <ShareButton size={large ? "md" : "sm"} url={url} />}
+            <Box className="EventDetails-bookmark">
+              <ActionIcon
+                title={bookmarked ? "Unbookmark" : "Bookmark This Event"}
+                size={large ? "md" : "sm"}
+                variant={bookmarked ? "filled" : "default"}
+                className="EventDetails-bookmarkButton"
+                onClick={() => setBookmarked && setBookmarked(!bookmarked)}
               >
-                {bookmarkCount}
-              </Text>
-            )}
-          </Box>
+                <IconBookmark />
+              </ActionIcon>
+              {bookmarkCount != null && bookmarkCount >= 1 && (
+                <Text
+                  span
+                  size="xs"
+                  c="dimmed"
+                  fw="bold"
+                  className="EventDetails-bookmarkCount"
+                >
+                  {bookmarkCount}
+                </Text>
+              )}
+            </Box>
+          </Stack>
         </Flex>
         <Markdown className="EventDetails-description">
           {event.description}

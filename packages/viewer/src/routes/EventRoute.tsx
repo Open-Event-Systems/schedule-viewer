@@ -1,6 +1,6 @@
 import { EventDetails } from "@open-event-systems/schedule-components/details/EventDetails"
 import { eventRoute, eventsRoute } from "./index.js"
-import { Link } from "@tanstack/react-router"
+import { Link, useRouter } from "@tanstack/react-router"
 import { Anchor } from "@mantine/core"
 import { observer } from "mobx-react-lite"
 import { useCallback } from "react"
@@ -16,6 +16,7 @@ export const EventRoute = observer(() => {
   const selections = useBookmarks(config.id)
   const updateSelections = useUpdateBookmarks(config.id)
   const count = useBookmarkCount(config.id, event.id)
+  const router = useRouter()
 
   const bookmarked = selections.has(event.id)
   const setBookmarked = useCallback(
@@ -49,6 +50,20 @@ export const EventRoute = observer(() => {
         bookmarked={bookmarked}
         setBookmarked={setBookmarked}
         bookmarkCount={count}
+        showShare
+        url={String(
+          new URL(
+            router.history.createHref(
+              router.buildLocation({
+                to: eventRoute.to,
+                params: {
+                  eventId: event.id,
+                },
+              }).href,
+            ),
+            window.location.href,
+          ),
+        )}
       />
     </>
   )

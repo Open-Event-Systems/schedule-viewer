@@ -142,6 +142,7 @@ const EventPillsPill = ({
           bookmarked={getIsBookmarked ? getIsBookmarked(event) : undefined}
           setBookmarked={(set) => setBookmarked && setBookmarked(event, set)}
           bookmarkCount={getBookmarkCount ? getBookmarkCount(event) : undefined}
+          url={href}
         >
           {c}
         </EventHoverCard>

@@ -122,13 +122,18 @@ export const EventsRoute = observer(() => {
 
   const getHref = useCallback(
     (event: Event) => {
-      return router.history.createHref(
-        router.buildLocation({
-          to: eventRoute.to,
-          params: {
-            eventId: event.id,
-          },
-        }).href,
+      return String(
+        new URL(
+          router.history.createHref(
+            router.buildLocation({
+              to: eventRoute.to,
+              params: {
+                eventId: event.id,
+              },
+            }).href,
+          ),
+          window.location.href,
+        ),
       )
     },
     [router],
@@ -267,37 +272,6 @@ export const EventsRoute = observer(() => {
               }
             }}
           />
-          {/* <Anchor
-            component="button"
-            onClick={() => {
-              let events = Array.from(allEvents).filter(isScheduled)
-
-              if (filterText) {
-                events = events.filter(makeTitleFilter(filterText))
-              }
-
-              events = events.filter(makeTagFilter(disabledTags))
-
-              if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(selections))
-              }
-
-              const data = createICS(
-                events,
-                `schedule-${config.icalPrefix || "event"}`,
-                config.icalDomain || window.location.hostname
-              )
-              const blob = new Blob([data], { type: "text/calendar" })
-              const dataURL = URL.createObjectURL(blob)
-              const el = document.createElement("a")
-              el.setAttribute("href", dataURL)
-              el.setAttribute("download", `${config.id}-schedule.ics`)
-              el.click()
-              URL.revokeObjectURL(dataURL)
-            }}
-          >
-            Export Calendar
-          </Anchor> */}
         </Stack>
       </Grid.Col>
     </Grid>
