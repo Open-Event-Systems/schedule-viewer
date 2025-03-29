@@ -72,6 +72,9 @@ export default (env, argv) => {
             cacheId: "schedule",
             cleanupOutdatedCaches: true,
             mode: isProd ? "production" : "development",
+            modifyURLPrefix: {
+              "/": "",
+            },
             exclude: [
               /\.map$/,
               /^LICENSE.*\.txt$/,

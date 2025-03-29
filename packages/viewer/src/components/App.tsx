@@ -40,7 +40,7 @@ export const App = ({
   const swStore = useSWStore()
 
   const [appConfigPromise] = useState(() => {
-    return makeAppConfig(queryClient, getConfigURL(basePath)).then((ctx) => {
+    return makeAppConfig(queryClient, `${basePath}config.json`).then((ctx) => {
       if (ctx.config.serviceWorker) {
         swStore.register(basePath)
       }
@@ -85,13 +85,3 @@ export const FilterContext = createContext<
   },
   () => {},
 ])
-
-const getConfigURL = (basePath = "") => {
-  if (basePath == "") {
-    return "config.json"
-  } else if (basePath == "/") {
-    return "/config.json"
-  } else {
-    return `${basePath}/config.json`
-  }
-}
