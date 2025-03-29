@@ -12,4 +12,6 @@ RUN adduser -D app
 RUN mkdir /data && chown app:app /data
 COPY --from=build /build/server /usr/local/bin/server
 USER app
+EXPOSE 8001
 ENTRYPOINT [ "/usr/local/bin/server" ]
+CMD [ "-config", "oembed.yaml", "-port", "8001" ]
