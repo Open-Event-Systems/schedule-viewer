@@ -127,7 +127,7 @@ func (db *DB) SetSessionSelection(sessionId string, scheduleId string, hash stri
 	}
 	defer tx.Rollback()
 
-	now := time.Now().Format(time.RFC3339)
+	now := time.Now().Format(time.RFC3339Nano)
 
 	if _, err = tx.Exec(
 		"INSERT INTO session VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET selection_hash = ?, date = ?", sessionId, scheduleId, now, hash, hash, now,

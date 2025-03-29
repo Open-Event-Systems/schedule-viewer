@@ -1,12 +1,10 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import { Pills, PillsProps } from "../pills/Pills.js"
-import { makeId } from "@open-event-systems/schedule-lib"
-import { getIndicator } from "../pills/EventPills.js"
-import { useScheduleConfig } from "../config/context.js"
+import { makeTagIndicatorFunc, useScheduleConfig } from "../config/context.js"
+import { useMemo } from "react"
 
 export type TagFilterProps = {
-  tags?: Iterable<string>
   disabledTags?: Iterable<string>
   onChangeTags?: (tags: Set<string>) => void
 } & PillsProps
@@ -14,21 +12,26 @@ export type TagFilterProps = {
 export const TagFilter = (props: TagFilterProps) => {
   const {
     className,
-    tags = [],
     disabledTags = [],
     onChangeTags,
     ...other
   } = useProps("TagFilter", {}, props)
 
   const disabledTagsSet = new Set(disabledTags)
+  const config = useScheduleConfig()
+  const getIndicator = useMemo(() => {
+    return makeTagIndicatorFunc(config.tagIndicators)
+  }, [config.tagIndicators])
 
   const tagEls = []
-  for (const tag of tags) {
+  for (const [tag, name] of config.tags) {
     tagEls.push(
       <TagFilterTag
         key={tag}
         tag={tag}
+        name={name}
         disabledTagsSet={disabledTagsSet}
+        getIndicator={getIndicator}
         onChangeTags={onChangeTags}
       />,
     )
@@ -43,25 +46,28 @@ export const TagFilter = (props: TagFilterProps) => {
 
 const TagFilterTag = ({
   tag,
+  name,
   disabledTagsSet,
+  getIndicator,
   onChangeTags,
 }: {
   tag: string
+  name: string
   disabledTagsSet: Set<string>
+  getIndicator?: (tags: readonly string[]) => string | undefined
   onChangeTags?: (tags: Set<string>) => void
 }) => {
   const enabled = !disabledTagsSet.has(tag)
-  const config = useScheduleConfig()
 
   return (
     <Pills.Pill
       className={clsx(
         "TagFilter-tag",
         { "TagFilter-disabled": !enabled },
-        `Pill-event-tag-${makeId(tag)}`,
+        `Pill-event-tag-${tag}`,
       )}
       button
-      indicator={getIndicator(config.tagIndicators, [tag])}
+      indicator={getIndicator && getIndicator([tag])}
       onClick={() => {
         const newSet = new Set(disabledTagsSet)
         if (enabled) {
@@ -72,7 +78,7 @@ const TagFilterTag = ({
         onChangeTags && onChangeTags(newSet)
       }}
     >
-      {tag}
+      {name}
     </Pills.Pill>
   )
 }

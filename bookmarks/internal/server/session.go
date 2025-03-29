@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ import (
 	nanoid "github.com/matoous/go-nanoid/v2"
 )
 
-const COOKIE_NAME = "schedule-session"
+const COOKIE_NAME = "schedule-session-"
 const COOKIE_EXPIRATION = 3 * 30 * 24 * time.Hour / time.Second
 
 var ErrInvalidSession = errors.New("invalid session")
@@ -31,8 +32,8 @@ func newSessionId(secret string) sessionId {
 	}
 }
 
-func getSessionIdFromCookie(req *http.Request, secret string) (sessionId, error) {
-	cookieVal, err := req.Cookie(COOKIE_NAME)
+func getSessionIdFromCookie(req *http.Request, secret string, scheduleId string) (sessionId, error) {
+	cookieVal, err := req.Cookie(getCookieName(scheduleId))
 	if err != nil {
 		return sessionId{}, ErrInvalidSession
 	}
@@ -63,14 +64,14 @@ func (s sessionId) String() string {
 	return s.Id + "." + s.Signature
 }
 
-func (s sessionId) SetCookie(w http.ResponseWriter, domain string) {
+func (s sessionId) SetCookie(w http.ResponseWriter, domain string, scheduleId string) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     COOKIE_NAME,
+		Name:     getCookieName(scheduleId),
 		Value:    s.String(),
 		MaxAge:   int(COOKIE_EXPIRATION),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
-		Domain: domain,
+		Domain:   domain,
 	})
 }
 
@@ -80,4 +81,8 @@ func sign(text string, secret string) string {
 	sig := mac.Sum(nil)
 	sigStr := base64.URLEncoding.EncodeToString(sig)
 	return strings.TrimRight(sigStr, "=")
+}
+
+func getCookieName(scheduleId string) string {
+	return fmt.Sprintf("%s%s", COOKIE_NAME, scheduleId)
 }

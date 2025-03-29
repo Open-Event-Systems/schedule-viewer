@@ -1,25 +1,20 @@
-import {
-  Event,
-  isScheduled,
-  makeId,
-  TagIndicatorEntry,
-} from "@open-event-systems/schedule-lib"
+import { Event, isScheduled } from "@open-event-systems/schedule-lib"
 import { Pills, PillsProps } from "./Pills.js"
 import { useProps } from "@mantine/core"
 import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { useScheduleConfig } from "../config/context.js"
-import { MouseEvent, ReactNode, useMemo } from "react"
+import { makeTagIndicatorFunc, useScheduleConfig } from "../config/context.js"
+import { MouseEvent, ReactNode, useCallback, useMemo } from "react"
 import { EventHoverCard } from "../hovercard/EventHoverCard.js"
 import clsx from "clsx"
 
 export type EventPillsProps = PillsProps & {
   events: Iterable<Event>
   binMinutes?: number
-  getHref?: (event: Event) => string | null | undefined
-  getIsBookmarked?: (event: Event) => boolean | undefined
+  getHref?: (event: Event) => string | undefined
+  getIsBookmarked?: (event: Event) => boolean
   setBookmarked?: (event: Event, set: boolean) => void
-  getBookmarkCount?: (event: Event) => number | undefined | null
+  getBookmarkCount?: (event: Event) => number | undefined
   onClickEvent?: (e: MouseEvent, event: Event) => void
 }
 
@@ -37,6 +32,10 @@ export const EventPills = (props: EventPillsProps) => {
   } = useProps("EventPills", {}, props)
 
   const config = useScheduleConfig()
+  const getIndicator = useMemo(() => {
+    const tagFunc = makeTagIndicatorFunc(config.tagIndicators)
+    return (ev: Event) => tagFunc(ev.tags ?? [])
+  }, [config.tagIndicators])
 
   const bins = useMemo(
     () => makeBins(events, binMinutes, config.timeZone),
@@ -46,36 +45,18 @@ export const EventPills = (props: EventPillsProps) => {
   const binEls = useMemo(() => {
     const res: ReactNode[] = []
     bins.forEach(([date, evs], b) => {
-      const items = evs.map((e) => (
-        <Pills.Pill
-          key={e.id}
-          children={e.title}
-          renderContent={(c) => (
-            <EventHoverCard
-              event={e}
-              bookmarked={getIsBookmarked ? getIsBookmarked(e) : undefined}
-              setBookmarked={(set) => setBookmarked && setBookmarked(e, set)}
-              bookmarkCount={getBookmarkCount ? getBookmarkCount(e) : undefined}
-            >
-              {c}
-            </EventHoverCard>
-          )}
-          className={clsx(
-            `Pill-event-id-${e.id}`,
-            e.tags?.map((t) => `Pill-event-tag-${makeId(t)}`),
-          )}
-          href={(getHref ? getHref(e) : undefined) ?? undefined}
-          indicator={getIndicator(config.tagIndicators, e.tags ?? [])}
-          onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
-        />
-      ))
-
-      const label = format(date, "h:mm aaa")
-
       res.push(
-        <Pills.Bin key={b} title={label}>
-          {items}
-        </Pills.Bin>,
+        <EventPillsBin
+          key={b}
+          date={date}
+          events={evs}
+          getHref={getHref}
+          getIndicator={getIndicator}
+          getIsBookmarked={getIsBookmarked}
+          setBookmarked={setBookmarked}
+          getBookmarkCount={getBookmarkCount}
+          onClickEvent={onClickEvent}
+        />,
       )
     })
     return res
@@ -89,6 +70,107 @@ export const EventPills = (props: EventPillsProps) => {
   ])
 
   return <Pills {...other}>{binEls}</Pills>
+}
+
+const EventPillsBin = ({
+  date,
+  events,
+  getHref,
+  getIndicator,
+  getIsBookmarked,
+  setBookmarked,
+  getBookmarkCount,
+  onClickEvent,
+}: {
+  date: Date
+  events: readonly Event[]
+  getHref?: (event: Event) => string | undefined
+  getIndicator?: (event: Event) => string | undefined
+  getIsBookmarked?: (event: Event) => boolean
+  setBookmarked?: (event: Event, set: boolean) => void
+  getBookmarkCount?: (event: Event) => number | undefined
+  onClickEvent?: (ev: MouseEvent, event: Event) => void
+}) => {
+  const label = format(date, "h:mm aaa")
+
+  const items = events.map((e) => (
+    <EventPillsPill
+      key={e.id}
+      event={e}
+      getHref={getHref}
+      getIndicator={getIndicator}
+      getIsBookmarked={getIsBookmarked}
+      setBookmarked={setBookmarked}
+      getBookmarkCount={getBookmarkCount}
+      onClickEvent={onClickEvent}
+    />
+  ))
+
+  return <Pills.Bin title={label}>{items}</Pills.Bin>
+}
+
+const EventPillsPill = ({
+  event,
+  getHref,
+  getIndicator,
+  getIsBookmarked,
+  setBookmarked,
+  getBookmarkCount,
+  onClickEvent,
+}: {
+  event: Event
+  getHref?: (event: Event) => string | undefined
+  getIndicator?: (event: Event) => string | undefined
+  getIsBookmarked?: (event: Event) => boolean
+  setBookmarked?: (event: Event, set: boolean) => void
+  getBookmarkCount?: (event: Event) => number | undefined
+  onClickEvent?: (ev: MouseEvent, event: Event) => void
+}) => {
+  const href = useMemo(() => {
+    return getHref ? getHref(event) : undefined
+  }, [event, getHref])
+
+  const indicator = useMemo(() => {
+    return getIndicator ? getIndicator(event) : undefined
+  }, [event, getIndicator])
+
+  const renderFunc = useCallback(
+    (c: ReactNode) => {
+      return (
+        <EventHoverCard
+          event={event}
+          bookmarked={getIsBookmarked ? getIsBookmarked(event) : undefined}
+          setBookmarked={(set) => setBookmarked && setBookmarked(event, set)}
+          bookmarkCount={getBookmarkCount ? getBookmarkCount(event) : undefined}
+          url={href}
+        >
+          {c}
+        </EventHoverCard>
+      )
+    },
+    [event, getIsBookmarked, setBookmarked, getBookmarkCount],
+  )
+
+  const clickHandler = useCallback(
+    (e: MouseEvent) => {
+      onClickEvent && onClickEvent(e, event)
+    },
+    [event, onClickEvent],
+  )
+
+  return (
+    <Pills.Pill
+      children={event.title}
+      renderContent={renderFunc}
+      className={clsx(
+        `Pill-event-id-${event.id}`,
+        event.tags?.map((t) => `Pill-event-tag-${t}`),
+      )}
+      href={href}
+      indicator={indicator}
+      onClick={clickHandler}
+    />
+  )
 }
 
 const makeBins = (
@@ -127,24 +209,4 @@ const binDate = (d: Date, binMinutes: number, tz: string): Date => {
   )
 
   return rounded
-}
-
-export const getIndicator = (
-  tagEntries: readonly TagIndicatorEntry[],
-  tags: readonly string[],
-): ReactNode => {
-  let cur = null
-
-  const normTags = tags.map(makeId)
-
-  for (const [match, label] of tagEntries) {
-    const matched =
-      (typeof match == "string" && normTags.includes(makeId(match))) ||
-      (Array.isArray(match) && match.every((t) => normTags.includes(makeId(t))))
-    if (matched) {
-      cur = label
-    }
-  }
-
-  return cur
 }

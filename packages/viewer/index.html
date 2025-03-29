@@ -3,9 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta name="description" content="Browse the schedule for this event." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/schedule.webmanifest" />
+    <script src="/config.js"></script>
+    <%= htmlWebpackPlugin.tags.headTags %>
+    <link rel="stylesheet" href="/custom.css" />
   </head>
   <body>
-    <div data-schedule="./config.json"></div>
+    <div id="schedule"></div>
   </body>
 </html>

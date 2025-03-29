@@ -12,9 +12,15 @@ import {
   useSuspenseQuery,
   UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
-import { parseISO } from "date-fns"
+import { isAfter, parseISO } from "date-fns"
 import { loadSelections, saveSelections } from "./local-storage.js"
 import { createContext, useCallback, useContext } from "react"
+
+declare module "@open-event-systems/schedule-lib" {
+  interface ScheduleConfig {
+    bookmarks?: string
+  }
+}
 
 export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
   undefined,
@@ -22,6 +28,24 @@ export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
 export const BookmarkAPIProvider = BookmarkAPIContext.Provider
 export const useBookmarkAPI = (): BookmarkAPI | undefined =>
   useContext(BookmarkAPIContext)
+
+export const getBookmarksByIdQueryOptions = (
+  bookmarkAPI: BookmarkAPI | null | undefined,
+  scheduleId: string,
+  selectionId: string,
+): UseSuspenseQueryOptions<Selections | null> => {
+  return {
+    queryKey: ["schedule", scheduleId, "bookmarks", selectionId],
+    async queryFn() {
+      if (bookmarkAPI) {
+        const resp = await bookmarkAPI.getBookmarks(selectionId)
+        return resp ? makeSelections(resp.events) : null
+      } else {
+        return null
+      }
+    },
+  }
+}
 
 export const getSessionBookmarksQueryOptions = (
   bookmarkAPI: BookmarkAPI | null | undefined,
@@ -76,15 +100,15 @@ export const getSessionBookmarksMutationOptions = (
   queryClient: QueryClient,
   bookmarkAPI: BookmarkAPI | null | undefined,
   scheduleId: string,
-): UseMutationOptions<Selections, Error, Selections> => {
+): UseMutationOptions<[string, Selections], Error, Selections> => {
   return {
     mutationKey: ["schedule", scheduleId, "bookmarks"],
     async mutationFn(selections) {
       if (bookmarkAPI) {
         const res = await bookmarkAPI.setBookmarks(selections)
-        return makeSelections(res.events, parseISO(res.date))
+        return [res.id, makeSelections(res.events, parseISO(res.date))]
       }
-      return selections
+      return ["", selections]
     },
     onSuccess(selections) {
       queryClient.setQueryData(
@@ -125,9 +149,20 @@ export const useBookmarks = (scheduleId: string): Selections => {
   return chooseNewer(local.data, session.data)
 }
 
+export const useBookmarksById = (
+  scheduleId: string,
+  selectionId: string,
+): Selections | null => {
+  const bookmarkAPI = useBookmarkAPI()
+  const query = useSuspenseQuery(
+    getBookmarksByIdQueryOptions(bookmarkAPI, scheduleId, selectionId),
+  )
+  return query.data
+}
+
 export const useUpdateBookmarks = (
   scheduleId: string,
-): ((selections: Selections) => Promise<Selections>) => {
+): ((selections: Selections) => Promise<[string, Selections]>) => {
   const queryClient = useQueryClient()
   const bookmarkAPI = useBookmarkAPI()
   const localMutation = useMutation(
@@ -138,12 +173,20 @@ export const useUpdateBookmarks = (
   )
 
   const updater = useCallback(
-    async (selections: Selections) => {
-      const res = await Promise.all([
+    async (selections: Selections): Promise<[string, Selections]> => {
+      // update both local+remote simultaneously
+      const [localRes, [remoteId, remoteRes]] = await Promise.all([
         localMutation.mutateAsync(selections),
         sessionMutation.mutateAsync(selections),
       ])
-      return chooseNewer(res[0], res[1])
+
+      // update the local version again with the remote version
+      if (isAfter(remoteRes.dateUpdated, localRes.dateUpdated)) {
+        await localMutation.mutateAsync(localRes)
+      }
+
+      // return the remote version
+      return [remoteId, remoteRes]
     },
     [
       queryClient,
@@ -173,4 +216,61 @@ export const useBookmarkCount = (
 ): number | undefined => {
   const counts = useBookmarkCounts(scheduleId)
   return counts.get(eventId)
+}
+
+export const loadBookmarks = async (
+  queryClient: QueryClient,
+  scheduleId: string,
+  bookmarkAPI?: BookmarkAPI,
+): Promise<[Selections, Selections]> => {
+  return await Promise.all([
+    queryClient.fetchQuery(getStoredBookmarksQueryOptions(scheduleId)),
+    queryClient.fetchQuery(
+      getSessionBookmarksQueryOptions(bookmarkAPI, scheduleId),
+    ),
+  ])
+}
+
+export const syncBookmarks = async (
+  queryClient: QueryClient,
+  scheduleId: string,
+  bookmarkAPI: BookmarkAPI,
+  local: Selections,
+  remote: Selections,
+): Promise<Selections> => {
+  // local to remote
+  if (isAfter(local.dateUpdated, remote.dateUpdated)) {
+    const [_, result] = await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getSessionBookmarksMutationOptions(
+          queryClient,
+          bookmarkAPI,
+          scheduleId,
+        ),
+      )
+      .execute(local)
+
+    await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getStoredBookmarksMutationOptions(queryClient, scheduleId),
+      )
+      .execute(result)
+    return result
+  } else if (isAfter(remote.dateUpdated, local.dateUpdated)) {
+    // remote to local
+    await queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getStoredBookmarksMutationOptions(queryClient, scheduleId),
+      )
+      .execute(remote)
+    return remote
+  } else {
+    return local
+  }
 }

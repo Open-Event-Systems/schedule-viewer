@@ -2,57 +2,91 @@ import { QueryClient } from "@tanstack/react-query"
 import {
   createRootRouteWithContext,
   createRoute,
+  HeadContent,
+  lazyRouteComponent,
   notFound,
   Outlet,
+  rootRouteId,
+  Scripts,
 } from "@tanstack/react-router"
 import { getEventsQueryOptions } from "../schedule.js"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
-import { EventsRoute } from "./EventsRoute.js"
-import { EventRoute } from "./EventRoute.js"
-import { Layout } from "../Layout.js"
+import { ScheduleLayout } from "../components/schedule-layout.js"
 import {
   BookmarkAPIProvider,
   getBookmarkCountsQueryOptions,
+  getBookmarksByIdQueryOptions,
+  getSessionBookmarksMutationOptions,
   getSessionBookmarksQueryOptions,
   getStoredBookmarksQueryOptions,
 } from "../bookmarks.js"
-import { AppContext } from "../config.js"
+import { Loading } from "../components/Loading.js"
+import { AppConfig } from "../config.js"
 import { chooseNewer } from "@open-event-systems/schedule-lib"
-import { Box, Flex, Loader, Skeleton } from "@mantine/core"
+import { saveSelections } from "../local-storage.js"
+import { NotFoundRoute } from "./NotFoundRoute.js"
 
 export type RouterContext = {
-  configURL: string
+  appConfigPromise: Promise<AppConfig>
   queryClient: QueryClient
-  appContextPromise: Promise<AppContext>
 }
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
-  component: Layout,
+  component() {
+    return (
+      <>
+        <HeadContent />
+        <Outlet />
+        <Scripts />
+      </>
+    )
+  },
+  notFoundComponent() {
+    return <NotFoundRoute />
+  },
 })
 
-export const eventsDataRoute = createRoute({
+export const configRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "events",
+  id: "config",
   async beforeLoad({ context }) {
-    const { appContextPromise } = context
-    const appCtx = await appContextPromise
+    const { appConfigPromise } = context
+
+    const appConfig = await appConfigPromise
 
     return {
-      config: appCtx.config,
-      bookmarkAPI: appCtx.bookmarkAPI,
+      config: appConfig.config,
+      bookmarkAPI: appConfig.bookmarkAPI,
+      sessionId: appConfig.sessionId,
+      pageTitle: `${appConfig.config.title} Schedule`,
     }
   },
   async loader({ context }) {
-    const { queryClient, appContextPromise } = context
+    return { config: context.config }
+  },
+  head({ match }) {
+    return {
+      meta: [
+        {
+          title: match.context.pageTitle,
+        },
+      ],
+    }
+  },
+  staleTime: Infinity,
+  pendingComponent: Loading,
+})
 
-    // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await appContextPromise
-    const { config, bookmarkAPI } = appCtx
+export const eventsDataRoute = createRoute({
+  getParentRoute: () => configRoute,
+  id: "events",
+  async loader({ context }) {
+    const { config, queryClient, bookmarkAPI } = context
 
     const [events, localSelections, sessionSelections, counts] =
       await Promise.all([
         queryClient.fetchQuery(
-          getEventsQueryOptions(config.url, config.timeZone),
+          getEventsQueryOptions(config.events, config.timeZone),
         ),
         queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
         queryClient.fetchQuery(
@@ -63,9 +97,13 @@ export const eventsDataRoute = createRoute({
         ),
       ])
 
+    // update local selections
+    const newer = chooseNewer(localSelections, sessionSelections)
+    saveSelections(config.id, newer)
+
     return {
       events,
-      selections: chooseNewer(localSelections, sessionSelections),
+      selections: newer,
       counts,
     }
   },
@@ -80,43 +118,119 @@ export const eventsDataRoute = createRoute({
       </ScheduleConfigProvider>
     )
   },
-  pendingComponent() {
-    return (
-      <>
-        <Flex mih={500} justify="center" align="center">
-          <Loader type="dots" />
-        </Flex>
-      </>
-    )
-  },
+})
+
+export const layoutRoute = createRoute({
+  getParentRoute: () => eventsDataRoute,
+  id: "layoutRoute",
+  component: ScheduleLayout,
 })
 
 export const eventsRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => layoutRoute,
   path: "/",
-  component: EventsRoute,
+  component: lazyRouteComponent(
+    () => import("./EventsRoute.js"),
+    "EventsRoute",
+  ),
 })
 
 export const eventRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => layoutRoute,
   path: "events/$eventId",
-  component: EventRoute,
+  component: lazyRouteComponent(() => import("./EventRoute.js"), "EventRoute"),
   async loader({ context, params }) {
     const { eventId } = params
-    const { queryClient, appContextPromise } = context
-
-    // TODO: remove when https://github.com/TanStack/router/issues/3699 is fixed
-    const appCtx = await appContextPromise
-    const { config } = appCtx
-
+    const { queryClient, config } = context
     const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config.url, config.timeZone),
+      getEventsQueryOptions(config.events, config.timeZone),
     )
 
     const event = events.get(eventId)
     if (!event) {
-      throw notFound()
+      throw notFound({ routeId: rootRouteId })
     }
     return { event }
+  },
+  head({ loaderData }) {
+    return {
+      meta: [
+        {
+          title: `${loaderData.event.title || "Event"}`,
+        },
+        loaderData.event.description
+          ? {
+              name: "description",
+              content: loaderData.event.description,
+            }
+          : undefined,
+      ],
+    }
+  },
+})
+
+export const shareScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "share",
+  async loader({ context }) {
+    const { config, queryClient, bookmarkAPI } = context
+    if (!bookmarkAPI) {
+      throw notFound({ routeId: rootRouteId })
+    }
+
+    const [local, remote] = await Promise.all([
+      queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
+      queryClient.fetchQuery(
+        getSessionBookmarksQueryOptions(bookmarkAPI, config.id),
+      ),
+    ])
+    const newer = chooseNewer(local, remote)
+
+    const mutation = queryClient
+      .getMutationCache()
+      .build(
+        queryClient,
+        getSessionBookmarksMutationOptions(queryClient, bookmarkAPI, config.id),
+      )
+
+    const result = await mutation.execute(newer)
+
+    return { shareId: result[0] }
+  },
+})
+
+export const syncScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "sync",
+  async loader({ context }) {
+    const { bookmarkAPI } = context
+    if (!bookmarkAPI) {
+      throw notFound({ routeId: rootRouteId })
+    }
+    return { syncId: context.sessionId }
+  },
+})
+
+export const confirmSyncScheduleRoute = createRoute({
+  getParentRoute: () => eventsRoute,
+  path: "sync/$syncId",
+})
+
+export const sharedScheduleRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: "shared/$selectionId",
+  component: lazyRouteComponent(
+    () => import("./shared-schedule-route.js"),
+    "SharedScheduleRoute",
+  ),
+  async loader({ context, params }) {
+    const { config, queryClient, bookmarkAPI } = context
+    const selections = await queryClient.fetchQuery(
+      getBookmarksByIdQueryOptions(bookmarkAPI, config.id, params.selectionId),
+    )
+    if (!selections) {
+      throw notFound({ routeId: rootRouteId })
+    }
+    return { selections }
   },
 })

@@ -12,24 +12,31 @@ import {
 } from "@tanstack/react-query"
 
 export const getEventsQueryOptions = (
-  url: string,
+  events: string | readonly EventJSON[],
   timeZone: string,
 ): UseSuspenseQueryOptions<EventStore> => {
   return {
-    queryKey: ["events", { url: url }],
+    queryKey: ["events", { events: events }],
     async queryFn() {
-      const json = await wretch(url).get().json<{ events: EventJSON[] }>()
-      const events: Event[] = []
+      let resArr: EventJSON[] = []
 
-      for (const eventJSON of json.events) {
+      if (Array.isArray(events)) {
+        resArr = events
+      } else if (typeof events == "string") {
+        const json = await wretch(events).get().json<{ events: EventJSON[] }>()
+        resArr = json.events
+      }
+      const parsedArr: Event[] = []
+
+      for (const eventJSON of resArr) {
         try {
-          events.push(makeEvent(eventJSON, timeZone))
+          parsedArr.push(makeEvent(eventJSON, timeZone))
         } catch (e) {
           console.warn(`Error parsing event: ${e}`)
         }
       }
 
-      const store = makeEventStore(events)
+      const store = makeEventStore(parsedArr)
 
       return store
     },
@@ -37,7 +44,10 @@ export const getEventsQueryOptions = (
   }
 }
 
-export const useEvents = (url: string, timeZone: string): EventStore => {
-  const query = useSuspenseQuery(getEventsQueryOptions(url, timeZone))
+export const useEvents = (
+  events: string | readonly EventJSON[],
+  timeZone: string,
+): EventStore => {
+  const query = useSuspenseQuery(getEventsQueryOptions(events, timeZone))
   return query.data
 }

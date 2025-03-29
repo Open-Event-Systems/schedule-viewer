@@ -1,35 +1,31 @@
-import { createHashHistory, RouterProvider } from "@tanstack/react-router"
+import { createBrowserHistory, RouterProvider } from "@tanstack/react-router"
 import { createContext, useState } from "react"
-import { router } from "./router.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
-  DEFAULT_THEME,
   MantineColorScheme,
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core"
-import { loadApp } from "./config.js"
+import { router } from "../router.js"
+import { makeAppConfig } from "../config.js"
+import { useSWStore } from "../service-worker.js"
 
 export const App = ({
-  configURL,
+  basePath,
   theme,
   colorScheme,
 }: {
-  configURL: string
+  basePath?: string
   theme?: MantineThemeOverride
   colorScheme?: MantineColorScheme
 }) => {
   const [history] = useState(() => {
-    const history = createHashHistory()
+    const history = createBrowserHistory()
     return history
   })
 
   const [queryClient] = useState(() => {
     return new QueryClient({})
-  })
-
-  const [appContextPromise] = useState(() => {
-    return loadApp(queryClient, configURL)
   })
 
   const [filterSettings, setFilterSettings] = useState(
@@ -41,22 +37,28 @@ export const App = ({
     }),
   )
 
-  const fullTheme = {
-    DEFAULT_THEME,
-    ...theme,
-  }
+  const swStore = useSWStore()
+
+  const [appConfigPromise] = useState(() => {
+    return makeAppConfig(queryClient, `${basePath}config.json`).then((ctx) => {
+      if (ctx.config.serviceWorker) {
+        swStore.register(basePath)
+      }
+      return ctx
+    })
+  })
 
   return (
-    <MantineProvider theme={fullTheme} defaultColorScheme={colorScheme}>
+    <MantineProvider theme={theme} defaultColorScheme={colorScheme}>
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
+            basepath={basePath}
             router={router}
             history={history}
             context={{
-              configURL,
+              appConfigPromise: appConfigPromise,
               queryClient,
-              appContextPromise,
             }}
           />
         </FilterContext.Provider>
