@@ -50,8 +50,8 @@ export default (env, argv) => {
       new CopyPlugin({
         patterns: [
           {
-            from: "manifest.json",
-            to: "manifest.json",
+            from: "schedule.webmanifest",
+            to: "schedule.webmanifest",
           },
           {
             from: "config.js",
