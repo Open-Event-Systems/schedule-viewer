@@ -8,7 +8,6 @@ import {
 } from "@mantine/core"
 import { router } from "../router.js"
 import { makeAppConfig } from "../config.js"
-import { useSWStore } from "../service-worker.js"
 
 export const App = ({
   basePath,
@@ -37,15 +36,8 @@ export const App = ({
     }),
   )
 
-  const swStore = useSWStore()
-
   const [appConfigPromise] = useState(() => {
-    return makeAppConfig(queryClient, `${basePath}config.json`).then((ctx) => {
-      if (ctx.config.serviceWorker) {
-        swStore.register(basePath)
-      }
-      return ctx
-    })
+    return makeAppConfig(queryClient, `${basePath}config.json`)
   })
 
   return (
