@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
   Title,
+  useMantineColorScheme,
   useProps,
 } from "@mantine/core"
 import { Event, Host, TagEntry } from "@open-event-systems/schedule-lib"
@@ -14,13 +15,12 @@ import {
   IconBookmark,
   IconClockHour4,
   IconMapPin,
-  IconShare3,
   IconTag,
   IconUser,
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { format } from "date-fns"
-import { Fragment, ReactElement, ReactNode, useCallback, useMemo } from "react"
+import { Fragment, ReactElement, ReactNode } from "react"
 import { Markdown } from "../markdown/Markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
 import {
@@ -55,18 +55,25 @@ export const EventDetails = (props: EventDetailsProps) => {
 
   const config = useScheduleConfig()
 
+  const scheme = useMantineColorScheme()
+  const altTextColor = scheme.colorScheme == "dark" ? "gray.5" : "gray.7"
+
   const timeEl =
-    event.start && event.end ? renderTime(event.start, event.end) : null
+    event.start && event.end
+      ? renderTime(event.start, event.end, altTextColor)
+      : null
   const locationEl = event.location ? (
-    <IconText icon={<IconMapPin size={18} />} c="dimmed">
+    <IconText icon={<IconMapPin size={18} />} c={altTextColor}>
       {event.location}
     </IconText>
   ) : null
   const hostsEl =
-    event.hosts && event.hosts.length > 0 ? renderHosts(event.hosts) : null
+    event.hosts && event.hosts.length > 0
+      ? renderHosts(event.hosts, altTextColor)
+      : null
   const tagsEl =
     event.tags && event.tags.length > 0
-      ? renderTags(config.tags, event.tags)
+      ? renderTags(config.tags, event.tags, altTextColor)
       : null
 
   return (
@@ -102,7 +109,7 @@ export const EventDetails = (props: EventDetailsProps) => {
                 <Text
                   span
                   size="xs"
-                  c="dimmed"
+                  c={altTextColor}
                   fw="bold"
                   className="EventDetails-bookmarkCount"
                 >
@@ -121,17 +128,17 @@ export const EventDetails = (props: EventDetailsProps) => {
   )
 }
 
-const renderTime = (start: Date, end: Date): ReactNode => {
+const renderTime = (start: Date, end: Date, c: string): ReactNode => {
   const startStr = format(start, "EEE h:mm aaa")
   const endStr = format(end, "h:mm aaa")
   return (
-    <IconText icon={<IconClockHour4 size={18} />} c="dimmed">
+    <IconText icon={<IconClockHour4 size={18} />} c={c}>
       {startStr} &ndash; {endStr}
     </IconText>
   )
 }
 
-const renderHosts = (h: readonly (string | Host)[]): ReactNode => {
+const renderHosts = (h: readonly (string | Host)[], c: string): ReactNode => {
   const hosts: ReactNode[] = []
 
   h.forEach((h, i) => {
@@ -143,7 +150,7 @@ const renderHosts = (h: readonly (string | Host)[]): ReactNode => {
   })
 
   return (
-    <IconText icon={<IconUser size={18} />} c="dimmed">
+    <IconText icon={<IconUser size={18} />} c={c}>
       {hosts}
     </IconText>
   )
@@ -157,7 +164,7 @@ const renderHost = (h: string | Host): ReactElement => {
   const name = h.name || h.url
   if (h.url) {
     return (
-      <Anchor href={h.url} target="_blank">
+      <Anchor className="EventDetails-host" href={h.url} target="_blank">
         {name}
       </Anchor>
     )
@@ -169,6 +176,7 @@ const renderHost = (h: string | Host): ReactElement => {
 const renderTags = (
   validTags: readonly TagEntry[],
   tags: readonly string[],
+  c: string,
 ): ReactElement => {
   const isValidTag = makeValidTagsFilter(validTags)
   const formatTag = makeTagFormatter(validTags)
@@ -188,7 +196,7 @@ const renderTags = (
   }
 
   return (
-    <IconText icon={<IconTag size={18} />} c="dimmed">
+    <IconText icon={<IconTag size={18} />} c={c}>
       {els}
     </IconText>
   )
