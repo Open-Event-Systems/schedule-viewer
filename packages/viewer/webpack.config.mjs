@@ -50,8 +50,8 @@ export default (env, argv) => {
       new CopyPlugin({
         patterns: [
           {
-            from: "schedule.webmanifest",
-            to: "schedule.webmanifest",
+            from: "manifest.json",
+            to: "manifest.json",
           },
           {
             from: "config.js",
@@ -110,7 +110,7 @@ export default (env, argv) => {
       }),
       new HtmlWebpackPlugin({
         template: "./index.html",
-        title: "Schedule",
+        title: "Event Schedule",
         chunks: ["config", "schedule"],
         minify: false,
         inject: false,
