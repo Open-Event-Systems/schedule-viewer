@@ -2,131 +2,88 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"oembed/internal/config"
-	"oembed/internal/oembed"
-	"oembed/internal/schedule"
+	"oembed/internal/data"
+	"oembed/internal/ogp"
 	"oembed/internal/structs"
 	"time"
 
 	"github.com/phuslu/lru"
+	"golang.org/x/net/html"
 )
 
-const cacheDuration = time.Minute * 10
+const cacheDuration = 1 * time.Minute
 
-type cacheEntry struct {
-	config *structs.ScheduleConfig
-	events []structs.Event
-}
+func RunServer(port int, schedulePaths map[string]string) {
+	cache := lru.NewTTLCache[string, *data.Data](32)
 
-func RunServer(port int, serverCfg *config.Config) {
-
-	cache := lru.NewTTLCache[string, cacheEntry](32)
-
-	getData := func(configURL string) (cacheEntry, error) {
-		config, err := schedule.LoadScheduleConfig(configURL)
-		if err != nil {
-			log.Printf("could not load config %s: %s", configURL, err)
-			return cacheEntry{nil, nil}, err
-		}
-
-		var events []structs.Event
-
-		if config.Events.URL != "" {
-			events, err = schedule.LoadEvents(config.Events.URL)
+	loadCachedData := func(ctx context.Context, path string) (*data.Data, error) {
+		evData, err, _ := cache.GetOrLoad(ctx, path, func(ctx context.Context, path string) (*data.Data, time.Duration, error) {
+			evData, err := data.LoadData(path)
 			if err != nil {
-				log.Printf("could not load events %s: %s", config.Events.URL, err)
-				return cacheEntry{nil, nil}, err
+				return nil, 0, err
 			}
-		} else {
-			events = config.Events.Events
-		}
-
-		return cacheEntry{config, events}, nil
+			return evData, cacheDuration, nil
+		})
+		return evData, err
 	}
 
-	getDataCached := func(ctx context.Context, configURL string) (cacheEntry, error) {
-		entry, err, _ := cache.GetOrLoad(ctx, configURL, func(ctx context.Context, configURL string) (cacheEntry, time.Duration, error) {
-			entry, err := getData(configURL)
-			if err != nil {
-				return cacheEntry{}, 0, err
-			}
-			return entry, cacheDuration, nil
-		})
-		return entry, err
+	handler := func(w http.ResponseWriter, req *http.Request) {
+		scheduleId := req.PathValue("scheduleId")
+		eventId := req.PathValue("eventId")
+		path, ok := schedulePaths[scheduleId]
+		if !ok {
+			http.NotFound(w, req)
+			log.Printf("no schedule with id %s", scheduleId)
+			return
+		}
+
+		evData, err := loadCachedData(req.Context(), path)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Printf("error loading data for %s: %s", eventId, err)
+			return
+		}
+
+		event := getEvent(evData.Events, eventId)
+		if event == nil {
+			http.NotFound(w, req)
+			log.Printf("no event for schedule %s with id %s", scheduleId, eventId)
+			return
+		}
+
+		htmlDoc := ogp.CopyNode(evData.HTML)
+
+		ogp.SetOGTags(htmlDoc, event.Title, event)
+
+		w.Header().Add("Content-Type", "text/html")
+
+		err = html.Render(w, htmlDoc)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Printf("error rendering html: %s", err)
+			return
+		}
 	}
 
 	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /schedule-oembed", func(w http.ResponseWriter, req *http.Request) {
-		url := req.URL.Query().Get("url")
-		if url == "" {
-			http.NotFound(w, req)
-			return
-		}
-
-		format := req.URL.Query().Get("format")
-		if format != "json" && format != "" {
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
-			return
-		}
-
-		if !serverCfg.IsHostAllowed(url) {
-			http.NotFound(w, req)
-			log.Printf("domain not allowed: %s", url)
-			return
-		}
-
-		configURL := schedule.GetConfigURL(url)
-		if configURL == "" {
-			http.NotFound(w, req)
-			log.Printf("could not find config.json for %s", url)
-			return
-		}
-
-		eventId := schedule.GetEventID(url)
-		if eventId == "" {
-			http.NotFound(w, req)
-			log.Printf("could not parse event ID for %s", url)
-			return
-		}
-
-		cacheEntry, err := getDataCached(req.Context(), configURL)
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		event, ok := schedule.GetEvent(cacheEntry.events, eventId)
-		if !ok {
-			http.NotFound(w, req)
-			log.Printf("no such event: %s", eventId)
-			return
-		}
-
-		baseURL := schedule.GetBaseURL(url)
-		providerName := cacheEntry.config.Title
-		if providerName == "" {
-			providerName = "Event Schedule"
-		}
-
-		oembedData := oembed.GetOEmbed(providerName, baseURL, &event)
-		respData, err := json.Marshal(oembedData)
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Add("Content-Type", "application/json+oembed")
-		w.Write(respData)
-	})
+	mux.HandleFunc("GET /schedule-ogp/{scheduleId}/{eventId}", handler)
+	mux.HandleFunc("GET /schedule-ogp/{scheduleId}/{eventId}/", handler)
 
 	log.Printf("listening on %d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func getEvent(events []structs.Event, id string) *structs.Event {
+	for _, ev := range events {
+		if ev.Id == id {
+			return &ev
+		}
+	}
+	return nil
 }
