@@ -72,6 +72,7 @@ export default (env, argv) => {
             cacheId: "schedule",
             cleanupOutdatedCaches: true,
             mode: isProd ? "production" : "development",
+            navigateFallback: "index.html",
             modifyURLPrefix: {
               "/": "",
             },
@@ -123,7 +124,7 @@ export default (env, argv) => {
     },
     devServer: {
       port: 9000,
-      historyApiFallback: true,
+      // historyApiFallback: true,
     },
   }
   return config
