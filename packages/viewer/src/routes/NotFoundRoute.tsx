@@ -1,5 +1,6 @@
-import { Container, Stack, Text, Title } from "@mantine/core"
+import { Box, Container, Stack, Text, Title } from "@mantine/core"
 import { useLayoutEffect } from "react"
+import { UpdateButton } from "../components/update-button.js"
 
 export const NotFoundRoute = () => {
   useLayoutEffect(() => {
@@ -19,6 +20,9 @@ export const NotFoundRoute = () => {
           Not Found
         </Title>
         <Text component="p">The page was not found.</Text>
+        <Box mih="2rem">
+          <UpdateButton />
+        </Box>
       </Stack>
     </Container>
   )
