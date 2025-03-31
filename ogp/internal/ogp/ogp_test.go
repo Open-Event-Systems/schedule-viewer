@@ -10,7 +10,7 @@ import (
 )
 
 func TestAddOGPTags(t *testing.T) {
-	expected := []byte("<!DOCTYPE html><html><head><meta property=\"og:type\" content=\"article\"/><meta property=\"og:author\" content=\"Person\"/><meta property=\"og:title\" content=\"Event\"/><meta property=\"og:description\" content=\"Test event\"/><meta property=\"og:site_name\" content=\"Test\"/></head><body></body></html>")
+	expected := []byte("<!DOCTYPE html><html><head><meta property=\"og:type\" content=\"article\"/><meta property=\"og:url\" content=\"https://example.net\"/><meta property=\"og:image\" content=\"https://example.net/icon.png\"/><meta property=\"og:title\" content=\"Event\"/><meta property=\"og:description\" content=\"Test event\"/><meta property=\"article:author\" content=\"\"/><meta property=\"article:author:username\" content=\"Person\"/><meta property=\"og:site_name\" content=\"Test\"/></head><body></body></html>")
 	event := &structs.Event{
 		Id:          "test",
 		Title:       "Event",
@@ -30,7 +30,7 @@ func TestAddOGPTags(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ogp.SetOGTags(doc, "Test", event)
+	ogp.SetOGTags(doc, "Test", "https://example.net", "https://example.net/icon.png", event)
 	err = html.Render(w, doc)
 	if err != nil {
 		t.Fatal(err)

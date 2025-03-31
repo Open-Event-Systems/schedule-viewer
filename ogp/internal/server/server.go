@@ -33,6 +33,8 @@ func RunServer(port int, schedulePaths map[string]string) {
 	handler := func(w http.ResponseWriter, req *http.Request) {
 		scheduleId := req.PathValue("scheduleId")
 		eventId := req.PathValue("eventId")
+		origURI := req.Header.Get("X-Original-URI")
+		defaultImg := req.Header.Get("X-Default-Image")
 		path, ok := schedulePaths[scheduleId]
 		if !ok {
 			http.NotFound(w, req)
@@ -56,7 +58,7 @@ func RunServer(port int, schedulePaths map[string]string) {
 
 		htmlDoc := ogp.CopyNode(evData.HTML)
 
-		ogp.SetOGTags(htmlDoc, event.Title, event)
+		ogp.SetOGTags(htmlDoc, evData.Config.Title, origURI, defaultImg, event)
 
 		w.Header().Add("Content-Type", "text/html")
 

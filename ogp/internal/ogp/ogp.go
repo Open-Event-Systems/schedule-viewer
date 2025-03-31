@@ -26,14 +26,17 @@ func CopyNode(node *html.Node) *html.Node {
 	return &newNode
 }
 
-func SetOGTags(root *html.Node, siteTitle string, event *structs.Event) {
+func SetOGTags(root *html.Node, siteTitle string, pageURL string, defaultImage string, event *structs.Event) {
 	var els []*html.Node
 
 	els = append(els, createOGTag("og:type", "article"))
 
-	for _, host := range event.Hosts {
-		// not standard
-		els = append(els, createOGTag("og:author", host.Name))
+	if pageURL != "" {
+		els = append(els, createOGTag("og:url", pageURL))
+	}
+
+	if defaultImage != "" {
+		els = append(els, createOGTag("og:image", defaultImage))
 	}
 
 	if event.Title != "" {
@@ -42,6 +45,11 @@ func SetOGTags(root *html.Node, siteTitle string, event *structs.Event) {
 
 	if event.Description != "" {
 		els = append(els, createOGTag("og:description", event.Description))
+	}
+
+	for _, host := range event.Hosts {
+		els = append(els, createOGTag("article:author", host.URL))
+		els = append(els, createOGTag("article:author:username", host.Name))
 	}
 
 	if siteTitle != "" {
