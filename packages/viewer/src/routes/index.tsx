@@ -234,3 +234,18 @@ export const sharedScheduleRoute = createRoute({
     return { selections }
   },
 })
+
+export const mapRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: "map",
+  component: lazyRouteComponent(() => import("./MapRoute.js"), "MapRoute"),
+  head() {
+    return {
+      meta: [
+        {
+          title: "Map",
+        },
+      ],
+    }
+  },
+})

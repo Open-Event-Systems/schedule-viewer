@@ -73,6 +73,7 @@ export default (env, argv) => {
             cleanupOutdatedCaches: true,
             mode: isProd ? "production" : "development",
             navigateFallback: "index.html",
+            navigateFallbackDenylist: [/\.[a-zA-Z0-9-]+$/],
             modifyURLPrefix: {
               "/": "",
             },
@@ -124,7 +125,7 @@ export default (env, argv) => {
     },
     devServer: {
       port: 9000,
-      // historyApiFallback: true,
+      historyApiFallback: true,
     },
   }
   return config
