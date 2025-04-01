@@ -19,6 +19,7 @@ export const MAP_CLASSES = {
   visible: "Map-visible",
   hidden: "Map-hidden",
   highlight: "Map-highlight",
+  foreignObjectText: "Map-foreignObjectText",
 } as const
 
 export const getMapClass = (prefix: string, id: string): string => {

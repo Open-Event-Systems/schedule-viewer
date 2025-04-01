@@ -9,6 +9,16 @@ import {
   useState,
 } from "react"
 import { getIDFromMapClass, getMapClass, MAP_CLASSES } from "../map-classes.js"
+import {
+  createForeignTextObject,
+  setClickHandlers,
+  setVendorIcons,
+  updateHighlight,
+  updateIsometric,
+  updateIsometricDelayed,
+  updateLayers,
+  updateLevel,
+} from "./utils.js"
 
 export type MapSVGVendor = Readonly<{
   location: string
@@ -55,160 +65,79 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
 
   // Update level
   useLayoutEffect(() => {
-    const levelCls = getMapClass(MAP_CLASSES.levelPrefix, level)
-    const els = el?.getElementsByClassName(MAP_CLASSES.level) ?? []
-    for (const el of els) {
-      removeInlineDisplay(el)
-      if (el.classList.contains(levelCls)) {
-        el.classList.add(MAP_CLASSES.visible)
-      } else {
-        el.classList.remove(MAP_CLASSES.visible)
-      }
+    if (el) {
+      updateLevel(el, level)
     }
   }, [el, level])
 
   // Update hidden layers
   useLayoutEffect(() => {
-    const hiddenClasses = Array.from(hiddenLayers, (layer) =>
-      getMapClass(MAP_CLASSES.layerPrefix, layer),
-    )
-    const els = el?.getElementsByClassName(MAP_CLASSES.layer) ?? []
-    for (const el of els) {
-      removeInlineDisplay(el)
-      if (hiddenClasses.some((cls) => el.classList.contains(cls))) {
-        el.classList.add(MAP_CLASSES.hidden)
-      } else {
-        el.classList.remove(MAP_CLASSES.hidden)
-      }
+    if (el) {
+      updateLayers(el, hiddenLayers)
     }
   }, [el, hiddenLayers])
 
   // Update highlight
   useLayoutEffect(() => {
-    const highlightCls = highlightId
-      ? getMapClass(MAP_CLASSES.areaPrefix, highlightId)
-      : null
-    const els = el?.getElementsByClassName(MAP_CLASSES.area) ?? []
-    for (const el of els) {
-      if (highlightCls && el.classList.contains(highlightCls)) {
-        el.classList.add(MAP_CLASSES.highlight)
-      } else {
-        el.classList.remove(MAP_CLASSES.highlight)
-      }
+    if (el) {
+      updateHighlight(el, highlightId)
     }
   }, [el, highlightId])
 
   // Update isometric
   useLayoutEffect(() => {
-    if (el && isometric) {
-      el.classList.add(MAP_CLASSES.isometric)
-      window.setTimeout(() => {
-        el.classList.add(MAP_CLASSES.isometricTransform)
-      }, 50)
-    } else if (el && !isometric) {
-      el.classList.remove(MAP_CLASSES.isometricTransform)
-      el.classList.remove(MAP_CLASSES.isometricTransformFinished)
+    if (el) {
+      updateIsometric(el, isometric)
     }
   }, [el, isometric])
 
   // Delayed isometric handling
   useLayoutEffect(() => {
     if (el) {
-      const handler = () => {
-        if (!isometricRef.current) {
-          el.classList.remove(MAP_CLASSES.isometric)
-        } else {
-          el.classList.add(MAP_CLASSES.isometricTransformFinished)
-        }
-      }
-      el.addEventListener("transitionend", handler)
-      return () => {
-        el.removeEventListener("transitionend", handler)
-      }
+      return updateIsometricDelayed(el, isometricRef)
     }
   }, [el])
 
   // Set click handlers
   useLayoutEffect(() => {
-    const cleanup: (() => void)[] = []
-    const els = el?.getElementsByClassName(MAP_CLASSES.click) ?? []
-    for (const el of els) {
-      const clickId = Array.from(el.classList, (cls) =>
-        getIDFromMapClass(MAP_CLASSES.clickPrefix, cls),
-      ).find((cls) => !!cls)
-      if (clickId && el instanceof SVGElement) {
-        const handler = (e: MouseEvent) => {
-          e.stopPropagation()
-          onSelectLocation && onSelectLocation(clickId)
-        }
-        el.addEventListener("click", handler)
-        cleanup.push(() => el.removeEventListener("click", handler))
-      }
-    }
-
     if (el) {
-      const handler = (e: MouseEvent) => {
-        e.stopPropagation()
-        onSelectLocation && onSelectLocation(null)
-      }
-      el.addEventListener("click", handler)
-      cleanup.push(() => el.removeEventListener("click", handler))
-    }
-
-    return () => {
-      for (const f of cleanup) {
-        f()
-      }
+      setClickHandlers(el, onSelectLocation)
     }
   }, [el, onSelectLocation])
 
   // set vendor icons
   useLayoutEffect(() => {
-    const els = el?.getElementsByClassName(MAP_CLASSES.vendorIcon) ?? []
-    for (const el of els) {
-      removeInlineDisplay(el)
-    }
-
-    for (const vendor of vendors) {
-      const els =
-        el?.getElementsByClassName(
-          getMapClass(MAP_CLASSES.vendorIconPrefix, vendor.location),
-        ) ?? []
-      for (const el of els) {
-        removeInlineDisplay(el)
-        if (vendor.icon) {
-          el.classList.add(MAP_CLASSES.visible)
-          if (el.tagName == "image") {
-            el.setAttributeNS(
-              "http://www.w3.org/1999/xlink",
-              "href",
-              vendor.icon,
-            )
-          }
-        } else {
-          el.classList.remove(MAP_CLASSES.visible)
-        }
-      }
+    if (el) {
+      setVendorIcons(el, vendors)
     }
   }, [el, vendors])
 
   // set vendor names
-  useLayoutEffect(() => {
-    const els = el?.getElementsByClassName(MAP_CLASSES.vendorName) ?? []
-    for (const el of els) {
-      el.innerHTML = ""
-    }
+  // useLayoutEffect(() => {
+  //   const els = el?.getElementsByClassName(MAP_CLASSES.vendorName) ?? []
+  //   for (const el of els) {
+  //     el.innerHTML = ""
+  //   }
 
-    for (const vendor of vendors) {
-      const els =
-        el?.getElementsByClassName(
-          getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location),
-        ) ?? []
-      for (const el of els) {
-        el.innerHTML = vendor.name
-      }
-    }
-  }, [el, vendors])
+  //   for (const vendor of vendors) {
+  //     const els =
+  //       el?.getElementsByClassName(
+  //         getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location)
+  //       ) ?? []
+  //     for (const el of els) {
+  //       el.innerHTML = vendor.name
+  //     }
+  //   }
+  // }, [el, vendors])
+
+  // useLayoutEffect(() => {
+  //   if (el) {
+  //     const replace = el.getElementById("test")
+  //     const textEl = createForeignTextObject(replace as SVGElement)
+  //     textEl.classList.add("Map-foreignText")
+  //     textEl.innerHTML = "Hello there really long text how will this work out"
+  //   }
+  // }, [el])
 
   return (
     <svg className={clsx("MapSVG-root", className)} ref={setRef} {...other} />
