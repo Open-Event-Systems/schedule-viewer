@@ -14,6 +14,7 @@ export default (env, argv) => {
     },
     output: {
       path: path.resolve("./dist"),
+      publicPath: "/",
       filename: isProd ? "js/[name].[contenthash].js" : undefined,
       clean: true,
     },
@@ -71,6 +72,11 @@ export default (env, argv) => {
             cacheId: "schedule",
             cleanupOutdatedCaches: true,
             mode: isProd ? "production" : "development",
+            navigateFallback: "index.html",
+            navigateFallbackDenylist: [/\.[a-zA-Z0-9-]+$/],
+            modifyURLPrefix: {
+              "/": "",
+            },
             exclude: [
               /\.map$/,
               /^LICENSE.*\.txt$/,
@@ -106,7 +112,7 @@ export default (env, argv) => {
       }),
       new HtmlWebpackPlugin({
         template: "./index.html",
-        title: "Schedule",
+        title: "Event Schedule",
         chunks: ["config", "schedule"],
         minify: false,
         inject: false,
@@ -119,6 +125,7 @@ export default (env, argv) => {
     },
     devServer: {
       port: 9000,
+      historyApiFallback: true,
     },
   }
   return config

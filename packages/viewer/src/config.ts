@@ -6,6 +6,7 @@ import {
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
 import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
+import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-components/config/context"
 
 export type AppConfig = Readonly<{
   config: ScheduleConfig
@@ -15,11 +16,11 @@ export type AppConfig = Readonly<{
 
 export const getConfigQueryOptions = (
   configURL: string,
-): UseSuspenseQueryOptions<ScheduleConfig> => {
+): UseSuspenseQueryOptions<Partial<ScheduleConfig>> => {
   return {
     queryKey: ["schedule-config"],
     async queryFn() {
-      const res = await wretch(configURL).get().json<ScheduleConfig>()
+      const res = await wretch(configURL).get().json<Partial<ScheduleConfig>>()
       return res
     },
     staleTime: Infinity,
@@ -30,7 +31,10 @@ export const makeAppConfig = async (
   queryClient: QueryClient,
   configURL: string,
 ): Promise<AppConfig> => {
-  const config = await queryClient.fetchQuery(getConfigQueryOptions(configURL))
+  const loadedConfig = await queryClient.fetchQuery(
+    getConfigQueryOptions(configURL),
+  )
+  const config: ScheduleConfig = { ...DEFAULT_SCHEDULE_CONFIG, ...loadedConfig }
   let bookmarkAPI = config.bookmarks
     ? makeBookmarkAPI(config.bookmarks)
     : undefined

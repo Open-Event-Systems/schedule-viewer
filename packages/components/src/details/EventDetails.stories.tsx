@@ -10,6 +10,7 @@ const meta: Meta<typeof EventDetails> = {
   component: EventDetails,
   args: {
     event: events[1],
+    showShare: true,
   },
 }
 

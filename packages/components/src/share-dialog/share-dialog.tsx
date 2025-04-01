@@ -12,6 +12,7 @@ import {
 } from "@mantine/core"
 import { IconAlertTriangle, IconCopy } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
+import { ShareButton } from "../share-button/share-button.js"
 
 export type ShareDialogProps = ModalProps & {
   shareURL?: string
@@ -27,7 +28,7 @@ export const ShareDialog = (props: ShareDialogProps) => {
   } = useProps("ShareDialog", {}, props)
 
   const textRef = useRef<HTMLInputElement | null>(null)
-  const curRef = useRef<string>()
+  const curRef = useRef<string>("")
   curRef.current = shareURL
 
   const [[svgFor, svg], setSvg] = useState<[string, string]>(["", ""])
@@ -81,18 +82,10 @@ export const ShareDialog = (props: ShareDialogProps) => {
           title="Share URL"
           value={shareURL}
           ref={textRef}
-          rightSection={
-            <ActionIcon
-              variant="subtle"
-              title="Copy link"
-              onClick={() => {
-                navigator.clipboard.writeText(shareURL)
-                textRef.current?.select()
-              }}
-            >
-              <IconCopy />
-            </ActionIcon>
-          }
+          onFocus={(e) => {
+            e.target.select()
+          }}
+          rightSection={<ShareButton url={shareURL} />}
         />
       </Stack>
     </Modal>

@@ -2,12 +2,6 @@ import { action, makeAutoObservable, runInAction } from "mobx"
 import { createContext, useContext } from "react"
 import { Workbox } from "workbox-window"
 
-declare module "@open-event-systems/schedule-lib" {
-  interface ScheduleConfig {
-    serviceWorker?: boolean
-  }
-}
-
 export class SWStore {
   public updateAvailable = false
   private workbox: Workbox | null = null
@@ -18,10 +12,10 @@ export class SWStore {
     })
   }
 
-  register() {
+  register(basePath = "") {
     if ("serviceWorker" in navigator) {
       import("workbox-window").then(({ Workbox }) => {
-        const workbox = new Workbox("sw.js")
+        const workbox = new Workbox(`${basePath}sw.js`)
 
         workbox.addEventListener(
           "waiting",

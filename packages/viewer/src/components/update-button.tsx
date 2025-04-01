@@ -11,8 +11,7 @@ export const UpdateButton = observer(() => {
   }
 
   return (
-    <Group justify="flex-end">
-      <Text span>A new version of this page is available.</Text>
+    <Group justify="flex-start">
       <Button
         size="xs"
         variant="outline"
@@ -23,6 +22,7 @@ export const UpdateButton = observer(() => {
       >
         Update
       </Button>
+      <Text span>A new version of this page is available.</Text>
     </Group>
   )
 })
