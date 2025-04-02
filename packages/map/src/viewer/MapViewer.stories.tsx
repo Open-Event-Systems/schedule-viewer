@@ -64,6 +64,14 @@ export const Default: StoryObj<typeof MapViewer> = {
           id: "panel-2",
           title: "Panel Room Two",
         },
+        {
+          id: "vendor-1",
+          title: "Table 1",
+        },
+        {
+          id: "vendor-21",
+          title: "Table 21",
+        },
       ],
       vendors: [
         {

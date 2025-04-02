@@ -32,7 +32,7 @@ import {
   makeCurrentEventFilter,
   makeFutureEventFilter,
 } from "../map.js"
-import { MapDetails, MapDetailsProps } from "../details/map-details.js"
+import { MapDetails } from "../details/map-details.js"
 
 export type MapViewerProps = {
   config: MapConfig
@@ -108,34 +108,17 @@ export const MapViewer = observer((props: MapViewerProps) => {
   }, [eventsByLocation])
 
   // selection
-  let selectionData: Partial<MapDetailsProps> | undefined
   const selectedLoc = selectionId ? locations.get(selectionId) : undefined
-  const selectedVendor = selectionId ? vendors.get(selectionId) : undefined
-
-  if (selectedVendor) {
-    selectionData = {
-      type: "vendor",
-      title: selectedVendor.name,
-      description: selectedVendor.description,
-    }
-  } else if (selectedLoc) {
-    selectionData = {
-      type: "location",
-      title: selectedLoc.title,
-      description: selectedLoc.description,
-      currentEvent: curEventByLocation.get(selectedLoc.id),
-      futureEvent: curEventByLocation.get(selectedLoc.id),
-    }
+  const lastSelectedLoc = useRef<MapLocation | null>(selectedLoc ?? null)
+  if (selectedLoc) {
+    lastSelectedLoc.current = selectedLoc
   }
 
-  const lastSelectionData = useRef<Partial<MapDetailsProps> | null>(
-    selectedLoc ?? null,
-  )
-  if (selectionData) {
-    lastSelectionData.current = selectionData
-  }
-
-  const curSelectionData = selectionData ?? lastSelectionData.current
+  // TODO: clean up/improve handling vendor vs location
+  const curSelectionData = selectedLoc ?? lastSelectedLoc.current
+  const selectedVendor = curSelectionData?.id
+    ? vendors.get(curSelectionData.id)
+    : undefined
 
   useEffect(() => {
     fetch(config.src)
@@ -226,9 +209,25 @@ export const MapViewer = observer((props: MapViewerProps) => {
         </ControlsRight>
       </Box>
       <MapDetails.Drawer
-        opened={!!selectionData}
+        opened={!!selectedLoc}
         onClose={() => onSelectLocation && onSelectLocation(null)}
-        {...curSelectionData}
+        title={selectedVendor ? selectedVendor.name : curSelectionData?.title}
+        description={
+          selectedVendor
+            ? selectedVendor.description
+            : curSelectionData?.description
+        }
+        type={curSelectionData?.type}
+        currentEvent={
+          curSelectionData
+            ? curEventByLocation.get(curSelectionData.id)
+            : undefined
+        }
+        futureEvent={
+          curSelectionData
+            ? futureEventByLocation.get(curSelectionData.id)
+            : undefined
+        }
       />
     </TransformWrapper>
   )

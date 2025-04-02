@@ -11,6 +11,7 @@ export type MapLayer = Readonly<{
 export type MapLocation = Readonly<{
   id: string
   title: string
+  type?: "location" | "vendor"
   description?: string
   aliases?: readonly string[]
 }>
