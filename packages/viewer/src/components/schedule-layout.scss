@@ -1,3 +1,10 @@
 .ScheduleLayout-root {
   min-height: 100vh;
 }
+
+.ScheduleLayout-titleLink {
+  font-size: var(--mantine-h1-font-size);
+  font-weight: var(--mantine-h1-font-weight);
+  line-height: var(--mantine-h1-line-height);
+  color: inherit;
+}

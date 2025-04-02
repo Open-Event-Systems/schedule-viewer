@@ -8,6 +8,12 @@ import wretch from "wretch"
 import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
 import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-components/config/context"
 
+declare module "@open-event-systems/schedule-lib" {
+  interface ScheduleConfig {
+    homeURL?: string
+  }
+}
+
 export type AppConfig = Readonly<{
   config: ScheduleConfig
   bookmarkAPI?: BookmarkAPI
