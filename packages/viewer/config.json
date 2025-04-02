@@ -6,6 +6,7 @@
   "events": "/events.json",
   "title": "Example Event",
   "description": "Example event schedule.",
+  "homeURL": "/",
   "dayChangeHour": 6,
   "timeZone": "America/New_York",
   "tags": [

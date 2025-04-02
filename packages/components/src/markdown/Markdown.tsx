@@ -26,7 +26,7 @@ export const Markdown = createPolymorphicComponent<"div", MarkdownProps>(
       }
 
       md.renderer.rules.link_close = (tokens, idx, options) => {
-        return "🡕" + md.renderer.renderToken(tokens, idx, options)
+        return "↗" + md.renderer.renderToken(tokens, idx, options)
       }
 
       return md
