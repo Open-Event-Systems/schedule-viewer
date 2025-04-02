@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react"
 import { MapViewer } from "./MapViewer.js"
 import "./MapViewer.scss"
 import "./Map.scss"
-import svgMap from "../../../../map/ao-map-2-relabel.svg"
+import svgMap from "../../../../map/ao-map-2-relabel2.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
 
@@ -58,20 +58,30 @@ export const Default: StoryObj<typeof MapViewer> = {
         {
           id: "panel-1",
           title: "Panel Room One",
+          description: "Lower level, next to Dealers' Den.",
         },
         {
           id: "panel-2",
           title: "Panel Room Two",
         },
       ],
+      vendors: [
+        {
+          name: "Test Vendor",
+          location: "vendor-1",
+          description: "Test Vendor",
+        },
+        {
+          name: "Test Vendor",
+          location: "vendor-21",
+          description: "Test Vendor",
+        },
+      ],
+      flags: [],
       defaultLevel: "lobby",
     }))
 
-    // useEffect(() => {
-    //   return () => {
-    //     control.dispose()
-    //   }
-    // }, [control])
+    const now = new Date()
 
     return (
       <MapViewer
@@ -87,6 +97,22 @@ export const Default: StoryObj<typeof MapViewer> = {
           setSelection(id)
           id && zoomFuncRef.current && zoomFuncRef.current(id)
         }}
+        events={[
+          {
+            id: "event-1",
+            title: "Test Event 1",
+            location: "panel-1",
+            start: new Date(now.getTime() - 300000),
+            end: new Date(now.getTime() + 3600000),
+          },
+          {
+            id: "event-2",
+            title: "Test Event 2",
+            location: "panel-1",
+            start: new Date(now.getTime() + 3600000),
+            end: new Date(now.getTime() + 7200000),
+          },
+        ]}
       />
     )
   },

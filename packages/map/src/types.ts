@@ -15,12 +15,35 @@ export type MapLocation = Readonly<{
   aliases?: readonly string[]
 }>
 
+export type MapVendor = Readonly<{
+  name: string
+  location: string
+  description?: string
+  icon?: string
+}>
+
+export type TimedMapFlag = Readonly<{
+  flag: string
+  start?: string
+  end?: string
+}>
+
 export interface MapConfig {
   readonly src: string
   readonly levels: readonly MapLevel[]
   readonly defaultLevel: string
   readonly layers: readonly MapLayer[]
   readonly locations: readonly MapLocation[]
+  readonly vendors: readonly MapVendor[]
+  readonly flags: readonly (string | TimedMapFlag)[]
+}
+
+export interface MapEvent {
+  readonly id: string
+  readonly title?: string
+  readonly start?: Date
+  readonly end?: Date
+  readonly location?: string
 }
 
 export type MapState = {

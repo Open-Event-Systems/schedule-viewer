@@ -20,6 +20,7 @@ export const MAP_CLASSES = {
   hidden: "Map-hidden",
   highlight: "Map-highlight",
   foreignObjectText: "Map-foreignObjectText",
+  flagPrefix: "Map-flag-id-",
 } as const
 
 export const getMapClass = (prefix: string, id: string): string => {

@@ -1,55 +1,37 @@
 import { Meta, StoryObj } from "@storybook/react"
-import { getMapSVGProps, MapSVG } from "./map-svg.js"
-import { useEffect, useMemo, useState } from "react"
-import svgMap from "../../../../map/ao-map-2-relabel.svg"
+import { MapSVG } from "./map-svg.js"
+import { useEffect, useState } from "react"
+import svgMap from "../../../../map/ao-map-2-relabel2.svg"
 
-const meta: Meta<typeof MapSVG> = {
-  component: MapSVG,
-}
+const meta: Meta<typeof MapSVG> = {}
 
 export default meta
 
 export const Default: StoryObj<typeof MapSVG> = {
   args: {
-    level: "lower",
-    vendors: [
-      {
-        location: "vendor-26",
-        name: "Test",
-        icon: "http://localhost:9001/tm.png",
-      },
-    ],
+    level: "lobby",
   },
   render(args) {
-    const [data, setData] = useState<string | null>(null)
+    const [dataFunc, setDataFunc] = useState<(() => string) | null>(null)
     const [highlight, setHighlight] = useState<string | null>(null)
-
-    const [svgProps, innerHTML] = useMemo(() => {
-      if (data) {
-        return getMapSVGProps(data)
-      } else {
-        return [null, ""]
-      }
-    }, [data])
 
     useEffect(() => {
       fetch(svgMap)
         .then((resp) => resp.text())
         .then((svgData) => {
-          setData(svgData)
+          setDataFunc(() => () => svgData)
         })
     }, [])
 
-    if (svgProps) {
+    if (dataFunc) {
       return (
         <MapSVG
           {...args}
-          {...svgProps}
+          getSVGData={dataFunc}
           onSelectLocation={(id) => {
             setHighlight(id)
           }}
           highlightId={highlight}
-          dangerouslySetInnerHTML={{ __html: innerHTML }}
         />
       )
     } else {

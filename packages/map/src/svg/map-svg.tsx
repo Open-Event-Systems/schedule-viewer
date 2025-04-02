@@ -5,14 +5,15 @@ import {
   forwardRef,
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react"
-import { getIDFromMapClass, getMapClass, MAP_CLASSES } from "../map-classes.js"
 import {
-  createForeignTextObject,
   setClickHandlers,
+  setFlags,
   setVendorIcons,
+  setVendorNames,
   updateHighlight,
   updateIsometric,
   updateIsometricDelayed,
@@ -26,11 +27,14 @@ export type MapSVGVendor = Readonly<{
   icon?: string
 }>
 
-export type MapSVGProps = ComponentPropsWithoutRef<"svg"> & {
+export type MapSVGProps = Omit<ComponentPropsWithoutRef<"svg">, "children"> & {
+  className?: string
+  getSVGData: () => string
   level: string
   hiddenLayers?: Iterable<string>
   highlightId?: string | null
   vendors?: readonly MapSVGVendor[]
+  flags?: Iterable<string>
   isometric?: boolean
   onSelectLocation?: (id: string | null) => void
 }
@@ -38,10 +42,12 @@ export type MapSVGProps = ComponentPropsWithoutRef<"svg"> & {
 export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   const {
     className,
+    getSVGData,
     level,
     hiddenLayers = [],
     highlightId,
     vendors = [],
+    flags = [],
     isometric = false,
     onSelectLocation,
     ...other
@@ -50,6 +56,16 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   const [el, setEl] = useState<SVGSVGElement | null>(null)
   const isometricRef = useRef(isometric)
   isometricRef.current = isometric
+
+  const [svgProps, innerHTML] = useMemo(() => {
+    return getMapSVGProps(getSVGData())
+  }, [getSVGData])
+
+  useLayoutEffect(() => {
+    if (el && innerHTML) {
+      el.innerHTML = innerHTML
+    }
+  }, [el, innerHTML])
 
   const setRef = useCallback(
     (el: SVGSVGElement | null) => {
@@ -113,42 +129,28 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   }, [el, vendors])
 
   // set vendor names
-  // useLayoutEffect(() => {
-  //   const els = el?.getElementsByClassName(MAP_CLASSES.vendorName) ?? []
-  //   for (const el of els) {
-  //     el.innerHTML = ""
-  //   }
+  useLayoutEffect(() => {
+    if (el) {
+      setVendorNames(el, vendors)
+    }
+  }, [el, vendors])
 
-  //   for (const vendor of vendors) {
-  //     const els =
-  //       el?.getElementsByClassName(
-  //         getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location)
-  //       ) ?? []
-  //     for (const el of els) {
-  //       el.innerHTML = vendor.name
-  //     }
-  //   }
-  // }, [el, vendors])
-
-  // useLayoutEffect(() => {
-  //   if (el) {
-  //     const replace = el.getElementById("test")
-  //     const textEl = createForeignTextObject(replace as SVGElement)
-  //     textEl.classList.add("Map-foreignText")
-  //     textEl.innerHTML = "Hello there really long text how will this work out"
-  //   }
-  // }, [el])
+  // set flags
+  useLayoutEffect(() => {
+    if (el) {
+      setFlags(el, flags)
+    }
+  }, [el, flags])
 
   return (
-    <svg className={clsx("MapSVG-root", className)} ref={setRef} {...other} />
+    <svg
+      {...svgProps}
+      {...other}
+      ref={setRef}
+      className={clsx("MapSVG-root", className, svgProps.className)}
+    />
   )
 })
-
-const removeInlineDisplay = (el: Element) => {
-  if (el instanceof HTMLElement || el instanceof SVGElement) {
-    el.style.display = ""
-  }
-}
 
 export const getMapSVGProps = (
   svgData: string,

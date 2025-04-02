@@ -1,9 +1,9 @@
 import { Box, BoxProps, Button, Stack, useProps } from "@mantine/core"
 import clsx from "clsx"
 import {
-  MutableRefObject,
   ReactNode,
   RefCallback,
+  RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -11,26 +11,40 @@ import {
   useState,
 } from "react"
 import { observer } from "mobx-react-lite"
-import { MapConfig, MapLevel, MapLocation } from "../types.js"
+import {
+  MapConfig,
+  MapEvent,
+  MapLevel,
+  MapLocation,
+  MapVendor,
+} from "../types.js"
 import {
   ReactZoomPanPinchContentRef,
   TransformComponent,
   TransformWrapper,
 } from "react-zoom-pan-pinch"
-import { getMapSVGProps, MapSVG } from "../svg/map-svg.js"
+import { MapSVG } from "../svg/map-svg.js"
 import { getMapClass, MAP_CLASSES } from "../map-classes.js"
-import { getMapLocations } from "../map.js"
-import { MapDetails } from "../details/map-details.js"
+import {
+  getMapEventsByLocation,
+  getMapFlags,
+  getMapLocations,
+  makeCurrentEventFilter,
+  makeFutureEventFilter,
+} from "../map.js"
+import { MapDetails, MapDetailsProps } from "../details/map-details.js"
 
 export type MapViewerProps = {
   config: MapConfig
+  events?: Iterable<MapEvent>
   level?: string | null
   onSetLevel?: (level: string) => void
   highlightId?: string | null
   onSelectLocation?: (id: string | null) => void
   selectionId?: string | null
+  flags?: Iterable<string>
   zoomFuncRef?:
-    | MutableRefObject<((id: string) => void) | null>
+    | RefObject<((id: string) => void) | null>
     | RefCallback<((id: string) => void) | null>
 } & BoxProps
 
@@ -38,44 +52,114 @@ export const MapViewer = observer((props: MapViewerProps) => {
   const {
     className,
     config,
+    events = [],
     level,
     onSetLevel,
     highlightId,
     onSelectLocation,
     selectionId,
+    flags,
     zoomFuncRef,
     ...other
   } = useProps("MapViewer", {}, props)
 
-  const [svgData, setSVGData] = useState<string | null>(null)
+  const [svgDataFunc, setSVGDataFunc] = useState<(() => string) | null>(null)
   const [isometric, setIsometric] = useState(false)
 
-  const [svgProps, svgStr] = useMemo(() => {
-    return svgData ? getMapSVGProps(svgData) : [null, ""]
-  }, [svgData])
   const [svgEl, setSVGEl] = useState<SVGSVGElement | null>(null)
 
+  // locations/vendors
   const locations = useMemo(() => getMapLocations(config), [config])
+  const vendors = useMemo(() => {
+    // TODO: put this in a function like getMapLocations
+    const map = new Map<string, MapVendor>()
+    for (const entry of config.vendors) {
+      map.set(entry.location, entry)
+    }
+    return map
+  }, [config])
 
-  const selectedLoc = selectionId ? locations.get(selectionId) : null
+  // events
+  const eventsByLocation = useMemo(() => {
+    const sorted = Array.from(events).sort(
+      (a, b) => (a.start?.getTime() ?? 0) - (b.start?.getTime() ?? 0),
+    )
+    return getMapEventsByLocation(locations.values(), sorted)
+  }, [events, locations])
 
-  const lastSelectedLoc = useRef<MapLocation | null>(selectedLoc ?? null)
-  if (selectedLoc) {
-    lastSelectedLoc.current = selectedLoc
+  const [now] = useState(() => new Date()) // just use time from first render
+
+  const [curEventByLocation, futureEventByLocation] = useMemo(() => {
+    const cur = new Map<string, MapEvent>()
+    const future = new Map<string, MapEvent>()
+    for (const [locId, locEvents] of eventsByLocation.entries()) {
+      const curEvents = locEvents.filter(makeCurrentEventFilter(now))
+      if (curEvents.length > 0) {
+        cur.set(locId, curEvents[0])
+      }
+
+      const futureEvents = locEvents.filter(makeFutureEventFilter(240, now))
+      if (futureEvents.length > 0) {
+        future.set(locId, futureEvents[0])
+      }
+    }
+
+    return [cur, future]
+  }, [eventsByLocation])
+
+  // selection
+  let selectionData: Partial<MapDetailsProps> | undefined
+  const selectedLoc = selectionId ? locations.get(selectionId) : undefined
+  const selectedVendor = selectionId ? vendors.get(selectionId) : undefined
+
+  if (selectedVendor) {
+    selectionData = {
+      type: "vendor",
+      title: selectedVendor.name,
+      description: selectedVendor.description,
+    }
+  } else if (selectedLoc) {
+    selectionData = {
+      type: "location",
+      title: selectedLoc.title,
+      description: selectedLoc.description,
+      currentEvent: curEventByLocation.get(selectedLoc.id),
+      futureEvent: curEventByLocation.get(selectedLoc.id),
+    }
   }
 
-  const curSelectedLoc = selectedLoc ?? lastSelectedLoc.current
+  const lastSelectionData = useRef<Partial<MapDetailsProps> | null>(
+    selectedLoc ?? null,
+  )
+  if (selectionData) {
+    lastSelectionData.current = selectionData
+  }
+
+  const curSelectionData = selectionData ?? lastSelectionData.current
 
   useEffect(() => {
     fetch(config.src)
       .then((resp) => resp.text())
       .then((body) => {
-        setSVGData(body)
+        setSVGDataFunc(() => () => body)
       })
   }, [config.src])
 
+  // flags
+  const curFlags = useMemo(() => {
+    const now = new Date()
+    const flagSet = getMapFlags(config, now)
+    for (const flag of flags ?? []) {
+      flagSet.add(flag)
+    }
+    return flagSet
+  }, [config, flags])
+
   const setZoomRef = useCallback(
-    (ctx: ReactZoomPanPinchContentRef) => {
+    (ctx: ReactZoomPanPinchContentRef | null) => {
+      if (!ctx) {
+        return
+      }
       const zoomFunc = (id: string) => {
         const areaEls =
           svgEl?.getElementsByClassName(
@@ -84,7 +168,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
         if (areaEls[0]) {
           // docs say you can't zoom to svgelement, but appears to work?
           // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-          ctx.zoomToElement(areaEls[0] as Element as HTMLElement, 2)
+          ctx.zoomToElement(areaEls[0] as Element as HTMLElement)
         }
       }
 
@@ -97,46 +181,25 @@ export const MapViewer = observer((props: MapViewerProps) => {
     [zoomFuncRef, svgEl],
   )
 
-  // useEffect(() => {
-  //   const el = ctx?.instance.contentComponent
-  //   if (svgData && el) {
-  //     el.innerHTML = svgData
-  //     const els = el.getElementsByTagName("svg")
-  //     if (els.length > 0) {
-  //       const focusFunc = (el: SVGElement) => {
-  //         // docs say you can't zoom to svgelement, but appears to work?
-  //         // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-  //         ctx.zoomToElement(el as Element as HTMLElement)
-  //       }
-
-  //       control.setup(els[0] as SVGSVGElement, focusFunc)
-  //     }
-  //   }
-  // }, [control, svgData, ctx])
-
   return (
-    <TransformWrapper
-      ref={setZoomRef}
-      limitToBounds={false}
-      minScale={0.1}
-      centerOnInit
-    >
+    <TransformWrapper ref={setZoomRef} limitToBounds={false} centerOnInit>
       <Box className={clsx("MapViewer-root", className)} {...other}>
         <TransformComponent
           wrapperClass="MapViewer-wrapper"
           contentClass="MapViewer-content"
         >
-          {svgProps ? (
+          {svgDataFunc ? (
             <MapSVG
-              {...svgProps}
               ref={setSVGEl}
+              getSVGData={svgDataFunc}
               level={level ?? config.defaultLevel}
               highlightId={highlightId}
               onSelectLocation={(id) => {
                 onSelectLocation && onSelectLocation(id)
               }}
+              vendors={config.vendors}
+              flags={curFlags}
               isometric={isometric}
-              dangerouslySetInnerHTML={{ __html: svgStr }}
             />
           ) : null}
         </TransformComponent>
@@ -163,10 +226,9 @@ export const MapViewer = observer((props: MapViewerProps) => {
         </ControlsRight>
       </Box>
       <MapDetails.Drawer
-        title={curSelectedLoc?.title}
-        description={curSelectedLoc?.description}
-        opened={!!selectedLoc}
+        opened={!!selectionData}
         onClose={() => onSelectLocation && onSelectLocation(null)}
+        {...curSelectionData}
       />
     </TransformWrapper>
   )

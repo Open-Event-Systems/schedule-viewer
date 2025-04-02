@@ -127,7 +127,6 @@ export const setVendorIcons = (
       getMapClass(MAP_CLASSES.vendorIconPrefix, vendor.location),
     )
     for (const el of els) {
-      removeInlineDisplay(el)
       if (vendor.icon) {
         el.classList.add(MAP_CLASSES.visible)
         if (el.tagName == "image") {
@@ -137,6 +136,41 @@ export const setVendorIcons = (
         el.classList.remove(MAP_CLASSES.visible)
       }
     }
+  }
+}
+
+export const setVendorNames = (
+  el: SVGSVGElement,
+  vendors: readonly MapSVGVendor[],
+) => {
+  const els = el.getElementsByClassName(MAP_CLASSES.vendorName)
+  for (const el of els) {
+    removeInlineDisplay(el)
+  }
+
+  for (const vendor of vendors) {
+    const els = el.getElementsByClassName(
+      getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location),
+    )
+    for (const el of els) {
+      if (el instanceof SVGForeignObjectElement) {
+        const htmlTextEls = el.getElementsByClassName(
+          MAP_CLASSES.foreignObjectText,
+        )
+        if (htmlTextEls.length > 0) {
+          htmlTextEls[0].innerHTML = vendor.name
+        }
+      } else {
+        const htmlTextEl = createForeignTextObject(el as SVGElement)
+        htmlTextEl.innerHTML = vendor.name
+      }
+    }
+  }
+}
+
+export const setFlags = (el: SVGSVGElement, flags: Iterable<string>) => {
+  for (const flag of flags) {
+    el.classList.add(getMapClass(MAP_CLASSES.flagPrefix, flag))
   }
 }
 
@@ -154,6 +188,7 @@ export const createForeignTextObject = (
 
   const x = replaceEl.getAttribute("x") ?? ""
   const y = replaceEl.getAttribute("y") ?? ""
+  const transform = replaceEl.getAttribute("transform") ?? ""
   const width = replaceEl.getAttribute("width") ?? ""
   const height = replaceEl.getAttribute("height") ?? ""
   const fObj = document.createElementNS(
@@ -165,12 +200,16 @@ export const createForeignTextObject = (
   fObj.setAttribute("y", y)
   fObj.setAttribute("width", width)
   fObj.setAttribute("height", height)
+  fObj.setAttribute("transform", transform)
+
+  replaceEl.classList.forEach((cn) => fObj.classList.add(cn))
+
   parent.replaceChild(fObj, replaceEl)
   return div
 }
 
 const removeInlineDisplay = (el: Element) => {
   if (el instanceof HTMLElement || el instanceof SVGElement) {
-    el.style.display = ""
+    el.style.removeProperty("display")
   }
 }
