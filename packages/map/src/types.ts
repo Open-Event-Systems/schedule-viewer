@@ -12,8 +12,10 @@ export type MapLocation = Readonly<{
   id: string
   title: string
   type?: "location" | "vendor"
+  level?: string
   description?: string
   aliases?: readonly string[]
+  zoomScale?: number
 }>
 
 export type MapVendor = Readonly<{

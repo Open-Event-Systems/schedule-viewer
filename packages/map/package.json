@@ -1,7 +1,18 @@
 {
-  "name": "@open-event-systems/map",
+  "name": "@open-event-systems/schedule-map",
   "version": "0.1.0",
   "type": "module",
+  "exports": {
+    "./styles.scss": "./src/styles.scss",
+    "./*.scss": "./*.scss",
+    "./*": "./dist/src/*.js"
+  },
+  "files": [
+    "dist/src/**/*.js",
+    "dist/src/**/*.d.ts",
+    "!dist/src/**/*.stories.*",
+    "src/**/*.scss"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
@@ -34,8 +45,7 @@
     "@mantine/hooks": "^7.16.1",
     "mobx": "^6.13.5",
     "mobx-react-lite": "^4.1.0",
-    "react": "^19.1.0",
-    "react-dom": "^18.0.0"
+    "react": "^19.1.0"
   },
   "dependencies": {
     "clsx": "^2.1.1",

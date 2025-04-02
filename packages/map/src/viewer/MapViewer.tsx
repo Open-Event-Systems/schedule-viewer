@@ -107,6 +107,16 @@ export const MapViewer = observer((props: MapViewerProps) => {
     return [cur, future]
   }, [eventsByLocation])
 
+  const eventText = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const [loc, event] of curEventByLocation.entries()) {
+      if (event.title) {
+        map.set(loc, event.title)
+      }
+    }
+    return map
+  }, [curEventByLocation])
+
   // selection
   const selectedLoc = selectionId ? locations.get(selectionId) : undefined
   const lastSelectedLoc = useRef<MapLocation | null>(selectedLoc ?? null)
@@ -149,9 +159,15 @@ export const MapViewer = observer((props: MapViewerProps) => {
             getMapClass(MAP_CLASSES.areaPrefix, id),
           ) ?? []
         if (areaEls[0]) {
+          const location = locations.get(id)
+          const level = location?.level
+          onSetLevel && level && onSetLevel(level)
+
+          const zoomScale = location?.zoomScale
+
           // docs say you can't zoom to svgelement, but appears to work?
           // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-          ctx.zoomToElement(areaEls[0] as Element as HTMLElement)
+          ctx.zoomToElement(areaEls[0] as Element as HTMLElement, zoomScale)
         }
       }
 
@@ -161,11 +177,17 @@ export const MapViewer = observer((props: MapViewerProps) => {
         zoomFuncRef.current = zoomFunc
       }
     },
-    [zoomFuncRef, svgEl],
+    [zoomFuncRef, locations, onSetLevel, svgEl],
   )
 
   return (
-    <TransformWrapper ref={setZoomRef} limitToBounds={false} centerOnInit>
+    <TransformWrapper
+      ref={setZoomRef}
+      limitToBounds={false}
+      centerOnInit
+      minScale={0.1}
+      maxScale={10}
+    >
       <Box className={clsx("MapViewer-root", className)} {...other}>
         <TransformComponent
           wrapperClass="MapViewer-wrapper"
@@ -182,6 +204,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
               }}
               vendors={config.vendors}
               flags={curFlags}
+              eventText={eventText}
               isometric={isometric}
             />
           ) : null}

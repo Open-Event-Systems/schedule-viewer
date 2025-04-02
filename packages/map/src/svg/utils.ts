@@ -174,6 +174,31 @@ export const setFlags = (el: SVGSVGElement, flags: Iterable<string>) => {
   }
 }
 
+export const setEventText = (
+  el: SVGSVGElement,
+  eventMap: ReadonlyMap<string, string>,
+) => {
+  const els = el.getElementsByClassName(MAP_CLASSES.eventName)
+  for (const el of els) {
+    removeInlineDisplay(el)
+    if (!(el instanceof SVGForeignObjectElement)) {
+      createForeignTextObject(el as SVGElement)
+    }
+  }
+  for (const [locId, title] of eventMap.entries()) {
+    const className = getMapClass(MAP_CLASSES.eventNamePrefix, locId)
+    const textEls = el.getElementsByClassName(className)
+    for (const textEl of textEls) {
+      const htmlTextEls = textEl.getElementsByClassName(
+        MAP_CLASSES.foreignObjectText,
+      )
+      if (htmlTextEls.length > 0) {
+        htmlTextEls[0].innerHTML = title
+      }
+    }
+  }
+}
+
 export const createForeignTextObject = (
   replaceEl: SVGElement,
 ): HTMLDivElement => {

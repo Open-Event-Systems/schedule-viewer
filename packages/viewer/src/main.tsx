@@ -9,6 +9,7 @@ import { SWStore, SWStoreContext } from "./service-worker.js"
 
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-components/styles.scss"
+import "@open-event-systems/schedule-map/styles.scss"
 import "./styles.scss"
 
 declare global {

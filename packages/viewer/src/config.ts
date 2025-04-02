@@ -7,10 +7,12 @@ import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
 import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
 import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-components/config/context"
+import { MapConfig } from "@open-event-systems/schedule-map/types"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
     homeURL?: string
+    map?: MapConfig
   }
 }
 
@@ -19,6 +21,16 @@ export type AppConfig = Readonly<{
   bookmarkAPI?: BookmarkAPI
   sessionId?: string
 }>
+
+export const DEFAULT_MAP_CONFIG = {
+  src: "/map.svg",
+  defaultLevel: "",
+  flags: [],
+  layers: [],
+  levels: [],
+  locations: [],
+  vendors: [],
+} as const
 
 export const getConfigQueryOptions = (
   configURL: string,
@@ -40,7 +52,10 @@ export const makeAppConfig = async (
   const loadedConfig = await queryClient.fetchQuery(
     getConfigQueryOptions(configURL),
   )
-  const config: ScheduleConfig = { ...DEFAULT_SCHEDULE_CONFIG, ...loadedConfig }
+  const config: ScheduleConfig = {
+    ...DEFAULT_SCHEDULE_CONFIG,
+    ...loadedConfig,
+  }
   let bookmarkAPI = config.bookmarks
     ? makeBookmarkAPI(config.bookmarks)
     : undefined

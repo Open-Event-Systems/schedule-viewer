@@ -21,6 +21,8 @@ export const MAP_CLASSES = {
   highlight: "Map-highlight",
   foreignObjectText: "Map-foreignObjectText",
   flagPrefix: "Map-flag-id-",
+  eventName: "Map-event-name",
+  eventNamePrefix: "Map-event-name-id-",
 } as const
 
 export const getMapClass = (prefix: string, id: string): string => {

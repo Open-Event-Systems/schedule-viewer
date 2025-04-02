@@ -11,6 +11,7 @@ import {
 } from "react"
 import {
   setClickHandlers,
+  setEventText,
   setFlags,
   setVendorIcons,
   setVendorNames,
@@ -36,6 +37,7 @@ export type MapSVGProps = Omit<ComponentPropsWithoutRef<"svg">, "children"> & {
   vendors?: readonly MapSVGVendor[]
   flags?: Iterable<string>
   isometric?: boolean
+  eventText?: ReadonlyMap<string, string>
   onSelectLocation?: (id: string | null) => void
 }
 
@@ -49,6 +51,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     vendors = [],
     flags = [],
     isometric = false,
+    eventText,
     onSelectLocation,
     ...other
   } = useProps("MapSVG", {}, props)
@@ -141,6 +144,13 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
       setFlags(el, flags)
     }
   }, [el, flags])
+
+  // set event text
+  useLayoutEffect(() => {
+    if (el) {
+      setEventText(el, eventText ?? new Map())
+    }
+  }, [el, eventText])
 
   return (
     <svg

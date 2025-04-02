@@ -67,10 +67,10 @@ importers:
         version: 8.6.11(storybook@8.6.11)
       "@storybook/addon-styling-webpack":
         specifier: ^1.0.1
-        version: 1.0.1(storybook@8.6.11)(webpack@5.98.0(@swc/core@1.10.9))
+        version: 1.0.1(storybook@8.6.11)(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
       "@storybook/addon-webpack5-compiler-swc":
         specifier: ^3.0.0
-        version: 3.0.0(webpack@5.98.0(@swc/core@1.10.9))
+        version: 3.0.0(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
       "@storybook/blocks":
         specifier: ^8.6.11
         version: 8.6.11(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)
@@ -79,7 +79,7 @@ importers:
         version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
       "@storybook/react-webpack5":
         specifier: ^8.6.11
-        version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(@swc/core@1.10.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
+        version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(@swc/core@1.10.9)(esbuild@0.25.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
       "@storybook/test":
         specifier: ^8.6.11
         version: 8.6.11(storybook@8.6.11)
@@ -94,7 +94,7 @@ importers:
         version: 19.0.12
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(webpack@5.98.0(@swc/core@1.10.9))
+        version: 7.1.2(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -106,13 +106,13 @@ importers:
         version: 1.83.4
       sass-loader:
         specifier: ^16.0.4
-        version: 16.0.4(sass@1.83.4)(webpack@5.98.0(@swc/core@1.10.9))
+        version: 16.0.4(sass@1.83.4)(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
       storybook:
         specifier: ^8.6.11
         version: 8.6.11
       style-loader:
         specifier: ^4.0.0
-        version: 4.0.0(webpack@5.98.0(@swc/core@1.10.9))
+        version: 4.0.0(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
 
   packages/lib:
     dependencies:
@@ -144,9 +144,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      react-dom:
-        specifier: ^18.0.0
-        version: 19.1.0(react@19.1.0)
       react-zoom-pan-pinch:
         specifier: ^3.7.0
         version: 3.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -165,10 +162,10 @@ importers:
         version: 8.6.11(storybook@8.6.11)
       "@storybook/addon-styling-webpack":
         specifier: ^1.0.1
-        version: 1.0.1(storybook@8.6.11)(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
+        version: 1.0.1(storybook@8.6.11)(webpack@5.98.0(@swc/core@1.10.9))
       "@storybook/addon-webpack5-compiler-swc":
         specifier: ^3.0.0
-        version: 3.0.0(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
+        version: 3.0.0(webpack@5.98.0(@swc/core@1.10.9))
       "@storybook/blocks":
         specifier: ^8.6.11
         version: 8.6.11(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)
@@ -177,7 +174,7 @@ importers:
         version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
       "@storybook/react-webpack5":
         specifier: ^8.6.11
-        version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(@swc/core@1.10.9)(esbuild@0.25.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
+        version: 8.6.11(@storybook/test@8.6.11(storybook@8.6.11))(@swc/core@1.10.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.11)(typescript@5.8.2)
       "@storybook/test":
         specifier: ^8.6.11
         version: 8.6.11(storybook@8.6.11)
@@ -189,7 +186,7 @@ importers:
         version: 19.0.12
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
+        version: 7.1.2(webpack@5.98.0(@swc/core@1.10.9))
       mobx:
         specifier: ^6.13.5
         version: 6.13.5
@@ -204,13 +201,13 @@ importers:
         version: 1.83.4
       sass-loader:
         specifier: ^16.0.4
-        version: 16.0.4(sass@1.83.4)(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
+        version: 16.0.4(sass@1.83.4)(webpack@5.98.0(@swc/core@1.10.9))
       storybook:
         specifier: ^8.6.11
         version: 8.6.11
       style-loader:
         specifier: ^4.0.0
-        version: 4.0.0(webpack@5.98.0(@swc/core@1.10.9)(esbuild@0.25.2))
+        version: 4.0.0(webpack@5.98.0(@swc/core@1.10.9))
 
   packages/viewer:
     dependencies:
@@ -232,6 +229,9 @@ importers:
       "@open-event-systems/schedule-lib":
         specifier: ^0.1.0
         version: link:../lib
+      "@open-event-systems/schedule-map":
+        specifier: ^0.1.0
+        version: link:../map
       "@tabler/icons-react":
         specifier: ^3.29.0
         version: 3.29.0(react@19.1.0)
