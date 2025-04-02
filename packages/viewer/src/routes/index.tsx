@@ -97,9 +97,7 @@ export const eventsDataRoute = createRoute({
         ),
       ])
 
-    // update local selections
     const newer = chooseNewer(localSelections, sessionSelections)
-    saveSelections(config.id, newer)
 
     return {
       events,
@@ -118,6 +116,7 @@ export const eventsDataRoute = createRoute({
       </ScheduleConfigProvider>
     )
   },
+  pendingComponent: Loading,
 })
 
 export const layoutRoute = createRoute({
@@ -167,6 +166,7 @@ export const eventRoute = createRoute({
       ],
     }
   },
+  staleTime: Infinity,
 })
 
 export const shareScheduleRoute = createRoute({
