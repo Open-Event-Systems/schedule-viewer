@@ -6,6 +6,7 @@ import {
   eventsDataRoute,
   eventsRoute,
   layoutRoute,
+  mapLayoutRoute,
   mapRoute,
   rootRoute,
   RouterContext,
@@ -25,8 +26,8 @@ const routeTree = rootRoute.addChildren([
         ]),
         eventRoute,
         sharedScheduleRoute,
-        mapRoute,
       ]),
+      mapLayoutRoute.addChildren([mapRoute]),
     ]),
   ]),
 ])

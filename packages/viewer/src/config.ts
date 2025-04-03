@@ -6,13 +6,16 @@ import {
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
 import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
-import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-components/config/context"
+import {
+  DEFAULT_SCHEDULE_CONFIG,
+  useScheduleConfig,
+} from "@open-event-systems/schedule-components/config/context"
 import { MapConfig } from "@open-event-systems/schedule-map/types"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
     homeURL?: string
-    map?: MapConfig
+    map?: Partial<MapConfig>
   }
 }
 
@@ -31,6 +34,16 @@ export const DEFAULT_MAP_CONFIG = {
   locations: [],
   vendors: [],
 } as const
+
+export const getMapConfig = (config: ScheduleConfig): MapConfig => ({
+  ...DEFAULT_MAP_CONFIG,
+  ...config.map,
+})
+
+export const useMapConfig = (): MapConfig => {
+  const config = useScheduleConfig()
+  return getMapConfig(config)
+}
 
 export const getConfigQueryOptions = (
   configURL: string,
