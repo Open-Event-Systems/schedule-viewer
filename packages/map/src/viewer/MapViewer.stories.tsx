@@ -87,6 +87,8 @@ export const Default: StoryObj<typeof MapViewer> = {
       ],
       flags: [],
       defaultLevel: "lobby",
+      minScale: 0.1,
+      maxScale: 10,
     }))
 
     const now = new Date()

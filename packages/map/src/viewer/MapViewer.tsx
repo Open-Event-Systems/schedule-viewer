@@ -150,24 +150,23 @@ export const MapViewer = observer((props: MapViewerProps) => {
 
   const setZoomRef = useCallback(
     (ctx: ReactZoomPanPinchContentRef | null) => {
-      if (!ctx) {
-        return
-      }
-      const zoomFunc = (id: string) => {
-        const areaEls =
-          svgEl?.getElementsByClassName(
-            getMapClass(MAP_CLASSES.areaPrefix, id),
-          ) ?? []
-        if (areaEls[0]) {
-          const location = locations.get(id)
-          const level = location?.level
-          onSetLevel && level && onSetLevel(level)
+      let zoomFunc = null
 
-          const zoomScale = location?.zoomScale
+      if (svgEl && ctx) {
+        zoomFunc = (id: string) => {
+          const areaEls =
+            svgEl?.getElementsByClassName(
+              getMapClass(MAP_CLASSES.areaPrefix, id),
+            ) ?? []
+          if (areaEls[0]) {
+            const location = locations.get(id)
 
-          // docs say you can't zoom to svgelement, but appears to work?
-          // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-          ctx.zoomToElement(areaEls[0] as Element as HTMLElement, zoomScale)
+            const zoomScale = location?.zoomScale
+
+            // docs say you can't zoom to svgelement, but appears to work?
+            // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
+            ctx.zoomToElement(areaEls[0] as Element as HTMLElement, zoomScale)
+          }
         }
       }
 
@@ -177,7 +176,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
         zoomFuncRef.current = zoomFunc
       }
     },
-    [zoomFuncRef, locations, onSetLevel, svgEl],
+    [zoomFuncRef, locations, svgEl],
   )
 
   return (
@@ -185,8 +184,9 @@ export const MapViewer = observer((props: MapViewerProps) => {
       ref={setZoomRef}
       limitToBounds={false}
       centerOnInit
-      minScale={0.1}
-      maxScale={10}
+      centerZoomedOut
+      minScale={config.minScale}
+      maxScale={config.maxScale}
     >
       <Box className={clsx("MapViewer-root", className)} {...other}>
         <TransformComponent

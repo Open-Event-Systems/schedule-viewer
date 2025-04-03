@@ -11,6 +11,7 @@ import {
   useScheduleConfig,
 } from "@open-event-systems/schedule-components/config/context"
 import { MapConfig } from "@open-event-systems/schedule-map/types"
+import { useMemo } from "react"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
@@ -33,6 +34,8 @@ export const DEFAULT_MAP_CONFIG = {
   levels: [],
   locations: [],
   vendors: [],
+  minScale: 0.1,
+  maxScale: 10,
 } as const
 
 export const getMapConfig = (config: ScheduleConfig): MapConfig => ({
@@ -42,7 +45,7 @@ export const getMapConfig = (config: ScheduleConfig): MapConfig => ({
 
 export const useMapConfig = (): MapConfig => {
   const config = useScheduleConfig()
-  return getMapConfig(config)
+  return useMemo(() => getMapConfig(config), [config])
 }
 
 export const getConfigQueryOptions = (

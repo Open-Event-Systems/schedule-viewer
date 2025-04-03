@@ -13,5 +13,9 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "references": [{ "path": "../components" }, { "path": "../lib" }]
+  "references": [
+    { "path": "../map" },
+    { "path": "../components" },
+    { "path": "../lib" }
+  ]
 }

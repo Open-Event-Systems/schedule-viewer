@@ -39,6 +39,8 @@ export interface MapConfig {
   readonly locations: readonly MapLocation[]
   readonly vendors: readonly MapVendor[]
   readonly flags: readonly (string | TimedMapFlag)[]
+  readonly minScale: number
+  readonly maxScale: number
 }
 
 export interface MapEvent {
