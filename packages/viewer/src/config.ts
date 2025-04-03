@@ -7,6 +7,8 @@ import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
 import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
 import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-components/config/context"
+import { useLocation } from "@tanstack/react-router"
+import { parseISO } from "date-fns"
 
 declare module "@open-event-systems/schedule-lib" {
   interface ScheduleConfig {
@@ -68,4 +70,23 @@ export const makeAppConfig = async (
   }
 
   return { config, bookmarkAPI, sessionId }
+}
+
+/**
+ * Get the current time.
+ *
+ * Overridable via `time` hash param.
+ */
+export const useTime = (): Date => {
+  const loc = useLocation()
+  const hashParams = new URLSearchParams(loc.hash)
+  const tStr = hashParams.get("time")
+  if (tStr) {
+    const now = parseISO(tStr)
+    if (!isNaN(now.getTime())) {
+      return now
+    }
+  }
+
+  return new Date()
 }
