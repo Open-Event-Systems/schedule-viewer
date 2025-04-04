@@ -5,11 +5,24 @@ import { Workbox } from "workbox-window"
 export class SWStore {
   public updateAvailable = false
   private workbox: Workbox | null = null
+  private installPromptEvent: Event | null = null
 
   constructor() {
     makeAutoObservable<this, "workbox">(this, {
       workbox: false,
     })
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      action((e: Event) => {
+        e.preventDefault()
+        this.installPromptEvent = e
+      }),
+    )
+  }
+
+  get hasInstallPrompt() {
+    return !!this.installPromptEvent
   }
 
   register(basePath = "") {
@@ -58,6 +71,21 @@ export class SWStore {
     if (this.workbox) {
       this.workbox.messageSkipWaiting()
     }
+  }
+
+  async prompt(): Promise<"accepted" | "dismissed" | null> {
+    if (this.installPromptEvent) {
+      const res: { outcome: "accepted" | "dismissed" } =
+        // @ts-ignore
+        await this.installPromptEvent.prompt()
+      runInAction(() => {
+        if (res.outcome == "accepted") {
+          this.installPromptEvent = null
+        }
+      })
+      return res.outcome
+    }
+    return null
   }
 }
 

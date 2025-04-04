@@ -33,6 +33,7 @@ import {
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
 import { createICS } from "../ical.js"
+import { clearSelections } from "../local-storage.js"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
@@ -256,8 +257,11 @@ export const EventsRoute = observer(() => {
                   window.location.href,
                 )
                 bookmarkAPI.setup(confirmSyncId).then(() => {
+                  clearSelections(config.id)
                   window.location.href = String(url)
-                  window.location.reload()
+
+                  // only reload if using hash history
+                  // window.location.reload()
                 })
               }
             }}

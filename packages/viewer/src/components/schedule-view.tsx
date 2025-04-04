@@ -23,6 +23,7 @@ import {
 } from "@open-event-systems/schedule-components/day-filter/DayFilter"
 import { Stack, Text } from "@mantine/core"
 import { EventPills } from "@open-event-systems/schedule-components/pills/EventPills"
+import { useTime } from "../config.js"
 
 export type ScheduleViewProps = {
   config: ScheduleConfig
@@ -53,6 +54,8 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
 
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
 
+  const now = useTime()
+
   const days = useMemo(
     () =>
       getDays(
@@ -64,7 +67,7 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
   )
 
   const defaultDay = useMemo(
-    () => getDefaultDay(days, toTimezone(new Date(), config.timeZone)),
+    () => getDefaultDay(days, toTimezone(now, config.timeZone)),
     [days, config.timeZone],
   )
 
@@ -117,7 +120,7 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
       showPast
         ? bookmarkFiltered
         : bookmarkFiltered.filter(
-            makePastEventFilter(toTimezone(new Date(), config.timeZone)),
+            makePastEventFilter(toTimezone(now, config.timeZone)),
           ),
     [bookmarkFiltered, showPast, config.timeZone],
   )
