@@ -55,6 +55,13 @@ export const loadSelections = (scheduleId: string): Selections => {
 }
 
 /**
+ * Clear the selections in storage.
+ */
+export const clearSelections = (scheduleId: string) => {
+  saveSelections(scheduleId, makeSelections())
+}
+
+/**
  * Register a handler to be called when the stored selections are updated.
  * @returns A function to cancel the handler
  */
