@@ -46,6 +46,8 @@ export const MapDetails = (props: MapDetailsProps) => {
           <MapDetailsEvent
             currentEvent={currentEvent}
             futureEvent={futureEvent}
+            onClickEvent={onClickEvent}
+            getEventHref={getEventHref}
           />
         )}
       </Stack>

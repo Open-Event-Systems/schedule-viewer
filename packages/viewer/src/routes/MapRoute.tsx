@@ -1,11 +1,19 @@
 import { MapViewer } from "@open-event-systems/schedule-map/viewer/MapViewer"
 import { useMapConfig, useTime } from "../config.js"
-import { useLocation } from "@tanstack/react-router"
+import { useLocation, useRouter } from "@tanstack/react-router"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
-import { mapRoute } from "./index.js"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { eventRoute, mapRoute } from "./index.js"
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useEvents } from "../schedule.js"
 import { useScheduleConfig } from "@open-event-systems/schedule-components/config/context"
+import { MapEvent } from "@open-event-systems/schedule-map/types"
 
 export const MapRoute = () => {
   const config = useScheduleConfig()
@@ -31,6 +39,7 @@ export const MapRoute = () => {
     selectedLoc?.level ?? mapConfig.defaultLevel,
   )
 
+  const router = useRouter()
   const navigate = mapRoute.useNavigate()
 
   const [selectionId, setSelectionId] = useState<string | null>(null)
@@ -59,6 +68,38 @@ export const MapRoute = () => {
     }
   }, [zoomFunc])
 
+  const getEventHref = useCallback(
+    (event: MapEvent) => {
+      return String(
+        new URL(
+          router.history.createHref(
+            router.buildLocation({
+              to: eventRoute.to,
+              params: {
+                eventId: event.id,
+              },
+            }).href,
+          ),
+          window.location.href,
+        ),
+      )
+    },
+    [router],
+  )
+
+  const onClickEvent = useCallback(
+    (e: MouseEvent, event: MapEvent) => {
+      e.preventDefault()
+      navigate({
+        to: eventRoute.to,
+        params: {
+          eventId: event.id,
+        },
+      })
+    },
+    [navigate],
+  )
+
   // best effort mobile detection
   const [isMobile] = useState(() =>
     /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
@@ -78,6 +119,8 @@ export const MapRoute = () => {
       now={now}
       flags={flags}
       noIsometricTransition={isMobile}
+      onClickEvent={onClickEvent}
+      getEventHref={getEventHref}
       onSelectLocation={(loc) => {
         setSelectionId(loc)
         navigate({

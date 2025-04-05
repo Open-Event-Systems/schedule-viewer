@@ -9,6 +9,7 @@ import {
 } from "@mantine/core"
 import clsx from "clsx"
 import {
+  MouseEvent,
   ReactNode,
   RefCallback,
   RefObject,
@@ -45,8 +46,6 @@ import {
   IconCube,
   IconMinus,
   IconPlus,
-  IconZoomIn,
-  IconZoomOut,
   IconZoomScan,
 } from "@tabler/icons-react"
 
@@ -64,6 +63,8 @@ export type MapViewerProps = {
   zoomFuncRef?:
     | RefObject<((id: string) => void) | null>
     | RefCallback<((id: string) => void) | null>
+  onClickEvent?: (e: MouseEvent, event: MapEvent) => void
+  getEventHref?: (event: MapEvent) => string | undefined
 } & BoxProps
 
 export const MapViewer = observer((props: MapViewerProps) => {
@@ -80,6 +81,8 @@ export const MapViewer = observer((props: MapViewerProps) => {
     now: propNow,
     noIsometricTransition,
     zoomFuncRef,
+    onClickEvent,
+    getEventHref,
     ...other
   } = useProps("MapViewer", {}, props)
 
@@ -313,6 +316,8 @@ export const MapViewer = observer((props: MapViewerProps) => {
                   ? futureEventByLocation.get(curSelectionData.id)
                   : undefined
               }
+              getEventHref={getEventHref}
+              onClickEvent={onClickEvent}
             />
           </>
         )
