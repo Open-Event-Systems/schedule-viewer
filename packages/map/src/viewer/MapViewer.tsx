@@ -44,6 +44,7 @@ import {
 import { MapDetails } from "../details/map-details.js"
 import {
   IconCube,
+  IconHome,
   IconMinus,
   IconPlus,
   IconZoomScan,
@@ -51,6 +52,7 @@ import {
 
 export type MapViewerProps = {
   config: MapConfig
+  homeURL?: string
   events?: Iterable<MapEvent>
   level?: string | null
   onSetLevel?: (level: string) => void
@@ -71,6 +73,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
   const {
     className,
     config,
+    homeURL,
     events = [],
     level,
     onSetLevel,
@@ -250,6 +253,17 @@ export const MapViewer = observer((props: MapViewerProps) => {
                 )}
               </ControlsRight>
               <ControlsTop>
+                {homeURL && (
+                  <ActionIcon
+                    component="a"
+                    title="Home"
+                    radius="xl"
+                    variant="default"
+                    href={homeURL}
+                  >
+                    <IconHome />
+                  </ActionIcon>
+                )}
                 <ActionIcon
                   title="Zoom In"
                   radius="xl"

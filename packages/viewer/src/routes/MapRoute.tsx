@@ -110,6 +110,7 @@ export const MapRoute = () => {
       w="100%"
       h="100%"
       config={mapConfig}
+      homeURL={config.homeURL}
       events={events}
       zoomFuncRef={wrappedSetZoomFunc}
       highlightId={locId}
