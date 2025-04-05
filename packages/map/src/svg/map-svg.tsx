@@ -22,6 +22,7 @@ import {
   updateLayers,
   updateLevel,
 } from "./utils.js"
+import { MAP_CLASSES } from "../map-classes.js"
 
 export type MapSVGVendor = Readonly<{
   location: string
@@ -39,6 +40,7 @@ export type MapSVGProps = Omit<ComponentPropsWithoutRef<"svg">, "children"> & {
   flags?: Iterable<string>
   isometric?: boolean
   eventText?: ReadonlyMap<string, string>
+  noIsometricTransition?: boolean
   onSelectLocation?: (id: string | null) => void
 }
 
@@ -53,6 +55,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     flags = [],
     isometric = false,
     eventText,
+    noIsometricTransition,
     onSelectLocation,
     ...other
   } = useProps("MapSVG", {}, props)
@@ -82,6 +85,17 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     },
     [ref],
   )
+
+  // transition
+  useLayoutEffect(() => {
+    if (el) {
+      if (noIsometricTransition) {
+        el.classList.add(MAP_CLASSES.noIsometricTransition)
+      } else {
+        el.classList.remove(MAP_CLASSES.noIsometricTransition)
+      }
+    }
+  }, [el, noIsometricTransition])
 
   // Update level
   useLayoutEffect(() => {
@@ -114,9 +128,9 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   // Update isometric
   useLayoutEffect(() => {
     if (el) {
-      updateIsometric(el, isometric)
+      updateIsometric(el, isometric, noIsometricTransition)
     }
-  }, [el, isometric])
+  }, [el, isometric, noIsometricTransition])
 
   // Delayed isometric handling
   useLayoutEffect(() => {

@@ -48,6 +48,7 @@
     "react": "^19.1.0"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.31.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "react-zoom-pan-pinch": "^3.7.0"

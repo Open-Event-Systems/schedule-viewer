@@ -17,6 +17,7 @@ export const MAP_CLASSES = {
   isometricTransform: "Map-isometric-transform",
   isometricTransitionFinished: "Map-isometric-transition-finished",
   isometricTransitionHidden: "Map-isometric-transition-hidden",
+  noIsometricTransition: "Map-no-isometric-transition",
   visible: "Map-visible",
   hidden: "Map-hidden",
   highlight: "Map-highlight",

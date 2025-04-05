@@ -4,9 +4,14 @@ import { useLocation } from "@tanstack/react-router"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
 import { mapRoute } from "./index.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEvents } from "../schedule.js"
+import { useScheduleConfig } from "@open-event-systems/schedule-components/config/context"
 
 export const MapRoute = () => {
+  const config = useScheduleConfig()
   const mapConfig = useMapConfig()
+
+  const events = useEvents(config.events, config.timeZone)
 
   const loc = useLocation()
   const hashArgs = new URLSearchParams(loc.hash)
@@ -54,11 +59,17 @@ export const MapRoute = () => {
     }
   }, [zoomFunc])
 
+  // best effort mobile detection
+  const [isMobile] = useState(() =>
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+  )
+
   return (
     <MapViewer
       w="100%"
       h="100%"
       config={mapConfig}
+      events={events}
       zoomFuncRef={wrappedSetZoomFunc}
       highlightId={locId}
       level={level}
@@ -66,6 +77,7 @@ export const MapRoute = () => {
       selectionId={selectionId}
       now={now}
       flags={flags}
+      noIsometricTransition={isMobile}
       onSelectLocation={(loc) => {
         setSelectionId(loc)
         navigate({

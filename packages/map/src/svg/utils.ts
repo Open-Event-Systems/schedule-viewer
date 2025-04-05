@@ -58,15 +58,27 @@ export const fixDisplayTransitionHidden = (el: SVGSVGElement) => {
   }
 }
 
-export const updateIsometric = (el: SVGSVGElement, isometric: boolean) => {
+export const updateIsometric = (
+  el: SVGSVGElement,
+  isometric: boolean,
+  noIsometricTransition?: boolean,
+) => {
   if (isometric) {
     el.classList.add(MAP_CLASSES.isometric)
-    window.setTimeout(() => {
+    if (noIsometricTransition) {
       el.classList.add(MAP_CLASSES.isometricTransform)
-    }, 50)
+      el.classList.add(MAP_CLASSES.isometricTransitionFinished)
+    } else {
+      window.setTimeout(() => {
+        el.classList.add(MAP_CLASSES.isometricTransform)
+      }, 50)
+    }
   } else {
     el.classList.remove(MAP_CLASSES.isometricTransform)
     el.classList.remove(MAP_CLASSES.isometricTransitionFinished)
+    if (noIsometricTransition) {
+      el.classList.remove(MAP_CLASSES.isometric)
+    }
   }
 }
 
@@ -170,7 +182,9 @@ export const setVendorNames = (
 }
 
 export const setFlags = (el: SVGSVGElement, flags: Iterable<string>) => {
-  const updated = [...flags]
+  const updated = Array.from(flags, (f) =>
+    getMapClass(MAP_CLASSES.flagPrefix, f),
+  )
   for (const cls of el.classList) {
     const flagId = getIDFromMapClass(MAP_CLASSES.flagPrefix, cls)
     if (!flagId) {
@@ -178,9 +192,7 @@ export const setFlags = (el: SVGSVGElement, flags: Iterable<string>) => {
     }
   }
   el.classList.remove(...el.classList)
-  el.classList.add(
-    ...updated.map((cls) => getMapClass(MAP_CLASSES.flagPrefix, cls)),
-  )
+  el.classList.add(...updated)
 }
 
 export const setEventText = (
@@ -190,20 +202,15 @@ export const setEventText = (
   const els = el.getElementsByClassName(MAP_CLASSES.eventName)
   for (const el of els) {
     removeInlineDisplay(el)
-    if (!(el instanceof SVGForeignObjectElement)) {
-      createForeignTextObject(el as SVGElement)
-    }
+    el.classList.remove(MAP_CLASSES.visible)
   }
+
   for (const [locId, title] of eventMap.entries()) {
     const className = getMapClass(MAP_CLASSES.eventNamePrefix, locId)
     const textEls = el.getElementsByClassName(className)
     for (const textEl of textEls) {
-      const htmlTextEls = textEl.getElementsByClassName(
-        MAP_CLASSES.foreignObjectText,
-      )
-      if (htmlTextEls.length > 0) {
-        htmlTextEls[0].innerHTML = title
-      }
+      textEl.classList.add(MAP_CLASSES.visible)
+      setElementText(textEl as SVGElement, title)
     }
   }
 }

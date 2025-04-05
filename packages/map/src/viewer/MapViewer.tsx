@@ -1,4 +1,12 @@
-import { Box, BoxProps, Button, Stack, useProps } from "@mantine/core"
+import {
+  ActionIcon,
+  Box,
+  BoxProps,
+  Button,
+  Group,
+  Stack,
+  useProps,
+} from "@mantine/core"
 import clsx from "clsx"
 import {
   ReactNode,
@@ -33,6 +41,14 @@ import {
   makeFutureEventFilter,
 } from "../map.js"
 import { MapDetails } from "../details/map-details.js"
+import {
+  IconCube,
+  IconMinus,
+  IconPlus,
+  IconZoomIn,
+  IconZoomOut,
+  IconZoomScan,
+} from "@tabler/icons-react"
 
 export type MapViewerProps = {
   config: MapConfig
@@ -44,6 +60,7 @@ export type MapViewerProps = {
   selectionId?: string | null
   flags?: Iterable<string>
   now?: Date
+  noIsometricTransition?: boolean
   zoomFuncRef?:
     | RefObject<((id: string) => void) | null>
     | RefCallback<((id: string) => void) | null>
@@ -61,6 +78,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
     selectionId,
     flags,
     now: propNow,
+    noIsometricTransition,
     zoomFuncRef,
     ...other
   } = useProps("MapViewer", {}, props)
@@ -213,20 +231,11 @@ export const MapViewer = observer((props: MapViewerProps) => {
                     flags={curFlags}
                     eventText={eventText}
                     isometric={isometric}
+                    noIsometricTransition={noIsometricTransition}
                   />
                 ) : null}
               </TransformComponent>
-
               <ControlsRight>
-                <Button
-                  variant={isometric ? "filled" : "default"}
-                  size="compact-xs"
-                  onClick={() => {
-                    setIsometric(!isometric)
-                  }}
-                >
-                  3D Layout
-                </Button>
                 {!isometric && (
                   <LevelButtons
                     levels={config.levels}
@@ -237,6 +246,50 @@ export const MapViewer = observer((props: MapViewerProps) => {
                   />
                 )}
               </ControlsRight>
+              <ControlsTop>
+                <ActionIcon
+                  title="Zoom In"
+                  radius="xl"
+                  variant="default"
+                  onClick={() => {
+                    ctx.zoomIn()
+                  }}
+                >
+                  <IconPlus />
+                </ActionIcon>
+                <ActionIcon
+                  title="Zoom Out"
+                  radius="xl"
+                  variant="default"
+                  onClick={() => {
+                    ctx.zoomOut()
+                  }}
+                >
+                  <IconMinus />
+                </ActionIcon>
+                <ActionIcon
+                  title="Reset Zoom"
+                  radius="xl"
+                  variant="default"
+                  onClick={() => {
+                    ctx.resetTransform()
+                  }}
+                >
+                  <IconZoomScan />
+                </ActionIcon>
+              </ControlsTop>
+              <ControlsBottom>
+                <ActionIcon
+                  title="Toggle Isometric View"
+                  radius="xl"
+                  variant={isometric ? "filled" : "default"}
+                  onClick={() => {
+                    setIsometric(!isometric)
+                  }}
+                >
+                  <IconCube />
+                </ActionIcon>
+              </ControlsBottom>
             </Box>
             <MapDetails.Drawer
               opened={!!selectedLoc}
@@ -304,5 +357,21 @@ const LevelButtons = ({
         </Button>
       ))}
     </Stack>
+  )
+}
+
+const ControlsTop = ({ children }: { children?: ReactNode }) => {
+  return (
+    <Group className="MapViewer-controlsTop" gap="xs" p="xs">
+      {children}
+    </Group>
+  )
+}
+
+const ControlsBottom = ({ children }: { children?: ReactNode }) => {
+  return (
+    <Group className="MapViewer-controlsBottom" gap="xs" p="xs">
+      {children}
+    </Group>
   )
 }
