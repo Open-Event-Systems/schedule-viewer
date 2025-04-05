@@ -49,8 +49,8 @@
   "peerDependencies": {
     "@date-fns/tz": "^1.2.0",
     "@date-fns/utc": "^2.1.0",
-    "@mantine/core": "^7.16.1",
-    "@mantine/hooks": "^7.16.1",
+    "@mantine/core": "^7.17.3",
+    "@mantine/hooks": "^7.17.3",
     "@open-event-systems/schedule-lib": "^0.1.0",
     "date-fns": "^4.1.0",
     "react": "^19.1.0"

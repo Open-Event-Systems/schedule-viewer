@@ -10,6 +10,7 @@ import {
   useState,
 } from "react"
 import {
+  fixDisplayTransitionHidden,
   setClickHandlers,
   setEventText,
   setFlags,
@@ -103,6 +104,13 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     }
   }, [el, highlightId])
 
+  // fix display for items hidden during transition
+  useLayoutEffect(() => {
+    if (el) {
+      fixDisplayTransitionHidden(el)
+    }
+  }, [el])
+
   // Update isometric
   useLayoutEffect(() => {
     if (el) {
@@ -120,7 +128,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   // Set click handlers
   useLayoutEffect(() => {
     if (el) {
-      setClickHandlers(el, onSelectLocation)
+      return setClickHandlers(el, onSelectLocation)
     }
   }, [el, onSelectLocation])
 

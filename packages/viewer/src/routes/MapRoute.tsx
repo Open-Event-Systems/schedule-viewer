@@ -1,14 +1,9 @@
-import { useScheduleConfig } from "@open-event-systems/schedule-components/config/context"
 import { MapViewer } from "@open-event-systems/schedule-map/viewer/MapViewer"
-import { DEFAULT_MAP_CONFIG, useMapConfig } from "../config.js"
-import { useState } from "react"
+import { useMapConfig, useTime } from "../config.js"
 import { useLocation } from "@tanstack/react-router"
-import { useEffect } from "react"
-import { useRef } from "react"
-import { useCallback } from "react"
-import { useMemo } from "react"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
 import { mapRoute } from "./index.js"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 export const MapRoute = () => {
   const mapConfig = useMapConfig()
@@ -16,6 +11,9 @@ export const MapRoute = () => {
   const loc = useLocation()
   const hashArgs = new URLSearchParams(loc.hash)
   const locId = hashArgs.get("loc")
+  const now = useTime()
+
+  const flags = new Set<string>(hashArgs.getAll("flag"))
 
   // hack: set the shown level to what we'll be zooming to. this requires us to
   // know the location info here instead of only in the viewer component
@@ -66,6 +64,8 @@ export const MapRoute = () => {
       level={level}
       onSetLevel={setLevelCb}
       selectionId={selectionId}
+      now={now}
+      flags={flags}
       onSelectLocation={(loc) => {
         setSelectionId(loc)
         navigate({

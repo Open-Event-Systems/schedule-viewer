@@ -41,8 +41,8 @@
     "style-loader": "^4.0.0"
   },
   "peerDependencies": {
-    "@mantine/core": "^7.16.1",
-    "@mantine/hooks": "^7.16.1",
+    "@mantine/core": "^7.17.3",
+    "@mantine/hooks": "^7.17.3",
     "mobx": "^6.13.5",
     "mobx-react-lite": "^4.1.0",
     "react": "^19.1.0"

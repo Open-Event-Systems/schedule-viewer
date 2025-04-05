@@ -50,6 +50,14 @@ export const updateHighlight = (
   }
 }
 
+export const fixDisplayTransitionHidden = (el: SVGSVGElement) => {
+  for (const c of el.getElementsByClassName(
+    MAP_CLASSES.isometricTransitionHidden,
+  )) {
+    removeInlineDisplay(c)
+  }
+}
+
 export const updateIsometric = (el: SVGSVGElement, isometric: boolean) => {
   if (isometric) {
     el.classList.add(MAP_CLASSES.isometric)
@@ -58,7 +66,7 @@ export const updateIsometric = (el: SVGSVGElement, isometric: boolean) => {
     }, 50)
   } else {
     el.classList.remove(MAP_CLASSES.isometricTransform)
-    el.classList.remove(MAP_CLASSES.isometricTransformFinished)
+    el.classList.remove(MAP_CLASSES.isometricTransitionFinished)
   }
 }
 
@@ -70,7 +78,7 @@ export const updateIsometricDelayed = (
     if (!currentRef.current) {
       el.classList.remove(MAP_CLASSES.isometric)
     } else {
-      el.classList.add(MAP_CLASSES.isometricTransformFinished)
+      el.classList.add(MAP_CLASSES.isometricTransitionFinished)
     }
   }
   el.addEventListener("transitionend", handler)
@@ -153,25 +161,26 @@ export const setVendorNames = (
       getMapClass(MAP_CLASSES.vendorNamePrefix, vendor.location),
     )
     for (const el of els) {
-      if (el instanceof SVGForeignObjectElement) {
-        const htmlTextEls = el.getElementsByClassName(
-          MAP_CLASSES.foreignObjectText,
-        )
-        if (htmlTextEls.length > 0) {
-          htmlTextEls[0].innerHTML = vendor.name
-        }
-      } else {
-        const htmlTextEl = createForeignTextObject(el as SVGElement)
-        htmlTextEl.innerHTML = vendor.name
+      el.classList.add(MAP_CLASSES.visible)
+      if (el instanceof SVGElement) {
+        setElementText(el, vendor.name)
       }
     }
   }
 }
 
 export const setFlags = (el: SVGSVGElement, flags: Iterable<string>) => {
-  for (const flag of flags) {
-    el.classList.add(getMapClass(MAP_CLASSES.flagPrefix, flag))
+  const updated = [...flags]
+  for (const cls of el.classList) {
+    const flagId = getIDFromMapClass(MAP_CLASSES.flagPrefix, cls)
+    if (!flagId) {
+      updated.push(cls)
+    }
   }
+  el.classList.remove(...el.classList)
+  el.classList.add(
+    ...updated.map((cls) => getMapClass(MAP_CLASSES.flagPrefix, cls)),
+  )
 }
 
 export const setEventText = (
@@ -196,6 +205,27 @@ export const setEventText = (
         htmlTextEls[0].innerHTML = title
       }
     }
+  }
+}
+
+const setElementText = (el: SVGElement, text: string) => {
+  if (el instanceof SVGForeignObjectElement) {
+    const textEls = el.getElementsByClassName(MAP_CLASSES.foreignObjectText)
+    if (textEls.length > 0) {
+      textEls[0].innerHTML = ""
+      const textNode = document.createTextNode(text)
+      textEls[0].appendChild(textNode)
+    }
+  } else if (el instanceof SVGTextElement || el instanceof SVGTSpanElement) {
+    el.innerHTML = ""
+    const textNode = document.createTextNode(text)
+    el.appendChild(textNode)
+  } else if (el instanceof SVGRectElement) {
+    const objTextEl = createForeignTextObject(el)
+    const textNode = document.createTextNode(text)
+    objTextEl.appendChild(textNode)
+  } else {
+    console.warn("Cannot replace text on this element", el)
   }
 }
 

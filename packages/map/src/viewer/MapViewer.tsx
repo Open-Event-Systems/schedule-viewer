@@ -43,6 +43,7 @@ export type MapViewerProps = {
   onSelectLocation?: (id: string | null) => void
   selectionId?: string | null
   flags?: Iterable<string>
+  now?: Date
   zoomFuncRef?:
     | RefObject<((id: string) => void) | null>
     | RefCallback<((id: string) => void) | null>
@@ -59,6 +60,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
     onSelectLocation,
     selectionId,
     flags,
+    now: propNow,
     zoomFuncRef,
     ...other
   } = useProps("MapViewer", {}, props)
@@ -87,7 +89,8 @@ export const MapViewer = observer((props: MapViewerProps) => {
     return getMapEventsByLocation(locations.values(), sorted)
   }, [events, locations])
 
-  const [now] = useState(() => new Date()) // just use time from first render
+  const [defaultNow] = useState(() => new Date()) // just use time from first render
+  const now = propNow || defaultNow
 
   const [curEventByLocation, futureEventByLocation] = useMemo(() => {
     const cur = new Map<string, MapEvent>()
@@ -105,7 +108,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
     }
 
     return [cur, future]
-  }, [eventsByLocation])
+  }, [eventsByLocation, now])
 
   const eventText = useMemo(() => {
     const map = new Map<string, string>()
@@ -140,13 +143,12 @@ export const MapViewer = observer((props: MapViewerProps) => {
 
   // flags
   const curFlags = useMemo(() => {
-    const now = new Date()
     const flagSet = getMapFlags(config, now)
     for (const flag of flags ?? []) {
       flagSet.add(flag)
     }
     return flagSet
-  }, [config, flags])
+  }, [config, flags, now])
 
   const setZoomRef = useCallback(
     (ctx: ReactZoomPanPinchContentRef | null) => {
@@ -184,74 +186,84 @@ export const MapViewer = observer((props: MapViewerProps) => {
       ref={setZoomRef}
       limitToBounds={false}
       centerOnInit
-      centerZoomedOut
+      panning={{
+        velocityDisabled: true,
+      }}
       minScale={config.minScale}
       maxScale={config.maxScale}
     >
-      <Box className={clsx("MapViewer-root", className)} {...other}>
-        <TransformComponent
-          wrapperClass="MapViewer-wrapper"
-          contentClass="MapViewer-content"
-        >
-          {svgDataFunc ? (
-            <MapSVG
-              ref={setSVGEl}
-              getSVGData={svgDataFunc}
-              level={level ?? config.defaultLevel}
-              highlightId={highlightId}
-              onSelectLocation={(id) => {
-                onSelectLocation && onSelectLocation(id)
-              }}
-              vendors={config.vendors}
-              flags={curFlags}
-              eventText={eventText}
-              isometric={isometric}
-            />
-          ) : null}
-        </TransformComponent>
+      {(ctx) => {
+        return (
+          <>
+            <Box className={clsx("MapViewer-root", className)} {...other}>
+              <TransformComponent
+                wrapperClass="MapViewer-wrapper"
+                contentClass="MapViewer-content"
+              >
+                {svgDataFunc ? (
+                  <MapSVG
+                    ref={setSVGEl}
+                    getSVGData={svgDataFunc}
+                    level={level ?? config.defaultLevel}
+                    highlightId={highlightId}
+                    onSelectLocation={(id) => {
+                      onSelectLocation && onSelectLocation(id)
+                    }}
+                    vendors={config.vendors}
+                    flags={curFlags}
+                    eventText={eventText}
+                    isometric={isometric}
+                  />
+                ) : null}
+              </TransformComponent>
 
-        <ControlsRight>
-          <Button
-            variant={isometric ? "filled" : "default"}
-            size="compact-xs"
-            onClick={() => {
-              setIsometric(!isometric)
-            }}
-          >
-            3D Layout
-          </Button>
-          {!isometric && (
-            <LevelButtons
-              levels={config.levels}
-              selected={level ?? config.defaultLevel}
-              onChangeLevel={(lvl) => {
-                onSetLevel && onSetLevel(lvl)
-              }}
+              <ControlsRight>
+                <Button
+                  variant={isometric ? "filled" : "default"}
+                  size="compact-xs"
+                  onClick={() => {
+                    setIsometric(!isometric)
+                  }}
+                >
+                  3D Layout
+                </Button>
+                {!isometric && (
+                  <LevelButtons
+                    levels={config.levels}
+                    selected={level ?? config.defaultLevel}
+                    onChangeLevel={(lvl) => {
+                      onSetLevel && onSetLevel(lvl)
+                    }}
+                  />
+                )}
+              </ControlsRight>
+            </Box>
+            <MapDetails.Drawer
+              opened={!!selectedLoc}
+              onClose={() => onSelectLocation && onSelectLocation(null)}
+              title={
+                selectedVendor ? selectedVendor.name : curSelectionData?.title
+              }
+              description={
+                selectedVendor
+                  ? selectedVendor.description
+                  : curSelectionData?.description
+              }
+              type={curSelectionData?.type}
+              currentEvent={
+                curSelectionData
+                  ? curEventByLocation.get(curSelectionData.id)
+                  : undefined
+              }
+              futureEvent={
+                curSelectionData
+                  ? futureEventByLocation.get(curSelectionData.id)
+                  : undefined
+              }
             />
-          )}
-        </ControlsRight>
-      </Box>
-      <MapDetails.Drawer
-        opened={!!selectedLoc}
-        onClose={() => onSelectLocation && onSelectLocation(null)}
-        title={selectedVendor ? selectedVendor.name : curSelectionData?.title}
-        description={
-          selectedVendor
-            ? selectedVendor.description
-            : curSelectionData?.description
-        }
-        type={curSelectionData?.type}
-        currentEvent={
-          curSelectionData
-            ? curEventByLocation.get(curSelectionData.id)
-            : undefined
-        }
-        futureEvent={
-          curSelectionData
-            ? futureEventByLocation.get(curSelectionData.id)
-            : undefined
-        }
-      />
+          </>
+        )
+      }}
     </TransformWrapper>
   )
 })

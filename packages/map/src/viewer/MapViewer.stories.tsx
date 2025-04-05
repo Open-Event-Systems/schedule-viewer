@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react"
 import { MapViewer } from "./MapViewer.js"
 import "./MapViewer.scss"
 import "./Map.scss"
-import svgMap from "../../../../map/ao-map-2-relabel2.svg"
+import svgMap from "../../../../map/dist/anthrohio-map-min.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
 
@@ -63,6 +63,10 @@ export const Default: StoryObj<typeof MapViewer> = {
         {
           id: "panel-2",
           title: "Panel Room Two",
+        },
+        {
+          id: "pheoris-west",
+          title: "Pheoris West",
         },
         {
           id: "vendor-1",

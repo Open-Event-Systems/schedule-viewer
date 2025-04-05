@@ -35,6 +35,14 @@
   }
 }
 
+.Map-isometric .Map-isometric-transition-hidden {
+  display: none;
+}
+
+.Map-isometric-transition-finished .Map-isometric-transition-hidden {
+  display: initial;
+}
+
 .Map-isometric .Map-isometric-hidden {
   display: none;
 }
@@ -101,7 +109,7 @@
   display: none;
 }
 
-.Map-isometric-transform-finished .height-indicator {
+.Map-isometric-transition-finished .height-indicator {
   display: initial;
 }
 
@@ -114,6 +122,87 @@
   font-size: 0.33in;
   line-height: 0.33in;
   text-align: center;
+}
+
+// @keyframes escalator {
+//   0% {
+//     transform: translateX(0);
+//   }
+
+//   100% {
+//     transform: translateX(51px);
+//   }
+// }
+
+// .escalator-segments {
+//   animation-name: escalator;
+//   animation-duration: 3s;
+//   animation-iteration-count: infinite;
+//   animation-timing-function: linear;
+//   animation-direction: normal;
+// }
+
+.registration-status {
+  .traffic-red {
+    display: initial;
+  }
+
+  .traffic-yellow,
+  .traffic-green {
+    display: none;
+  }
+}
+
+.Map-flag-id-registration-open .registration-status {
+  .traffic-red {
+    display: none;
+  }
+
+  .traffic-green {
+    display: initial;
+  }
+}
+
+.Map-flag-id-registration-closing .registration-status,
+.Map-flag-id-registration-early-access .registration-status {
+  .traffic-red {
+    display: none;
+  }
+
+  .traffic-yellow {
+    display: initial;
+  }
+}
+
+.dealers-status {
+  .traffic-red {
+    display: initial;
+  }
+
+  .traffic-yellow,
+  .traffic-green {
+    display: none;
+  }
+}
+
+.Map-flag-id-dealers-open .dealers-status {
+  .traffic-red {
+    display: none;
+  }
+
+  .traffic-green {
+    display: initial;
+  }
+}
+
+.Map-flag-id-dealers-closing .dealers-status {
+  .traffic-red {
+    display: none;
+  }
+
+  .traffic-yellow {
+    display: initial;
+  }
 }
 
 // .height-indicator-bottom {
