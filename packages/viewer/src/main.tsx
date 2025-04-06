@@ -17,6 +17,7 @@ declare global {
   var scheduleColorScheme: MantineColorScheme | undefined
   var scheduleBasePath: string | undefined
   var scheduleServiceWorker: boolean | undefined
+  var schedulePrecacheFiles: string[] | undefined
   var __webpack_public_path__: string | undefined
 }
 
@@ -30,7 +31,7 @@ if (scheduleEl) {
   const swStore = new SWStore()
 
   if (scheduleServiceWorker) {
-    swStore.register(scheduleBasePath)
+    swStore.register(scheduleBasePath, schedulePrecacheFiles)
   }
 
   const app = (

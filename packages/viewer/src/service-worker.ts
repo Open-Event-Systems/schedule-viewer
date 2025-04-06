@@ -25,7 +25,7 @@ export class SWStore {
     return !!this.installPromptEvent
   }
 
-  register(basePath = "") {
+  register(basePath = "", precacheFiles?: string[]) {
     if ("serviceWorker" in navigator) {
       import("workbox-window").then(({ Workbox }) => {
         const workbox = new Workbox(`${basePath}sw.js`)
@@ -47,7 +47,11 @@ export class SWStore {
           workbox.messageSW({
             type: "CACHE_URLS",
             payload: {
-              urlsToCache: ["theme.js", "custom.css", "config.json"],
+              urlsToCache: [
+                "custom.css",
+                "config.json",
+                ...(precacheFiles ?? []),
+              ],
             },
           })
         })
