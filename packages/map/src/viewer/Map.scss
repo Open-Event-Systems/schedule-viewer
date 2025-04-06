@@ -61,6 +61,11 @@
 // elements which are hidden during the transition
 .Map-isometric-transition-finished .Map-isometric-transition-hidden {
   display: initial;
+
+  // don't override hidden setting
+  &.Map-hidden {
+    display: none;
+  }
 }
 
 // Click styles

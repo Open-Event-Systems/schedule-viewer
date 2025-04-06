@@ -49,6 +49,7 @@ import {
   IconPlus,
   IconZoomScan,
 } from "@tabler/icons-react"
+import { LayerMenu } from "../layer-menu/layer-menu.js"
 
 export type MapViewerProps = {
   config: MapConfig
@@ -104,6 +105,12 @@ export const MapViewer = observer((props: MapViewerProps) => {
     }
     return map
   }, [config])
+
+  // layers
+  const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
+    new Set(),
+  )
+  const [layerMenuOpened, setLayerMenuOpened] = useState(false)
 
   // events
   const eventsByLocation = useMemo(() => {
@@ -229,6 +236,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
                     ref={setSVGEl}
                     getSVGData={svgDataFunc}
                     level={level ?? config.defaultLevel}
+                    hiddenLayers={hiddenLayers}
                     highlightId={highlightId}
                     onSelectLocation={(id) => {
                       onSelectLocation && onSelectLocation(id)
@@ -241,7 +249,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
                   />
                 ) : null}
               </TransformComponent>
-              <ControlsRight>
+              <ControlsTopRight>
                 {!isometric && (
                   <LevelButtons
                     levels={config.levels}
@@ -251,8 +259,8 @@ export const MapViewer = observer((props: MapViewerProps) => {
                     }}
                   />
                 )}
-              </ControlsRight>
-              <ControlsTop>
+              </ControlsTopRight>
+              <ControlsTopLeft>
                 {homeURL && (
                   <ActionIcon
                     component="a"
@@ -294,19 +302,32 @@ export const MapViewer = observer((props: MapViewerProps) => {
                 >
                   <IconZoomScan />
                 </ActionIcon>
-              </ControlsTop>
-              <ControlsBottom>
+              </ControlsTopLeft>
+              <ControlsBottomLeft>
                 <ActionIcon
                   title="Toggle Isometric View"
                   radius="xl"
                   variant={isometric ? "filled" : "default"}
                   onClick={() => {
+                    ctx.resetTransform(0)
                     setIsometric(!isometric)
                   }}
                 >
                   <IconCube />
                 </ActionIcon>
-              </ControlsBottom>
+              </ControlsBottomLeft>
+              <ControlsBottomRight>
+                <LayerMenu
+                  layers={config.layers.map(({ id, title }) => ({
+                    id,
+                    label: title,
+                  }))}
+                  opened={layerMenuOpened}
+                  onSetOpened={setLayerMenuOpened}
+                  hiddenLayers={hiddenLayers}
+                  onChangeLayers={setHiddenLayers}
+                />
+              </ControlsBottomRight>
             </Box>
             <MapDetails.Drawer
               opened={!!selectedLoc}
@@ -342,9 +363,9 @@ export const MapViewer = observer((props: MapViewerProps) => {
 
 MapViewer.displayName = "MapViewer"
 
-const ControlsRight = ({ children }: { children?: ReactNode }) => {
+const ControlsTopRight = ({ children }: { children?: ReactNode }) => {
   return (
-    <Stack className="MapViewer-controlsRight" gap="xs" p="xs">
+    <Stack className="MapViewer-controlsTopRight" gap="xs" p="xs">
       {children}
     </Stack>
   )
@@ -379,17 +400,25 @@ const LevelButtons = ({
   )
 }
 
-const ControlsTop = ({ children }: { children?: ReactNode }) => {
+const ControlsTopLeft = ({ children }: { children?: ReactNode }) => {
   return (
-    <Group className="MapViewer-controlsTop" gap="xs" p="xs">
+    <Group className="MapViewer-controlsTopLeft" gap="xs" p="xs">
       {children}
     </Group>
   )
 }
 
-const ControlsBottom = ({ children }: { children?: ReactNode }) => {
+const ControlsBottomLeft = ({ children }: { children?: ReactNode }) => {
   return (
-    <Group className="MapViewer-controlsBottom" gap="xs" p="xs">
+    <Group className="MapViewer-controlsBottomLeft" gap="xs" p="xs">
+      {children}
+    </Group>
+  )
+}
+
+const ControlsBottomRight = ({ children }: { children?: ReactNode }) => {
+  return (
+    <Group className="MapViewer-controlsBottomRight" gap="xs" p="xs">
       {children}
     </Group>
   )

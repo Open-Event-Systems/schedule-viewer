@@ -100,11 +100,6 @@ export const MapRoute = () => {
     [navigate],
   )
 
-  // best effort mobile detection
-  const [isMobile] = useState(() =>
-    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-  )
-
   return (
     <MapViewer
       w="100%"
@@ -119,7 +114,6 @@ export const MapRoute = () => {
       selectionId={selectionId}
       now={now}
       flags={flags}
-      noIsometricTransition={isMobile}
       onClickEvent={onClickEvent}
       getEventHref={getEventHref}
       onSelectLocation={(loc) => {
