@@ -38,6 +38,8 @@ export type EventDetailsProps = {
   bookmarkCount?: number | null
   showShare?: boolean
   url?: string
+  locationHref?: string
+  onClickLocation?: () => void
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
@@ -50,6 +52,8 @@ export const EventDetails = (props: EventDetailsProps) => {
     bookmarkCount,
     showShare,
     url,
+    locationHref,
+    onClickLocation,
     ...other
   } = useProps("EventDetails", {}, props)
 
@@ -62,11 +66,14 @@ export const EventDetails = (props: EventDetailsProps) => {
     event.start && event.end
       ? renderTime(event.start, event.end, altTextColor)
       : null
-  const locationEl = event.location ? (
-    <IconText icon={<IconMapPin size={18} />} c={altTextColor}>
-      {event.location}
-    </IconText>
-  ) : null
+  const locationEl = event.location
+    ? renderLocation(
+        event.location,
+        locationHref,
+        onClickLocation,
+        altTextColor,
+      )
+    : null
   const hostsEl =
     event.hosts && event.hosts.length > 0
       ? renderHosts(event.hosts, altTextColor)
@@ -134,6 +141,31 @@ const renderTime = (start: Date, end: Date, c: string): ReactNode => {
   return (
     <IconText icon={<IconClockHour4 size={18} />} c={c}>
       {startStr} &ndash; {endStr}
+    </IconText>
+  )
+}
+
+const renderLocation = (
+  loc: string,
+  href?: string,
+  onClick?: () => void,
+  c?: string,
+): ReactNode => {
+  let content
+
+  if (!href) {
+    content = loc
+  } else {
+    content = (
+      <Anchor href={href} onClick={onClick}>
+        {loc}
+      </Anchor>
+    )
+  }
+
+  return (
+    <IconText icon={<IconMapPin size={18} />} c={c}>
+      {content}
     </IconText>
   )
 }

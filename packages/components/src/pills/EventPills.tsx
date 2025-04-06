@@ -8,6 +8,9 @@ import { MouseEvent, ReactNode, useCallback, useMemo } from "react"
 import { EventHoverCard } from "../hovercard/EventHoverCard.js"
 import clsx from "clsx"
 
+// TODO: there is a *lot* of prop drill down in these components, refactor to
+// use context
+
 export type EventPillsProps = PillsProps & {
   events: Iterable<Event>
   binMinutes?: number
@@ -16,6 +19,8 @@ export type EventPillsProps = PillsProps & {
   setBookmarked?: (event: Event, set: boolean) => void
   getBookmarkCount?: (event: Event) => number | undefined
   onClickEvent?: (e: MouseEvent, event: Event) => void
+  getLocationHref?: (event: Event) => string | undefined
+  onClickLocation?: (event: Event) => void
 }
 
 export const EventPills = (props: EventPillsProps) => {
@@ -28,6 +33,8 @@ export const EventPills = (props: EventPillsProps) => {
     setBookmarked,
     getBookmarkCount,
     onClickEvent,
+    getLocationHref,
+    onClickLocation,
     ...other
   } = useProps("EventPills", {}, props)
 
@@ -56,6 +63,8 @@ export const EventPills = (props: EventPillsProps) => {
           setBookmarked={setBookmarked}
           getBookmarkCount={getBookmarkCount}
           onClickEvent={onClickEvent}
+          getLocationHref={getLocationHref}
+          onClickLocation={onClickLocation}
         />,
       )
     })
@@ -67,6 +76,8 @@ export const EventPills = (props: EventPillsProps) => {
     getIsBookmarked,
     setBookmarked,
     onClickEvent,
+    getLocationHref,
+    onClickLocation,
   ])
 
   return <Pills {...other}>{binEls}</Pills>
@@ -81,6 +92,8 @@ const EventPillsBin = ({
   setBookmarked,
   getBookmarkCount,
   onClickEvent,
+  getLocationHref,
+  onClickLocation,
 }: {
   date: Date
   events: readonly Event[]
@@ -90,6 +103,8 @@ const EventPillsBin = ({
   setBookmarked?: (event: Event, set: boolean) => void
   getBookmarkCount?: (event: Event) => number | undefined
   onClickEvent?: (ev: MouseEvent, event: Event) => void
+  getLocationHref?: (event: Event) => string | undefined
+  onClickLocation?: (event: Event) => void
 }) => {
   const label = format(date, "h:mm aaa")
 
@@ -103,6 +118,8 @@ const EventPillsBin = ({
       setBookmarked={setBookmarked}
       getBookmarkCount={getBookmarkCount}
       onClickEvent={onClickEvent}
+      getLocationHref={getLocationHref}
+      onClickLocation={onClickLocation}
     />
   ))
 
@@ -117,6 +134,8 @@ const EventPillsPill = ({
   setBookmarked,
   getBookmarkCount,
   onClickEvent,
+  getLocationHref,
+  onClickLocation,
 }: {
   event: Event
   getHref?: (event: Event) => string | undefined
@@ -125,10 +144,20 @@ const EventPillsPill = ({
   setBookmarked?: (event: Event, set: boolean) => void
   getBookmarkCount?: (event: Event) => number | undefined
   onClickEvent?: (ev: MouseEvent, event: Event) => void
+  getLocationHref?: (event: Event) => string | undefined
+  onClickLocation?: (event: Event) => void
 }) => {
   const href = useMemo(() => {
     return getHref ? getHref(event) : undefined
   }, [event, getHref])
+
+  const locHref = useMemo(() => {
+    return getLocationHref ? getLocationHref(event) : undefined
+  }, [event, getLocationHref])
+
+  const onClickLoc = useMemo(() => {
+    return onClickLocation ? () => onClickLocation(event) : undefined
+  }, [event, onClickLocation])
 
   const indicator = useMemo(() => {
     return getIndicator ? getIndicator(event) : undefined
@@ -143,6 +172,8 @@ const EventPillsPill = ({
           setBookmarked={(set) => setBookmarked && setBookmarked(event, set)}
           bookmarkCount={getBookmarkCount ? getBookmarkCount(event) : undefined}
           url={href}
+          locationHref={locHref}
+          onClickLocation={onClickLoc}
         >
           {c}
         </EventHoverCard>

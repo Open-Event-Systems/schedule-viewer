@@ -3,13 +3,14 @@ import {
   eventRoute,
   eventsDataRoute,
   eventsRoute,
+  mapRoute,
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,
 } from "./index.js"
 import { Grid, SegmentedControl, Stack } from "@mantine/core"
 import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
-import { MouseEvent, useCallback, useContext, useRef } from "react"
+import { MouseEvent, useCallback, useContext, useMemo, useRef } from "react"
 import {
   Event,
   isScheduled,
@@ -34,9 +35,12 @@ import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
 import { createICS } from "../ical.js"
 import { clearSelections } from "../local-storage.js"
+import { useMapConfig } from "../config.js"
+import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
+  const mapConfig = useMapConfig()
   const allEvents = useEvents(config.events, config.timeZone)
   const selections = useBookmarks(config.id)
   const counts = useBookmarkCounts(config.id)
@@ -140,6 +144,44 @@ export const EventsRoute = observer(() => {
     [router],
   )
 
+  const mapLocs = useMemo(() => {
+    return getMapLocationsWithAlias(mapConfig)
+  }, [mapConfig])
+
+  const getLocHref = useCallback(
+    (event: Event) => {
+      const loc = event.location ? mapLocs.get(event.location) : undefined
+      if (loc) {
+        return String(
+          new URL(
+            router.history.createHref(
+              router.buildLocation({
+                to: mapRoute.to,
+                hash: `loc=${loc.id}`,
+              }).href,
+            ),
+            window.location.href,
+          ),
+        )
+      }
+      return undefined
+    },
+    [mapLocs, router],
+  )
+
+  const onLocClick = useCallback(
+    (event: Event) => {
+      const loc = event.location ? mapLocs.get(event.location) : undefined
+      if (loc) {
+        navigate({
+          to: mapRoute.to,
+          hash: `loc=${loc.id}`,
+        })
+      }
+    },
+    [mapLocs, navigate],
+  )
+
   return (
     <Grid>
       <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
@@ -166,6 +208,8 @@ export const EventsRoute = observer(() => {
             updateSelections={updateSelections}
             onClickEvent={onClick}
             getHref={getHref}
+            getLocationHref={getLocHref}
+            onClickLocation={onLocClick}
           />
         </Stack>
       </Grid.Col>

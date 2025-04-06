@@ -9,6 +9,8 @@ export type EventHoverCardProps = HoverCardProps & {
   setBookmarked?: (set: boolean) => void
   bookmarkCount?: number | null
   url?: string
+  locationHref?: string
+  onClickLocation?: () => void
   children?: ReactNode
 }
 
@@ -20,6 +22,8 @@ export const EventHoverCard = (props: EventHoverCardProps) => {
     setBookmarked,
     bookmarkCount,
     url,
+    locationHref,
+    onClickLocation,
     ...other
   } = useProps("EventHoverCard", {}, props)
 
@@ -37,6 +41,8 @@ export const EventHoverCard = (props: EventHoverCardProps) => {
           bookmarked={bookmarked}
           setBookmarked={setBookmarked}
           bookmarkCount={bookmarkCount}
+          locationHref={locationHref}
+          onClickLocation={onClickLocation}
           url={url}
           showShare
         />

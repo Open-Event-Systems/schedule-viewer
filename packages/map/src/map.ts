@@ -53,6 +53,27 @@ export const getMapEventsByLocation = (
   return map
 }
 
+export const getMapLocationsWithAlias = (
+  config: MapConfig,
+): Map<string, MapLocation> => {
+  const map = new Map<string, MapLocation>()
+
+  for (const loc of config.locations) {
+    if (loc.title) {
+      map.set(loc.title, loc)
+    }
+    for (const alias of loc.aliases ?? []) {
+      map.set(alias, loc)
+    }
+  }
+
+  for (const loc of config.locations) {
+    map.set(loc.id, loc)
+  }
+
+  return map
+}
+
 export const makeCurrentEventFilter = (
   now?: Date,
 ): (<T extends MapEvent>(

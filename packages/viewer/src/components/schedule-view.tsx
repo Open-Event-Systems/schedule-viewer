@@ -36,6 +36,8 @@ export type ScheduleViewProps = {
   setSelectedDay?: (day: DayFilterDay) => void
   getHref?: (event: Event) => string
   onClickEvent?: (e: MouseEvent, event: Event) => void
+  getLocationHref?: (event: Event) => string | undefined
+  onClickLocation?: (event: Event) => void
 }
 
 export const ScheduleView = observer((props: ScheduleViewProps) => {
@@ -50,6 +52,8 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
     setSelectedDay,
     getHref,
     onClickEvent,
+    getLocationHref,
+    onClickLocation,
   } = props
 
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
@@ -154,6 +158,8 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
           getBookmarkCount={getBookmarkCount}
           getHref={getHref}
           onClickEvent={onClickEvent}
+          getLocationHref={getLocationHref}
+          onClickLocation={onClickLocation}
         />
       ) : (
         <Text c="dimmed" ta="center">
@@ -174,6 +180,8 @@ type ViewProps = {
   getBookmarkCount: (event: Event) => number | undefined
   getHref?: (event: Event) => string
   onClickEvent?: (e: MouseEvent, event: Event) => void
+  getLocationHref?: (event: Event) => string | undefined
+  onClickLocation?: (event: Event) => void
 }
 
 const PillsView = (props: ViewProps) => {
@@ -185,6 +193,8 @@ const PillsView = (props: ViewProps) => {
     getBookmarkCount,
     getHref,
     onClickEvent,
+    getLocationHref,
+    onClickLocation,
   } = props
   return (
     <EventPills
@@ -195,6 +205,8 @@ const PillsView = (props: ViewProps) => {
       getBookmarkCount={getBookmarkCount}
       getHref={getHref}
       onClickEvent={onClickEvent}
+      getLocationHref={getLocationHref}
+      onClickLocation={onClickLocation}
     />
   )
 }
