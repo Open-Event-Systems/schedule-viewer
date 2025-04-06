@@ -87,19 +87,11 @@ export default (env, argv) => {
             ],
             runtimeCaching: [
               {
-                urlPattern: /config\.js$/,
+                urlPattern: /\.(css|js|json|woff2)$/,
                 handler: "NetworkFirst",
               },
               {
-                urlPattern: /custom\.css$/,
-                handler: "NetworkFirst",
-              },
-              {
-                urlPattern: /config\.json$/,
-                handler: "NetworkFirst",
-              },
-              {
-                urlPattern: /\.json$/,
+                urlPattern: /\.(svg|jpe?g|png|gif|webp)$/,
                 handler: "NetworkFirst",
               },
             ],
