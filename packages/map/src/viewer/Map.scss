@@ -6,6 +6,8 @@
   --map-isometric-rotation: 45deg;
   --map-isometric-x-scale: 0.578; // cos(-54.7deg)
   --map-isometric-transition-duration: 0.5s;
+  --map-isometric-center-x-offset: 0px;
+  --map-isometric-center-y-offset: 0px;
 }
 
 // Levels
@@ -15,8 +17,15 @@
 
   svg:not(.Map-no-isometric-transition) & {
     transition: transform var(--map-isometric-transition-duration) ease-in-out;
-    transform: translate(50%, 50%) translateY(0px) translateX(0px) scaleY(1)
-      translate(-50%, -50%);
+    transform: translate(
+        var(--map-isometric-center-x-offset),
+        var(--map-isometric-center-y-offset)
+      )
+      translateY(0px) translateX(0px) scaleY(1) rotate(0deg)
+      translate(
+        calc(-1 * var(--map-isometric-center-x-offset)),
+        calc(-1 * var(--map-isometric-center-y-offset))
+      );
   }
 
   &.Map-visible {
@@ -25,10 +34,17 @@
 
   svg.Map-isometric-transform & {
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
-    transform: translate(50%, 50%) translateY(var(--map-isometric-y-offset))
+    transform: translate(
+        var(--map-isometric-center-x-offset),
+        var(--map-isometric-center-y-offset)
+      )
+      translateY(var(--map-isometric-y-offset))
       translateX(var(--map-isometric-x-offset))
       scaleY(var(--map-isometric-x-scale)) rotate(var(--map-isometric-rotation))
-      translate(-50%, -50%);
+      translate(
+        calc(-1 * var(--map-isometric-center-x-offset)),
+        calc(-1 * var(--map-isometric-center-y-offset))
+      );
   }
 }
 
