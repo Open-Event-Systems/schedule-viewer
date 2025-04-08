@@ -247,5 +247,11 @@ export const mapLayoutRoute = createRoute({
 export const mapRoute = createRoute({
   getParentRoute: () => mapLayoutRoute,
   path: "map",
+  beforeLoad({ context }) {
+    const { config } = context
+    if (!config.map?.src) {
+      throw notFound()
+    }
+  },
   component: lazyRouteComponent(() => import("./MapRoute.js"), "MapRoute"),
 })
