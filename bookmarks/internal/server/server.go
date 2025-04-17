@@ -42,6 +42,7 @@ func Run(port int, db *db.DB, config *config.Config) {
 			r.Get("/{hash}", serverCfg.getSelectionHandler)
 		})
 		r.Get("/counts", serverCfg.getEventSelectionCountsHandler)
+		r.Get("/counts.html", serverCfg.getEventSelectionCountsHTMLHandler)
 	})
 
 	server := &http.Server{

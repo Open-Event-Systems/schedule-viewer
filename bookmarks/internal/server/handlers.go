@@ -8,9 +8,11 @@ import (
 	"bookmarks/internal/validator"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -166,12 +168,70 @@ func (s *server) getSessionSelectionHandler(w http.ResponseWriter, req *http.Req
 func (s *server) getEventSelectionCountsHandler(w http.ResponseWriter, req *http.Request) {
 	scheduleId := chi.URLParam(req, "scheduleId")
 
-	if _, ok := s.config.ScheduleURLs[scheduleId]; !ok {
+	res, err := s.getSelectionCounts(req.Context(), scheduleId)
+	if err != nil {
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if res == nil {
 		httpError(w, http.StatusNotFound)
 		return
 	}
 
-	res, err, _ := s.countCache.GetOrLoad(req.Context(), scheduleId, func(ctx context.Context, key string) (map[string]int, time.Duration, error) {
+	respBody := structs.EventSelectionCountsResponse{
+		Counts: res,
+	}
+	jsonResponse(w, respBody)
+}
+
+func (s *server) getEventSelectionCountsHTMLHandler(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	res, err := s.getSelectionCounts(req.Context(), scheduleId)
+	if err != nil {
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if res == nil {
+		httpError(w, http.StatusNotFound)
+		return
+	}
+
+	type entryT struct {
+		id    string
+		count int
+	}
+
+	entries := make([]entryT, 0, len(res))
+
+	for id, ct := range res {
+		entries = append(entries, entryT{id, ct})
+	}
+
+	slices.SortFunc(entries, func(a entryT, b entryT) int {
+		return b.count - a.count
+	})
+
+	w.Header().Add("Content-Type", "text/html")
+	w.Write([]byte("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"))
+	w.Write([]byte("<title>Bookmark Counts</title></head><body>"))
+	w.Write([]byte("<table><thead><tr><th scope=\"col\">Event ID</th><th scope=\"col\">Count</th></tr></thead><tbody>"))
+
+	for _, entry := range entries {
+		w.Write([]byte(fmt.Sprintf("<tr><td>%s</td><td>%d</td></tr>", entry.id, entry.count)))
+	}
+
+	w.Write([]byte("</tbody></table></body></html>"))
+}
+
+func (s *server) getSelectionCounts(ctx context.Context, scheduleId string) (map[string]int, error) {
+	if _, ok := s.config.ScheduleURLs[scheduleId]; !ok {
+		return nil, nil
+	}
+
+	res, err, _ := s.countCache.GetOrLoad(ctx, scheduleId, func(ctx context.Context, key string) (map[string]int, time.Duration, error) {
 		res, err := s.db.GetEventSelectionCounts(key)
 		if err != nil {
 			return nil, 0, err
@@ -180,13 +240,5 @@ func (s *server) getEventSelectionCountsHandler(w http.ResponseWriter, req *http
 		return res, 60 * time.Second, nil
 	})
 
-	if err != nil {
-		httpError(w, http.StatusInternalServerError)
-		return
-	}
-
-	respBody := structs.EventSelectionCountsResponse{
-		Counts: res,
-	}
-	jsonResponse(w, respBody)
+	return res, err
 }
