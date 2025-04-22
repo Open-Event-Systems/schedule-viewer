@@ -1,1 +1,13 @@
 /* Custom CSS */
+
+/* Example map styles */
+
+.Map-level-id-lobby {
+  --map-isometric-x-offset: 15in;
+  --map-isometric-y-offset: 6in;
+}
+
+.Map-level-id-2f {
+  --map-isometric-x-offset: 15in;
+  --map-isometric-y-offset: -6in;
+}

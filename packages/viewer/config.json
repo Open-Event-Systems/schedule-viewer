@@ -16,12 +16,31 @@
   ],
   "tagIndicators": [["mature", "18+"]],
   "map": {
-    "src": "http://localhost:9001/ao-map-2-relabel2.svg",
+    "src": "/example-map.svg",
+    "layers": [{ "id": "text", "title": "Text" }],
     "levels": [
-      { "id": "3f", "title": "3F" },
       { "id": "2f", "title": "2F" },
-      { "id": "lobby", "title": "Lobby" },
-      { "id": "lower", "title": "Lower Level" }
+      { "id": "lobby", "title": "Lobby" }
+    ],
+    "locations": [
+      {
+        "id": "room-1",
+        "title": "Room 1",
+        "description": "Room 1, on the first floor.",
+        "level": "lobby"
+      },
+      {
+        "id": "room-2",
+        "title": "Room 2",
+        "description": "Room 2, on the second floor.",
+        "level": "2f"
+      },
+      {
+        "id": "room-3",
+        "title": "Room 3",
+        "description": "Room 3, on the second floor.",
+        "level": "2f"
+      }
     ],
     "defaultLevel": "lobby"
   }

@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { MapSVG } from "./map-svg.js"
 import { useEffect, useState } from "react"
-import svgMap from "../../../../map/anthrohio-map.svg"
+import svgMap from "../../../viewer/public/example-map.svg"
 
 const meta: Meta<typeof MapSVG> = {}
 

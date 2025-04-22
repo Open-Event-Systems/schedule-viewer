@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react"
 import { MapViewer } from "./MapViewer.js"
 import "./MapViewer.scss"
 import "./Map.scss"
-import svgMap from "../../../../map/dist/anthrohio-map-min.svg"
+import svgMap from "../../../viewer/public/example-map.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
 
@@ -27,68 +27,29 @@ export const Default: StoryObj<typeof MapViewer> = {
     const zoomFuncRef = useRef<((id: string) => void) | null>(null)
     const [config] = useState<MapConfig>(() => ({
       src: svgMap,
-      layers: [{ id: "background", title: "Background" }],
+      layers: [{ id: "text", title: "Text" }],
       levels: [
-        { id: "3f", title: "3F" },
         { id: "2f", title: "2F" },
         { id: "lobby", title: "Lobby" },
-        { id: "lower", title: "Lower Level" },
       ],
       locations: [
         {
-          id: "registration",
-          title: "Registration",
+          id: "room-1",
+          title: "Room 1",
+          description: "Room 1, on the first floor.",
         },
         {
-          id: "hospitality",
-          title: "Hospitality",
+          id: "room-2",
+          title: "Room 2",
+          description: "Room 2, on the second floor.",
         },
         {
-          id: "video-games",
-          title: "Video Games",
-        },
-        {
-          id: "board-games",
-          title: "Board Games",
-        },
-        {
-          id: "stage",
-          title: "Stage",
-        },
-        {
-          id: "panel-1",
-          title: "Panel Room One",
-          description: "Lower level, next to Dealers' Den.",
-        },
-        {
-          id: "panel-2",
-          title: "Panel Room Two",
-        },
-        {
-          id: "pheoris-west",
-          title: "Pheoris West",
-        },
-        {
-          id: "vendor-1",
-          title: "Table 1",
-        },
-        {
-          id: "vendor-21",
-          title: "Table 21",
+          id: "room-3",
+          title: "Room 3",
+          description: "Room 3, on the second floor.",
         },
       ],
-      vendors: [
-        {
-          name: "Test Vendor",
-          location: "vendor-1",
-          description: "Test Vendor",
-        },
-        {
-          name: "Test Vendor",
-          location: "vendor-21",
-          description: "Test Vendor",
-        },
-      ],
+      vendors: [],
       flags: [],
       defaultLevel: "lobby",
       minScale: 0.1,

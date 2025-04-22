@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10in"
+   height="10in"
+   viewBox="0 0 3000 3000"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   sodipodi:docname="example-map.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="in"
+     inkscape:zoom="2"
+     inkscape:cx="465"
+     inkscape:cy="396.5"
+     inkscape:window-width="2560"
+     inkscape:window-height="1359"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer6"
+     showguides="true" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="levels">
+    <g
+       inkscape:groupmode="layer"
+       id="layer3"
+       inkscape:label="lobby"
+       style="display:inline"
+       class="Map-level Map-level-id-lobby">
+      <g
+         inkscape:groupmode="layer"
+         id="layer5"
+         inkscape:label="floors">
+        <rect
+           style="fill:#e9e9e9;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect3"
+           width="2400"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="base" />
+        <rect
+           style="display:inline;fill:#b2bde8;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2"
+           width="808.51245"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="room1"
+           class="Map-area Map-area-id-room-1" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer4"
+         inkscape:label="walls">
+        <path
+           id="rect1"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           d="M 1350,863.24463 H 316.22925 V 2063.2446 H 2716.2292 V 863.24463 H 1650"
+           sodipodi:nodetypes="cccccc" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           d="M 1124.7417,863.24462 V 1853.9456"
+           id="path2" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer6"
+         inkscape:label="text"
+         class="Map-layer Map-layer-id-text">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:100px;line-height:1;font-family:Roboto;-inkscape-font-specification:'Roboto Medium';text-align:center;letter-spacing:0.78125px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           x="722.57471"
+           y="1343.5029"
+           id="text3"><tspan
+             sodipodi:role="line"
+             id="tspan3"
+             style="font-size:100px;fill:#333333;fill-opacity:1;stroke-width:15"
+             x="722.96533"
+             y="1343.5029">Room 1</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:62.5px;line-height:1;font-family:Roboto;-inkscape-font-specification:'Roboto Medium';text-align:center;letter-spacing:0.78125px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           x="1489.9067"
+           y="961.35339"
+           id="text4"><tspan
+             sodipodi:role="line"
+             id="tspan4"
+             style="font-size:62.5px;stroke-width:15"
+             x="1490.2974"
+             y="961.35339">Main Entrance</tspan></text>
+        <rect
+           style="fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect4"
+           width="353.55338"
+           height="176.7767"
+           x="539.16888"
+           y="1367.4305"
+           inkscape:label="room1-event-title"
+           class="Map-event-name Map-event-name-id-room-1" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer7"
+         inkscape:label="click">
+        <rect
+           style="opacity:0;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect5"
+           width="808.51245"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="room1-click"
+           class="Map-click Map-click-id-room-1" />
+      </g>
+    </g>
+    <g
+       inkscape:groupmode="layer"
+       id="layer2"
+       inkscape:label="2f"
+       style="display:none"
+       class="Map-level Map-level-id-2f">
+      <g
+         inkscape:groupmode="layer"
+         id="g7"
+         inkscape:label="floors">
+        <rect
+           style="fill:#e9e9e9;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6"
+           width="2400"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="base" />
+        <rect
+           style="display:inline;fill:#b2bde8;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect7"
+           width="808.51245"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="room2"
+           class="Map-area Map-area-id-room-2" />
+        <rect
+           style="display:inline;fill:#b2bde8;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9"
+           width="957.11249"
+           height="1200"
+           x="1759.1167"
+           y="863.24463"
+           inkscape:label="room3"
+           class="Map-area Map-area-id-room-3" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="g8"
+         inkscape:label="walls">
+        <path
+           id="path7"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           d="M 316.22925,863.24463 V 2063.2446 H 2716.2292 V 863.24463 Z"
+           sodipodi:nodetypes="ccccc" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           d="M 1124.7417,863.24462 V 1853.9456"
+           id="path8" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1759.1167,1072.5436 v 990.701"
+           id="path9" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer8"
+         inkscape:label="text"
+         class="Map-layer Map-layer-id-text">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:100px;line-height:1;font-family:Roboto;-inkscape-font-specification:'Roboto Medium';text-align:center;letter-spacing:0.78125px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           x="714.0625"
+           y="1273.4375"
+           id="text9"><tspan
+             sodipodi:role="line"
+             id="tspan9"
+             style="font-size:100px;opacity:1;fill:#333333;fill-opacity:1;stroke-width:15"
+             x="714.45312"
+             y="1273.4375">Room 2</tspan></text>
+        <rect
+           style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect10"
+           width="357.8125"
+           height="179.6875"
+           x="537.5"
+           y="1323.4375"
+           inkscape:label="room2-event-title"
+           class="Map-event-name Map-event-name-id-room-2" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:100px;line-height:1;font-family:Roboto;-inkscape-font-specification:'Roboto Medium';text-align:center;letter-spacing:0.78125px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           x="2282.8125"
+           y="1481.25"
+           id="text10"><tspan
+             sodipodi:role="line"
+             id="tspan10"
+             style="font-size:100px;opacity:1;fill:#333333;fill-opacity:1;stroke-width:15"
+             x="2283.2031"
+             y="1481.25">Room 3</tspan></text>
+        <rect
+           style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect11"
+           width="357.8125"
+           height="179.6875"
+           x="2106.25"
+           y="1531.25"
+           inkscape:label="room3-event-title"
+           class="Map-event-name Map-event-name-id-room-3" />
+      </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer9"
+         inkscape:label="click">
+        <rect
+           style="display:inline;opacity:0;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect12"
+           width="808.51239"
+           height="1200"
+           x="316.22925"
+           y="863.24463"
+           inkscape:label="room2-click"
+           class="Map-click Map-click-id-room-2" />
+        <rect
+           style="opacity:0;fill:#333333;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+           id="rect13"
+           width="957.11249"
+           height="1200"
+           x="1759.1167"
+           y="863.24463"
+           inkscape:label="room3-click"
+           class="Map-click Map-click-id-room-3" />
+      </g>
+    </g>
+  </g>
+</svg>
