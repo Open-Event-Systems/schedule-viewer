@@ -18,6 +18,7 @@ declare global {
   var scheduleBasePath: string | undefined
   var scheduleServiceWorker: boolean | undefined
   var schedulePrecacheFiles: string[] | undefined
+  var scheduleRouter: "hash" | "browser" | undefined
   var __webpack_public_path__: string | undefined
 }
 

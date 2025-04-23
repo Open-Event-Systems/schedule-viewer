@@ -1,4 +1,8 @@
-import { createBrowserHistory, RouterProvider } from "@tanstack/react-router"
+import {
+  createBrowserHistory,
+  createHashHistory,
+  RouterProvider,
+} from "@tanstack/react-router"
 import { createContext, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
@@ -10,16 +14,19 @@ import { router } from "../router.js"
 import { makeAppConfig } from "../config.js"
 
 export const App = ({
+  routerType = "hash",
   basePath,
   theme,
   colorScheme,
 }: {
+  routerType?: "hash" | "browser"
   basePath?: string
   theme?: MantineThemeOverride
   colorScheme?: MantineColorScheme
 }) => {
   const [history] = useState(() => {
-    const history = createBrowserHistory()
+    const history =
+      routerType == "browser" ? createBrowserHistory() : createHashHistory()
     return history
   })
 

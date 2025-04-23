@@ -305,7 +305,10 @@ export const EventsRoute = observer(() => {
                   window.location.href = String(url)
 
                   // only reload if using hash history
-                  // window.location.reload()
+                  // checking for this global here is hacky...
+                  if (scheduleRouter == "hash") {
+                    window.location.reload()
+                  }
                 })
               }
             }}
