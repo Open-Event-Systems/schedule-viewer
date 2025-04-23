@@ -52,7 +52,7 @@ export const App = ({
       <QueryClientProvider client={queryClient}>
         <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
           <RouterProvider
-            basepath={basePath}
+            basepath={basePath || "/"}
             router={router}
             history={history}
             context={{
