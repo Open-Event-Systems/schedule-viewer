@@ -19,8 +19,8 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "@mantine/core": "^7.17.3",
-    "@mantine/hooks": "^7.17.3",
+    "@mantine/core": "^7.17.4",
+    "@mantine/hooks": "^7.17.4",
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/addon-interactions": "^8.6.12",
     "@storybook/addon-styling-webpack": "^1.0.1",
@@ -29,13 +29,13 @@
     "@storybook/react": "^8.6.12",
     "@storybook/react-webpack5": "^8.6.12",
     "@storybook/test": "^8.6.12",
-    "@swc/core": "^1.11.16",
-    "@types/react": "^19.0.12",
+    "@swc/core": "^1.11.21",
+    "@types/react": "^19.1.2",
     "css-loader": "^7.1.2",
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
     "react": "^19.1.0",
-    "sass": "^1.86.1",
+    "sass": "^1.87.0",
     "sass-loader": "^16.0.5",
     "storybook": "^8.6.12",
     "style-loader": "^4.0.0"

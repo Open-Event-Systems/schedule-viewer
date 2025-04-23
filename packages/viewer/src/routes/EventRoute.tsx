@@ -25,7 +25,7 @@ export const EventRoute = observer(() => {
   const mapLocs = useMemo(() => {
     return getMapLocationsWithAlias(mapConfig)
   }, [mapConfig])
-  const mapLoc = mapLocs.get(event.location)
+  const mapLoc = event.location ? mapLocs.get(event.location) : undefined
 
   const locHref = mapLoc
     ? String(

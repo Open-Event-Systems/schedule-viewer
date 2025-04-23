@@ -10,14 +10,14 @@
   "dependencies": {
     "@date-fns/tz": "^1.2.0",
     "@date-fns/utc": "^2.1.0",
-    "@mantine/core": "^7.17.3",
-    "@mantine/hooks": "^7.17.3",
+    "@mantine/core": "^7.17.4",
+    "@mantine/hooks": "^7.17.4",
     "@open-event-systems/schedule-components": "^0.1.0",
     "@open-event-systems/schedule-lib": "^0.1.0",
     "@open-event-systems/schedule-map": "^0.1.0",
     "@tabler/icons-react": "^3.31.0",
-    "@tanstack/react-query": "^5.71.5",
-    "@tanstack/react-router": "1.112.12",
+    "@tanstack/react-query": "^5.74.4",
+    "@tanstack/react-router": "^1.117.0",
     "date-fns": "^4.1.0",
     "ics": "^3.8.1",
     "mobx": "^6.13.7",
@@ -28,8 +28,8 @@
     "wretch": "^2.11.0"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.1",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
@@ -37,7 +37,7 @@
     "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
     "swc-loader": "^0.2.6",
-    "webpack": "^5.98.0",
+    "webpack": "^5.99.6",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1",
     "workbox-webpack-plugin": "^7.3.0"
