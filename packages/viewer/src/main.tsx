@@ -38,6 +38,7 @@ if (scheduleEl) {
   const app = (
     <SWStoreContext.Provider value={swStore}>
       <App
+        routerType={scheduleRouter}
         basePath={scheduleBasePath}
         theme={theme}
         colorScheme={scheduleColorScheme}
