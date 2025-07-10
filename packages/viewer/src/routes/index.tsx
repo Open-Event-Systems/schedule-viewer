@@ -155,12 +155,12 @@ export const eventRoute = createRoute({
     return {
       meta: [
         {
-          title: `${loaderData.event.title || "Event"}`,
+          title: `${loaderData?.event.title || "Event"}`,
         },
-        loaderData.event.description
+        loaderData?.event.description
           ? {
               name: "description",
-              content: loaderData.event.description,
+              content: loaderData?.event.description,
             }
           : undefined,
       ],

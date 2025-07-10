@@ -21,6 +21,12 @@ ULE is a progressive web application (PWA) that displays an event schedule.
 - Optional bookmark service allows attendees to sync their personal schedule
   across devices and share them with friends.
 
+## Building
+
+- Install Node.js and pnpm
+- Run `pnpm run build`
+- Built files will be in `packages/viewer/dist`
+
 ## Documentation
 
 - [Configuration](./docs/config.md)

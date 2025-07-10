@@ -82,7 +82,7 @@ export const EventsRoute = observer(() => {
   const shareURL = router.buildLocation({
     to: sharedScheduleRoute.to,
     params: {
-      selectionId: lastShareIdRef.current,
+      selectionId: lastShareIdRef.current ?? "",
     },
   }).href
   const fullShareURL = new URL(
@@ -92,7 +92,7 @@ export const EventsRoute = observer(() => {
   const syncURL = router.buildLocation({
     to: confirmSyncScheduleRoute.to,
     params: {
-      syncId: lastSyncIdRef.current,
+      syncId: lastSyncIdRef.current ?? "",
     },
   }).href
   const fullSyncURL = new URL(
