@@ -1,10 +1,11 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { MapViewer } from "./MapViewer.js"
-import "./MapViewer.scss"
-import "./Map.scss"
+import { MapViewer } from "./map-viewer.js"
 import svgMap from "../../../viewer/public/example-map.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
+
+import "./map-viewer.scss"
+import "./map.scss"
 
 const meta: Meta<typeof MapViewer> = {
   component: MapViewer,

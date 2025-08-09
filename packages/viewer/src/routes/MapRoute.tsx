@@ -1,4 +1,4 @@
-import { MapViewer } from "@open-event-systems/schedule-map/viewer/MapViewer"
+import { MapViewer } from "@open-event-systems/schedule-map/viewer/map-viewer"
 import { useMapConfig, useTime } from "../config.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
