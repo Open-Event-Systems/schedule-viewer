@@ -43,7 +43,7 @@ export type TagEntry = readonly [string, string]
 
 export type TagIndicatorEntry = readonly [string | readonly string[], string]
 
-export interface ScheduleConfig {
+export interface ScheduleConfig extends Readonly<Record<string, unknown>> {
   readonly id: string
   readonly events: string | readonly EventJSON[]
   readonly title: string
@@ -72,6 +72,14 @@ export type Selections = {
   delete(eventId: string): Selections
 }
 
+export type EventsResponse = Readonly<{
+  events: readonly EventJSON[]
+}>
+
+export type EventAPI = Readonly<{
+  read(): Promise<EventsResponse>
+}>
+
 export type BookmarksRequest = Readonly<{
   events: readonly string[]
 }>
@@ -95,10 +103,10 @@ export type BookmarkCountsResponse = Readonly<{
   counts: Readonly<Record<string, number>>
 }>
 
-export type BookmarkAPI = {
+export type BookmarkAPI = Readonly<{
   setup(sessionId?: string): Promise<BookmarkSetupResponse>
   getBookmarks(selectionId: string): Promise<BookmarksResponse | null>
   getSessionBookmarks(): Promise<SessionBookmarksResponse>
   setBookmarks(events: Iterable<string>): Promise<SessionBookmarksResponse>
   getBookmarkCounts(): Promise<BookmarkCountsResponse>
-}
+}>

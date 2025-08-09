@@ -24,6 +24,7 @@ import {
 import { Stack, Text } from "@mantine/core"
 import { EventPills } from "@open-event-systems/schedule-components/pills/event-pills"
 import { useTime } from "../config.js"
+import { EventDetailsProvider } from "@open-event-systems/schedule-components/details/context"
 
 export type ScheduleViewProps = {
   config: ScheduleConfig
@@ -150,17 +151,19 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
         onSelectDay={setSelectedDay}
       />
       {titleFiltered.length > 0 ? (
-        <PillsView
-          events={titleFiltered}
-          binMinutes={config.binMinutes}
-          getIsBookmarked={getIsBookmarked}
-          setBookmarked={setBookmarked}
-          getBookmarkCount={getBookmarkCount}
-          getHref={getHref}
-          onClickEvent={onClickEvent}
-          getLocationHref={getLocationHref}
-          onClickLocation={onClickLocation}
-        />
+        <EventDetailsProvider
+          value={{
+            getBookmarkCount,
+            getIsBookmarked,
+            setBookmarked,
+            getHref,
+            onClickEvent,
+            getLocationHref,
+            onClickLocation,
+          }}
+        >
+          <PillsView events={titleFiltered} binMinutes={config.binMinutes} />
+        </EventDetailsProvider>
       ) : (
         <Text c="dimmed" ta="center">
           No events
@@ -175,38 +178,9 @@ ScheduleView.displayName = "ScheduleView"
 type ViewProps = {
   events: readonly Scheduled<Event>[]
   binMinutes?: number
-  getIsBookmarked: (event: Event) => boolean
-  setBookmarked: (event: Event, set: boolean) => void
-  getBookmarkCount: (event: Event) => number | undefined
-  getHref?: (event: Event) => string
-  onClickEvent?: (e: MouseEvent, event: Event) => void
-  getLocationHref?: (event: Event) => string | undefined
-  onClickLocation?: (event: Event) => void
 }
 
 const PillsView = (props: ViewProps) => {
-  const {
-    events,
-    binMinutes,
-    getIsBookmarked,
-    setBookmarked,
-    getBookmarkCount,
-    getHref,
-    onClickEvent,
-    getLocationHref,
-    onClickLocation,
-  } = props
-  return (
-    <EventPills
-      events={events}
-      binMinutes={binMinutes}
-      getIsBookmarked={getIsBookmarked}
-      setBookmarked={setBookmarked}
-      getBookmarkCount={getBookmarkCount}
-      getHref={getHref}
-      onClickEvent={onClickEvent}
-      getLocationHref={getLocationHref}
-      onClickLocation={onClickLocation}
-    />
-  )
+  const { events, binMinutes } = props
+  return <EventPills events={events} binMinutes={binMinutes} />
 }

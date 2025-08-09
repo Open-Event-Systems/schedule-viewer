@@ -1,10 +1,4 @@
-import slugify from "slugify"
 import { makeSelections } from "./selections.js"
-
-export const makeId = (s: string): string => {
-  // @ts-ignore
-  return slugify(s.toLowerCase())
-}
 
 export const makeBookmarkFilter = (
   eventIds: Iterable<string>,

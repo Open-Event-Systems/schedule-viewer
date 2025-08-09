@@ -5,27 +5,11 @@ import { EventDetails } from "../details/event-details.js"
 
 export type EventHoverCardProps = HoverCardProps & {
   event: Event
-  bookmarked?: boolean
-  setBookmarked?: (set: boolean) => void
-  bookmarkCount?: number | null
-  url?: string
-  locationHref?: string
-  onClickLocation?: () => void
   children?: ReactNode
 }
 
 export const EventHoverCard = (props: EventHoverCardProps) => {
-  const {
-    children,
-    event,
-    bookmarked,
-    setBookmarked,
-    bookmarkCount,
-    url,
-    locationHref,
-    onClickLocation,
-    ...other
-  } = useProps("EventHoverCard", {}, props)
+  const { children, event, ...other } = useProps("EventHoverCard", {}, props)
 
   return (
     <HoverCard
@@ -36,16 +20,7 @@ export const EventHoverCard = (props: EventHoverCardProps) => {
     >
       <HoverCard.Target>{children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        <EventDetails
-          event={event}
-          bookmarked={bookmarked}
-          setBookmarked={setBookmarked}
-          bookmarkCount={bookmarkCount}
-          locationHref={locationHref}
-          onClickLocation={onClickLocation}
-          url={url}
-          showShare
-        />
+        <EventDetails event={event} showShare />
       </HoverCard.Dropdown>
     </HoverCard>
   )

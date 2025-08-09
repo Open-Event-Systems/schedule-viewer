@@ -5,8 +5,8 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event, isScheduled, Scheduled } from "@open-event-systems/schedule-lib"
-import { forwardRef, MouseEvent, ReactNode, useContext, useMemo } from "react"
+import { Event, isScheduled } from "@open-event-systems/schedule-lib"
+import { forwardRef, ReactNode, useContext, useMemo } from "react"
 import { CalendarContext } from "./context.js"
 import clsx from "clsx"
 import { toPercent } from "./utils.js"
@@ -23,10 +23,6 @@ export type CalendarProps = {
   direction?: "column" | "row"
   start: Date
   end: Date
-  getIsBookmarked?: (event: Event) => boolean
-  setBookmarked?: (event: Event, set: boolean) => void
-  getHref?: (event: Event) => string | null | undefined
-  onClickEvent?: (e: MouseEvent, event: Event) => void
 } & BoxProps
 
 export const Calendar = (props: CalendarProps) => {
@@ -36,10 +32,6 @@ export const Calendar = (props: CalendarProps) => {
     direction = "column",
     start,
     end,
-    getIsBookmarked,
-    setBookmarked,
-    getHref,
-    onClickEvent,
     ...other
   } = useProps("Calendar", {}, props)
 
@@ -50,16 +42,7 @@ export const Calendar = (props: CalendarProps) => {
   ))
 
   const columnBoxes = columns.map((c, i) => (
-    <CalendarColumn
-      key={i}
-      column={c}
-      start={start}
-      end={end}
-      getHref={getHref}
-      onClickEvent={onClickEvent}
-      getIsBookmarked={getIsBookmarked}
-      setBookmarked={setBookmarked}
-    />
+    <CalendarColumn key={i} column={c} start={start} end={end} />
   ))
 
   const dirClass =
@@ -110,48 +93,26 @@ const CalendarColumn = ({
   column,
   start,
   end,
-  getHref,
-  onClickEvent,
-  getIsBookmarked,
-  setBookmarked,
-}: Pick<
-  CalendarProps,
-  | "getHref"
-  | "onClickEvent"
-  | "getIsBookmarked"
-  | "setBookmarked"
-  | "start"
-  | "end"
-> & {
+}: Pick<CalendarProps, "start" | "end"> & {
   column: CalendarColumnData
 }) => {
   const items = useMemo(
     () =>
       column.events?.filter(isScheduled).map((e) => {
-        const href = getHref ? getHref(e) : null
         return (
-          <EventHoverCard
-            key={e.id}
-            event={e}
-            bookmarked={getIsBookmarked ? getIsBookmarked(e) : undefined}
-            setBookmarked={
-              setBookmarked ? (s) => setBookmarked(e, s) : undefined
-            }
-          >
+          <EventHoverCard key={e.id} event={e}>
             <Calendar.Item
               component="a"
               className="Calendar-event"
               start={e.start}
               end={e.end}
-              href={href ?? undefined}
-              onClick={onClickEvent ? (ev) => onClickEvent(ev, e) : undefined}
             >
               {e.title}
             </Calendar.Item>
           </EventHoverCard>
         )
       }),
-    [column.events, getHref, onClickEvent],
+    [column.events],
   )
 
   const dividers = useMemo(

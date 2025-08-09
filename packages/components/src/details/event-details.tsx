@@ -29,6 +29,7 @@ import {
   useScheduleConfig,
 } from "../config/context.js"
 import { ShareButton } from "../share-button/share-button.js"
+import { useEventDetails } from "./context.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -43,17 +44,25 @@ export type EventDetailsProps = {
 } & BoxProps
 
 export const EventDetails = (props: EventDetailsProps) => {
+  const ctx = useEventDetails()
+
   const {
     className,
     event,
-    bookmarked,
-    setBookmarked,
+    bookmarked = ctx.getIsBookmarked ? ctx.getIsBookmarked(event) : undefined,
+    setBookmarked = ctx.setBookmarked
+      ? (set: boolean) => ctx.setBookmarked && ctx.setBookmarked(event, set)
+      : undefined,
     large = false,
-    bookmarkCount,
+    bookmarkCount = ctx.getBookmarkCount
+      ? ctx.getBookmarkCount(event)
+      : undefined,
     showShare,
-    url,
-    locationHref,
-    onClickLocation,
+    url = ctx.getHref ? ctx.getHref(event) : undefined,
+    locationHref = ctx.getLocationHref ? ctx.getLocationHref(event) : undefined,
+    onClickLocation = ctx.onClickLocation
+      ? () => ctx.onClickLocation && ctx.onClickLocation(event)
+      : undefined,
     ...other
   } = useProps("EventDetails", {}, props)
 
