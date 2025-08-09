@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { EventDetails } from "./EventDetails.js"
 import { events } from "../test-data.js"
 import { useState } from "react"

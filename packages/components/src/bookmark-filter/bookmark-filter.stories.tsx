@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { BookmarkFilter } from "./boomark-filter.js"
 import { useState } from "react"
 

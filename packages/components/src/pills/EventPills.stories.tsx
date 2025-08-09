@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { EventPills } from "./EventPills.js"
 import "./Pills.scss"
 import "../hovercard/EventHoverCard.scss"

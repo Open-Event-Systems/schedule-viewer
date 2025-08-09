@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { ShareMenu } from "./share-menu.js"
 
 const meta: Meta<typeof ShareMenu> = {
