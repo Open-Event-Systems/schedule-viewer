@@ -83,6 +83,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      eslint-plugin-storybook:
+        specifier: 9.1.1
+        version: 9.1.1(eslint@9.33.0)(storybook@9.1.1(@testing-library/dom@10.4.0))(typescript@5.9.2)
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -145,9 +148,6 @@ importers:
       "@storybook/addon-docs":
         specifier: ^9.1.1
         version: 9.1.1(@types/react@19.1.9)(storybook@9.1.1(@testing-library/dom@10.4.0))
-      "@storybook/addon-styling-webpack":
-        specifier: ^1.0.1
-        version: 1.0.1(storybook@9.1.1(@testing-library/dom@10.4.0))(webpack@5.101.0(@swc/core@1.13.3))
       "@storybook/addon-webpack5-compiler-swc":
         specifier: ^3.0.0
         version: 3.0.0(webpack@5.101.0(@swc/core@1.13.3))
@@ -1800,14 +1800,6 @@ packages:
     peerDependencies:
       storybook: ^9.1.1
 
-  "@storybook/addon-styling-webpack@1.0.1":
-    resolution:
-      {
-        integrity: sha512-5n+SXPfMTc4m7sWaJWPWjoHYWc6/B111M2Ia55toQ3GV4ON4vVlTgH9FX+EgCkDticElj99HLTMDJkHRj2yvkg==,
-      }
-    peerDependencies:
-      webpack: ^5.0.0
-
   "@storybook/addon-webpack5-compiler-swc@3.0.0":
     resolution:
       {
@@ -1858,14 +1850,6 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
-
-  "@storybook/node-logger@8.6.14":
-    resolution:
-      {
-        integrity: sha512-/H67NMvc9hDOaNgVragsHaeXQ5JzwAQfyx1QeL4vlx2SPGoWXmxpoRXZTpOJRaNOhKlYh6sDj/3Lx2xOH5IxnQ==,
-      }
-    peerDependencies:
-      storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
 
   "@storybook/preset-react-webpack@9.1.1":
     resolution:
@@ -8644,13 +8628,6 @@ snapshots:
     transitivePeerDependencies:
       - "@types/react"
 
-  "@storybook/addon-styling-webpack@1.0.1(storybook@9.1.1(@testing-library/dom@10.4.0))(webpack@5.101.0(@swc/core@1.13.3))":
-    dependencies:
-      "@storybook/node-logger": 8.6.14(storybook@9.1.1(@testing-library/dom@10.4.0))
-      webpack: 5.101.0(@swc/core@1.13.3)
-    transitivePeerDependencies:
-      - storybook
-
   "@storybook/addon-webpack5-compiler-swc@3.0.0(webpack@5.101.0(@swc/core@1.13.3)(esbuild@0.25.8))":
     dependencies:
       "@swc/core": 1.13.3
@@ -8737,10 +8714,6 @@ snapshots:
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
-
-  "@storybook/node-logger@8.6.14(storybook@9.1.1(@testing-library/dom@10.4.0))":
-    dependencies:
-      storybook: 9.1.1(@testing-library/dom@10.4.0)
 
   "@storybook/preset-react-webpack@9.1.1(@swc/core@1.13.3)(esbuild@0.25.8)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@9.1.1(@testing-library/dom@10.4.0))(typescript@5.9.2)":
     dependencies:
