@@ -19,8 +19,8 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "@mantine/core": "^7.17.8",
-    "@mantine/hooks": "^7.17.8",
+    "@mantine/core": "^8.2.4",
+    "@mantine/hooks": "^8.2.4",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
     "@storybook/addon-styling-webpack": "^1.0.1",
@@ -29,26 +29,26 @@
     "@storybook/react": "^8.6.14",
     "@storybook/react-webpack5": "^8.6.14",
     "@storybook/test": "^8.6.14",
-    "@swc/core": "^1.12.11",
-    "@types/react": "^19.1.8",
+    "@swc/core": "^1.13.3",
+    "@types/react": "^19.1.9",
     "css-loader": "^7.1.2",
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
-    "react": "^19.1.0",
-    "sass": "^1.89.2",
+    "react": "^19.1.1",
+    "sass": "^1.90.0",
     "sass-loader": "^16.0.5",
     "storybook": "^8.6.14",
     "style-loader": "^4.0.0"
   },
   "peerDependencies": {
-    "@mantine/core": "^7.17.3",
-    "@mantine/hooks": "^7.17.3",
+    "@mantine/core": "^8.2.4",
+    "@mantine/hooks": "^8.2.4",
     "mobx": "^6.13.5",
     "mobx-react-lite": "^4.1.0",
     "react": "^19.1.0"
   },
   "dependencies": {
-    "@tabler/icons-react": "^3.34.0",
+    "@tabler/icons-react": "^3.34.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "react-zoom-pan-pinch": "^3.7.0"
