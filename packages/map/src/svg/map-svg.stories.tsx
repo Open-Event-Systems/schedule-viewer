@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { MapSVG } from "./map-svg.js"
 import { useEffect, useState } from "react"
 import svgMap from "../../../viewer/public/example-map.svg"

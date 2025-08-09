@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { MapViewer } from "./MapViewer.js"
 import "./MapViewer.scss"
 import "./Map.scss"
