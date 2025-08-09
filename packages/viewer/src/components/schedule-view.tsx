@@ -20,9 +20,9 @@ import {
 import {
   DayFilter,
   DayFilterDay,
-} from "@open-event-systems/schedule-components/day-filter/DayFilter"
+} from "@open-event-systems/schedule-components/day-filter/day-filter"
 import { Stack, Text } from "@mantine/core"
-import { EventPills } from "@open-event-systems/schedule-components/pills/EventPills"
+import { EventPills } from "@open-event-systems/schedule-components/pills/event-pills"
 import { useTime } from "../config.js"
 
 export type ScheduleViewProps = {

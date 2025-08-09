@@ -9,7 +9,7 @@ import {
   syncScheduleRoute,
 } from "./index.js"
 import { Grid, SegmentedControl, Stack } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
+import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext, useMemo, useRef } from "react"
 import {
   Event,
@@ -18,7 +18,7 @@ import {
   makeTagFilter,
   makeTitleFilter,
 } from "@open-event-systems/schedule-lib"
-import { Filter } from "@open-event-systems/schedule-components/filter/Filter"
+import { Filter } from "@open-event-systems/schedule-components/filter/filter"
 import { ConfirmSyncDialog } from "@open-event-systems/schedule-components/confirm-sync-dialog/confirm-sync-dialog"
 import { ShareDialog } from "@open-event-systems/schedule-components/share-dialog/share-dialog"
 import { ShareMenu } from "@open-event-systems/schedule-components/share-menu/share-menu"

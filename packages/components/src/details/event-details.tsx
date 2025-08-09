@@ -21,7 +21,7 @@ import {
 import clsx from "clsx"
 import { format } from "date-fns"
 import { Fragment, ReactElement, ReactNode } from "react"
-import { Markdown } from "../markdown/Markdown.js"
+import { Markdown } from "../markdown/markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
 import {
   makeTagFormatter,

@@ -1,7 +1,7 @@
 import { HoverCard, HoverCardProps, useProps } from "@mantine/core"
 import { Event } from "@open-event-systems/schedule-lib"
 import { ReactNode } from "react"
-import { EventDetails } from "../details/EventDetails.js"
+import { EventDetails } from "../details/event-details.js"
 
 export type EventHoverCardProps = HoverCardProps & {
   event: Event

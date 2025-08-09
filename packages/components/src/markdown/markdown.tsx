@@ -1,11 +1,6 @@
-import { forwardRef, ReactNode, useMemo } from "react"
+import { forwardRef, useMemo } from "react"
 import markdownit from "markdown-it"
-import {
-  Box,
-  BoxProps,
-  createPolymorphicComponent,
-  TypographyStylesProvider,
-} from "@mantine/core"
+import { BoxProps, createPolymorphicComponent, Typography } from "@mantine/core"
 import clsx from "clsx"
 
 export type MarkdownProps = { children?: string } & BoxProps
@@ -35,7 +30,7 @@ export const Markdown = createPolymorphicComponent<"div", MarkdownProps>(
     const result = useMemo(() => markdown.render(children), [children])
 
     return (
-      <TypographyStylesProvider
+      <Typography
         component="div"
         className={clsx("Markdown-root", className)}
         ref={ref}

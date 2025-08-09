@@ -1,6 +1,6 @@
 import { eventRoute, eventsDataRoute, sharedScheduleRoute } from "./index.js"
 import { Anchor, Grid, Stack, Title } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
+import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext } from "react"
 import {
   Event,
@@ -8,7 +8,7 @@ import {
   makeTagFilter,
   makeTitleFilter,
 } from "@open-event-systems/schedule-lib"
-import { Filter } from "@open-event-systems/schedule-components/filter/Filter"
+import { Filter } from "@open-event-systems/schedule-components/filter/filter"
 import { observer } from "mobx-react-lite"
 import { createICS } from "../ical.js"
 import {

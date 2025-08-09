@@ -1,10 +1,10 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { EventDetails } from "./EventDetails.js"
+import { EventDetails } from "./event-details.js"
 import { events } from "../test-data.js"
 import { useState } from "react"
 
 import "../icon-text/icon-text.scss"
-import "./EventDetails.scss"
+import "./event-details.scss"
 
 const meta: Meta<typeof EventDetails> = {
   component: EventDetails,

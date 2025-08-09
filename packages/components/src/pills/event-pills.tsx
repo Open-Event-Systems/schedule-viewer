@@ -1,11 +1,11 @@
 import { Event, isScheduled } from "@open-event-systems/schedule-lib"
-import { Pills, PillsProps } from "./Pills.js"
+import { Pills, PillsProps } from "./pills.js"
 import { useProps } from "@mantine/core"
 import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import { makeTagIndicatorFunc, useScheduleConfig } from "../config/context.js"
 import { MouseEvent, ReactNode, useCallback, useMemo } from "react"
-import { EventHoverCard } from "../hovercard/EventHoverCard.js"
+import { EventHoverCard } from "../hovercard/event-hover-card.js"
 import clsx from "clsx"
 
 // TODO: there is a *lot* of prop drill down in these components, refactor to

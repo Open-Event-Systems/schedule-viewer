@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { Pills } from "./Pills.js"
+import { Pills } from "./pills.js"
 
-import "./Pills.scss"
+import "./pills.scss"
 
 const meta: Meta<typeof Pills> = {
   component: Pills,

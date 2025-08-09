@@ -1,4 +1,4 @@
-import { EventDetails } from "@open-event-systems/schedule-components/details/EventDetails"
+import { EventDetails } from "@open-event-systems/schedule-components/details/event-details"
 import { eventRoute, eventsRoute, mapRoute } from "./index.js"
 import { Link, useRouter } from "@tanstack/react-router"
 import { Anchor } from "@mantine/core"

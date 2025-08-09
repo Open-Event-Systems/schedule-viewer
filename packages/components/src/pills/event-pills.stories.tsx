@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { EventPills } from "./EventPills.js"
-import "./Pills.scss"
-import "../hovercard/EventHoverCard.scss"
+import { EventPills } from "./event-pills.js"
 import { events } from "../test-data.js"
+
+import "./pills.scss"
+import "../hovercard/event-hover-card.scss"
 
 const meta: Meta<typeof EventPills> = {
   component: EventPills,

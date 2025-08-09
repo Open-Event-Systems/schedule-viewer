@@ -2,7 +2,7 @@ import { Anchor, Box, Container, Grid, Stack, Title } from "@mantine/core"
 import { Outlet } from "@tanstack/react-router"
 import { eventsDataRoute } from "../routes/index.js"
 import { UpdateButton } from "./update-button.js"
-import { Markdown } from "@open-event-systems/schedule-components/markdown/Markdown"
+import { Markdown } from "@open-event-systems/schedule-components/markdown/markdown"
 import { InstallButton } from "./install-button.js"
 
 export const ScheduleLayout = () => {

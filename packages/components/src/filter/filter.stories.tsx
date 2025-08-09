@@ -1,9 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { Filter } from "./Filter.js"
+import { Filter } from "./filter.js"
 import { useState } from "react"
 
-import "../pills/Pills.scss"
-import "../tag-filter/TagFilter.scss"
+import "../pills/pills.scss"
+import "../tag-filter/tag-filter.scss"
 
 const meta: Meta<typeof Filter> = {
   component: Filter,

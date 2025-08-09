@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { Calendar } from "./Calendar.js"
+import { Calendar } from "./calendar.js"
 
-import "./Calendar.scss"
+import "./calendar.scss"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,

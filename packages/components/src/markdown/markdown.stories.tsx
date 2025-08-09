@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { Markdown } from "./Markdown.js"
+import { Markdown } from "./markdown.js"
 
 const meta: Meta<typeof Markdown> = {
   component: Markdown,

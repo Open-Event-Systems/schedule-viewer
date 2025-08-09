@@ -11,7 +11,7 @@ import { CalendarContext } from "./context.js"
 import clsx from "clsx"
 import { toPercent } from "./utils.js"
 import { add, format, isBefore } from "date-fns"
-import { EventHoverCard } from "../hovercard/EventHoverCard.js"
+import { EventHoverCard } from "../hovercard/event-hover-card.js"
 
 export type CalendarColumnData = {
   title?: ReactNode

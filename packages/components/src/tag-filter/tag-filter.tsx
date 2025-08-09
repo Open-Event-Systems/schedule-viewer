@@ -1,6 +1,6 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
-import { Pills, PillsProps } from "../pills/Pills.js"
+import { Pills, PillsProps } from "../pills/pills.js"
 import { makeTagIndicatorFunc, useScheduleConfig } from "../config/context.js"
 import { useMemo } from "react"
 

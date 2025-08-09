@@ -8,7 +8,7 @@ import {
 } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
-import { TagFilter } from "../tag-filter/TagFilter.js"
+import { TagFilter } from "../tag-filter/tag-filter.js"
 export type FilterProps = {
   disabledTags?: Iterable<string>
   text?: string

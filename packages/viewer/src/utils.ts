@@ -1,5 +1,4 @@
-import { TZDate } from "@date-fns/tz"
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/DayFilter"
+import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
 import {
   contains,
   Event,

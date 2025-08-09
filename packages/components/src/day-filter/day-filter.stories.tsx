@@ -1,8 +1,8 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { DayFilter } from "./DayFilter.js"
+import { DayFilter } from "./day-filter.js"
 import { useState } from "react"
 
-import "./DayFilter.scss"
+import "./day-filter.scss"
 
 const meta: Meta<typeof DayFilter> = {
   component: DayFilter,
