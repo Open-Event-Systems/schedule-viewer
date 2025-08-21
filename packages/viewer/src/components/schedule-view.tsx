@@ -12,7 +12,6 @@ import {
   makeSelections,
   makeTagFilter,
   makeTitleFilter,
-  ScheduleConfig,
   Scheduled,
   Selections,
   toTimezone,
@@ -20,14 +19,14 @@ import {
 import {
   DayFilter,
   DayFilterDay,
-} from "@open-event-systems/schedule-components/day-filter/day-filter"
+} from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { Stack, Text } from "@mantine/core"
-import { EventPills } from "@open-event-systems/schedule-components/pills/event-pills"
-import { useTime } from "../config.js"
-import { EventDetailsProvider } from "@open-event-systems/schedule-components/details/context"
+import { EventPills } from "@open-event-systems/schedule-react/components/pills/event-pills"
+import { useTime, ViewerConfig } from "../config.js"
+import { EventDetailsProvider } from "@open-event-systems/schedule-react/components/details/context"
 
 export type ScheduleViewProps = {
-  config: ScheduleConfig
+  config: ViewerConfig
   events: EventStore
   filter: FilterSettings
   selections?: Selections
@@ -80,7 +79,7 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
 
   const getIsBookmarked = useCallback(
     (event: Event) => {
-      return selections.has(event.id)
+      return selections.events.has(event.id)
     },
     [selections],
   )
@@ -89,9 +88,13 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
     (event: Event, set: boolean) => {
       let newSelections
       if (set) {
-        newSelections = selections.add(event.id)
+        newSelections = makeSelections(
+          [...selections.events, event.id],
+          new Date(),
+        )
       } else {
-        newSelections = selections.delete(event.id)
+        const removed = [...selections.events].filter((e) => e != event.id)
+        newSelections = makeSelections(removed, new Date())
       }
       updateSelections && updateSelections(newSelections)
     },
@@ -116,7 +119,7 @@ export const ScheduleView = observer((props: ScheduleViewProps) => {
 
   const bookmarkFiltered = useMemo(() => {
     return onlyBookmarked
-      ? dayFiltered.filter(makeBookmarkFilter(selections))
+      ? dayFiltered.filter(makeBookmarkFilter(selections.events))
       : dayFiltered
   }, [dayFiltered, selections, onlyBookmarked])
 

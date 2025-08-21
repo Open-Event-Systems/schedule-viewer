@@ -1,31 +1,51 @@
 import {
   BookmarkAPI,
-  makeBookmarkAPI,
-  ScheduleConfig,
+  BookmarkServiceAPI,
+  EventAPI,
+  makeEventAPI,
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
-import { loadBookmarks, syncBookmarks } from "./bookmarks.js"
-import {
-  DEFAULT_SCHEDULE_CONFIG,
-  useScheduleConfig,
-} from "@open-event-systems/schedule-components/config/context"
 import { MapConfig } from "@open-event-systems/schedule-map/types"
-import { useMemo } from "react"
+import { createContext, useContext } from "react"
 import { useLocation } from "@tanstack/react-router"
 import { parseISO } from "date-fns"
 
-declare module "@open-event-systems/schedule-lib" {
-  interface ScheduleConfig {
+import {
+  DEFAULT_SCHEDULE_CONFIG,
+  makeConfig,
+  ScheduleConfig,
+  ScheduleConfigJSON,
+} from "@open-event-systems/schedule-react/config/config"
+import { setupBookmarks } from "@open-event-systems/schedule-react/bookmarks"
+
+declare module "@open-event-systems/schedule-react/config/config" {
+  interface ScheduleConfigJSON {
     homeURL?: string
     map?: Partial<MapConfig>
   }
 }
 
+export type ViewerConfig = ScheduleConfig &
+  Readonly<{
+    homeURL?: string
+    map?: MapConfig
+  }>
+
+export const ViewerConfigContext = createContext<ViewerConfig>({
+  homeURL: "/",
+  ...DEFAULT_SCHEDULE_CONFIG,
+})
+export const ViewerConfigProvider = ViewerConfigContext.Provider
+export const useViewerConfig = (): ViewerConfig =>
+  useContext(ViewerConfigContext)
+
 export type AppConfig = Readonly<{
-  config: ScheduleConfig
-  bookmarkAPI?: BookmarkAPI
-  sessionId?: string
+  config: ViewerConfig
+  eventAPI: EventAPI
+  bookmarkAPI: BookmarkAPI
+  bookmarkServiceAPI: BookmarkServiceAPI | null
+  sessionId: string | null
 }>
 
 export const DEFAULT_MAP_CONFIG = {
@@ -40,24 +60,38 @@ export const DEFAULT_MAP_CONFIG = {
   maxScale: 10,
 } as const
 
-export const getMapConfig = (config: ScheduleConfig): MapConfig => ({
+export const getMapConfig = (config: ViewerConfig): MapConfig => ({
   ...DEFAULT_MAP_CONFIG,
   ...config.map,
 })
 
 export const useMapConfig = (): MapConfig => {
-  const config = useScheduleConfig()
-  return useMemo(() => getMapConfig(config), [config])
+  const config = useViewerConfig()
+  return config.map ?? DEFAULT_MAP_CONFIG
 }
 
 export const getConfigQueryOptions = (
   configURL: string,
-): UseSuspenseQueryOptions<Partial<ScheduleConfig>> => {
+): UseSuspenseQueryOptions<ViewerConfig> => {
   return {
     queryKey: ["schedule-config"],
     async queryFn() {
-      const res = await wretch(configURL).get().json<Partial<ScheduleConfig>>()
-      return res
+      const res = await wretch(configURL).get().json<ScheduleConfigJSON>()
+
+      const config = makeConfig(res)
+      const viewerConfig: {
+        -readonly [K in keyof ViewerConfig]: ViewerConfig[K]
+      } = {
+        homeURL: "/",
+        ...config,
+      }
+
+      if (res.map) {
+        const mapConfig = { ...DEFAULT_MAP_CONFIG, ...res.map }
+        viewerConfig.map = mapConfig
+      }
+
+      return viewerConfig
     },
     staleTime: Infinity,
   }
@@ -67,40 +101,18 @@ export const makeAppConfig = async (
   queryClient: QueryClient,
   configURL: string,
 ): Promise<AppConfig> => {
-  const loadedConfig = await queryClient.fetchQuery(
-    getConfigQueryOptions(configURL),
+  const config = await queryClient.fetchQuery(getConfigQueryOptions(configURL))
+
+  // constructing eventapi with an empty string is hacky...
+  const eventAPI = makeEventAPI(
+    typeof config.events == "string" ? config.events : "",
+    config.timeZone,
   )
-  const config: ScheduleConfig = {
-    ...DEFAULT_SCHEDULE_CONFIG,
-    ...loadedConfig,
-  }
-  let bookmarkAPI = config.bookmarks
-    ? makeBookmarkAPI(config.bookmarks)
-    : undefined
+  const [bookmarkAPI, bookmarkServiceAPI] = await setupBookmarks(config)
 
-  let sessionId: string | undefined
+  const sessionId = bookmarkServiceAPI?.sessionId ?? null
 
-  if (bookmarkAPI) {
-    try {
-      const res = await bookmarkAPI.setup()
-      sessionId = res.sessionId
-    } catch (_e) {
-      bookmarkAPI = undefined
-    }
-  }
-
-  // load bookmarks
-  const [local, remote] = await loadBookmarks(
-    queryClient,
-    config.id,
-    bookmarkAPI,
-  )
-  // sync bookmarks
-  if (bookmarkAPI) {
-    await syncBookmarks(queryClient, config.id, bookmarkAPI, local, remote)
-  }
-
-  return { config, bookmarkAPI, sessionId }
+  return { config, eventAPI, bookmarkAPI, bookmarkServiceAPI, sessionId }
 }
 
 /**

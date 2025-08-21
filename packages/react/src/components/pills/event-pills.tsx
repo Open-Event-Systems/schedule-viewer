@@ -3,12 +3,11 @@ import { Pills, PillsProps } from "./pills.js"
 import { useProps } from "@mantine/core"
 import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { makeTagIndicatorFunc, useScheduleConfig } from "../config/context.js"
 import { MouseEvent, ReactNode, useCallback, useMemo } from "react"
-import { EventHoverCard } from "../hovercard/event-hover-card.js"
 import clsx from "clsx"
+import { makeTagIndicatorFunc, useScheduleConfig } from "../../config/config.js"
 import { useEventDetails } from "../details/context.js"
-
+import { EventHoverCard } from "../hovercard/event-hover-card.js"
 export type EventPillsProps = PillsProps & {
   events: Iterable<Event>
   binMinutes?: number
@@ -25,7 +24,7 @@ export const EventPills = (props: EventPillsProps) => {
   const config = useScheduleConfig()
   const getIndicator = useMemo(() => {
     const tagFunc = makeTagIndicatorFunc(config.tagIndicators)
-    return (ev: Event) => tagFunc(ev.tags ?? [])
+    return (ev: Event) => tagFunc(ev.tags)
   }, [config.tagIndicators])
 
   const bins = useMemo(
@@ -103,7 +102,7 @@ const EventPillsPill = ({
       renderContent={renderFunc}
       className={clsx(
         `Pill-event-id-${event.id}`,
-        event.tags?.map((t) => `Pill-event-tag-${t}`),
+        [...event.tags].map((t) => `Pill-event-tag-${t}`),
       )}
       indicator={indicator}
     />

@@ -16,12 +16,6 @@ import { isAfter, parseISO } from "date-fns"
 import { loadSelections, saveSelections } from "./local-storage.js"
 import { createContext, useCallback, useContext } from "react"
 
-declare module "@open-event-systems/schedule-lib" {
-  interface ScheduleConfig {
-    bookmarks?: string
-  }
-}
-
 export const BookmarkAPIContext = createContext<BookmarkAPI | undefined>(
   undefined,
 )
@@ -181,7 +175,7 @@ export const useUpdateBookmarks = (
       ])
 
       // update the local version again with the remote version
-      if (isAfter(remoteRes.dateUpdated, localRes.dateUpdated)) {
+      if (isAfter(remoteRes.date, localRes.date)) {
         await localMutation.mutateAsync(localRes)
       }
 
@@ -239,7 +233,7 @@ export const syncBookmarks = async (
   remote: Selections,
 ): Promise<Selections> => {
   // local to remote
-  if (isAfter(local.dateUpdated, remote.dateUpdated)) {
+  if (isAfter(local.date, remote.date)) {
     const [_, result] = await queryClient
       .getMutationCache()
       .build(
@@ -260,7 +254,7 @@ export const syncBookmarks = async (
       )
       .execute(result)
     return result
-  } else if (isAfter(remote.dateUpdated, local.dateUpdated)) {
+  } else if (isAfter(remote.date, local.date)) {
     // remote to local
     await queryClient
       .getMutationCache()

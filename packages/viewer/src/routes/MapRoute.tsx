@@ -12,7 +12,7 @@ import {
   useState,
 } from "react"
 import { useEvents } from "../schedule.js"
-import { useScheduleConfig } from "@open-event-systems/schedule-components/config/context"
+import { useScheduleConfig } from "@open-event-systems/schedule-react/components/config/context"
 import { MapEvent } from "@open-event-systems/schedule-map/types"
 
 export const MapRoute = () => {

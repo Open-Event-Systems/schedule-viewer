@@ -10,7 +10,7 @@ import {
   useMantineColorScheme,
   useProps,
 } from "@mantine/core"
-import { Event, Host, TagEntry } from "@open-event-systems/schedule-lib"
+import { Event, Host } from "@open-event-systems/schedule-lib"
 import {
   IconBookmark,
   IconClockHour4,
@@ -21,15 +21,16 @@ import {
 import clsx from "clsx"
 import { format } from "date-fns"
 import { Fragment, ReactElement, ReactNode } from "react"
-import { Markdown } from "../markdown/markdown.js"
-import { IconText } from "../icon-text/icon-text.js"
+import { useEventDetails } from "./context.js"
 import {
   makeTagFormatter,
   makeValidTagsFilter,
+  TagEntry,
   useScheduleConfig,
-} from "../config/context.js"
+} from "../../config/config.js"
 import { ShareButton } from "../share-button/share-button.js"
-import { useEventDetails } from "./context.js"
+import { Markdown } from "../markdown/markdown.js"
+import { IconText } from "../icon-text/icon-text.js"
 
 export type EventDetailsProps = {
   event: Event
@@ -88,7 +89,7 @@ export const EventDetails = (props: EventDetailsProps) => {
       ? renderHosts(event.hosts, altTextColor)
       : null
   const tagsEl =
-    event.tags && event.tags.length > 0
+    event.tags && event.tags.size > 0
       ? renderTags(config.tags, event.tags, altTextColor)
       : null
 
@@ -216,12 +217,12 @@ const renderHost = (h: string | Host): ReactElement => {
 
 const renderTags = (
   validTags: readonly TagEntry[],
-  tags: readonly string[],
+  tags: Iterable<string>,
   c: string,
 ): ReactElement => {
   const isValidTag = makeValidTagsFilter(validTags)
   const formatTag = makeTagFormatter(validTags)
-  const filteredTags = tags.filter(isValidTag)
+  const filteredTags = [...tags].filter(isValidTag)
   const formattedTags = filteredTags.map(formatTag)
   const els: ReactNode[] = []
 

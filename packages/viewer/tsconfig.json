@@ -15,7 +15,7 @@
   },
   "references": [
     { "path": "../map" },
-    { "path": "../components" },
+    { "path": "../react" },
     { "path": "../lib" }
   ]
 }

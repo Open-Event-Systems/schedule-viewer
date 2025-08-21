@@ -10,7 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router"
 import { getEventsQueryOptions } from "../schedule.js"
-import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
+import { ScheduleConfigProvider } from "@open-event-systems/schedule-react/components/config/context"
 import { ScheduleLayout } from "../components/schedule-layout.js"
 import {
   BookmarkAPIProvider,

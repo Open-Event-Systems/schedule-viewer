@@ -1,5 +1,5 @@
 packages:
   - packages/lib
   - packages/map
-  - packages/components
+  - packages/react
   - packages/viewer

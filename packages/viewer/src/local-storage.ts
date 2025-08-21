@@ -9,7 +9,7 @@ const getKey = (scheduleId: string): string =>
 const stringifySelections = (selections: Selections): string => {
   const data = {
     eventIds: Array.from(selections),
-    dateUpdated: selections.dateUpdated.toISOString(),
+    dateUpdated: selections.date.toISOString(),
   }
 
   return JSON.stringify(data)

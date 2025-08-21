@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { EventPills } from "./event-pills.js"
-import { events } from "../test-data.js"
+import { events } from "../../test-data.js"
 import { MouseEvent, useCallback } from "react"
 import { EventDetailsProvider } from "../details/context.js"
 

@@ -1,9 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { Calendar } from "./calendar.js"
-
-import "./calendar.scss"
 import { MouseEvent, useCallback } from "react"
 import { EventDetailsProvider } from "../details/context.js"
+
+import "./calendar.scss"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -35,6 +35,8 @@ export const Default: StoryObj<typeof Calendar> = {
                   end: new Date(2020, 0, 1, 13),
                   title: "Event A",
                   description: "",
+                  hosts: [],
+                  tags: new Set(),
                 },
               ],
             },
@@ -48,6 +50,8 @@ export const Default: StoryObj<typeof Calendar> = {
                   end: new Date(2020, 0, 1, 13, 30),
                   title: "Event B",
                   description: "",
+                  hosts: [],
+                  tags: new Set(),
                 },
               ],
             },

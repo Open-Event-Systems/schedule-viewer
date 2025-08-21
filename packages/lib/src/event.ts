@@ -1,28 +1,10 @@
-import { isBefore, parseISO } from "date-fns"
-import { Event as EventT, EventJSON, Timespan, Scheduled } from "./types.js"
-import { toTimezone } from "./time.js"
-
-/**
- * Create an {@link EventT} from an object.
- */
-export const makeEvent = (data: EventT | EventJSON, tz?: string): EventT => {
-  const start =
-    typeof data.start == "string"
-      ? toTimezone(parseISO(data.start), tz)
-      : data.start
-  const end =
-    typeof data.end == "string" ? toTimezone(parseISO(data.end), tz) : data.end
-  return {
-    ...data,
-    start,
-    end,
-  }
-}
+import { isBefore } from "date-fns"
+import { Event as EventT, Interval, Scheduled } from "./types.js"
 
 /**
  * Return whether an event has a start/end time set.
  */
-export const isScheduled = <T extends Partial<Timespan>>(
+export const isScheduled = <T extends Partial<Interval>>(
   t: T,
 ): t is Scheduled<T> => {
   return t.start != null && t.end != null
@@ -47,8 +29,8 @@ export const makeTitleFilter = (
 export const makeTagFilter = (
   tags: Iterable<string>,
 ): ((event: Pick<EventT, "tags">) => boolean) => {
-  const tagSet = new Set(tags)
-  return (event) => !event.tags || !event.tags.some((t) => tagSet.has(t))
+  const tagsArr = [...tags]
+  return (event) => !tagsArr.some((t) => event.tags.has(t))
 }
 
 /**
@@ -62,12 +44,16 @@ export const makePastEventFilter = (
 }
 
 /**
- * Get a filter function for events beginning in the given {@link Timespan}.
+ * Get a filter function for events beginning in the given {@link Interval}.
  */
 export const makeDateFilter = (
-  range: Timespan,
-): (<T extends Pick<EventT, "start">>(event: T) => event is Scheduled<T>) => {
-  return <T extends Pick<EventT, "start">>(e: T): e is Scheduled<T> => {
+  range: Interval,
+): (<T extends Pick<EventT, "start">>(
+  event: T,
+) => event is T & Required<Pick<EventT, "start">>) => {
+  return <T extends Pick<EventT, "start">>(
+    e: T,
+  ): e is T & Required<Pick<EventT, "start">> => {
     if (!e.start) {
       return false
     }
