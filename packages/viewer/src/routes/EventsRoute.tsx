@@ -12,6 +12,7 @@ import { Grid, SegmentedControl, Stack } from "@mantine/core"
 import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext, useMemo, useRef } from "react"
 import {
+  clearSelections,
   createICS,
   Event,
   isScheduled,
@@ -26,27 +27,26 @@ import { ShareDialog } from "@open-event-systems/schedule-react/components/share
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
 import { observer } from "mobx-react-lite"
 import { useLocation, useMatch, useRouter } from "@tanstack/react-router"
-import { useEvents } from "../schedule.js"
 import {
-  useBookmarkAPI,
   useBookmarkCounts,
-  useBookmarks,
-  useUpdateBookmarks,
-} from "../bookmarks.js"
+  useEvents,
+  useSelections,
+  useSetSelections,
+} from "@open-event-systems/schedule-react/hooks"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
-import { clearSelections } from "../local-storage.js"
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
+import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react/bookmarks"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const mapConfig = useMapConfig()
-  const allEvents = useEvents(config.events, config.timeZone)
-  const selections = useBookmarks(config.id)
-  const counts = useBookmarkCounts(config.id)
-  const updateSelections = useUpdateBookmarks(config.id)
-  const bookmarkAPI = useBookmarkAPI()
+  const allEvents = useEvents()
+  const selections = useSelections()
+  const counts = useBookmarkCounts()
+  const updateSelections = useSetSelections()
+  const bookmarkServiceAPI = useBookmarkServiceAPI()
 
   const [filter, setFilter] = useContext(FilterContext)
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
@@ -229,7 +229,7 @@ export const EventsRoute = observer(() => {
             }
           />
           <ShareMenu
-            enableSync={!!bookmarkAPI}
+            enableSync={!!bookmarkServiceAPI}
             onShare={() => {
               navigate({
                 to: shareScheduleRoute.to,

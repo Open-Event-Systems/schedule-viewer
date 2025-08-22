@@ -104,6 +104,14 @@ const parseBookmarks = (data: unknown): Selections => {
 }
 
 /**
+ * Remove local storage selections.
+ */
+export const clearSelections = (scheduleId: string) => {
+  const localStorageKey = `${LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+  window.localStorage.removeItem(localStorageKey)
+}
+
+/**
  * Return a Promise for a {@link BookmarkServiceAPI}.
  */
 export const setupBookmarkServiceAPI = async (

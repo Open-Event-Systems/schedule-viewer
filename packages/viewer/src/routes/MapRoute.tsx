@@ -1,5 +1,5 @@
 import { MapViewer } from "@open-event-systems/schedule-map/viewer/map-viewer"
-import { useMapConfig, useTime } from "../config.js"
+import { useMapConfig, useTime, useViewerConfig } from "../config.js"
 import { useLocation, useRouter } from "@tanstack/react-router"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
 import { eventRoute, mapRoute } from "./index.js"
@@ -11,15 +11,14 @@ import {
   useRef,
   useState,
 } from "react"
-import { useEvents } from "../schedule.js"
-import { useScheduleConfig } from "@open-event-systems/schedule-react/components/config/context"
 import { MapEvent } from "@open-event-systems/schedule-map/types"
+import { useEvents } from "@open-event-systems/schedule-react/hooks"
 
 export const MapRoute = () => {
-  const config = useScheduleConfig()
+  const config = useViewerConfig()
   const mapConfig = useMapConfig()
 
-  const events = useEvents(config.events, config.timeZone)
+  const events = useEvents()
 
   const loc = useLocation()
   const hashArgs = new URLSearchParams(loc.hash)

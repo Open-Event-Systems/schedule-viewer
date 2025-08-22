@@ -17,13 +17,13 @@ import {
   useLocation,
   useRouter,
 } from "@tanstack/react-router"
-import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
-import { useEvents } from "../schedule.js"
 import {
   useBookmarkCounts,
-  useBookmarksById,
-  useUpdateBookmarks,
-} from "../bookmarks.js"
+  useEvents,
+  useSelectionsById,
+  useSetSelections,
+} from "@open-event-systems/schedule-react/hooks"
+import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
@@ -31,13 +31,13 @@ import { ShareMenu } from "@open-event-systems/schedule-react/components/share-m
 export const SharedScheduleRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const { selectionId } = sharedScheduleRoute.useParams()
-  const allEvents = useEvents(config.events, config.timeZone)
-  const selections = useBookmarksById(config.id, selectionId)
+  const allEvents = useEvents()
+  const selections = useSelectionsById(selectionId)
   if (!selections) {
     throw notFound({ routeId: rootRouteId })
   }
-  const counts = useBookmarkCounts(config.id)
-  const updateSelections = useUpdateBookmarks(config.id)
+  const counts = useBookmarkCounts()
+  const updateSelections = useSetSelections()
 
   const [filter, setFilter] = useContext(FilterContext)
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
