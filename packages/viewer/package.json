@@ -12,7 +12,7 @@
     "@date-fns/utc": "^2.1.1",
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
-    "@open-event-systems/schedule-components": "^0.1.0",
+    "@open-event-systems/schedule-react": "^0.1.0",
     "@open-event-systems/schedule-lib": "^0.1.0",
     "@open-event-systems/schedule-map": "^0.1.0",
     "@tabler/icons-react": "^3.34.1",

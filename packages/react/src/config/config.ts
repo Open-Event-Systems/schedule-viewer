@@ -1,9 +1,39 @@
-import {
-  ScheduleConfig,
-  TagEntry,
-  TagIndicatorEntry,
-} from "@open-event-systems/schedule-lib"
+import { EventJSON } from "@open-event-systems/schedule-lib"
 import { createContext, useContext } from "react"
+
+export type TagEntry = readonly [string, string]
+
+export type TagIndicatorEntry = readonly [string | readonly string[], string]
+
+export interface ScheduleConfigJSON {
+  readonly id: string
+  readonly events?: string | readonly EventJSON[]
+  readonly title?: string
+  readonly description?: string
+  readonly dayChangeHour?: number
+  readonly binMinutes?: number
+  readonly timeZone?: string
+  readonly tags?: readonly TagEntry[]
+  readonly tagIndicators?: readonly TagIndicatorEntry[]
+  readonly bookmarks?: string
+  readonly icalPrefix?: string
+  readonly icalDomain?: string
+}
+
+export type ScheduleConfig = Readonly<{
+  id: string
+  events: string | readonly EventJSON[]
+  title: string
+  description: string
+  dayChangeHour: number
+  binMinutes: number
+  timeZone: string
+  tags: readonly TagEntry[]
+  tagIndicators: readonly TagIndicatorEntry[]
+  bookmarks?: string
+  icalPrefix: string
+  icalDomain: string
+}>
 
 const getDefaultTZ = (): string => {
   try {
@@ -14,23 +44,35 @@ const getDefaultTZ = (): string => {
 }
 
 export const DEFAULT_SCHEDULE_CONFIG = {
-  id: "schedule",
-  title: "Event",
-  description: "",
+  id: "",
   events: [],
-  binMinutes: 30,
+  title: "Schedule",
+  description: "",
   dayChangeHour: 6,
+  binMinutes: 30,
   timeZone: getDefaultTZ(),
   tags: [],
   tagIndicators: [],
-} as const
+  icalPrefix: "",
+  icalDomain: "",
+} as const satisfies ScheduleConfig
+
+/**
+ * Make a {@link ScheduleConfig} object.
+ */
+export const makeConfig = (configData: ScheduleConfigJSON): ScheduleConfig => {
+  const config = {
+    ...DEFAULT_SCHEDULE_CONFIG,
+    ...configData,
+  }
+
+  return config
+}
 
 export const ScheduleConfigContext = createContext<ScheduleConfig>(
   DEFAULT_SCHEDULE_CONFIG,
 )
-
 export const ScheduleConfigProvider = ScheduleConfigContext.Provider
-
 export const useScheduleConfig = (): ScheduleConfig =>
   useContext(ScheduleConfigContext)
 
@@ -59,10 +101,11 @@ export const makeTagFormatter = (
 
 export const makeTagIndicatorFunc = (
   entries: Iterable<TagIndicatorEntry>,
-): ((tags: readonly string[]) => string | undefined) => {
+): ((tags: Iterable<string>) => string | undefined) => {
   const entryArr = Array.from(entries)
-  const func = (tags: readonly string[]) => {
-    const match = entryArr.find((e) => indicatorEntryMatches(tags, e))
+  const func = (tags: Iterable<string>) => {
+    const tagsArr = [...tags]
+    const match = entryArr.find((e) => indicatorEntryMatches(tagsArr, e))
     return match ? match[1] : undefined
   }
   return func

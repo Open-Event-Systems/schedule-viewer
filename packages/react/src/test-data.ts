@@ -1,5 +1,6 @@
 import { TZDate } from "@date-fns/tz"
-import { Event, ScheduleConfig } from "@open-event-systems/schedule-lib"
+import { Event } from "@open-event-systems/schedule-lib"
+import { ScheduleConfig } from "./config/config.js"
 
 const timeZone = "America/New_York"
 
@@ -11,7 +12,7 @@ export const events = [
     start: new TZDate(2025, 0, 17, 11, timeZone),
     end: new TZDate(2025, 0, 17, 12, timeZone),
     location: "Main Ballroom",
-    tags: ["main-event"],
+    tags: new Set(["main-event"]),
     hosts: ["Events Team"],
   },
   {
@@ -21,7 +22,7 @@ export const events = [
     start: new TZDate(2025, 0, 18, 12, timeZone),
     end: new TZDate(2025, 0, 18, 13, timeZone),
     location: "Panel Room 1",
-    tags: ["photography", "hobby"],
+    tags: new Set(["photography", "hobby"]),
     hosts: [{ name: "Person", url: "https://example.net" }],
   },
   {
@@ -31,7 +32,7 @@ export const events = [
     start: new TZDate(2025, 0, 18, 14, timeZone),
     end: new TZDate(2025, 0, 18, 16, 30, timeZone),
     location: "Panel Room 2",
-    tags: ["art", "mature"],
+    tags: new Set(["art", "mature"]),
     hosts: [
       { name: "Artist", url: "https://example.net" },
       { name: "Model", url: "https://example.net" },

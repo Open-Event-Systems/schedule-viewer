@@ -3,7 +3,7 @@ import { EventHoverCard } from "./event-hover-card.js"
 import { Button } from "@mantine/core"
 
 import "./event-hover-card.js"
-import { events } from "../test-data.js"
+import { events } from "../../test-data.js"
 
 const meta: Meta<typeof EventHoverCard> = {
   component: EventHoverCard,

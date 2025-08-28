@@ -1,10 +1,12 @@
-import { makeSelections } from "./selections.js"
+export const setEquals = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
+  return a.size == b.size && [...a].every((it) => b.has(it))
+}
 
 export const makeBookmarkFilter = (
   eventIds: Iterable<string>,
 ): ((e: { readonly id: string }) => boolean) => {
-  const selections = makeSelections(eventIds)
+  const idSet = new Set(eventIds)
   return (e) => {
-    return selections.has(e.id)
+    return idSet.has(e.id)
   }
 }

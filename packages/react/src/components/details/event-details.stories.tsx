@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { EventDetails } from "./event-details.js"
-import { events } from "../test-data.js"
+import { events } from "../../test-data.js"
 import { useState } from "react"
 
 import "../icon-text/icon-text.scss"

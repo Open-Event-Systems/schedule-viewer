@@ -1,7 +1,10 @@
 import { sortByDate } from "./time.js"
-import { Event, EventStore } from "./types.js"
+import { Event } from "./types.js"
 
-class _EventStore {
+/**
+ * A collection of {@link Event} object, with utilities.
+ */
+export class EventStore {
   private _events: Event[]
   private byId = new Map<string, Event>()
   private _tags = new Set<string>()
@@ -42,6 +45,3 @@ class _EventStore {
     return this._events[-1]
   }
 }
-
-export const makeEventStore = (events: Iterable<Event>): EventStore =>
-  new _EventStore(events)

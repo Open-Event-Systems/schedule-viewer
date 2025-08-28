@@ -1,43 +1,43 @@
 import { eventRoute, eventsDataRoute, sharedScheduleRoute } from "./index.js"
-import { Anchor, Grid, Stack, Title } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
+import { Grid, Stack, Title } from "@mantine/core"
+import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext } from "react"
 import {
+  createICS,
   Event,
   isScheduled,
   makeTagFilter,
   makeTitleFilter,
 } from "@open-event-systems/schedule-lib"
-import { Filter } from "@open-event-systems/schedule-components/filter/filter"
+import { Filter } from "@open-event-systems/schedule-react/components/filter/filter"
 import { observer } from "mobx-react-lite"
-import { createICS } from "../ical.js"
 import {
   notFound,
   rootRouteId,
   useLocation,
   useRouter,
 } from "@tanstack/react-router"
-import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
-import { useEvents } from "../schedule.js"
 import {
   useBookmarkCounts,
-  useBookmarksById,
-  useUpdateBookmarks,
-} from "../bookmarks.js"
+  useEvents,
+  useSelectionsById,
+  useSetSelections,
+} from "@open-event-systems/schedule-react"
+import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
-import { ShareMenu } from "@open-event-systems/schedule-components/share-menu/share-menu"
+import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
 
 export const SharedScheduleRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const { selectionId } = sharedScheduleRoute.useParams()
-  const allEvents = useEvents(config.events, config.timeZone)
-  const selections = useBookmarksById(config.id, selectionId)
+  const allEvents = useEvents()
+  const selections = useSelectionsById(selectionId)
   if (!selections) {
     throw notFound({ routeId: rootRouteId })
   }
-  const counts = useBookmarkCounts(config.id)
-  const updateSelections = useUpdateBookmarks(config.id)
+  const counts = useBookmarkCounts()
+  const updateSelections = useSetSelections()
 
   const [filter, setFilter] = useContext(FilterContext)
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
@@ -131,7 +131,7 @@ export const SharedScheduleRoute = observer(() => {
               events = events.filter(makeTagFilter(disabledTags))
 
               if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(selections))
+                events = events.filter(makeBookmarkFilter(selections.events))
               }
 
               const data = createICS(

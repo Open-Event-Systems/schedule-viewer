@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   Alert,
   Box,
   Modal,
@@ -10,7 +9,7 @@ import {
   TextInput,
   useProps,
 } from "@mantine/core"
-import { IconAlertTriangle, IconCopy } from "@tabler/icons-react"
+import { IconAlertTriangle } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
 import { ShareButton } from "../share-button/share-button.js"
 

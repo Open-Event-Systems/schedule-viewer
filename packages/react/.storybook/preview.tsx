@@ -1,14 +1,13 @@
 import type { Preview } from "@storybook/react-webpack5"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
-import React from "react"
 
-import {
-  DEFAULT_SCHEDULE_CONFIG,
-  ScheduleConfigProvider,
-} from "../src/config/context.js"
 import { config } from "../src/test-data.js"
 
 import "@mantine/core/styles.css"
+import {
+  DEFAULT_SCHEDULE_CONFIG,
+  ScheduleConfigProvider,
+} from "../src/config/config.js"
 
 const preview: Preview = {
   parameters: {

@@ -1,18 +1,26 @@
-import { add, isAfter, isBefore } from "date-fns"
+import { add, isAfter, isBefore, isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { Timespan } from "./types.js"
+import { Interval } from "./types.js"
 
 /**
- * Return whether a timespan contains a date.
+ * Return whether an interval contains a date.
  */
-export const contains = (ts: Timespan, d: Date): boolean => {
-  return !isBefore(d, ts.start) && isBefore(d, ts.end)
+export const contains = (
+  interval: Interval,
+  d: Date,
+  includeEndpoint = false,
+): boolean => {
+  return (
+    !isBefore(d, interval.start) &&
+    (isBefore(d, interval.end) ||
+      (!!includeEndpoint && isEqual(interval.end, d)))
+  )
 }
 
 /**
- * Return whether two timespans intersect.
+ * Return whether two intervals intersect.
  */
-export const intersects = (a: Timespan, b: Timespan): boolean => {
+export const intersects = (a: Interval, b: Interval): boolean => {
   return contains(a, b.start) || contains(b, a.start)
 }
 
@@ -24,7 +32,9 @@ export const toTimezone = (d: Date, tz?: string): TZDate => {
 }
 
 /**
- * Sort an array of timestamps by date, in place.
+ * Sort an array of intervals by start date, in place.
+ *
+ * Undefined start dates are after all defined start dates.
  */
 export const sortByDate = <
   T extends Readonly<{ start?: Date | null; end?: Date | null }>[],
@@ -55,7 +65,7 @@ export const sortByDate = <
  * Get a Date representing the day a date occurs on, subject to the day change
  * hour.
  */
-export const getDay = (d: Date, tz: string, dayChangeHour = 0): Timespan => {
+export const getDay = (d: Date, tz: string, dayChangeHour = 0): Interval => {
   const shift = add(d, { hours: -dayChangeHour })
   const start = new TZDate(
     shift.getFullYear(),

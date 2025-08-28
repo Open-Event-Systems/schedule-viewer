@@ -1,4 +1,4 @@
-import { EventDetails } from "@open-event-systems/schedule-components/details/event-details"
+import { EventDetails } from "@open-event-systems/schedule-react/components/details/event-details"
 import { eventRoute, eventsRoute, mapRoute } from "./index.js"
 import { Link, useRouter } from "@tanstack/react-router"
 import { Anchor } from "@mantine/core"
@@ -6,19 +6,19 @@ import { observer } from "mobx-react-lite"
 import { useCallback, useMemo } from "react"
 import {
   useBookmarkCount,
-  useBookmarks,
-  useUpdateBookmarks,
-} from "../bookmarks.js"
+  useSelections,
+  useSetSelections,
+} from "@open-event-systems/schedule-react"
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
+import { makeSelections } from "@open-event-systems/schedule-lib"
 
 export const EventRoute = observer(() => {
-  const { config } = eventRoute.useRouteContext()
   const mapConfig = useMapConfig()
   const { event } = eventRoute.useLoaderData()
-  const selections = useBookmarks(config.id)
-  const updateSelections = useUpdateBookmarks(config.id)
-  const count = useBookmarkCount(config.id, event.id)
+  const selections = useSelections()
+  const updateSelections = useSetSelections()
+  const count = useBookmarkCount(event.id)
   const navigate = eventRoute.useNavigate()
   const router = useRouter()
 
@@ -50,14 +50,18 @@ export const EventRoute = observer(() => {
       }
     : undefined
 
-  const bookmarked = selections.has(event.id)
+  const bookmarked = selections.events.has(event.id)
   const setBookmarked = useCallback(
     (set: boolean) => {
       let newSelections
       if (set) {
-        newSelections = selections.add(event.id)
+        newSelections = makeSelections(
+          [...selections.events, event.id],
+          new Date(),
+        )
       } else {
-        newSelections = selections.delete(event.id)
+        const removed = [...selections.events].filter((e) => e != event.id)
+        newSelections = makeSelections(removed, new Date())
       }
       updateSelections(newSelections)
     },

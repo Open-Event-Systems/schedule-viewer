@@ -1,4 +1,4 @@
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
+import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import {
   contains,
   Event,

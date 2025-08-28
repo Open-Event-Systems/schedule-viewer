@@ -1,45 +1,42 @@
 import { isAfter } from "date-fns"
 import { Selections } from "./types.js"
 
-class _Selections {
-  private eventIds: ReadonlySet<string>
-  constructor(
-    eventIds: Iterable<string>,
-    public readonly dateUpdated: Date,
-  ) {
-    this.eventIds = new Set(eventIds)
-  }
-
-  has(eventId: string): boolean {
-    return this.eventIds.has(eventId)
-  }
-
-  [Symbol.iterator](): Iterator<string> {
-    return this.eventIds[Symbol.iterator]()
-  }
-
-  add(eventId: string): Selections {
-    const newSet = new Set(this.eventIds)
-    newSet.add(eventId)
-    return new _Selections(newSet, new Date())
-  }
-
-  delete(eventId: string): Selections {
-    const newSet = new Set(this.eventIds)
-    newSet.delete(eventId)
-    return new _Selections(newSet, new Date())
-  }
-}
-
+/**
+ * Create a {@link Selections} object.
+ */
 export const makeSelections = (
   eventIds?: Iterable<string>,
-  dateUpdated?: Date,
+  date?: Date,
+  id?: string,
 ): Selections => {
-  return new _Selections(eventIds ?? [], dateUpdated ?? new Date(0))
+  const s: { -readonly [K in keyof Selections]: Selections[K] } = {
+    events: new Set(eventIds ?? []),
+  }
+
+  if (date) {
+    s.date = date
+  }
+
+  if (id) {
+    s.id = id
+  }
+
+  return s
 }
 
+/**
+ * Return the newer {@link Selections}.
+ */
 export const chooseNewer = (a: Selections, b: Selections): Selections => {
-  if (isAfter(b.dateUpdated, a.dateUpdated)) {
+  if (a.date && b.date) {
+    if (isAfter(b.date, a.date)) {
+      return b
+    } else {
+      return a
+    }
+  } else if (a.date && !b.date) {
+    return a
+  } else if (!a.date && b.date) {
     return b
   } else {
     return a

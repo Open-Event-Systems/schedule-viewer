@@ -9,22 +9,19 @@ import {
   rootRouteId,
   Scripts,
 } from "@tanstack/react-router"
-import { getEventsQueryOptions } from "../schedule.js"
-import { ScheduleConfigProvider } from "@open-event-systems/schedule-components/config/context"
 import { ScheduleLayout } from "../components/schedule-layout.js"
-import {
-  BookmarkAPIProvider,
-  getBookmarkCountsQueryOptions,
-  getBookmarksByIdQueryOptions,
-  getSessionBookmarksMutationOptions,
-  getSessionBookmarksQueryOptions,
-  getStoredBookmarksQueryOptions,
-} from "../bookmarks.js"
 import { Loading } from "../components/Loading.js"
-import { AppConfig } from "../config.js"
-import { chooseNewer } from "@open-event-systems/schedule-lib"
-import { saveSelections } from "../local-storage.js"
+import { AppConfig, ViewerConfigProvider } from "../config.js"
 import { NotFoundRoute } from "./NotFoundRoute.js"
+import {
+  getBookmarkCountsQueryOptions,
+  getEventsQueryOptions,
+  getSelectionsByIdQueryOptions,
+  getSelectionsQueryOptions,
+  getSetSelectionsMutationOptions,
+} from "@open-event-systems/schedule-react"
+import { ScheduleConfigProvider } from "@open-event-systems/schedule-react"
+import { BookmarkAPIProvider } from "@open-event-systems/schedule-react"
 
 export type RouterContext = {
   appConfigPromise: Promise<AppConfig>
@@ -56,7 +53,9 @@ export const configRoute = createRoute({
 
     return {
       config: appConfig.config,
+      eventAPI: appConfig.eventAPI,
       bookmarkAPI: appConfig.bookmarkAPI,
+      bookmarkServiceAPI: appConfig.bookmarkServiceAPI,
       sessionId: appConfig.sessionId,
       pageTitle: `${appConfig.config.title} Schedule`,
     }
@@ -81,39 +80,35 @@ export const eventsDataRoute = createRoute({
   getParentRoute: () => configRoute,
   id: "events",
   async loader({ context }) {
-    const { config, queryClient, bookmarkAPI } = context
+    const { config, queryClient, eventAPI, bookmarkAPI, bookmarkServiceAPI } =
+      context
 
-    const [events, localSelections, sessionSelections, counts] =
-      await Promise.all([
-        queryClient.fetchQuery(
-          getEventsQueryOptions(config.events, config.timeZone),
-        ),
-        queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
-        queryClient.fetchQuery(
-          getSessionBookmarksQueryOptions(bookmarkAPI, config.id),
-        ),
-        queryClient.fetchQuery(
-          getBookmarkCountsQueryOptions(bookmarkAPI, config.id),
-        ),
-      ])
-
-    const newer = chooseNewer(localSelections, sessionSelections)
+    const [events, counts, selections] = await Promise.all([
+      queryClient.fetchQuery(getEventsQueryOptions(config, eventAPI)),
+      queryClient.fetchQuery(
+        getBookmarkCountsQueryOptions(config, bookmarkServiceAPI),
+      ),
+      queryClient.fetchQuery(getSelectionsQueryOptions(config, bookmarkAPI)),
+    ])
 
     return {
       events,
-      selections: newer,
+      selections,
       counts,
     }
   },
   component: () => {
-    const { bookmarkAPI, config } = eventsDataRoute.useRouteContext()
+    const { bookmarkAPI, bookmarkServiceAPI, config } =
+      eventsDataRoute.useRouteContext()
 
     return (
-      <ScheduleConfigProvider value={config}>
-        <BookmarkAPIProvider value={bookmarkAPI}>
-          <Outlet />
-        </BookmarkAPIProvider>
-      </ScheduleConfigProvider>
+      <ViewerConfigProvider value={config}>
+        <ScheduleConfigProvider value={config}>
+          <BookmarkAPIProvider value={[bookmarkAPI, bookmarkServiceAPI]}>
+            <Outlet />
+          </BookmarkAPIProvider>
+        </ScheduleConfigProvider>
+      </ViewerConfigProvider>
     )
   },
   pendingComponent: Loading,
@@ -140,9 +135,9 @@ export const eventRoute = createRoute({
   component: lazyRouteComponent(() => import("./EventRoute.js"), "EventRoute"),
   async loader({ context, params }) {
     const { eventId } = params
-    const { queryClient, config } = context
+    const { queryClient, config, eventAPI } = context
     const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config.events, config.timeZone),
+      getEventsQueryOptions(config, eventAPI),
     )
 
     const event = events.get(eventId)
@@ -178,24 +173,20 @@ export const shareScheduleRoute = createRoute({
       throw notFound({ routeId: rootRouteId })
     }
 
-    const [local, remote] = await Promise.all([
-      queryClient.fetchQuery(getStoredBookmarksQueryOptions(config.id)),
-      queryClient.fetchQuery(
-        getSessionBookmarksQueryOptions(bookmarkAPI, config.id),
-      ),
-    ])
-    const newer = chooseNewer(local, remote)
+    const selections = await queryClient.fetchQuery(
+      getSelectionsQueryOptions(config, bookmarkAPI),
+    )
 
     const mutation = queryClient
       .getMutationCache()
       .build(
         queryClient,
-        getSessionBookmarksMutationOptions(queryClient, bookmarkAPI, config.id),
+        getSetSelectionsMutationOptions(queryClient, config, bookmarkAPI),
       )
 
-    const result = await mutation.execute(newer)
+    const result = await mutation.execute(selections)
 
-    return { shareId: result[0] }
+    return { shareId: result.id }
   },
 })
 
@@ -226,7 +217,7 @@ export const sharedScheduleRoute = createRoute({
   async loader({ context, params }) {
     const { config, queryClient, bookmarkAPI } = context
     const selections = await queryClient.fetchQuery(
-      getBookmarksByIdQueryOptions(bookmarkAPI, config.id, params.selectionId),
+      getSelectionsByIdQueryOptions(config, bookmarkAPI, params.selectionId),
     )
     if (!selections) {
       throw notFound({ routeId: rootRouteId })

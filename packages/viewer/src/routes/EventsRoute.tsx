@@ -9,43 +9,44 @@ import {
   syncScheduleRoute,
 } from "./index.js"
 import { Grid, SegmentedControl, Stack } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-components/day-filter/day-filter"
+import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext, useMemo, useRef } from "react"
 import {
+  clearSelections,
+  createICS,
   Event,
   isScheduled,
   makeBookmarkFilter,
   makeTagFilter,
   makeTitleFilter,
+  setupBookmarkServiceAPI,
 } from "@open-event-systems/schedule-lib"
-import { Filter } from "@open-event-systems/schedule-components/filter/filter"
-import { ConfirmSyncDialog } from "@open-event-systems/schedule-components/confirm-sync-dialog/confirm-sync-dialog"
-import { ShareDialog } from "@open-event-systems/schedule-components/share-dialog/share-dialog"
-import { ShareMenu } from "@open-event-systems/schedule-components/share-menu/share-menu"
+import { Filter } from "@open-event-systems/schedule-react/components/filter/filter"
+import { ConfirmSyncDialog } from "@open-event-systems/schedule-react/components/confirm-sync-dialog/confirm-sync-dialog"
+import { ShareDialog } from "@open-event-systems/schedule-react/components/share-dialog/share-dialog"
+import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
 import { observer } from "mobx-react-lite"
 import { useLocation, useMatch, useRouter } from "@tanstack/react-router"
-import { useEvents } from "../schedule.js"
 import {
-  useBookmarkAPI,
   useBookmarkCounts,
-  useBookmarks,
-  useUpdateBookmarks,
-} from "../bookmarks.js"
+  useEvents,
+  useSelections,
+  useSetSelections,
+} from "@open-event-systems/schedule-react"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
-import { createICS } from "../ical.js"
-import { clearSelections } from "../local-storage.js"
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
+import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()
   const mapConfig = useMapConfig()
-  const allEvents = useEvents(config.events, config.timeZone)
-  const selections = useBookmarks(config.id)
-  const counts = useBookmarkCounts(config.id)
-  const updateSelections = useUpdateBookmarks(config.id)
-  const bookmarkAPI = useBookmarkAPI()
+  const allEvents = useEvents()
+  const selections = useSelections()
+  const counts = useBookmarkCounts()
+  const updateSelections = useSetSelections()
+  const bookmarkServiceAPI = useBookmarkServiceAPI()
 
   const [filter, setFilter] = useContext(FilterContext)
   const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
@@ -228,7 +229,7 @@ export const EventsRoute = observer(() => {
             }
           />
           <ShareMenu
-            enableSync={!!bookmarkAPI}
+            enableSync={!!bookmarkServiceAPI}
             onShare={() => {
               navigate({
                 to: shareScheduleRoute.to,
@@ -249,7 +250,7 @@ export const EventsRoute = observer(() => {
               events = events.filter(makeTagFilter(disabledTags))
 
               if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(selections))
+                events = events.filter(makeBookmarkFilter(selections.events))
               }
 
               const data = createICS(
@@ -292,7 +293,7 @@ export const EventsRoute = observer(() => {
           <ConfirmSyncDialog
             opened={!!confirmSyncMatch}
             onConfirm={() => {
-              if (confirmSyncId && bookmarkAPI) {
+              if (confirmSyncId && config.bookmarks) {
                 const href = router.buildLocation({
                   to: eventsDataRoute.to,
                 }).href
@@ -300,16 +301,18 @@ export const EventsRoute = observer(() => {
                   router.history.createHref(href),
                   window.location.href,
                 )
-                bookmarkAPI.setup(confirmSyncId).then(() => {
-                  clearSelections(config.id)
-                  window.location.href = String(url)
+                setupBookmarkServiceAPI(config.bookmarks, confirmSyncId).then(
+                  () => {
+                    clearSelections(config.id)
+                    window.location.href = String(url)
 
-                  // only reload if using hash history
-                  // checking for this global here is hacky...
-                  if (scheduleRouter == "hash") {
-                    window.location.reload()
-                  }
-                })
+                    // only reload if using hash history
+                    // checking for this global here is hacky...
+                    if (scheduleRouter == "hash") {
+                      window.location.reload()
+                    }
+                  },
+                )
               }
             }}
             onClose={() => {
