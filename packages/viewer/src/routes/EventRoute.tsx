@@ -8,7 +8,7 @@ import {
   useBookmarkCount,
   useSelections,
   useSetSelections,
-} from "@open-event-systems/schedule-react/hooks"
+} from "@open-event-systems/schedule-react"
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
 import { makeSelections } from "@open-event-systems/schedule-lib"

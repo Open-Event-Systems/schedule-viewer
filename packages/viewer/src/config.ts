@@ -16,10 +16,10 @@ import {
   makeConfig,
   ScheduleConfig,
   ScheduleConfigJSON,
-} from "@open-event-systems/schedule-react/config/config"
-import { setupBookmarks } from "@open-event-systems/schedule-react/bookmarks"
+} from "@open-event-systems/schedule-react"
+import { setupBookmarks } from "@open-event-systems/schedule-react"
 
-declare module "@open-event-systems/schedule-react/config/config" {
+declare module "@open-event-systems/schedule-react" {
   interface ScheduleConfigJSON {
     homeURL?: string
     map?: Partial<MapConfig>

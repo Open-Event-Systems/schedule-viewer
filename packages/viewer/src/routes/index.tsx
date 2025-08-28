@@ -19,9 +19,9 @@ import {
   getSelectionsByIdQueryOptions,
   getSelectionsQueryOptions,
   getSetSelectionsMutationOptions,
-} from "@open-event-systems/schedule-react/hooks"
-import { ScheduleConfigProvider } from "@open-event-systems/schedule-react/config/config"
-import { BookmarkAPIProvider } from "@open-event-systems/schedule-react/bookmarks"
+} from "@open-event-systems/schedule-react"
+import { ScheduleConfigProvider } from "@open-event-systems/schedule-react"
+import { BookmarkAPIProvider } from "@open-event-systems/schedule-react"
 
 export type RouterContext = {
   appConfigPromise: Promise<AppConfig>

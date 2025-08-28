@@ -12,7 +12,7 @@ import {
   useState,
 } from "react"
 import { MapEvent } from "@open-event-systems/schedule-map/types"
-import { useEvents } from "@open-event-systems/schedule-react/hooks"
+import { useEvents } from "@open-event-systems/schedule-react"
 
 export const MapRoute = () => {
   const config = useViewerConfig()

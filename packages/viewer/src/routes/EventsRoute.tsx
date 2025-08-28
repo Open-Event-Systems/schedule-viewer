@@ -32,12 +32,12 @@ import {
   useEvents,
   useSelections,
   useSetSelections,
-} from "@open-event-systems/schedule-react/hooks"
+} from "@open-event-systems/schedule-react"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
-import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react/bookmarks"
+import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react"
 
 export const EventsRoute = observer(() => {
   const { config } = eventsDataRoute.useRouteContext()

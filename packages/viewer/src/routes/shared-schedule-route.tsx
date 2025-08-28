@@ -22,7 +22,7 @@ import {
   useEvents,
   useSelectionsById,
   useSetSelections,
-} from "@open-event-systems/schedule-react/hooks"
+} from "@open-event-systems/schedule-react"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
 import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
