@@ -9,19 +9,19 @@ export const makeSelections = (
   date?: Date,
   id?: string,
 ): Selections => {
-  const s: { -readonly [K in keyof Selections]: Selections[K] } = {
+  const newObj: { events: Set<string>; id?: string; date?: Date } = {
     events: new Set(eventIds ?? []),
   }
 
   if (date) {
-    s.date = date
+    newObj.date = date
   }
 
   if (id) {
-    s.id = id
+    newObj.id = id
   }
 
-  return s
+  return newObj
 }
 
 /**
@@ -34,9 +34,9 @@ export const chooseNewer = (a: Selections, b: Selections): Selections => {
     } else {
       return a
     }
-  } else if (a.date && !b.date) {
+  } else if (a.date) {
     return a
-  } else if (!a.date && b.date) {
+  } else if (b.date) {
     return b
   } else {
     return a

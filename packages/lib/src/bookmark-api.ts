@@ -1,39 +1,41 @@
-import { BookmarkAPI, Selections } from "./types.js"
+import { BookmarkAPI, BookmarkServiceAPI, Selections } from "./types.js"
 import wretch from "wretch"
-import { formatISO, isAfter, parseISO } from "date-fns"
+import { formatISO, isAfter } from "date-fns"
 import { makeSelections } from "./selections.js"
 import { setEquals } from "./utils.js"
+import { selectionsSchema } from "./schema.js"
 
-const LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-v1-"
+const BOOKMARKS_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-v1-"
+const SESSION_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-session-v1-"
 
-export type BookmarkCounts = Readonly<{
-  counts: Readonly<Record<string, number>>
-}>
+type BookmarkCountsResponse = {
+  counts: Record<string, number>
+}
 
-export type BookmarksResponse = Readonly<{
-  id: string
-  events: readonly string[]
-}>
+type BookmarksResponse = {
+  selections: {
+    id: string
+    events: string[]
+  }
+}
 
-export type SessionBookmarksResponse = Readonly<{
-  id?: string
-  date?: string
-  events: readonly string[]
-}>
+type SessionBookmarksResponse = {
+  selections: {
+    id?: string
+    date?: string
+    events: string[]
+  }
+}
 
-export type BookmarksRequest = Readonly<{
-  events: readonly string[]
-}>
+type BookmarksRequest = {
+  selections: {
+    events: string[]
+  }
+}
 
-export type BookmarkSetupResponse = Readonly<{
+type BookmarkSetupResponse = {
   sessionId: string
-}>
-
-export type BookmarkServiceAPI = BookmarkAPI &
-  Readonly<{
-    sessionId: string
-    getBookmarkCounts(): Promise<BookmarkCounts>
-  }>
+}
 
 /**
  * Create a {@link BookmarkAPI} backed by local storage.
@@ -41,7 +43,7 @@ export type BookmarkServiceAPI = BookmarkAPI &
 export const makeLocalStorageBookmarkAPI = (
   scheduleId: string,
 ): BookmarkAPI => {
-  const localStorageKey = `${LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+  const localStorageKey = `${BOOKMARKS_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
 
   return {
     async getSelections() {
@@ -54,7 +56,7 @@ export const makeLocalStorageBookmarkAPI = (
       }
       try {
         const data = JSON.parse(asStr)
-        return parseBookmarks(data)
+        return selectionsSchema.parse(data)
       } catch (_e) {
         return makeSelections()
       }
@@ -65,7 +67,7 @@ export const makeLocalStorageBookmarkAPI = (
       }
 
       if (selections.date) {
-        data.dateUpdated = formatISO(selections.date)
+        data.date = formatISO(selections.date)
       }
 
       if (selections.id) {
@@ -80,34 +82,11 @@ export const makeLocalStorageBookmarkAPI = (
   }
 }
 
-const parseBookmarks = (data: unknown): Selections => {
-  if (!data || typeof data != "object" || !("events" in data)) {
-    return makeSelections()
-  }
-
-  const events =
-    Array.isArray(data.events) &&
-    data.events.every((it) => typeof it == "string")
-      ? data.events
-      : []
-  let date =
-    "date" in data && typeof data.date == "string"
-      ? parseISO(data.date)
-      : undefined
-  const id = "id" in data && typeof data.id == "string" ? data.id : undefined
-
-  if (date && isNaN(date.getTime())) {
-    date = undefined
-  }
-
-  return makeSelections(events, date, id)
-}
-
 /**
  * Remove local storage selections.
  */
 export const clearSelections = (scheduleId: string) => {
-  const localStorageKey = `${LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+  const localStorageKey = `${BOOKMARKS_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
   window.localStorage.removeItem(localStorageKey)
 }
 
@@ -116,9 +95,10 @@ export const clearSelections = (scheduleId: string) => {
  */
 export const setupBookmarkServiceAPI = async (
   baseURL: string,
+  scheduleId: string,
   sessionId?: string,
 ): Promise<BookmarkServiceAPI> => {
-  const baseWretch = wretch(baseURL, { credentials: "include" })
+  const baseWretch = wretch(baseURL)
 
   // setup
   let req = baseWretch.url("/setup-bookmarks")
@@ -128,8 +108,13 @@ export const setupBookmarkServiceAPI = async (
 
   const res = await req.put().json<BookmarkSetupResponse>()
 
+  const localStorageKey = `${SESSION_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+
+  sessionId = res.sessionId
+  window.localStorage.setItem(localStorageKey, sessionId)
+
   return {
-    sessionId: res.sessionId,
+    sessionId: sessionId,
     async getSelections(selectionsId) {
       const res = await baseWretch
         .url(`/bookmarks/${selectionsId}`)
@@ -141,31 +126,39 @@ export const setupBookmarkServiceAPI = async (
         return null
       }
 
-      return makeSelections(res.events, undefined, res.id)
+      return selectionsSchema.parse(res.selections)
     },
     async getSessionSelections() {
       const res = await baseWretch
         .url("/bookmarks")
+        .auth(`Bearer ${sessionId}`)
         .get()
         .json<SessionBookmarksResponse>()
 
-      return responseToSelections(res)
+      return selectionsSchema.parse(res)
     },
     async setSessionSelections(selections) {
       const body: BookmarksRequest = {
-        events: [...selections.events],
+        selections: {
+          events: [...selections.events],
+        },
       }
 
       const res = await baseWretch
         .url("/bookmarks")
+        .auth(`Bearer ${sessionId}`)
         .json(body)
         .put()
         .json<SessionBookmarksResponse>()
 
-      return responseToSelections(res)
+      return selectionsSchema.parse(res.selections)
     },
     async getBookmarkCounts() {
-      return await baseWretch.url("/counts").get().json<BookmarkCounts>()
+      const resp = await baseWretch
+        .url("/counts")
+        .get()
+        .json<BookmarkCountsResponse>()
+      return resp.counts
     },
   }
 }
@@ -188,8 +181,8 @@ export const composeBookmarkAPI = (
     },
     async getSessionSelections() {
       const [aRes, bRes] = await Promise.all([
-        a.getSessionSelections().catch(() => null),
-        b.getSessionSelections().catch(() => null),
+        a.getSessionSelections().catch(() => undefined),
+        b.getSessionSelections().catch(() => undefined),
       ])
 
       return pickMoreRecent(aRes, bRes)
@@ -229,14 +222,9 @@ export const syncBookmarkAPIs = async (
   }
 }
 
-const responseToSelections = (resp: SessionBookmarksResponse): Selections => {
-  const dateObj = resp.date ? parseISO(resp.date) : undefined
-  return makeSelections(resp.events, dateObj, resp.id)
-}
-
 const pickMoreRecent = (
-  a: Selections | null,
-  b: Selections | null,
+  a: Selections | undefined,
+  b: Selections | undefined,
 ): Selections => {
   if (a?.date && b?.date) {
     if (isAfter(a.date, b.date)) {
@@ -252,31 +240,3 @@ const pickMoreRecent = (
     return a ?? makeSelections()
   }
 }
-
-// export const getBookmarksByIdQueryOptions = (
-//   bookmarkAPI: BookmarkAPI,
-//   scheduleId: string,
-//   selectionsId: string,
-// ): UseSuspenseQueryOptions<Selections | null> => {
-//   return {
-//     queryKey: ["schedule", scheduleId, "bookmarks", selectionsId],
-//     async queryFn() {
-//       const resp = await bookmarkAPI.getBookmarks(selectionsId)
-//       return resp ? makeSelections(resp.events) : null
-//     }
-//   }
-// }
-
-// export const getSessionBookmarksQueryOptions = (
-//   bookmarkAPI: BookmarkAPI,
-//   scheduleId: string,
-// ): UseSuspenseQueryOptions<Selections> => {
-//   return {
-//     queryKey: ["schedule", scheduleId, "bookmarks"],
-//     async queryFn() {
-//       const res = await bookmarkAPI.getSessionBookmarks()
-//       return makeSelections(res.events, parseISO(res.date))
-//     },
-//     staleTime: Infinity,
-//   }
-// }

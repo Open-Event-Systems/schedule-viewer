@@ -1,4 +1,4 @@
-import { Event, Scheduled } from "./types.js"
+import { Bounded, ScheduleItem } from "./types.js"
 import * as ics from "ics"
 
 /**
@@ -9,7 +9,7 @@ import * as ics from "ics"
  * @param domain - A domain added to event UIDs
  */
 export const createICS = (
-  events: Iterable<Scheduled<Event>>,
+  events: Iterable<Bounded<ScheduleItem>>,
   prefix: string,
   domain: string,
 ): string => {

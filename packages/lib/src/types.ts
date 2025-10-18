@@ -2,32 +2,59 @@
  * A time interval.
  */
 export type Interval = Readonly<{
-  start: Date
-  end: Date
+  start?: Date
+  end?: Date
 }>
 
 /**
- * A partial {@link Interval} subtype.
+ * An {@link Interval} with start and end.
  */
-export type Scheduled<T extends Partial<Interval>> = T & Interval
-
-/** @deprecated */
-export type Timespan = Interval
+export type Bounded<T extends Interval> = T & Required<Interval>
 
 /**
  * A collection of selected event IDs.
  */
-export type Selections = {
-  readonly id?: string
-  readonly date?: Date
-  readonly events: ReadonlySet<string>
-}
+export type Selections = Readonly<{
+  id?: string
+  date?: Date
+  events: ReadonlySet<string>
+}>
 
+/** @deprecated */
 export type Host = Readonly<{
   name?: string
   url?: string
 }>
 
+/**
+ * A contact related to a schedule item.
+ */
+export type Contact = Readonly<{
+  name?: string
+  url?: string
+}>
+
+/**
+ * Something that can be in a schedule.
+ */
+export type ScheduleItem = Readonly<{
+  id: string
+  type: string
+  start?: Date
+  end?: Date
+  title?: string
+  description?: string
+  location?: string
+  contacts?: readonly Contact[]
+  tags?: ReadonlySet<string>
+  icon?: string
+  image?: string
+}>
+
+export type ScheduleEvent = ScheduleItem & Readonly<{ type: "event" }>
+export type Vendor = ScheduleItem & Readonly<{ type: "vendor" }>
+
+/** @deprecated */
 export type Event = Readonly<{
   id: string
   title?: string
@@ -39,6 +66,7 @@ export type Event = Readonly<{
   tags: ReadonlySet<string>
 }>
 
+/** @deprecated */
 export type EventJSON = Omit<Event, "start" | "date" | "tags"> &
   Readonly<{
     start?: string
@@ -46,12 +74,32 @@ export type EventJSON = Omit<Event, "start" | "date" | "tags"> &
     tags?: readonly string[]
   }>
 
+/**
+ * Fetches schedule items.
+ */
+export type ScheduleAPI = Readonly<{
+  getItems(): Promise<readonly ScheduleItem[]>
+}>
+
+/**
+ * Saves and loads selections.
+ */
 export type BookmarkAPI = Readonly<{
   getSelections(selectionsId: string): Promise<Selections | null>
   getSessionSelections(): Promise<Selections>
-  setSessionSelections(events: Selections): Promise<Selections>
+  setSessionSelections(selections: Selections): Promise<Selections>
 }>
 
+/**
+ * A {@link BookmarkAPI} via HTTP service.
+ */
+export type BookmarkServiceAPI = BookmarkAPI &
+  Readonly<{
+    get sessionId(): string
+    getBookmarkCounts(): Promise<Readonly<Record<string, number | undefined>>>
+  }>
+
+/** @deprecated */
 export type EventAPI = Readonly<{
   getEvents(): Promise<readonly Event[]>
 }>

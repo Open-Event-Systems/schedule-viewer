@@ -56,6 +56,9 @@ importers:
       ts-jest:
         specifier: ^29.4.1
         version: 29.4.1(@babel/core@7.28.0)(@jest/transform@30.0.5)(@jest/types@30.0.5)(babel-jest@30.0.5(@babel/core@7.28.0))(esbuild@0.25.8)(jest-util@30.0.5)(jest@30.0.5(@types/node@24.2.1)(esbuild-register@3.6.0(esbuild@0.25.8)))(typescript@5.9.2)
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
 
   packages/map:
     dependencies:
@@ -199,6 +202,9 @@ importers:
       style-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.101.0(@swc/core@1.13.3)(esbuild@0.25.8))
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
 
   packages/viewer:
     dependencies:
@@ -8968,6 +8974,12 @@ packages:
         integrity: sha512-VJce62dBd+JQvoc+fCVq+KZfPHr+hXaxCcVgotfwWvlR0Ja3ffYKaJBT8rptPOSKOGJDCUnW2C2JWpud7aRP6Q==,
       }
 
+  zod@4.1.12:
+    resolution:
+      {
+        integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==,
+      }
+
 snapshots:
   "@adobe/css-tools@4.4.3": {}
 
@@ -15220,3 +15232,5 @@ snapshots:
       tiny-case: 1.0.3
       toposort: 2.0.2
       type-fest: 2.19.0
+
+  zod@4.1.12: {}

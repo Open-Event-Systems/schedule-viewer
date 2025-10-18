@@ -1,39 +1,66 @@
-import { EventJSON } from "@open-event-systems/schedule-lib"
+import {
+  opt,
+  ScheduleItem,
+  scheduleItemSchema,
+} from "@open-event-systems/schedule-lib"
 import { createContext, useContext } from "react"
+import z from "zod"
 
-export type TagEntry = readonly [string, string]
-
-export type TagIndicatorEntry = readonly [string | readonly string[], string]
-
-export interface ScheduleConfigJSON {
-  readonly id: string
-  readonly events?: string | readonly EventJSON[]
-  readonly title?: string
-  readonly description?: string
-  readonly dayChangeHour?: number
-  readonly binMinutes?: number
-  readonly timeZone?: string
-  readonly tags?: readonly TagEntry[]
-  readonly tagIndicators?: readonly TagIndicatorEntry[]
-  readonly bookmarks?: string
-  readonly icalPrefix?: string
-  readonly icalDomain?: string
-}
+export type TagEntry = Readonly<{
+  tag: string
+  title: string
+}>
 
 export type ScheduleConfig = Readonly<{
   id: string
-  events: string | readonly EventJSON[]
+  events: readonly (string | ScheduleItem)[]
   title: string
   description: string
   dayChangeHour: number
   binMinutes: number
   timeZone: string
   tags: readonly TagEntry[]
-  tagIndicators: readonly TagIndicatorEntry[]
   bookmarks?: string
   icalPrefix: string
   icalDomain: string
 }>
+
+const tagEntrySchema = z
+  .union([
+    z.tuple([z.string(), z.string()]),
+    z.object({
+      tag: z.string(),
+      title: z.string(),
+    }),
+  ])
+  .transform((v) => {
+    if (Array.isArray(v)) {
+      return {
+        tag: v[0],
+        title: v[1],
+      }
+    } else {
+      return v
+    }
+  })
+
+const configSchema = z
+  .looseObject({
+    id: opt(z.string()),
+    events: opt(z.array(z.union([z.string(), scheduleItemSchema]))),
+    title: opt(z.string()),
+    description: opt(z.string()),
+    dayChangeHour: opt(z.number()),
+    binMinutes: opt(z.number()),
+    timeZone: opt(z.string()),
+    tags: opt(z.array(tagEntrySchema)),
+    bookmarks: opt(z.string()),
+    icalPrefix: opt(z.string()),
+    icalDomain: opt(z.string()),
+  })
+  .partial()
+
+export type ScheduleConfigInput = z.input<typeof configSchema>
 
 const getDefaultTZ = (): string => {
   try {
@@ -52,7 +79,6 @@ export const DEFAULT_SCHEDULE_CONFIG = {
   binMinutes: 30,
   timeZone: getDefaultTZ(),
   tags: [],
-  tagIndicators: [],
   icalPrefix: "",
   icalDomain: "",
 } as const satisfies ScheduleConfig
@@ -60,10 +86,11 @@ export const DEFAULT_SCHEDULE_CONFIG = {
 /**
  * Make a {@link ScheduleConfig} object.
  */
-export const makeConfig = (configData: ScheduleConfigJSON): ScheduleConfig => {
+export const makeConfig = (configData: ScheduleConfigInput): ScheduleConfig => {
+  const parsed = configSchema.parse(configData)
   const config = {
     ...DEFAULT_SCHEDULE_CONFIG,
-    ...configData,
+    ...parsed,
   }
 
   return config
@@ -79,7 +106,7 @@ export const useScheduleConfig = (): ScheduleConfig =>
 export const makeValidTagsFilter = (
   tags: Iterable<TagEntry>,
 ): ((t: string) => boolean) => {
-  const tagSet = new Set(Array.from(tags, (t) => t[0]))
+  const tagSet = new Set(Array.from(tags, (t) => t.tag))
   const filter = (t: string) => {
     return tagSet.has(t)
   }
@@ -89,38 +116,38 @@ export const makeValidTagsFilter = (
 export const makeTagFormatter = (
   tags: Iterable<TagEntry>,
 ): ((t: string) => string) => {
-  const entries = new Map<string, string>()
-  for (const [tag, name] of tags) {
-    entries.set(tag, name)
+  const map = new Map<string, string>()
+  for (const entry of tags) {
+    map.set(entry.tag, entry.title)
   }
   const formatter = (t: string) => {
-    return entries.get(t) ?? t
+    return map.get(t) ?? t
   }
   return formatter
 }
 
-export const makeTagIndicatorFunc = (
-  entries: Iterable<TagIndicatorEntry>,
-): ((tags: Iterable<string>) => string | undefined) => {
-  const entryArr = Array.from(entries)
-  const func = (tags: Iterable<string>) => {
-    const tagsArr = [...tags]
-    const match = entryArr.find((e) => indicatorEntryMatches(tagsArr, e))
-    return match ? match[1] : undefined
-  }
-  return func
-}
+// export const makeTagIndicatorFunc = (
+//   entries: Iterable<TagIndicatorEntry>,
+// ): ((tags: Iterable<string>) => string | undefined) => {
+//   const entryArr = Array.from(entries)
+//   const func = (tags: Iterable<string>) => {
+//     const tagsArr = [...tags]
+//     const match = entryArr.find((e) => indicatorEntryMatches(tagsArr, e))
+//     return match ? match[1] : undefined
+//   }
+//   return func
+// }
 
-const indicatorEntryMatches = (
-  tags: readonly string[],
-  entry: TagIndicatorEntry,
-): boolean => {
-  const [key] = entry
-  if (typeof key == "string") {
-    return tags.some((t) => t == key)
-  } else if (Array.isArray(key)) {
-    return key.every((k) => tags.includes(k))
-  } else {
-    return false
-  }
-}
+// const indicatorEntryMatches = (
+//   tags: readonly string[],
+//   entry: TagIndicatorEntry,
+// ): boolean => {
+//   const [key] = entry
+//   if (typeof key == "string") {
+//     return tags.some((t) => t == key)
+//   } else if (Array.isArray(key)) {
+//     return key.every((k) => tags.includes(k))
+//   } else {
+//     return false
+//   }
+// }

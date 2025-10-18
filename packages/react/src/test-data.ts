@@ -1,44 +1,48 @@
 import { TZDate } from "@date-fns/tz"
-import { Event } from "@open-event-systems/schedule-lib"
-import { ScheduleConfig } from "./config/config.js"
+import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import z from "zod"
+import { ScheduleConfigInput } from "./config/config.js"
 
 const timeZone = "America/New_York"
 
 export const events = [
   {
     id: "opening-ceremonies",
+    type: "event",
     title: "Opening Ceremonies",
     description: "Join us as we kick off another year of our annual event.",
     start: new TZDate(2025, 0, 17, 11, timeZone),
     end: new TZDate(2025, 0, 17, 12, timeZone),
     location: "Main Ballroom",
     tags: new Set(["main-event"]),
-    hosts: ["Events Team"],
+    contacts: [{ name: "Events Team" }],
   },
   {
     id: "photography-meetup",
+    type: "event",
     title: "Photography Meetup",
     description: "A meetup for amateur and professional photographers.",
     start: new TZDate(2025, 0, 18, 12, timeZone),
     end: new TZDate(2025, 0, 18, 13, timeZone),
     location: "Panel Room 1",
     tags: new Set(["photography", "hobby"]),
-    hosts: [{ name: "Person", url: "https://example.net" }],
+    contacts: [{ name: "Person", url: "https://example.net" }],
   },
   {
     id: "figure-drawing",
+    type: "event",
     title: "Figure Drawing",
     description: "A live figure drawing demonstration.",
     start: new TZDate(2025, 0, 18, 14, timeZone),
     end: new TZDate(2025, 0, 18, 16, 30, timeZone),
     location: "Panel Room 2",
     tags: new Set(["art", "mature"]),
-    hosts: [
+    contacts: [
       { name: "Artist", url: "https://example.net" },
       { name: "Model", url: "https://example.net" },
     ],
   },
-] satisfies readonly Event[]
+] satisfies readonly ScheduleItem[]
 
 export const config = {
   id: "example-event",
@@ -53,4 +57,4 @@ export const config = {
   ],
   tagIndicators: [["mature", "18+"]],
   timeZone,
-} satisfies Partial<ScheduleConfig>
+} satisfies ScheduleConfigInput

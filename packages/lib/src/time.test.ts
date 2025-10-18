@@ -1,5 +1,12 @@
 import { formatISO, parseISO } from "date-fns"
-import { contains, getDay, intersects, sortByDate, toTimezone } from "./time.js"
+import {
+  contains,
+  getDay,
+  intersects,
+  intervalToTimezone,
+  sortIntervalsByStartDate,
+  toTimezone,
+} from "./time.js"
 
 describe("time module", () => {
   test.each([
@@ -27,12 +34,38 @@ describe("time module", () => {
       date: "2020-01-01T01:30:00Z",
       expected: false,
     },
+    {
+      start: "2020-01-01T01:00:00Z",
+      end: "2020-01-01T02:00:00Z",
+      date: "2020-01-01T00:00:00Z",
+      expected: false,
+    },
+    {
+      start: "2020-01-01T01:00:00Z",
+      date: "2020-01-02T01:00:00Z",
+      expected: true,
+    },
+    {
+      start: "2020-01-01T01:00:00Z",
+      date: "2020-01-01T00:00:00Z",
+      expected: false,
+    },
+    {
+      end: "2020-01-01T01:00:00Z",
+      date: "2000-01-01T01:00:00Z",
+      expected: true,
+    },
+    {
+      end: "2020-01-01T01:00:00Z",
+      date: "2020-01-01T01:00:00Z",
+      expected: false,
+    },
   ])(
     "$start-$end contains $date ($expected)",
     ({ start, end, date, expected }) => {
       const interval = {
-        start: parseISO(start),
-        end: parseISO(end),
+        start: start ? parseISO(start) : undefined,
+        end: end ? parseISO(end) : undefined,
       }
 
       const dateObj = parseISO(date)
@@ -88,17 +121,72 @@ describe("time module", () => {
       a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
       expected: true,
     },
+    {
+      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      b: { start: "2020-01-01T01:30:00Z" },
+      expected: true,
+    },
+    {
+      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      b: { start: "2020-01-01T02:00:00Z" },
+      expected: false,
+    },
+    {
+      a: { start: "2020-01-01T00:00:00Z" },
+      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      expected: true,
+    },
+    {
+      a: { start: "2020-01-01T03:00:00Z" },
+      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      expected: false,
+    },
+    {
+      a: { end: "2020-01-01T01:00:00Z" },
+      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T02:00:00Z" },
+      expected: true,
+    },
+    {
+      a: { end: "2020-01-01T01:00:00Z" },
+      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
+      expected: true,
+    },
+    {
+      a: { end: "2020-01-01T01:00:00Z" },
+      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      expected: false,
+    },
+    {
+      a: { start: "2020-01-01T01:00:00Z" },
+      b: { end: "2020-01-01T02:00:00Z" },
+      expected: true,
+    },
+    {
+      a: { start: "2020-01-01T01:00:00Z" },
+      b: { end: "2020-01-01T01:00:00Z" },
+      expected: false,
+    },
+    {
+      a: {},
+      b: {},
+      expected: true,
+    },
+    {
+      a: {},
+      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      expected: true,
+    },
   ])(
     "$a.start-$a.end and $b.start-$b.end intersect ($expected)",
     ({ a, b, expected }) => {
       const aInt = {
-        start: parseISO(a.start),
-        end: parseISO(a.end),
+        start: a.start ? parseISO(a.start) : undefined,
+        end: a.end ? parseISO(a.end) : undefined,
       }
 
       const bInt = {
-        start: parseISO(b.start),
-        end: parseISO(b.end),
+        start: b.start ? parseISO(b.start) : undefined,
+        end: b.end ? parseISO(b.end) : undefined,
       }
 
       expect(intersects(aInt, bInt)).toBe(expected)
@@ -114,6 +202,17 @@ describe("time module", () => {
 
     expect(format).toEqual("2019-12-31T19:00:00-05:00")
     expect(format2).toEqual("2019-12-31T18:00:00-06:00")
+  })
+
+  test("intervalToTimezone works", () => {
+    const int = {
+      start: parseISO("2020-01-01T00:00:00Z"),
+    }
+
+    const intTz = intervalToTimezone(int, "America/Chicago")
+    const format = intTz.start ? formatISO(intTz.start) : undefined
+    expect(format).toEqual("2019-12-31T18:00:00-06:00")
+    expect(intTz.end).toBeUndefined()
   })
 
   test("sortByDate", () => {
@@ -134,6 +233,7 @@ describe("time module", () => {
     ]
 
     const expected = [
+      {},
       {
         start: parseISO("2020-01-01T00:00:00Z"),
         end: parseISO("2020-01-01T01:00:00Z"),
@@ -146,10 +246,9 @@ describe("time module", () => {
         start: parseISO("2020-01-01T01:00:00Z"),
         end: parseISO("2020-01-01T01:30:00Z"),
       },
-      {},
     ]
 
-    sortByDate(intervals)
+    sortIntervalsByStartDate(intervals)
 
     expect(intervals).toEqual(expected)
   })
