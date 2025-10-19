@@ -111,6 +111,67 @@ const ItemPillsPill = ({
   )
 }
 
+export const binItemsByTitle = (
+  items: Iterable<ScheduleItem>,
+): readonly ItemPillsBin[] => {
+  const sorted = [...items]
+  sorted.sort((a, b) => {
+    if (a.title && b.title) {
+      return a.title.localeCompare(b.title)
+    } else if (a.title) {
+      return -1
+    } else if (b.title) {
+      return 1
+    } else {
+      return 0
+    }
+  })
+
+  const map = new Map<string, ScheduleItem[]>()
+
+  for (const item of sorted) {
+    let char
+    if (!item.title) {
+      char = "Other"
+    } else {
+      char = item.title.charAt(0).toUpperCase()
+      if (!/[A-Z]/.test(char)) {
+        char = "Other"
+      }
+    }
+
+    let bin = map.get(char)
+    if (!bin) {
+      bin = []
+      map.set(char, bin)
+    }
+
+    bin.push(item)
+  }
+
+  const bins: ItemPillsBin[] = []
+
+  for (const [char, items] of map.entries()) {
+    bins.push({
+      id: char,
+      title: char,
+      items: items,
+    })
+  }
+
+  bins.sort((a, b) => {
+    if (a.id == "Other") {
+      return 1
+    } else if (b.id == "Other") {
+      return -1
+    } else {
+      return a.id.localeCompare(b.id)
+    }
+  })
+
+  return bins
+}
+
 export const binItemsByTime = (
   items: Iterable<ScheduleItem>,
   binMinutes: number,

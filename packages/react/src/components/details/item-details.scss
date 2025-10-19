@@ -54,6 +54,7 @@
 .ItemDetails-buttons {
   grid-area: buttons;
   margin: 0;
+  margin-left: var(--mantine-spacing-xs);
   padding: 0;
 
   li {

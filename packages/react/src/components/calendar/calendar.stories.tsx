@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { Calendar } from "./calendar.js"
 import { MouseEvent, useCallback } from "react"
-import { ItemDetailsProvider } from "../details/context.js"
+import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
+import "../details/item-details.scss"
 import "./calendar.scss"
 
 const meta: Meta<typeof Calendar> = {
@@ -13,44 +14,46 @@ export default meta
 
 export const Default: StoryObj<typeof Calendar> = {
   render(args) {
-    const onClickEvent = useCallback((e: MouseEvent) => e.preventDefault(), [])
+    const onClickItem = useCallback((e: MouseEvent) => e.preventDefault(), [])
     const getHref = useCallback(() => "#", [])
 
     return (
       <ItemDetailsProvider
-        value={{
+        value={makeItemDetailsFunc({
           getHref,
-          onClickEvent,
-        }}
+          onClickItem,
+        })}
       >
         <Calendar
           columns={[
             {
               title: "Room A",
-              events: [
+              items: [
                 {
                   id: "e1",
+                  type: "event",
                   location: "Room A",
                   start: new Date(2020, 0, 1, 12),
                   end: new Date(2020, 0, 1, 13),
                   title: "Event A",
                   description: "",
-                  hosts: [],
+                  contacts: [],
                   tags: new Set(),
                 },
               ],
             },
             {
               title: "Room B",
-              events: [
+              items: [
                 {
                   id: "e2",
+                  type: "event",
                   location: "Room B",
                   start: new Date(2020, 0, 1, 12, 30),
                   end: new Date(2020, 0, 1, 13, 30),
                   title: "Event B",
                   description: "",
-                  hosts: [],
+                  contacts: [],
                   tags: new Set(),
                 },
               ],
