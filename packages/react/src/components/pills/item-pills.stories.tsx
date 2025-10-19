@@ -1,24 +1,21 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { binItemsByTime, EventPills } from "./event-pills.js"
+import { binItemsByTime, ItemPills } from "./item-pills.js"
 import { events, tagEntries } from "../../test-data.js"
 import { MouseEvent, useCallback } from "react"
-import {
-  EventDetailsProvider,
-  makeEventDetailsFunc,
-} from "../details/context.js"
+import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
 import "../details/item-details.scss"
 import "../hovercard/item-hover-card.scss"
 import "./pills.scss"
 
-const meta: Meta<typeof EventPills> = {
-  component: EventPills,
+const meta: Meta<typeof ItemPills> = {
+  component: ItemPills,
   args: {},
 }
 
 export default meta
 
-export const Default: StoryObj<typeof EventPills> = {
+export const Default: StoryObj<typeof ItemPills> = {
   render(args) {
     const onClick = useCallback((e: MouseEvent) => {
       e.preventDefault()
@@ -28,15 +25,15 @@ export const Default: StoryObj<typeof EventPills> = {
     const bins = binItemsByTime(events, 30)
 
     return (
-      <EventDetailsProvider
-        value={makeEventDetailsFunc({
+      <ItemDetailsProvider
+        value={makeItemDetailsFunc({
           getHref,
-          onClickEvent: onClick,
+          onClickItem: onClick,
           tags: tagEntries,
         })}
       >
-        <EventPills {...args} bins={bins} />
-      </EventDetailsProvider>
+        <ItemPills {...args} bins={bins} />
+      </ItemDetailsProvider>
     )
   },
 }

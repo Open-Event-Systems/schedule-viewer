@@ -71,7 +71,7 @@ const TagFilterTag = ({
       className={clsx(
         "TagFilter-tag",
         { "TagFilter-disabled": !enabled },
-        `Pill-event-tag-${tag}`,
+        `Pill-item-tag-${tag}`,
       )}
       button
       indicator={getIndicator && getIndicator([tag])}

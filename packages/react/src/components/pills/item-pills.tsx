@@ -5,28 +5,28 @@ import { TZDate } from "@date-fns/tz"
 import { ReactNode, useCallback, useMemo } from "react"
 import clsx from "clsx"
 import { makeTagIndicatorFunc, TagIndicatorEntry } from "../../config/config.js"
-import { useEventDetails } from "../details/context.js"
+import { useItemDetails } from "../details/context.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import { ScheduleItem } from "@open-event-systems/schedule-lib"
 
-export type EventPillsBin = Readonly<{
+export type ItemPillsBin = Readonly<{
   id: string
   title: ReactNode
   items: Iterable<ScheduleItem>
 }>
 
-export type EventPillsProps = PillsProps & {
-  bins: readonly EventPillsBin[]
+export type ItemPillsProps = PillsProps & {
+  bins: readonly ItemPillsBin[]
   tagIndicators?: readonly TagIndicatorEntry[]
 }
 
-export const EventPills = (props: EventPillsProps) => {
+export const ItemPills = (props: ItemPillsProps) => {
   const {
     className,
     bins,
     tagIndicators = [],
     ...other
-  } = useProps("EventPills", {}, props)
+  } = useProps("ItemPills", {}, props)
 
   const getIndicator = useMemo(() => {
     const tagFunc = makeTagIndicatorFunc(tagIndicators)
@@ -37,10 +37,10 @@ export const EventPills = (props: EventPillsProps) => {
     const res: ReactNode[] = []
     bins.forEach((b) => {
       res.push(
-        <EventPillsBin
+        <ItemPillsBin
           key={b.id}
           title={b.title}
-          events={b.items}
+          items={b.items}
           getIndicator={getIndicator}
         />,
       )
@@ -51,60 +51,60 @@ export const EventPills = (props: EventPillsProps) => {
   return <Pills {...other}>{binEls}</Pills>
 }
 
-const EventPillsBin = ({
+const ItemPillsBin = ({
   title,
-  events,
+  items,
   getIndicator,
 }: {
   title: ReactNode
-  events: Iterable<ScheduleItem>
-  getIndicator?: (event: ScheduleItem) => string | undefined
+  items: Iterable<ScheduleItem>
+  getIndicator?: (item: ScheduleItem) => string | undefined
 }) => {
-  const items = Array.from(events, (e) => (
-    <EventPillsPill key={e.id} event={e} getIndicator={getIndicator} />
+  const els = Array.from(items, (e) => (
+    <ItemPillsPill key={e.id} item={e} getIndicator={getIndicator} />
   ))
 
-  return <Pills.Bin title={title}>{items}</Pills.Bin>
+  return <Pills.Bin title={title}>{els}</Pills.Bin>
 }
 
-const EventPillsPill = ({
-  event,
+const ItemPillsPill = ({
+  item,
   getIndicator,
 }: {
-  event: ScheduleItem
-  getIndicator?: (event: ScheduleItem) => string | undefined
+  item: ScheduleItem
+  getIndicator?: (item: ScheduleItem) => string | undefined
 }) => {
-  const detailsFunc = useEventDetails()
+  const detailsFunc = useItemDetails()
 
-  const eventProps = useMemo(() => {
-    return detailsFunc ? detailsFunc(event) : {}
-  }, [event, detailsFunc])
+  const itemProps = useMemo(() => {
+    return detailsFunc ? detailsFunc(item) : {}
+  }, [item, detailsFunc])
 
   const indicator = useMemo(() => {
-    return getIndicator ? getIndicator(event) : undefined
-  }, [event, getIndicator])
+    return getIndicator ? getIndicator(item) : undefined
+  }, [item, getIndicator])
 
   const renderFunc = useCallback(
     (c: ReactNode) => {
-      const { onClickEvent, ...other } = eventProps
+      const { onClickItem, ...other } = itemProps
       return (
-        <ItemHoverCard item={event} ItemDetailsProps={other}>
+        <ItemHoverCard item={item} ItemDetailsProps={other}>
           {c}
         </ItemHoverCard>
       )
     },
-    [event, eventProps],
+    [item, itemProps],
   )
 
   return (
     <Pills.Pill
-      children={event.title}
-      href={eventProps.url}
-      onClick={eventProps.onClickEvent}
+      children={item.title}
+      href={itemProps.url}
+      onClick={itemProps.onClickItem}
       renderContent={renderFunc}
       className={clsx(
-        `Pill-event-id-${event.id}`,
-        event.tags ? [...event.tags].map((t) => `Pill-event-tag-${t}`) : [],
+        `Pill-item-id-${item.id}`,
+        item.tags ? [...item.tags].map((t) => `Pill-item-tag-${t}`) : [],
       )}
       indicator={indicator}
     />
@@ -114,12 +114,12 @@ const EventPillsPill = ({
 export const binItemsByTime = (
   items: Iterable<ScheduleItem>,
   binMinutes: number,
-): readonly EventPillsBin[] => {
+): readonly ItemPillsBin[] => {
   const map = new Map<string, [Date, ScheduleItem[]]>()
 
-  for (const event of items) {
-    if (event.start) {
-      const binStart = binDate(event.start, binMinutes)
+  for (const item of items) {
+    if (item.start) {
+      const binStart = binDate(item.start, binMinutes)
       const binKey = formatISO(binStart)
       let bin = map.get(binKey)
       if (!bin) {
@@ -127,11 +127,11 @@ export const binItemsByTime = (
         map.set(binKey, bin)
       }
 
-      bin[1].push(event)
+      bin[1].push(item)
     }
   }
 
-  const bins: EventPillsBin[] = []
+  const bins: ItemPillsBin[] = []
 
   for (const [id, [date, items]] of map.entries()) {
     bins.push({

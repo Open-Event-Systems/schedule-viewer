@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { Calendar } from "./calendar.js"
 import { MouseEvent, useCallback } from "react"
-import { EventDetailsProvider } from "../details/context.js"
+import { ItemDetailsProvider } from "../details/context.js"
 
 import "./calendar.scss"
 
@@ -17,7 +17,7 @@ export const Default: StoryObj<typeof Calendar> = {
     const getHref = useCallback(() => "#", [])
 
     return (
-      <EventDetailsProvider
+      <ItemDetailsProvider
         value={{
           getHref,
           onClickEvent,
@@ -60,7 +60,7 @@ export const Default: StoryObj<typeof Calendar> = {
           start={new Date(2020, 0, 1, 9, 0)}
           end={new Date(2020, 0, 1, 17)}
         />
-      </EventDetailsProvider>
+      </ItemDetailsProvider>
     )
   },
 }

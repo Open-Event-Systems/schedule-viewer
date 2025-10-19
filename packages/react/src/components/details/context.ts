@@ -3,21 +3,21 @@ import { createContext, MouseEvent, useContext } from "react"
 import { ItemDetailsProps } from "./item-details.js"
 import { TagEntry } from "../../config/config.js"
 
-export type EventDetailsFuncReturn = Partial<ItemDetailsProps> & {
-  onClickEvent?: (e: MouseEvent) => void
+export type ItemDetailsFuncReturn = Partial<ItemDetailsProps> & {
+  onClickItem?: (e: MouseEvent) => void
 }
 
-export const EventDetailsContext = createContext<
-  ((event: ScheduleItem) => EventDetailsFuncReturn) | undefined
+export const ItemDetailsContext = createContext<
+  ((item: ScheduleItem) => ItemDetailsFuncReturn) | undefined
 >(undefined)
-export const EventDetailsProvider = EventDetailsContext.Provider
-export const useEventDetails = ():
-  | ((event: ScheduleItem) => EventDetailsFuncReturn)
-  | undefined => useContext(EventDetailsContext)
+export const ItemDetailsProvider = ItemDetailsContext.Provider
+export const useItemDetails = ():
+  | ((item: ScheduleItem) => ItemDetailsFuncReturn)
+  | undefined => useContext(ItemDetailsContext)
 
-export const makeEventDetailsFunc = ({
+export const makeItemDetailsFunc = ({
   getHref,
-  onClickEvent,
+  onClickItem,
   getIsBookmarked,
   setBookmarked,
   getBookmarkCount,
@@ -25,44 +25,44 @@ export const makeEventDetailsFunc = ({
   onClickLocation,
   tags,
 }: {
-  getHref?: (event: ScheduleItem) => string | undefined
-  onClickEvent?: (e: MouseEvent, event: ScheduleItem) => void
-  getIsBookmarked?: (event: ScheduleItem) => boolean | undefined
-  setBookmarked?: (event: ScheduleItem, set: boolean) => void
-  getBookmarkCount?: (event: ScheduleItem) => number | undefined
-  getLocationHref?: (event: ScheduleItem) => string | undefined
-  onClickLocation?: (e: MouseEvent, event: ScheduleItem) => void
+  getHref?: (item: ScheduleItem) => string | undefined
+  onClickItem?: (e: MouseEvent, item: ScheduleItem) => void
+  getIsBookmarked?: (item: ScheduleItem) => boolean | undefined
+  setBookmarked?: (item: ScheduleItem, set: boolean) => void
+  getBookmarkCount?: (item: ScheduleItem) => number | undefined
+  getLocationHref?: (item: ScheduleItem) => string | undefined
+  onClickLocation?: (e: MouseEvent, item: ScheduleItem) => void
   tags?: readonly TagEntry[]
-}): ((event: ScheduleItem) => EventDetailsFuncReturn) => {
-  return (event) => {
-    const props: EventDetailsFuncReturn = {}
+}): ((item: ScheduleItem) => ItemDetailsFuncReturn) => {
+  return (item) => {
+    const props: ItemDetailsFuncReturn = {}
 
     if (getHref) {
-      props.url = getHref(event)
+      props.url = getHref(item)
     }
 
-    if (onClickEvent) {
-      props.onClickEvent = (e) => onClickEvent(e, event)
+    if (onClickItem) {
+      props.onClickItem = (e) => onClickItem(e, item)
     }
 
     if (getIsBookmarked) {
-      props.bookmarked = getIsBookmarked(event)
+      props.bookmarked = getIsBookmarked(item)
     }
 
     if (setBookmarked) {
-      props.setBookmarked = (set) => setBookmarked(event, set)
+      props.setBookmarked = (set) => setBookmarked(item, set)
     }
 
     if (getBookmarkCount) {
-      props.bookmarkCount = getBookmarkCount(event)
+      props.bookmarkCount = getBookmarkCount(item)
     }
 
     if (getLocationHref) {
-      props.locationHref = getLocationHref(event)
+      props.locationHref = getLocationHref(item)
     }
 
     if (onClickLocation) {
-      props.onClickLocation = (e) => onClickLocation(e, event)
+      props.onClickLocation = (e) => onClickLocation(e, item)
     }
 
     if (tags) {
