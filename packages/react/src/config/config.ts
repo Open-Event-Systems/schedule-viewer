@@ -1,5 +1,4 @@
 import {
-  opt,
   ScheduleItem,
   scheduleItemSchema,
 } from "@open-event-systems/schedule-lib"
@@ -11,6 +10,11 @@ export type TagEntry = Readonly<{
   title: string
 }>
 
+export type TagIndicatorEntry = Readonly<{
+  tags: readonly string[]
+  label: string
+}>
+
 export type ScheduleConfig = Readonly<{
   id: string
   events: readonly (string | ScheduleItem)[]
@@ -20,10 +24,16 @@ export type ScheduleConfig = Readonly<{
   binMinutes: number
   timeZone: string
   tags: readonly TagEntry[]
+  tagIndicators: readonly TagIndicatorEntry[]
   bookmarks?: string
   icalPrefix: string
   icalDomain: string
 }>
+
+const opt = <OutT, InT>(
+  s: z.ZodType<OutT, InT>,
+): z.ZodType<OutT | undefined, InT | null | undefined> =>
+  s.nullish().transform((v) => v ?? undefined)
 
 const tagEntrySchema = z
   .union([
@@ -44,6 +54,33 @@ const tagEntrySchema = z
     }
   })
 
+const tagIndicatorSchema = z
+  .union([
+    z.tuple([z.union([z.string(), z.array(z.string())]), z.string()]),
+    z.object({
+      tags: z.array(z.string()),
+      label: z.string(),
+    }),
+  ])
+  .transform((v): TagIndicatorEntry => {
+    if (Array.isArray(v)) {
+      const [tags, label] = v
+      if (Array.isArray(tags)) {
+        return {
+          tags,
+          label,
+        }
+      } else {
+        return {
+          tags: [tags],
+          label: label,
+        }
+      }
+    } else {
+      return v
+    }
+  })
+
 const configSchema = z
   .looseObject({
     id: opt(z.string()),
@@ -54,6 +91,7 @@ const configSchema = z
     binMinutes: opt(z.number()),
     timeZone: opt(z.string()),
     tags: opt(z.array(tagEntrySchema)),
+    tagIndicators: opt(z.array(tagIndicatorSchema)),
     bookmarks: opt(z.string()),
     icalPrefix: opt(z.string()),
     icalDomain: opt(z.string()),
@@ -79,6 +117,7 @@ export const DEFAULT_SCHEDULE_CONFIG = {
   binMinutes: 30,
   timeZone: getDefaultTZ(),
   tags: [],
+  tagIndicators: [],
   icalPrefix: "",
   icalDomain: "",
 } as const satisfies ScheduleConfig
@@ -126,28 +165,21 @@ export const makeTagFormatter = (
   return formatter
 }
 
-// export const makeTagIndicatorFunc = (
-//   entries: Iterable<TagIndicatorEntry>,
-// ): ((tags: Iterable<string>) => string | undefined) => {
-//   const entryArr = Array.from(entries)
-//   const func = (tags: Iterable<string>) => {
-//     const tagsArr = [...tags]
-//     const match = entryArr.find((e) => indicatorEntryMatches(tagsArr, e))
-//     return match ? match[1] : undefined
-//   }
-//   return func
-// }
+export const makeTagIndicatorFunc = (
+  entries: Iterable<TagIndicatorEntry>,
+): ((tags: Iterable<string>) => string | undefined) => {
+  const entryArr = Array.from(entries)
+  const func = (tags: Iterable<string>) => {
+    const tagsArr = [...tags]
+    const match = entryArr.find((e) => indicatorEntryMatches(tagsArr, e))
+    return match?.label
+  }
+  return func
+}
 
-// const indicatorEntryMatches = (
-//   tags: readonly string[],
-//   entry: TagIndicatorEntry,
-// ): boolean => {
-//   const [key] = entry
-//   if (typeof key == "string") {
-//     return tags.some((t) => t == key)
-//   } else if (Array.isArray(key)) {
-//     return key.every((k) => tags.includes(k))
-//   } else {
-//     return false
-//   }
-// }
+const indicatorEntryMatches = (
+  tags: readonly string[],
+  entry: TagIndicatorEntry,
+): boolean => {
+  return entry.tags.every((k) => tags.includes(k))
+}

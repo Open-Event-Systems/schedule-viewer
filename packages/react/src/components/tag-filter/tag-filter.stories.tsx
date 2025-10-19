@@ -7,7 +7,28 @@ import "./tag-filter.scss"
 
 const meta: Meta<typeof TagFilter> = {
   component: TagFilter,
-  args: {},
+  args: {
+    tags: [
+      {
+        tag: "art",
+        title: "Art",
+      },
+      {
+        tag: "photography",
+        title: "Photography",
+      },
+      {
+        tag: "mature",
+        title: "Mature",
+      },
+    ],
+    tagIndicators: [
+      {
+        tags: ["mature"],
+        label: "18+",
+      },
+    ],
+  },
 }
 
 export default meta

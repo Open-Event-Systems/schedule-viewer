@@ -11,7 +11,7 @@ import { CalendarContext } from "./context.js"
 import clsx from "clsx"
 import { toPercent } from "./utils.js"
 import { add, format, isBefore } from "date-fns"
-import { EventHoverCard } from "../hovercard/event-hover-card.js"
+import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 
 export type CalendarColumnData = {
   title?: ReactNode
@@ -100,7 +100,7 @@ const CalendarColumn = ({
     () =>
       column.events?.filter(isScheduled).map((e) => {
         return (
-          <EventHoverCard key={e.id} event={e}>
+          <ItemHoverCard key={e.id} item={e}>
             <Calendar.Item
               component="a"
               className="Calendar-event"
@@ -109,7 +109,7 @@ const CalendarColumn = ({
             >
               {e.title}
             </Calendar.Item>
-          </EventHoverCard>
+          </ItemHoverCard>
         )
       }),
     [column.events],

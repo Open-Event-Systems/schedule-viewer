@@ -2,10 +2,16 @@ import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import { useMemo } from "react"
 import { Pills, PillsProps } from "../pills/pills.js"
-import { makeTagIndicatorFunc, useScheduleConfig } from "../../config/config.js"
+import {
+  makeTagIndicatorFunc,
+  TagEntry,
+  TagIndicatorEntry,
+} from "../../config/config.js"
 
 export type TagFilterProps = {
   disabledTags?: Iterable<string>
+  tags?: readonly TagEntry[]
+  tagIndicators?: readonly TagIndicatorEntry[]
   onChangeTags?: (tags: Set<string>) => void
 } & PillsProps
 
@@ -13,23 +19,24 @@ export const TagFilter = (props: TagFilterProps) => {
   const {
     className,
     disabledTags = [],
+    tags = [],
+    tagIndicators = [],
     onChangeTags,
     ...other
   } = useProps("TagFilter", {}, props)
 
   const disabledTagsSet = new Set(disabledTags)
-  const config = useScheduleConfig()
   const getIndicator = useMemo(() => {
-    return makeTagIndicatorFunc(config.tagIndicators)
-  }, [config.tagIndicators])
+    return makeTagIndicatorFunc(tagIndicators)
+  }, [tagIndicators])
 
   const tagEls = []
-  for (const [tag, name] of config.tags) {
+  for (const tag of tags) {
     tagEls.push(
       <TagFilterTag
-        key={tag}
-        tag={tag}
-        name={name}
+        key={tag.tag}
+        tag={tag.tag}
+        title={tag.title}
         disabledTagsSet={disabledTagsSet}
         getIndicator={getIndicator}
         onChangeTags={onChangeTags}
@@ -39,20 +46,20 @@ export const TagFilter = (props: TagFilterProps) => {
 
   return (
     <Pills {...other}>
-      <Pills.Bin>{tagEls}</Pills.Bin>
+      <Pills.Bin menu>{tagEls}</Pills.Bin>
     </Pills>
   )
 }
 
 const TagFilterTag = ({
   tag,
-  name,
+  title: name,
   disabledTagsSet,
   getIndicator,
   onChangeTags,
 }: {
   tag: string
-  name: string
+  title: string
   disabledTagsSet: Set<string>
   getIndicator?: (tags: readonly string[]) => string | undefined
   onChangeTags?: (tags: Set<string>) => void

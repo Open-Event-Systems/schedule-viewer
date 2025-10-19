@@ -58,3 +58,11 @@ export const config = {
   tagIndicators: [["mature", "18+"]],
   timeZone,
 } satisfies ScheduleConfigInput
+
+export const tagEntries = [
+  { tag: "main-event", title: "Main Event" },
+  { tag: "hobby", title: "Hobby" },
+  { tag: "photography", title: "Photography" },
+  { tag: "art", title: "Art" },
+  { tag: "mature", title: "Mature" },
+]

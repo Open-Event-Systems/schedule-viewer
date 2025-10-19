@@ -23,8 +23,8 @@ const parseDate = (s: string, ctx: z.RefinementCtx): Date => {
   }
 }
 
-export const opt = <OutT, InT>(
-  s: z.ZodType<OutT | undefined, InT>,
+const opt = <OutT, InT>(
+  s: z.ZodType<OutT, InT>,
 ): z.ZodType<OutT | undefined, InT | null | undefined> => {
   return s.nullish().transform((v) => v ?? undefined)
 }

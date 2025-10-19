@@ -16,10 +16,10 @@ export const IconText = (props: IconTextProps) => {
 
   return (
     <Box className={clsx("IconText-root", className)} {...other}>
-      <Text className="IconText-icon" {...other}>
+      <Text span className="IconText-icon" {...other}>
         {icon}
       </Text>
-      <Text className="IconText-text" {...other}>
+      <Text span className="IconText-text" {...other}>
         {children}
       </Text>
     </Box>

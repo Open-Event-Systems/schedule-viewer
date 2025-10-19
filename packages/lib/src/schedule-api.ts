@@ -10,22 +10,21 @@ const itemsSchema = z.object({
 })
 
 /**
- * Make a {@link ScheduleAPI} that returns items from a URL.
+ * Make a {@link ScheduleAPI} that returns items parsed from an array.
  */
-export const makeScheduleFetchAPI = (url: string): ScheduleAPI => {
+export const makeScheduleItemsArrayAPI = (
+  items: readonly unknown[],
+): ScheduleAPI => {
   return {
     async getItems() {
-      const res = await wretch(url).get().json()
-      const respBody = itemsSchema.parse(res)
-
-      return respBody.items
+      return items
         .map((data, i) => {
           const parsed = scheduleItemSchema.safeParse(data)
           if (parsed.success) {
             return parsed.data
           } else {
             console.error(
-              `fetching ${url}: failed to parse schedule item ${i}:\n${z.prettifyError(parsed.error)}`,
+              `failed to parse schedule item ${i}:\n${z.prettifyError(parsed.error)}`,
             )
             return undefined
           }
@@ -36,14 +35,15 @@ export const makeScheduleFetchAPI = (url: string): ScheduleAPI => {
 }
 
 /**
- * Make a {@link ScheduleAPI} that returns items from an array.
+ * Make a {@link ScheduleAPI} that returns items from a URL.
  */
-export const makeScheduleItemsAPI = (
-  items: readonly ScheduleItem[],
-): ScheduleAPI => {
+export const makeScheduleFetchAPI = (url: string): ScheduleAPI => {
   return {
     async getItems() {
-      return items
+      const res = await wretch(url).get().json()
+      const respBody = itemsSchema.parse(res)
+      const arrAPI = makeScheduleItemsArrayAPI(respBody.items)
+      return await arrAPI.getItems()
     },
   }
 }

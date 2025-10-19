@@ -1,0 +1,86 @@
+.ItemDetails-root {
+  display: grid;
+  grid-template:
+    "title buttons" auto
+    "time buttons" auto
+    "location buttons" auto
+    "contacts buttons" auto
+    "description buttons" 1fr
+    "tags buttons" auto
+    / 1fr auto;
+  --margin-top: 4px;
+
+  > * {
+    margin-top: var(--margin-top);
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+}
+
+.ItemDetails-title {
+  grid-area: title;
+}
+
+.ItemDetails-time {
+  grid-area: time;
+}
+
+.ItemDetails-location {
+  grid-area: location;
+}
+
+.ItemDetails-locationLink {
+  line-height: 1;
+}
+
+.ItemDetails-contacts {
+  grid-area: contacts;
+}
+
+.ItemDetails-contact {
+  line-height: 1;
+}
+
+.ItemDetails-description {
+  grid-area: description;
+}
+
+.ItemDetails-tags {
+  grid-area: tags;
+}
+
+.ItemDetails-buttons {
+  grid-area: buttons;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: block;
+    list-style: none;
+    margin-top: 4px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.ItemDetails-shareButton {
+  display: block;
+}
+
+li.ItemDetails-bookmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ItemDetails-bookmarkButton {
+  display: block;
+}
+
+.ItemDetails-bookmarkCount {
+  margin-top: 4px;
+}

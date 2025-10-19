@@ -1,22 +1,22 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { EventDetails } from "./event-details.js"
-import { events } from "../../test-data.js"
+import { ItemDetails } from "./item-details.js"
+import { events, tagEntries } from "../../test-data.js"
 import { useState } from "react"
 
 import "../icon-text/icon-text.scss"
-import "./event-details.scss"
+import "./item-details.scss"
 
-const meta: Meta<typeof EventDetails> = {
-  component: EventDetails,
+const meta: Meta<typeof ItemDetails> = {
+  component: ItemDetails,
   args: {
-    event: events[1],
+    item: events[1],
     showShare: true,
   },
 }
 
 export default meta
 
-export const Default: StoryObj<typeof EventDetails> = {
+export const Default: StoryObj<typeof ItemDetails> = {
   args: {
     h: 200,
     w: 400,
@@ -25,8 +25,9 @@ export const Default: StoryObj<typeof EventDetails> = {
     const [bookmarked, setBookmarked] = useState(false)
 
     return (
-      <EventDetails
+      <ItemDetails
         {...args}
+        tags={tagEntries}
         bookmarked={bookmarked}
         setBookmarked={setBookmarked}
         bookmarkCount={bookmarked ? 18 : 17}
