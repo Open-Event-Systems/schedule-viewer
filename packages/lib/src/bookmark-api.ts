@@ -1,9 +1,8 @@
 import { BookmarkAPI, BookmarkServiceAPI, Selections } from "./types.js"
 import wretch from "wretch"
 import { formatISO, isAfter } from "date-fns"
-import { makeSelections } from "./selections.js"
+import { makeSelections, parseSelections } from "./selections.js"
 import { setEquals } from "./utils.js"
-import { selectionsSchema } from "./schema.js"
 
 const BOOKMARKS_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-v1-"
 const SESSION_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-bookmarks-session-v1-"
@@ -56,7 +55,7 @@ export const makeLocalStorageBookmarkAPI = (
       }
       try {
         const data = JSON.parse(asStr)
-        return selectionsSchema.parse(data)
+        return parseSelections(data)
       } catch (_e) {
         return makeSelections()
       }
@@ -126,7 +125,7 @@ export const setupBookmarkServiceAPI = async (
         return null
       }
 
-      return selectionsSchema.parse(res.selections)
+      return parseSelections(res.selections)
     },
     async getSessionSelections() {
       const res = await baseWretch
@@ -135,7 +134,7 @@ export const setupBookmarkServiceAPI = async (
         .get()
         .json<SessionBookmarksResponse>()
 
-      return selectionsSchema.parse(res)
+      return parseSelections(res.selections)
     },
     async setSessionSelections(selections) {
       const body: BookmarksRequest = {
@@ -151,7 +150,7 @@ export const setupBookmarkServiceAPI = async (
         .put()
         .json<SessionBookmarksResponse>()
 
-      return selectionsSchema.parse(res.selections)
+      return parseSelections(res.selections)
     },
     async getBookmarkCounts() {
       const resp = await baseWretch

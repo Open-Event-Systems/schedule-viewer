@@ -2,8 +2,8 @@ import z from "zod"
 import wretch from "wretch"
 import { ScheduleAPI, ScheduleItem } from "./types.js"
 import { intervalToTimezone } from "./time.js"
-import { scheduleItemSchema } from "./schema.js"
 import { sortScheduleItems } from "./utils.js"
+import { parseScheduleItem } from "./item.js"
 
 const itemsSchema = z.object({
   items: z.array(z.record(z.string(), z.unknown())),
@@ -18,13 +18,13 @@ export const makeScheduleItemsArrayAPI = (
   return {
     async getItems() {
       return items
-        .map((data, i) => {
-          const parsed = scheduleItemSchema.safeParse(data)
+        .map(parseScheduleItem)
+        .map((parsed, i) => {
           if (parsed.success) {
             return parsed.data
           } else {
             console.error(
-              `failed to parse schedule item ${i}:\n${z.prettifyError(parsed.error)}`,
+              `failed to parse schedule item ${i}:\n${parsed.error}`,
             )
             return undefined
           }

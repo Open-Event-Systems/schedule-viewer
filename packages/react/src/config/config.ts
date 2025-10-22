@@ -1,6 +1,11 @@
 import {
+  composeScheduleAPIs,
+  makeScheduleFetchAPI,
+  makeScheduleItemsArrayAPI,
+  makeSortedScheduleAPI,
+  makeTZScheduleAPI,
+  ScheduleAPI,
   ScheduleItem,
-  scheduleItemSchema,
 } from "@open-event-systems/schedule-lib"
 import { createContext, useContext } from "react"
 import z from "zod"
@@ -17,7 +22,7 @@ export type TagIndicatorEntry = Readonly<{
 
 export type ScheduleConfig = Readonly<{
   id: string
-  events: readonly (string | ScheduleItem)[]
+  items: readonly (string | Record<string, unknown>)[]
   title: string
   description: string
   dayChangeHour: number
@@ -84,7 +89,7 @@ const tagIndicatorSchema = z
 const configSchema = z
   .looseObject({
     id: opt(z.string()),
-    events: opt(z.array(z.union([z.string(), scheduleItemSchema]))),
+    items: opt(z.array(z.union([z.string(), z.looseObject({})]))),
     title: opt(z.string()),
     description: opt(z.string()),
     dayChangeHour: opt(z.number()),
@@ -110,7 +115,7 @@ const getDefaultTZ = (): string => {
 
 export const DEFAULT_SCHEDULE_CONFIG = {
   id: "",
-  events: [],
+  items: [],
   title: "Schedule",
   description: "",
   dayChangeHour: 6,
@@ -141,6 +146,21 @@ export const ScheduleConfigContext = createContext<ScheduleConfig>(
 export const ScheduleConfigProvider = ScheduleConfigContext.Provider
 export const useScheduleConfig = (): ScheduleConfig =>
   useContext(ScheduleConfigContext)
+
+export const makeScheduleAPIFromConfig = (
+  config: ScheduleConfig,
+): ScheduleAPI => {
+  const urls = config.items.filter((it) => typeof it == "string")
+  const objs = config.items.filter((it) => typeof it != "string")
+  const parsedAPI = makeScheduleItemsArrayAPI(objs)
+  const urlAPIs = urls.map((url) => makeScheduleFetchAPI(url))
+  const allAPIs = [parsedAPI, ...urlAPIs]
+
+  const composed = composeScheduleAPIs(...allAPIs)
+  const tz = makeTZScheduleAPI(composed)
+  const sorted = makeSortedScheduleAPI(tz)
+  return sorted
+}
 
 export const makeValidTagsFilter = (
   tags: Iterable<TagEntry>,

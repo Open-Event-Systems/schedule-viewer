@@ -18,14 +18,17 @@ export const setEquals = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
  * Return a filter for bookmarked items.
  */
 export const makeBookmarkFilter = (
-  eventIds: Iterable<string>,
+  itemIds: Iterable<string>,
 ): ((e: { readonly id: string }) => boolean) => {
-  const idSet = new Set(eventIds)
+  const idSet = new Set(itemIds)
   return (e) => {
     return idSet.has(e.id)
   }
 }
 
+/**
+ * Return whether an interval has both start and end set.
+ */
 export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
   return !!t.start && !!t.end
 }
@@ -38,14 +41,4 @@ export const sortScheduleItems = <T extends ScheduleItem[]>(arr: T): T => {
   arr = arr.sort((a, b) => a.id.localeCompare(b.id, "en"))
   arr = sortIntervalsByStartDate(arr)
   return arr
-}
-
-export const isScheduleEvent = <T extends ScheduleItem>(
-  t: T,
-): t is T & ScheduleEvent => {
-  return t.type == "event"
-}
-
-export const isVendor = <T extends ScheduleItem>(t: T): t is T & Vendor => {
-  return t.type == "vendor"
 }

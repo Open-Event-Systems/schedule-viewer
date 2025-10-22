@@ -34,15 +34,6 @@ export const App = ({
     return new QueryClient({})
   })
 
-  const [filterSettings, setFilterSettings] = useState(
-    (): FilterSettings => ({
-      text: "",
-      disabledTags: new Set(),
-      showPast: false,
-      onlyBookmarked: false,
-    }),
-  )
-
   const [appConfigPromise] = useState(() => {
     return makeAppConfig(queryClient, `${basePath}config.json`)
   })
@@ -50,37 +41,16 @@ export const App = ({
   return (
     <MantineProvider theme={theme} defaultColorScheme={colorScheme}>
       <QueryClientProvider client={queryClient}>
-        <FilterContext.Provider value={[filterSettings, setFilterSettings]}>
-          <RouterProvider
-            basepath={basePath || "/"}
-            router={router}
-            history={history}
-            context={{
-              appConfigPromise: appConfigPromise,
-              queryClient,
-            }}
-          />
-        </FilterContext.Provider>
+        <RouterProvider
+          basepath={basePath || "/"}
+          router={router}
+          history={history}
+          context={{
+            appConfigPromise: appConfigPromise,
+            queryClient,
+          }}
+        />
       </QueryClientProvider>
     </MantineProvider>
   )
 }
-
-export type FilterSettings = Readonly<{
-  text: string
-  disabledTags: ReadonlySet<string>
-  showPast: boolean
-  onlyBookmarked: boolean
-}>
-
-export const FilterContext = createContext<
-  readonly [FilterSettings, (newSettings: FilterSettings) => void]
->([
-  {
-    text: "",
-    disabledTags: new Set(),
-    showPast: false,
-    onlyBookmarked: false,
-  },
-  () => {},
-])

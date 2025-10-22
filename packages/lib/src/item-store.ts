@@ -9,7 +9,6 @@ import { ScheduleItem } from "./types.js"
 export class ScheduleItemStore<out T extends ScheduleItem = ScheduleItem> {
   private _items: T[]
   private byId: Map<string, T> | undefined = undefined
-  private _tags: Set<string> | undefined = undefined
   private _start: Date | undefined = undefined
   private setStart = false
   private _end: Date | undefined = undefined
@@ -35,14 +34,45 @@ export class ScheduleItemStore<out T extends ScheduleItem = ScheduleItem> {
     return this._items
   }
 
-  get tags(): ReadonlySet<string> {
-    if (!this._tags) {
-      this._tags = new Set()
-      this._items.forEach((item) => {
-        item.tags?.forEach((tag) => this._tags?.add(tag))
-      })
+  get size(): number {
+    return this._items.length
+  }
+
+  map<N extends ScheduleItem>(
+    f: (item: T, i: number) => N | undefined,
+  ): ScheduleItemStore<N> {
+    const that = this
+    function* gen(): Generator<N> {
+      let i = 0
+      for (const item of that) {
+        const res = f(item, i)
+        if (res) {
+          yield res
+        }
+        i++
+      }
     }
-    return this._tags
+
+    return new ScheduleItemStore(gen())
+  }
+
+  filter<N extends T>(
+    f: (item: T, i: number) => item is N,
+  ): ScheduleItemStore<N>
+  filter(f: (item: T, i: number) => boolean): ScheduleItemStore<T>
+  filter(f: (item: T, i: number) => boolean): ScheduleItemStore<T> {
+    const that = this
+    function* gen(): Generator<T> {
+      let i = 0
+      for (const item of that) {
+        if (f(item, i)) {
+          yield item
+        }
+        i++
+      }
+    }
+
+    return new ScheduleItemStore(gen())
   }
 
   get first(): T | undefined {

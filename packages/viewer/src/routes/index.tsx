@@ -14,11 +14,14 @@ import { Loading } from "../components/Loading.js"
 import { AppConfig, ViewerConfigProvider } from "../config.js"
 import { NotFoundRoute } from "./NotFoundRoute.js"
 import {
+  FilterProvider,
   getBookmarkCountsQueryOptions,
-  getEventsQueryOptions,
+  getItemsQueryOptions,
   getSelectionsByIdQueryOptions,
   getSelectionsQueryOptions,
   getSetSelectionsMutationOptions,
+  ScheduleAPIProvider,
+  useFilterState,
 } from "@open-event-systems/schedule-react"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-react"
 import { BookmarkAPIProvider } from "@open-event-systems/schedule-react"
@@ -53,7 +56,7 @@ export const configRoute = createRoute({
 
     return {
       config: appConfig.config,
-      eventAPI: appConfig.eventAPI,
+      scheduleAPI: appConfig.scheduleAPI,
       bookmarkAPI: appConfig.bookmarkAPI,
       bookmarkServiceAPI: appConfig.bookmarkServiceAPI,
       sessionId: appConfig.sessionId,
@@ -76,15 +79,20 @@ export const configRoute = createRoute({
   pendingComponent: Loading,
 })
 
-export const eventsDataRoute = createRoute({
+export const dataRoute = createRoute({
   getParentRoute: () => configRoute,
-  id: "events",
+  id: "data",
   async loader({ context }) {
-    const { config, queryClient, eventAPI, bookmarkAPI, bookmarkServiceAPI } =
-      context
+    const {
+      config,
+      queryClient,
+      scheduleAPI,
+      bookmarkAPI,
+      bookmarkServiceAPI,
+    } = context
 
-    const [events, counts, selections] = await Promise.all([
-      queryClient.fetchQuery(getEventsQueryOptions(config, eventAPI)),
+    const [{ items, events, vendors }, counts, selections] = await Promise.all([
+      queryClient.fetchQuery(getItemsQueryOptions(config, scheduleAPI)),
       queryClient.fetchQuery(
         getBookmarkCountsQueryOptions(config, bookmarkServiceAPI),
       ),
@@ -92,21 +100,25 @@ export const eventsDataRoute = createRoute({
     ])
 
     return {
+      items,
       events,
+      vendors,
       selections,
       counts,
     }
   },
   component: () => {
-    const { bookmarkAPI, bookmarkServiceAPI, config } =
-      eventsDataRoute.useRouteContext()
+    const { scheduleAPI, bookmarkAPI, bookmarkServiceAPI, config } =
+      dataRoute.useRouteContext()
 
     return (
       <ViewerConfigProvider value={config}>
         <ScheduleConfigProvider value={config}>
-          <BookmarkAPIProvider value={[bookmarkAPI, bookmarkServiceAPI]}>
-            <Outlet />
-          </BookmarkAPIProvider>
+          <ScheduleAPIProvider value={scheduleAPI}>
+            <BookmarkAPIProvider value={[bookmarkAPI, bookmarkServiceAPI]}>
+              <Outlet />
+            </BookmarkAPIProvider>
+          </ScheduleAPIProvider>
         </ScheduleConfigProvider>
       </ViewerConfigProvider>
     )
@@ -114,8 +126,30 @@ export const eventsDataRoute = createRoute({
   pendingComponent: Loading,
 })
 
+export const eventFilterRoute = createRoute({
+  getParentRoute: () => dataRoute,
+  id: "eventFilter",
+  component: () => {
+    const filterState = useFilterState()
+    return (
+      <FilterProvider value={filterState}>
+        <Outlet />
+      </FilterProvider>
+    )
+  },
+})
+
+export const eventDetailsRoute = createRoute({
+  getParentRoute: () => eventFilterRoute,
+  id: "eventDetails",
+  component: lazyRouteComponent(
+    () => import("./item-details-route.js"),
+    "ItemDetailsRoute",
+  ),
+})
+
 export const layoutRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => eventDetailsRoute,
   id: "layoutRoute",
   component: ScheduleLayout,
 })
@@ -135,9 +169,9 @@ export const eventRoute = createRoute({
   component: lazyRouteComponent(() => import("./EventRoute.js"), "EventRoute"),
   async loader({ context, params }) {
     const { eventId } = params
-    const { queryClient, config, eventAPI } = context
-    const events = await queryClient.fetchQuery(
-      getEventsQueryOptions(config, eventAPI),
+    const { queryClient, config, scheduleAPI } = context
+    const { events } = await queryClient.fetchQuery(
+      getItemsQueryOptions(config, scheduleAPI),
     )
 
     const event = events.get(eventId)
@@ -227,7 +261,7 @@ export const sharedScheduleRoute = createRoute({
 })
 
 export const mapLayoutRoute = createRoute({
-  getParentRoute: () => eventsDataRoute,
+  getParentRoute: () => dataRoute,
   id: "mapLayout",
   component: lazyRouteComponent(
     () => import("../components/map-layout.js"),

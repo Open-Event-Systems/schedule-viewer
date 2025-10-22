@@ -9,10 +9,16 @@ import { useItemDetails } from "../details/context.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import { ScheduleItem } from "@open-event-systems/schedule-lib"
 
+export type ItemPillsItemType = ScheduleItem &
+  Readonly<{
+    title?: string
+    tags?: ReadonlySet<string>
+  }>
+
 export type ItemPillsBin = Readonly<{
   id: string
   title: ReactNode
-  items: Iterable<ScheduleItem>
+  items: Iterable<ItemPillsItemType>
 }>
 
 export type ItemPillsProps = PillsProps & {
@@ -30,7 +36,7 @@ export const ItemPills = (props: ItemPillsProps) => {
 
   const getIndicator = useMemo(() => {
     const tagFunc = makeTagIndicatorFunc(tagIndicators)
-    return (ev: ScheduleItem) => tagFunc(ev.tags ?? [])
+    return (ev: ItemPillsItemType) => tagFunc(ev.tags ?? [])
   }, [tagIndicators])
 
   const binEls = useMemo(() => {
@@ -57,8 +63,8 @@ const ItemPillsBin = ({
   getIndicator,
 }: {
   title: ReactNode
-  items: Iterable<ScheduleItem>
-  getIndicator?: (item: ScheduleItem) => string | undefined
+  items: Iterable<ItemPillsItemType>
+  getIndicator?: (item: ItemPillsItemType) => string | undefined
 }) => {
   const els = Array.from(items, (e) => (
     <ItemPillsPill key={e.id} item={e} getIndicator={getIndicator} />
@@ -71,8 +77,8 @@ const ItemPillsPill = ({
   item,
   getIndicator,
 }: {
-  item: ScheduleItem
-  getIndicator?: (item: ScheduleItem) => string | undefined
+  item: ItemPillsItemType
+  getIndicator?: (item: ItemPillsItemType) => string | undefined
 }) => {
   const detailsFunc = useItemDetails()
 
@@ -112,7 +118,7 @@ const ItemPillsPill = ({
 }
 
 export const binItemsByTitle = (
-  items: Iterable<ScheduleItem>,
+  items: Iterable<ItemPillsItemType>,
 ): readonly ItemPillsBin[] => {
   const sorted = [...items]
   sorted.sort((a, b) => {
@@ -127,7 +133,7 @@ export const binItemsByTitle = (
     }
   })
 
-  const map = new Map<string, ScheduleItem[]>()
+  const map = new Map<string, ItemPillsItemType[]>()
 
   for (const item of sorted) {
     let char
@@ -173,10 +179,10 @@ export const binItemsByTitle = (
 }
 
 export const binItemsByTime = (
-  items: Iterable<ScheduleItem>,
+  items: Iterable<ItemPillsItemType>,
   binMinutes: number,
 ): readonly ItemPillsBin[] => {
-  const map = new Map<string, [Date, ScheduleItem[]]>()
+  const map = new Map<string, [Date, ItemPillsItemType[]]>()
 
   for (const item of items) {
     if (item.start) {
@@ -208,14 +214,22 @@ export const binItemsByTime = (
 const binDate = (d: Date, binMinutes: number): Date => {
   const tz = d instanceof TZDate ? d.timeZone : undefined
   const roundedMinutes = Math.floor(d.getMinutes() / binMinutes) * binMinutes
-  const rounded = new TZDate(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate(),
-    d.getHours(),
-    roundedMinutes,
-    tz,
-  )
+  const rounded = tz
+    ? new TZDate(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        d.getHours(),
+        roundedMinutes,
+        tz,
+      )
+    : new TZDate(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        d.getHours(),
+        roundedMinutes,
+      )
 
   return rounded
 }

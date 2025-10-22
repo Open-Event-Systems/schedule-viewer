@@ -3,7 +3,7 @@
   "bookmarks": "http://localhost:8000/schedule/example-event",
   "icalPrefix": "example",
   "icalDomain": "example.net",
-  "events": "/events.json",
+  "items": ["/events.json"],
   "title": "Example Event",
   "description": "Example event schedule.",
   "homeURL": "/",

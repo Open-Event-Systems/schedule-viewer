@@ -3,7 +3,7 @@ import {
   configRoute,
   confirmSyncScheduleRoute,
   eventRoute,
-  eventsDataRoute,
+  dataRoute,
   eventsRoute,
   layoutRoute,
   mapLayoutRoute,
@@ -13,19 +13,25 @@ import {
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,
+  eventFilterRoute,
+  eventDetailsRoute,
 } from "./routes/index.js"
 
 const routeTree = rootRoute.addChildren([
   configRoute.addChildren([
-    eventsDataRoute.addChildren([
-      layoutRoute.addChildren([
-        eventsRoute.addChildren([
-          shareScheduleRoute,
-          syncScheduleRoute,
-          confirmSyncScheduleRoute,
+    dataRoute.addChildren([
+      eventFilterRoute.addChildren([
+        eventDetailsRoute.addChildren([
+          layoutRoute.addChildren([
+            eventsRoute.addChildren([
+              shareScheduleRoute,
+              syncScheduleRoute,
+              confirmSyncScheduleRoute,
+            ]),
+            eventRoute,
+            sharedScheduleRoute,
+          ]),
         ]),
-        eventRoute,
-        sharedScheduleRoute,
       ]),
       mapLayoutRoute.addChildren([mapRoute]),
     ]),

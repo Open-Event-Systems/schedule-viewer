@@ -1,6 +1,6 @@
 import { add, isAfter, isBefore, isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { Interval } from "./types.js"
+import { Bounded, Interval } from "./types.js"
 
 /**
  * Return whether an interval contains a date.
@@ -82,7 +82,11 @@ export const sortIntervalsByStartDate = <T extends Interval[]>(arr: T): T => {
  * Get a Date representing the day a date occurs on, subject to the day change
  * hour.
  */
-export const getDay = (d: Date, tz: string, dayChangeHour = 0): Interval => {
+export const getDay = (
+  d: Date,
+  tz: string,
+  dayChangeHour = 0,
+): Bounded<Interval> => {
   const shift = add(d, { hours: -dayChangeHour })
   const start = new TZDate(
     shift.getFullYear(),

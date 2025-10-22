@@ -1,5 +1,5 @@
 import { TZDate } from "@date-fns/tz"
-import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import { ScheduleEvent, ScheduleItem } from "@open-event-systems/schedule-lib"
 import z from "zod"
 import { ScheduleConfigInput } from "./config/config.js"
 
@@ -42,7 +42,7 @@ export const events = [
       { name: "Model", url: "https://example.net" },
     ],
   },
-] satisfies readonly ScheduleItem[]
+] satisfies readonly ScheduleEvent[]
 
 export const config = {
   id: "example-event",

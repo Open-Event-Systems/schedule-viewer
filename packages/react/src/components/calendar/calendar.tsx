@@ -15,7 +15,7 @@ import { Bounded, ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type CalendarColumnData = {
   title?: ReactNode
-  items?: readonly Bounded<ScheduleItem>[]
+  items?: readonly Bounded<ScheduleItem & { readonly title?: string }>[]
 }
 
 export type CalendarProps = {

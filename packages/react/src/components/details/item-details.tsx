@@ -28,8 +28,20 @@ import { Markdown } from "../markdown/markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
 import { ScheduleItem } from "@open-event-systems/schedule-lib"
 
+export type ItemDetailsItemType = ScheduleItem &
+  Readonly<{
+    title?: string
+    description?: string
+    location?: string
+    contacts?: readonly Readonly<{
+      name?: string
+      url?: string
+    }>[]
+    tags?: ReadonlySet<string>
+  }>
+
 export type ItemDetailsProps = {
-  item: ScheduleItem
+  item: ItemDetailsItemType
   large?: boolean
   bookmarked?: boolean
   setBookmarked?: (set: boolean) => void

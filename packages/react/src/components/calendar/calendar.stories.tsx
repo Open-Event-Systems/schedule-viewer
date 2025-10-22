@@ -5,6 +5,7 @@ import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
 import "../details/item-details.scss"
 import "./calendar.scss"
+import { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -40,7 +41,7 @@ export const Default: StoryObj<typeof Calendar> = {
                   contacts: [],
                   tags: new Set(),
                 },
-              ],
+              ] as Bounded<ScheduleEvent>[],
             },
             {
               title: "Room B",
@@ -56,7 +57,7 @@ export const Default: StoryObj<typeof Calendar> = {
                   contacts: [],
                   tags: new Set(),
                 },
-              ],
+              ] as Bounded<ScheduleEvent>[],
             },
           ]}
           {...args}

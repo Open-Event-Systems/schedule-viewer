@@ -1,6 +1,5 @@
-import { ScheduleItem } from "@open-event-systems/schedule-lib"
 import { createContext, MouseEvent, useContext } from "react"
-import { ItemDetailsProps } from "./item-details.js"
+import { ItemDetailsItemType, ItemDetailsProps } from "./item-details.js"
 import { TagEntry } from "../../config/config.js"
 
 export type ItemDetailsFuncReturn = Partial<ItemDetailsProps> & {
@@ -8,11 +7,11 @@ export type ItemDetailsFuncReturn = Partial<ItemDetailsProps> & {
 }
 
 export const ItemDetailsContext = createContext<
-  ((item: ScheduleItem) => ItemDetailsFuncReturn) | undefined
+  ((item: ItemDetailsItemType) => ItemDetailsFuncReturn) | undefined
 >(undefined)
 export const ItemDetailsProvider = ItemDetailsContext.Provider
 export const useItemDetails = ():
-  | ((item: ScheduleItem) => ItemDetailsFuncReturn)
+  | ((item: ItemDetailsItemType) => ItemDetailsFuncReturn)
   | undefined => useContext(ItemDetailsContext)
 
 export const makeItemDetailsFunc = ({
@@ -25,15 +24,15 @@ export const makeItemDetailsFunc = ({
   onClickLocation,
   tags,
 }: {
-  getHref?: (item: ScheduleItem) => string | undefined
-  onClickItem?: (e: MouseEvent, item: ScheduleItem) => void
-  getIsBookmarked?: (item: ScheduleItem) => boolean | undefined
-  setBookmarked?: (item: ScheduleItem, set: boolean) => void
-  getBookmarkCount?: (item: ScheduleItem) => number | undefined
-  getLocationHref?: (item: ScheduleItem) => string | undefined
-  onClickLocation?: (e: MouseEvent, item: ScheduleItem) => void
+  getHref?: (item: ItemDetailsItemType) => string | undefined
+  onClickItem?: (e: MouseEvent, item: ItemDetailsItemType) => void
+  getIsBookmarked?: (item: ItemDetailsItemType) => boolean | undefined
+  setBookmarked?: (item: ItemDetailsItemType, set: boolean) => void
+  getBookmarkCount?: (item: ItemDetailsItemType) => number | undefined
+  getLocationHref?: (item: ItemDetailsItemType) => string | undefined
+  onClickLocation?: (e: MouseEvent, item: ItemDetailsItemType) => void
   tags?: readonly TagEntry[]
-}): ((item: ScheduleItem) => ItemDetailsFuncReturn) => {
+}): ((item: ItemDetailsItemType) => ItemDetailsFuncReturn) => {
   return (item) => {
     const props: ItemDetailsFuncReturn = {}
 

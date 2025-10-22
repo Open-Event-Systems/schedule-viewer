@@ -1,18 +1,28 @@
 import {
   BookmarkAPI,
   BookmarkServiceAPI,
+  makeBookmarkFilter,
+  makePastItemFilter,
+  makeScheduleEventStore,
   makeScheduleItemsArrayAPI,
+  makeTagFilter,
+  makeTitleFilter,
+  makeVendorStore,
   ScheduleAPI,
+  ScheduleEvent,
+  ScheduleItem,
   ScheduleItemStore,
   Selections,
+  Vendor,
 } from "@open-event-systems/schedule-lib"
 import { ScheduleConfig, useScheduleConfig } from "./config/config.js"
-import { createContext, useContext } from "react"
+import { createContext, useContext, useMemo, useReducer } from "react"
 import {
   QueryClient,
   useMutation,
   UseMutationOptions,
   useQueryClient,
+  UseQueryOptions,
   useSuspenseQuery,
   UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
@@ -27,16 +37,29 @@ export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
 export const getItemsQueryOptions = (
   config: ScheduleConfig,
   api: ScheduleAPI,
-): UseSuspenseQueryOptions<ScheduleItemStore> => ({
+): UseSuspenseQueryOptions<
+  Readonly<{
+    items: ScheduleItemStore
+    events: ScheduleItemStore<ScheduleEvent>
+    vendors: ScheduleItemStore<Vendor>
+  }>
+> => ({
   queryKey: ["schedule", config.id, "items"],
   async queryFn() {
-    const items = await api.getItems()
-    return new ScheduleItemStore(items)
+    const res = await api.getItems()
+    const items = new ScheduleItemStore(res)
+    const events = makeScheduleEventStore(items)
+    const vendors = makeVendorStore(items)
+    return { items, events, vendors }
   },
   staleTime: 300000,
 })
 
-export const useItems = (): ScheduleItemStore => {
+export const useItems = (): Readonly<{
+  items: ScheduleItemStore
+  events: ScheduleItemStore<ScheduleEvent>
+  vendors: ScheduleItemStore<Vendor>
+}> => {
   const config = useScheduleConfig()
   const api = useScheduleAPI()
   const res = useSuspenseQuery(getItemsQueryOptions(config, api))
@@ -145,4 +168,87 @@ export const useBookmarkCounts = ():
 export const useBookmarkCount = (eventId: string): number | undefined => {
   const counts = useBookmarkCounts()
   return counts?.get(eventId)
+}
+
+export type FilterSettings = Readonly<{
+  text: string
+  disabledTags: ReadonlySet<string>
+  onlyBookmarked: boolean
+  showPast: boolean
+}>
+
+export const FilterContext = createContext<
+  [FilterSettings, (update: Partial<FilterSettings>) => void]
+>([
+  {
+    text: "",
+    disabledTags: new Set(),
+    onlyBookmarked: false,
+    showPast: false,
+  },
+  () => {},
+])
+export const FilterProvider = FilterContext.Provider
+export const useFilter = (): [
+  FilterSettings,
+  (update: Partial<FilterSettings>) => void,
+] => useContext(FilterContext)
+
+export const useFilterState = (): [
+  FilterSettings,
+  (update: Partial<FilterSettings>) => void,
+] => {
+  const reducer = (
+    state: FilterSettings,
+    action: Partial<FilterSettings>,
+  ): FilterSettings => {
+    const newState = {
+      ...state,
+      ...action,
+    }
+    return newState
+  }
+
+  return useReducer(reducer, {
+    text: "",
+    disabledTags: new Set(),
+    onlyBookmarked: false,
+    showPast: false,
+  })
+}
+
+export const useFilteredItems = <
+  T extends ScheduleItem & {
+    readonly title?: string
+    readonly tags?: ReadonlySet<string>
+  },
+>(
+  items: ScheduleItemStore<T>,
+  now: Date,
+  selections?: Selections,
+): ScheduleItemStore<T> => {
+  const [filter] = useFilter()
+  const byBookmarked = useMemo(() => {
+    if (filter.onlyBookmarked) {
+      return selections
+        ? items.filter(makeBookmarkFilter(selections.events))
+        : new ScheduleItemStore([])
+    } else {
+      return items
+    }
+  }, [filter.onlyBookmarked, items, selections])
+  const byTag = useMemo(
+    () => byBookmarked.filter(makeTagFilter(filter.disabledTags)),
+    [byBookmarked, filter.disabledTags],
+  )
+  const byPast = useMemo(
+    () => (!filter.showPast ? byTag.filter(makePastItemFilter(now)) : byTag),
+    [filter.showPast, byTag, now],
+  )
+  const byTitle = useMemo(
+    () => (filter.text ? byPast.filter(makeTitleFilter(filter.text)) : byPast),
+    [filter.text, byPast],
+  )
+
+  return byTitle
 }

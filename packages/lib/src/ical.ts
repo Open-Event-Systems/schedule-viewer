@@ -9,7 +9,12 @@ import * as ics from "ics"
  * @param domain - A domain added to event UIDs
  */
 export const createICS = (
-  events: Iterable<Bounded<ScheduleItem>>,
+  events: Iterable<
+    Bounded<
+      ScheduleItem &
+        Readonly<{ title?: string; description?: string; location?: string }>
+    >
+  >,
   prefix: string,
   domain: string,
 ): string => {

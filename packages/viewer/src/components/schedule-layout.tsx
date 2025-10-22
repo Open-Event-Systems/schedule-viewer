@@ -1,12 +1,12 @@
 import { Anchor, Box, Container, Grid, Stack, Title } from "@mantine/core"
 import { Outlet } from "@tanstack/react-router"
-import { eventsDataRoute } from "../routes/index.js"
+import { dataRoute } from "../routes/index.js"
 import { UpdateButton } from "./update-button.js"
 import { Markdown } from "@open-event-systems/schedule-react/components/markdown/markdown"
 import { InstallButton } from "./install-button.js"
 
 export const ScheduleLayout = () => {
-  const { config } = eventsDataRoute.useRouteContext()
+  const { config } = dataRoute.useRouteContext()
   return (
     <Container className="ScheduleLayout-root" size="md" p="xs">
       <Stack>
