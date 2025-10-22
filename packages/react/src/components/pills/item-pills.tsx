@@ -4,10 +4,15 @@ import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import { ReactNode, useCallback, useMemo } from "react"
 import clsx from "clsx"
-import { makeTagIndicatorFunc, TagIndicatorEntry } from "../../config/config.js"
+import {
+  makeTagIndicatorFunc,
+  TagEntry,
+  TagIndicatorEntry,
+} from "../../config/config.js"
 import { useItemDetails } from "../details/context.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import { string } from "zod"
 
 export type ItemPillsItemType = ScheduleItem &
   Readonly<{
@@ -169,6 +174,81 @@ export const binItemsByTitle = (
     if (a.id == "Other") {
       return 1
     } else if (b.id == "Other") {
+      return -1
+    } else {
+      return a.id.localeCompare(b.id)
+    }
+  })
+
+  return bins
+}
+
+export const binItemsByTag = (
+  items: Iterable<ItemPillsItemType>,
+  tags: Iterable<TagEntry>,
+): readonly ItemPillsBin[] => {
+  const sortedItems = [...items]
+  sortedItems.sort((a, b) => {
+    if (a.title && b.title) {
+      return a.title.localeCompare(b.title)
+    } else if (a.title) {
+      return -1
+    } else if (b.title) {
+      return 1
+    } else {
+      return 0
+    }
+  })
+
+  const tagTitleMap: Record<string, string | undefined> = {}
+  for (const tag of tags) {
+    tagTitleMap[tag.tag] = tag.title
+  }
+
+  const map = new Map<string, ItemPillsItemType[]>()
+
+  for (const item of sortedItems) {
+    let empty = true
+    for (const itemTag of item.tags ?? []) {
+      const title = tagTitleMap[itemTag]
+      if (!title) {
+        continue
+      }
+
+      let bin = map.get(title)
+      if (!bin) {
+        bin = []
+        map.set(title, bin)
+      }
+
+      bin.push(item)
+      empty = false
+    }
+
+    if (empty) {
+      let bin = map.get("N/A")
+      if (!bin) {
+        bin = []
+        map.set("N/A", bin)
+      }
+      bin.push(item)
+    }
+  }
+
+  const bins: ItemPillsBin[] = []
+
+  for (const [title, items] of map.entries()) {
+    bins.push({
+      id: title,
+      title,
+      items,
+    })
+  }
+
+  bins.sort((a, b) => {
+    if (a.id == "N/A") {
+      return 1
+    } else if (b.id == "N/A") {
       return -1
     } else {
       return a.id.localeCompare(b.id)

@@ -6,7 +6,14 @@ import {
   shareScheduleRoute,
   syncScheduleRoute,
 } from "./index.js"
-import { Grid, SegmentedControl, Select, Stack } from "@mantine/core"
+import {
+  Grid,
+  Group,
+  SegmentedControl,
+  Select,
+  Stack,
+  Text,
+} from "@mantine/core"
 import { useCallback, useRef, useState } from "react"
 import {
   clearSelections,
@@ -17,6 +24,7 @@ import {
 import { ConfirmSyncDialog } from "@open-event-systems/schedule-react/components/confirm-sync-dialog/confirm-sync-dialog"
 import { ShareDialog } from "@open-event-systems/schedule-react/components/share-dialog/share-dialog"
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
+import { BookmarkFilter } from "@open-event-systems/schedule-react/components/bookmark-filter/bookmark-filter"
 import { observer } from "mobx-react-lite"
 import { useMatch, useRouter } from "@tanstack/react-router"
 import {
@@ -30,6 +38,7 @@ import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react"
 import { Filter } from "../components/filter.js"
 import { DailyAgendaView } from "../components/schedule/daily-agenda-view.js"
 import { CatalogView } from "../components/schedule/catalog-view.js"
+import { TagsView } from "../components/schedule/tags-view.js"
 
 export const EventsRoute = observer(() => {
   const { config } = dataRoute.useRouteContext()
@@ -96,18 +105,16 @@ export const EventsRoute = observer(() => {
     <Grid>
       <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
         <Stack>
-          <ViewOptions view={viewType} setView={setViewType} />
-          <SegmentedControl
-            fullWidth
-            data={[
-              { label: "All Events", value: "all" },
-              { label: "My Schedule", value: "bookmarked" },
-            ]}
-            value={filter.onlyBookmarked ? "bookmarked" : "all"}
-            onChange={useCallback((v: string) => {
-              updateFilter({ onlyBookmarked: v == "bookmarked" })
-            }, [])}
-          />
+          <Grid gutter="xs" justify="flex-start" align="baseline">
+            <Grid.Col span={{ base: "content" }}>
+              <Text component="label" size="xs" htmlFor="view-options">
+                View:
+              </Text>
+            </Grid.Col>
+            <Grid.Col span={{ base: "auto", sm: "content" }}>
+              <ViewOptions view={viewType} setView={setViewType} />
+            </Grid.Col>
+          </Grid>
           {viewType == "catalog" && <CatalogView items={allEvents} />}
           {viewType == "daily" && (
             <DailyAgendaView
@@ -115,10 +122,19 @@ export const EventsRoute = observer(() => {
               curRoute={{ to: eventsRoute.to }}
             />
           )}
+          {viewType == "tags" && <TagsView items={allEvents} />}
         </Stack>
       </Grid.Col>
       <Grid.Col span={{ xs: 12, sm: 4 }} order={{ base: 1, xs: 1, sm: 2 }}>
         <Stack align="end" gap="xs">
+          <BookmarkFilter
+            value={filter.onlyBookmarked}
+            fullWidth
+            onChange={useCallback((v: boolean) => {
+              updateFilter({ onlyBookmarked: v })
+            }, [])}
+            size="xs"
+          />
           <Filter tags={config.tags} tagIndicators={config.tagIndicators} />
           <ShareMenu
             enableSync={!!bookmarkServiceAPI}
@@ -223,6 +239,7 @@ const ViewOptions = ({
 }) => {
   return (
     <Select
+      id="view-options"
       variant="unstyled"
       data={[
         {
@@ -237,10 +254,15 @@ const ViewOptions = ({
           label: "Catalog",
           value: "catalog",
         },
+        {
+          label: "By Tags",
+          value: "tags",
+        },
       ]}
       value={view || "daily"}
       onChange={(v) => setView(v || "daily")}
       allowDeselect={false}
+      size="xs"
     />
   )
 }
