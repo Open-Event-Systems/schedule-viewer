@@ -1,5 +1,5 @@
 import { toTimezone } from "@open-event-systems/schedule-lib"
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { parseISO } from "date-fns"
 
 const dateStr = "2025-01-01T17:00:00Z"

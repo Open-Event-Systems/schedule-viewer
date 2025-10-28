@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { binItemsByTime, binItemsByTitle, ItemPills } from "./item-pills.js"
 import { events, tagEntries } from "../../test-data.js"
 import { MouseEvent, useCallback } from "react"

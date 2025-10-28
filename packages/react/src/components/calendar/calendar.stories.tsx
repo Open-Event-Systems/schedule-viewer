@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { Calendar } from "./calendar.js"
 import { MouseEvent, useCallback } from "react"
 import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"

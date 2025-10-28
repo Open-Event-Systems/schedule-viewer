@@ -1,13 +1,13 @@
-import type { Preview } from "@storybook/react-webpack5"
+import type { Preview } from "@storybook/react-vite"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
-
-import { config } from "../src/test-data.js"
 
 import "@mantine/core/styles.css"
 import {
   DEFAULT_SCHEDULE_CONFIG,
   ScheduleConfigProvider,
 } from "../src/config/config.js"
+
+import { config } from "../src/test-data.js"
 
 const preview: Preview = {
   parameters: {
