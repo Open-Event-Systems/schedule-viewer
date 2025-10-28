@@ -1,57 +1,57 @@
 import {
   confirmSyncScheduleRoute,
-  eventRoute,
-  eventsDataRoute,
+  dataRoute,
   eventsRoute,
-  mapRoute,
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,
 } from "./index.js"
-import { Grid, SegmentedControl, Stack } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
-import { MouseEvent, useCallback, useContext, useMemo, useRef } from "react"
+import {
+  Grid,
+  Group,
+  SegmentedControl,
+  Select,
+  Stack,
+  Text,
+} from "@mantine/core"
+import { useCallback, useRef, useState } from "react"
 import {
   clearSelections,
   createICS,
-  Event,
-  isScheduled,
-  makeBookmarkFilter,
-  makeTagFilter,
-  makeTitleFilter,
+  isBounded,
   setupBookmarkServiceAPI,
 } from "@open-event-systems/schedule-lib"
-import { Filter } from "@open-event-systems/schedule-react/components/filter/filter"
 import { ConfirmSyncDialog } from "@open-event-systems/schedule-react/components/confirm-sync-dialog/confirm-sync-dialog"
 import { ShareDialog } from "@open-event-systems/schedule-react/components/share-dialog/share-dialog"
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
+import { BookmarkFilter } from "@open-event-systems/schedule-react/components/bookmark-filter/bookmark-filter"
 import { observer } from "mobx-react-lite"
-import { useLocation, useMatch, useRouter } from "@tanstack/react-router"
+import { useMatch, useRouter } from "@tanstack/react-router"
 import {
-  useBookmarkCounts,
-  useEvents,
+  useFilter,
+  useFilteredItems,
+  useItems,
   useSelections,
-  useSetSelections,
 } from "@open-event-systems/schedule-react"
-import { FilterContext } from "../components/App.js"
-import { ScheduleView } from "../components/schedule-view.js"
-import { useMapConfig } from "../config.js"
-import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
+import { useTime } from "../config.js"
 import { useBookmarkServiceAPI } from "@open-event-systems/schedule-react"
+import { Filter } from "../components/filter.js"
+import { DailyAgendaView } from "../components/schedule/daily-agenda-view.js"
+import { CatalogView } from "../components/schedule/catalog-view.js"
+import { TagsView } from "../components/schedule/tags-view.js"
 
 export const EventsRoute = observer(() => {
-  const { config } = eventsDataRoute.useRouteContext()
-  const mapConfig = useMapConfig()
-  const allEvents = useEvents()
+  const { config } = dataRoute.useRouteContext()
+  const { events: allEvents } = useItems()
   const selections = useSelections()
-  const counts = useBookmarkCounts()
-  const updateSelections = useSetSelections()
   const bookmarkServiceAPI = useBookmarkServiceAPI()
 
-  const [filter, setFilter] = useContext(FilterContext)
-  const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
+  const [filter, updateFilter] = useFilter()
+  const now = useTime()
+  const filteredEvents = useFilteredItems(allEvents, now, selections)
 
-  const loc = useLocation()
+  const [viewType, setViewType] = useState<string>("daily")
+
   const navigate = eventsRoute.useNavigate()
   const router = useRouter()
 
@@ -101,133 +101,41 @@ export const EventsRoute = observer(() => {
     window.location.href,
   )
 
-  const hashParams = new URLSearchParams(loc.hash)
-  const selectedDayKey = hashParams.get("day")
-
-  const setSelectedDay = useCallback(
-    (day: DayFilterDay) => {
-      navigate({
-        hash: `day=${day.key}`,
-        replace: true,
-      })
-    },
-    [navigate],
-  )
-  const onClick = useCallback(
-    (e: MouseEvent, event: Event) => {
-      e.preventDefault()
-      navigate({
-        to: eventRoute.to,
-        params: {
-          eventId: event.id,
-        },
-      })
-    },
-    [navigate],
-  )
-
-  const getHref = useCallback(
-    (event: Event) => {
-      return String(
-        new URL(
-          router.history.createHref(
-            router.buildLocation({
-              to: eventRoute.to,
-              params: {
-                eventId: event.id,
-              },
-            }).href,
-          ),
-          window.location.href,
-        ),
-      )
-    },
-    [router],
-  )
-
-  const mapLocs = useMemo(() => {
-    return getMapLocationsWithAlias(mapConfig)
-  }, [mapConfig])
-
-  const getLocHref = useCallback(
-    (event: Event) => {
-      const loc = event.location ? mapLocs.get(event.location) : undefined
-      if (loc) {
-        return String(
-          new URL(
-            router.history.createHref(
-              router.buildLocation({
-                to: mapRoute.to,
-                hash: `loc=${loc.id}`,
-              }).href,
-            ),
-            window.location.href,
-          ),
-        )
-      }
-      return undefined
-    },
-    [mapLocs, router],
-  )
-
-  const onLocClick = useCallback(
-    (event: Event) => {
-      const loc = event.location ? mapLocs.get(event.location) : undefined
-      if (loc) {
-        navigate({
-          to: mapRoute.to,
-          hash: `loc=${loc.id}`,
-        })
-      }
-    },
-    [mapLocs, navigate],
-  )
-
   return (
     <Grid>
       <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
         <Stack>
-          <SegmentedControl
-            fullWidth
-            data={[
-              { label: "All Events", value: "all" },
-              { label: "My Schedule", value: "bookmarked" },
-            ]}
-            value={onlyBookmarked ? "bookmarked" : "all"}
-            onChange={(v) => {
-              setFilter({ ...filter, onlyBookmarked: v == "bookmarked" })
-            }}
-          />
-          <ScheduleView
-            config={config}
-            events={allEvents}
-            filter={filter}
-            counts={counts}
-            selectedDay={selectedDayKey}
-            setSelectedDay={setSelectedDay}
-            selections={selections}
-            updateSelections={updateSelections}
-            onClickEvent={onClick}
-            getHref={getHref}
-            getLocationHref={getLocHref}
-            onClickLocation={onLocClick}
-          />
+          <Grid gutter="xs" justify="flex-start" align="baseline">
+            <Grid.Col span={{ base: "content" }}>
+              <Text component="label" size="xs" htmlFor="view-options">
+                View:
+              </Text>
+            </Grid.Col>
+            <Grid.Col span={{ base: "auto", sm: "content" }}>
+              <ViewOptions view={viewType} setView={setViewType} />
+            </Grid.Col>
+          </Grid>
+          {viewType == "catalog" && <CatalogView items={allEvents} />}
+          {viewType == "daily" && (
+            <DailyAgendaView
+              items={allEvents}
+              curRoute={{ to: eventsRoute.to }}
+            />
+          )}
+          {viewType == "tags" && <TagsView items={allEvents} />}
         </Stack>
       </Grid.Col>
       <Grid.Col span={{ xs: 12, sm: 4 }} order={{ base: 1, xs: 1, sm: 2 }}>
         <Stack align="end" gap="xs">
-          <Filter
-            text={filterText}
-            disabledTags={disabledTags}
-            showPastEvents={showPast}
-            onChangeText={(text: string) => setFilter({ ...filter, text })}
-            onChangeTags={(disabledTags: Set<string>) =>
-              setFilter({ ...filter, disabledTags })
-            }
-            onChangeShowPastEvents={(showPast: boolean) =>
-              setFilter({ ...filter, showPast })
-            }
+          <BookmarkFilter
+            value={filter.onlyBookmarked}
+            fullWidth
+            onChange={useCallback((v: boolean) => {
+              updateFilter({ onlyBookmarked: v })
+            }, [])}
+            size="xs"
           />
+          <Filter tags={config.tags} tagIndicators={config.tagIndicators} />
           <ShareMenu
             enableSync={!!bookmarkServiceAPI}
             onShare={() => {
@@ -241,20 +149,8 @@ export const EventsRoute = observer(() => {
               })
             }}
             onExport={() => {
-              let events = Array.from(allEvents).filter(isScheduled)
-
-              if (filterText) {
-                events = events.filter(makeTitleFilter(filterText))
-              }
-
-              events = events.filter(makeTagFilter(disabledTags))
-
-              if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(selections.events))
-              }
-
               const data = createICS(
-                events,
+                filteredEvents.filter(isBounded),
                 `schedule-${config.icalPrefix || "event"}`,
                 config.icalDomain || window.location.hostname,
               )
@@ -295,7 +191,7 @@ export const EventsRoute = observer(() => {
             onConfirm={() => {
               if (confirmSyncId && config.bookmarks) {
                 const href = router.buildLocation({
-                  to: eventsDataRoute.to,
+                  to: dataRoute.to,
                 }).href
                 const url = new URL(
                   router.history.createHref(href),
@@ -333,3 +229,40 @@ export const EventsRoute = observer(() => {
 })
 
 EventsRoute.displayName = "EventsRoute"
+
+const ViewOptions = ({
+  view,
+  setView,
+}: {
+  view?: string
+  setView: (view: string) => void
+}) => {
+  return (
+    <Select
+      id="view-options"
+      variant="unstyled"
+      data={[
+        {
+          label: "Daily Agenda",
+          value: "daily",
+        },
+        {
+          label: "Full Agenda",
+          value: "agenda",
+        },
+        {
+          label: "Catalog",
+          value: "catalog",
+        },
+        {
+          label: "By Tags",
+          value: "tags",
+        },
+      ]}
+      value={view || "daily"}
+      onChange={(v) => setView(v || "daily")}
+      allowDeselect={false}
+      size="xs"
+    />
+  )
+}

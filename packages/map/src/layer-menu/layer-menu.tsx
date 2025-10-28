@@ -9,11 +9,12 @@ import {
 import { IconCaretDown, IconCaretUp } from "@tabler/icons-react"
 import clsx from "clsx"
 import { useMemo } from "react"
+import { MapLayer } from "../types-new.js"
 
 export type LayerMenuProps = PaperProps & {
   opened?: boolean
   onSetOpened?: (opened: boolean) => void
-  layers?: readonly Readonly<{ id: string; label: string }>[]
+  layers?: readonly MapLayer[]
   hiddenLayers?: Iterable<string>
   onChangeLayers?: (layers: Set<string>) => void
 }
@@ -34,8 +35,11 @@ export const LayerMenu = (props: LayerMenuProps) => {
   if (!opened) {
     return (
       <Button
+        className="LayerMenu-showButton"
         variant="default"
         size="compact-xs"
+        aria-label="toggle layer menu"
+        aria-expanded={opened ? "true" : "false"}
         onClick={() => onSetOpened && onSetOpened(true)}
       >
         <IconCaretUp />
@@ -54,11 +58,11 @@ export const LayerMenu = (props: LayerMenuProps) => {
         >
           <IconCaretDown />
         </Button>
-        {layers?.map(({ id, label }) => (
+        {layers?.map(({ id, title }) => (
           <Checkbox
             key={id}
             size="xs"
-            label={label}
+            label={title}
             checked={!hiddenSet.has(id)}
             onChange={(e) => {
               const newSet = new Set(hiddenSet)

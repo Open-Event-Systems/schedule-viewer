@@ -1,4 +1,3 @@
-import { EventDetails } from "@open-event-systems/schedule-react/components/details/event-details"
 import { eventRoute, eventsRoute, mapRoute } from "./index.js"
 import { Link, useRouter } from "@tanstack/react-router"
 import { Anchor } from "@mantine/core"
@@ -12,6 +11,7 @@ import {
 import { useMapConfig } from "../config.js"
 import { getMapLocationsWithAlias } from "@open-event-systems/schedule-map/map"
 import { makeSelections } from "@open-event-systems/schedule-lib"
+import { ItemDetails } from "@open-event-systems/schedule-react/components/details/item-details"
 
 export const EventRoute = observer(() => {
   const mapConfig = useMapConfig()
@@ -73,10 +73,10 @@ export const EventRoute = observer(() => {
       <Anchor component={Link} to={eventsRoute.to} size="sm">
         &laquo; Back to schedule
       </Anchor>
-      <EventDetails
+      <ItemDetails
         key={event.id}
         large
-        event={event}
+        item={event}
         bookmarked={bookmarked}
         setBookmarked={setBookmarked}
         bookmarkCount={count}

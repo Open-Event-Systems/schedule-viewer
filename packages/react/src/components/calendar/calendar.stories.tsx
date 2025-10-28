@@ -1,9 +1,11 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
 import { Calendar } from "./calendar.js"
 import { MouseEvent, useCallback } from "react"
-import { EventDetailsProvider } from "../details/context.js"
+import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
+import "../details/item-details.scss"
 import "./calendar.scss"
+import { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -13,54 +15,56 @@ export default meta
 
 export const Default: StoryObj<typeof Calendar> = {
   render(args) {
-    const onClickEvent = useCallback((e: MouseEvent) => e.preventDefault(), [])
+    const onClickItem = useCallback((e: MouseEvent) => e.preventDefault(), [])
     const getHref = useCallback(() => "#", [])
 
     return (
-      <EventDetailsProvider
-        value={{
+      <ItemDetailsProvider
+        value={makeItemDetailsFunc({
           getHref,
-          onClickEvent,
-        }}
+          onClickItem,
+        })}
       >
         <Calendar
           columns={[
             {
               title: "Room A",
-              events: [
+              items: [
                 {
                   id: "e1",
+                  type: "event",
                   location: "Room A",
                   start: new Date(2020, 0, 1, 12),
                   end: new Date(2020, 0, 1, 13),
                   title: "Event A",
                   description: "",
-                  hosts: [],
+                  contacts: [],
                   tags: new Set(),
                 },
-              ],
+              ] as Bounded<ScheduleEvent>[],
             },
             {
               title: "Room B",
-              events: [
+              items: [
                 {
                   id: "e2",
+                  type: "event",
                   location: "Room B",
                   start: new Date(2020, 0, 1, 12, 30),
                   end: new Date(2020, 0, 1, 13, 30),
                   title: "Event B",
                   description: "",
-                  hosts: [],
+                  contacts: [],
                   tags: new Set(),
                 },
-              ],
+              ] as Bounded<ScheduleEvent>[],
             },
           ]}
           {...args}
           start={new Date(2020, 0, 1, 9, 0)}
           end={new Date(2020, 0, 1, 17)}
         />
-      </EventDetailsProvider>
+      </ItemDetailsProvider>
     )
   },
 }

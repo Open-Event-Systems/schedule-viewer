@@ -22,7 +22,11 @@ export const setupBookmarks = async (
   }
 
   try {
-    const remote = await setupBookmarkServiceAPI(config.bookmarks, sessionId)
+    const remote = await setupBookmarkServiceAPI(
+      config.bookmarks,
+      config.id,
+      sessionId,
+    )
 
     await syncBookmarkAPIs(local, remote)
 

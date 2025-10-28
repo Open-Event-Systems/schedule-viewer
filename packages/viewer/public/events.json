@@ -1,23 +1,25 @@
 {
-  "events": [
+  "items": [
     {
       "id": "e1",
+      "type": "event",
       "title": "Example Event",
       "description": "An example event.",
       "start": "2029-07-07T11:00:00-04:00",
       "end": "2029-07-07T12:00:00-04:00",
       "location": "Room 1",
-      "hosts": ["Events Team"],
+      "contacts": ["Events Team"],
       "tags": ["main-event"]
     },
     {
       "id": "e2",
+      "type": "event",
       "title": "Example Event 2",
       "description": "An example event.",
       "start": "2029-07-08T15:00:00-04:00",
       "end": "2029-07-08T16:30:00-04:00",
       "location": "Room 2",
-      "hosts": ["Person"],
+      "contacts": ["Person"],
       "tags": ["gaming", "mature"]
     }
   ]

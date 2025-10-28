@@ -1,0 +1,132 @@
+.MapViewer-root {
+  display: grid;
+  grid-template:
+    "zoom-menu . level-menu" auto
+    ". . ." 1fr
+    "iso-menu . layer-menu" auto
+    / auto 1fr auto;
+
+  overflow: hidden;
+
+  // TODO: handle this elsewhere?
+  width: 100vw;
+  height: 100vh;
+}
+
+.MapViewer-zoomMenu {
+  grid-area: zoom-menu;
+  justify-self: start;
+  align-self: start;
+  margin: 4px;
+  z-index: 1000;
+}
+
+.MapViewer-levelMenu {
+  grid-area: level-menu;
+  justify-self: end;
+  align-self: start;
+  margin: 4px;
+  z-index: 1000;
+}
+
+.MapViewer-isoMenu {
+  grid-area: iso-menu;
+  justify-self: start;
+  align-self: end;
+  margin: 4px;
+  z-index: 1000;
+}
+
+.MapViewer-layerMenu {
+  grid-area: layer-menu;
+  justify-self: end;
+  align-self: end;
+  margin: 4px;
+  z-index: 1000;
+}
+
+.MapViewer-loading {
+  grid-area: 1 / 1 / -1 / -1;
+  z-index: 1;
+
+  display: grid;
+  justify-items: center;
+  align-items: center;
+}
+
+.MapViewer-content {
+  grid-area: 1 / 1 / -1 / -1;
+  z-index: 1;
+
+  .PanZoom-content {
+    display: grid;
+    justify-items: start;
+    align-items: start;
+  }
+}
+
+// Map styles
+
+:root {
+  --map-isometric-x-offset: 0px;
+  --map-isometric-y-offset: 0px;
+  --map-isometric-rotation: 45deg;
+  --map-isometric-x-scale: 0.578; // cos(-54.7deg)
+  --map-isometric-transition-duration: 0.5s;
+  --map-isometric-center-x-offset: 0px;
+  --map-isometric-center-y-offset: 0px;
+}
+
+.MapViewer-level {
+  grid-area: 1 / 1 / -1 / -1;
+
+  // Hidden by default
+  // display: none;
+
+  &:not(.MapViewer-no-isometric-transition) {
+    transition: transform var(--map-isometric-transition-duration) ease-in-out;
+    transform: translate(
+        var(--map-isometric-center-x-offset),
+        var(--map-isometric-center-y-offset)
+      )
+      translateY(0px) translateX(0px) scaleY(1) rotate(0deg)
+      translate(
+        calc(-1 * var(--map-isometric-center-x-offset)),
+        calc(-1 * var(--map-isometric-center-y-offset))
+      );
+  }
+
+  // Visible if active or isometric view enabled
+  &.MapViewer-active,
+  &.MapViewer-isometric {
+    display: block;
+  }
+
+  &.MapViewer-isometric-transform {
+    // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
+    transform: translate(
+        var(--map-isometric-center-x-offset),
+        var(--map-isometric-center-y-offset)
+      )
+      translateY(var(--map-isometric-y-offset))
+      translateX(var(--map-isometric-x-offset))
+      scaleY(var(--map-isometric-x-scale)) rotate(var(--map-isometric-rotation))
+      translate(
+        calc(-1 * var(--map-isometric-center-x-offset)),
+        calc(-1 * var(--map-isometric-center-y-offset))
+      );
+  }
+}
+
+// Temp rules for testing
+
+.MapViewer-level-id-lobby {
+  --map-isometric-y-offset: 400px;
+  --map-isometric-center-x-offset: 480px;
+  --map-isometric-center-y-offset: 480px;
+}
+
+.MapViewer-level-id-2f {
+  --map-isometric-center-x-offset: 480px;
+  --map-isometric-center-y-offset: 480px;
+}

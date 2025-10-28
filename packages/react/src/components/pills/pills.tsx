@@ -24,26 +24,33 @@ export const Pills = (props: PillsProps) => {
 export type PillBinProps = {
   children?: ReactNode
   title?: ReactNode
+  menu?: boolean
 } & BoxProps
 
 const PillBin = (props: PillBinProps) => {
-  const { className, children, title, ...other } = useProps(
+  const { className, children, title, menu, ...other } = useProps(
     "PillBin",
     {},
     props,
   )
 
   return (
-    <Box className={clsx("PillBin-root", className)} {...other}>
+    <Box
+      component="section"
+      className={clsx("PillBin-root", className)}
+      {...other}
+    >
       {title ? (
         <>
-          <Title order={6} className="PillBin-title">
+          <Title order={3} className="PillBin-title">
             {title}
           </Title>
           <Divider className="PillBin-divider" />
         </>
       ) : null}
-      <Box className="PillBin-pills">{children}</Box>
+      <Box component={menu ? "menu" : "ul"} className="PillBin-pills">
+        {children}
+      </Box>
     </Box>
   )
 }
@@ -92,7 +99,7 @@ const Pill = (props: PillProps) => {
   )
 
   return (
-    <Box className={clsx("Pill-root", className)} {...other}>
+    <Box component="li" className={clsx("Pill-root", className)} {...other}>
       {wrapped}
     </Box>
   )

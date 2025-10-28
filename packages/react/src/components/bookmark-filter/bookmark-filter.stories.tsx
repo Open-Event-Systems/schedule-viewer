@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react-webpack5"
-import { BookmarkFilter } from "./boomark-filter.js"
+import { BookmarkFilter } from "./bookmark-filter.js"
 import { useState } from "react"
 
 const meta: Meta<typeof BookmarkFilter> = {

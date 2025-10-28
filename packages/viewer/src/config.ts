@@ -1,8 +1,7 @@
 import {
   BookmarkAPI,
   BookmarkServiceAPI,
-  EventAPI,
-  makeEventAPI,
+  ScheduleAPI,
 } from "@open-event-systems/schedule-lib"
 import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
 import wretch from "wretch"
@@ -14,17 +13,11 @@ import { parseISO } from "date-fns"
 import {
   DEFAULT_SCHEDULE_CONFIG,
   makeConfig,
+  makeScheduleAPIFromConfig,
   ScheduleConfig,
-  ScheduleConfigJSON,
+  ScheduleConfigInput,
 } from "@open-event-systems/schedule-react"
 import { setupBookmarks } from "@open-event-systems/schedule-react"
-
-declare module "@open-event-systems/schedule-react" {
-  interface ScheduleConfigJSON {
-    homeURL?: string
-    map?: Partial<MapConfig>
-  }
-}
 
 export type ViewerConfig = ScheduleConfig &
   Readonly<{
@@ -42,7 +35,7 @@ export const useViewerConfig = (): ViewerConfig =>
 
 export type AppConfig = Readonly<{
   config: ViewerConfig
-  eventAPI: EventAPI
+  scheduleAPI: ScheduleAPI
   bookmarkAPI: BookmarkAPI
   bookmarkServiceAPI: BookmarkServiceAPI | null
   sessionId: string | null
@@ -76,7 +69,7 @@ export const getConfigQueryOptions = (
   return {
     queryKey: ["schedule-config"],
     async queryFn() {
-      const res = await wretch(configURL).get().json<ScheduleConfigJSON>()
+      const res = await wretch(configURL).get().json<ScheduleConfigInput>()
 
       const config = makeConfig(res)
       const viewerConfig: {
@@ -103,16 +96,13 @@ export const makeAppConfig = async (
 ): Promise<AppConfig> => {
   const config = await queryClient.fetchQuery(getConfigQueryOptions(configURL))
 
-  // constructing eventapi with an empty string is hacky...
-  const eventAPI = makeEventAPI(
-    typeof config.events == "string" ? config.events : "",
-    config.timeZone,
-  )
+  // constructing api with an empty string is hacky...
+  const scheduleAPI = makeScheduleAPIFromConfig(config)
   const [bookmarkAPI, bookmarkServiceAPI] = await setupBookmarks(config)
 
   const sessionId = bookmarkServiceAPI?.sessionId ?? null
 
-  return { config, eventAPI, bookmarkAPI, bookmarkServiceAPI, sessionId }
+  return { config, scheduleAPI, bookmarkAPI, bookmarkServiceAPI, sessionId }
 }
 
 /**
@@ -121,15 +111,22 @@ export const makeAppConfig = async (
  * Overridable via `time` hash param.
  */
 export const useTime = (): Date => {
+  if (timeOverride) {
+    return timeOverride
+  }
+
   const loc = useLocation()
   const hashParams = new URLSearchParams(loc.hash)
   const tStr = hashParams.get("time")
   if (tStr) {
     const now = parseISO(tStr)
     if (!isNaN(now.getTime())) {
+      timeOverride = now
       return now
     }
   }
 
   return new Date()
 }
+
+let timeOverride: Date | undefined

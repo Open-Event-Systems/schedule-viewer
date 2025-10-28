@@ -4,8 +4,8 @@ import svgMap from "../../../viewer/public/example-map.svg"
 import { useRef, useState } from "react"
 import { MapConfig } from "../types.js"
 
-import "./map-viewer.scss"
-import "./map.scss"
+// import "./map-viewer.scss"
+// import "./map.scss"
 
 const meta: Meta<typeof MapViewer> = {
   component: MapViewer,

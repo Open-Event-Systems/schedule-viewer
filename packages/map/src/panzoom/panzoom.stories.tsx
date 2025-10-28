@@ -5,7 +5,7 @@ import { parseSVGData, SVGData } from "../svg-new/svg.js"
 import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
 import { Map } from "../map/map.js"
 
-import "./styles.scss"
+import "./panzoom.scss"
 
 const meta: Meta<typeof PanZoom> = {
   component: PanZoom,

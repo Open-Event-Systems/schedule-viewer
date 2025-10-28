@@ -12,13 +12,13 @@ import {
   useState,
 } from "react"
 import { MapEvent } from "@open-event-systems/schedule-map/types"
-import { useEvents } from "@open-event-systems/schedule-react"
+import { useItems } from "@open-event-systems/schedule-react"
 
 export const MapRoute = () => {
   const config = useViewerConfig()
   const mapConfig = useMapConfig()
 
-  const events = useEvents()
+  const { events } = useItems()
 
   const loc = useLocation()
   const hashArgs = new URLSearchParams(loc.hash)

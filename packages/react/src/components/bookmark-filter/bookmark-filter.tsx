@@ -22,14 +22,15 @@ export const BookmarkFilter = (props: BookmarkFilterProps) => {
 
   return (
     <SegmentedControl
+      variant="unstyled"
       className={clsx("BookmarkFilter-root", className)}
       data={[
         {
-          label: "All Events",
+          label: "Show All",
           value: "false",
         },
         {
-          label: "My Schedule",
+          label: "Only Bookmarked",
           value: "true",
         },
       ]}

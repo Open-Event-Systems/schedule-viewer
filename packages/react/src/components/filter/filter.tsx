@@ -9,8 +9,11 @@ import {
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/tag-filter.js"
+import { TagEntry, TagIndicatorEntry } from "../../config/config.js"
 export type FilterProps = {
   disabledTags?: Iterable<string>
+  tags?: readonly TagEntry[]
+  tagIndicators?: readonly TagIndicatorEntry[]
   text?: string
   showPastEvents?: boolean
   onChangeTags?: (tags: Set<string>) => void
@@ -22,6 +25,8 @@ export const Filter = (props: FilterProps) => {
   const {
     className,
     disabledTags,
+    tags,
+    tagIndicators,
     text,
     showPastEvents,
     onChangeTags,
@@ -57,6 +62,8 @@ export const Filter = (props: FilterProps) => {
         </Text>
         <TagFilter
           disabledTags={disabledTags ?? []}
+          tags={tags}
+          tagIndicators={tagIndicators}
           onChangeTags={onChangeTags}
         />
       </Grid.Col>

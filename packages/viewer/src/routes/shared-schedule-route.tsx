@@ -1,4 +1,4 @@
-import { eventRoute, eventsDataRoute, sharedScheduleRoute } from "./index.js"
+import { eventRoute, dataRoute, sharedScheduleRoute } from "./index.js"
 import { Grid, Stack, Title } from "@mantine/core"
 import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { MouseEvent, useCallback, useContext } from "react"
@@ -29,7 +29,7 @@ import { ScheduleView } from "../components/schedule-view.js"
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
 
 export const SharedScheduleRoute = observer(() => {
-  const { config } = eventsDataRoute.useRouteContext()
+  const { config } = dataRoute.useRouteContext()
   const { selectionId } = sharedScheduleRoute.useParams()
   const allEvents = useEvents()
   const selections = useSelectionsById(selectionId)

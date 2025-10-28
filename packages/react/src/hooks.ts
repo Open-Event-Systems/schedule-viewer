@@ -1,49 +1,68 @@
 import {
   BookmarkAPI,
   BookmarkServiceAPI,
-  EventAPI,
-  EventStore,
-  makeEvent,
-  makeEventAPI,
+  makeBookmarkFilter,
+  makePastItemFilter,
+  makeScheduleEventStore,
+  makeScheduleItemsArrayAPI,
+  makeTagFilter,
+  makeTitleFilter,
+  makeVendorStore,
+  ScheduleAPI,
+  ScheduleEvent,
+  ScheduleItem,
+  ScheduleItemStore,
   Selections,
+  Vendor,
 } from "@open-event-systems/schedule-lib"
 import { ScheduleConfig, useScheduleConfig } from "./config/config.js"
-import { createContext, useContext } from "react"
+import { createContext, useContext, useMemo, useReducer } from "react"
 import {
   QueryClient,
   useMutation,
   UseMutationOptions,
   useQueryClient,
+  UseQueryOptions,
   useSuspenseQuery,
   UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
 import { useBookmarkAPI, useBookmarkServiceAPI } from "./bookmarks.js"
 
-export const EventAPIContext = createContext<EventAPI>(makeEventAPI(""))
-export const EventAPIProvider = EventAPIContext.Provider
-export const useEventAPI = (): EventAPI => useContext(EventAPIContext)
+export const ScheduleAPIContext = createContext<ScheduleAPI>(
+  makeScheduleItemsArrayAPI([]),
+)
+export const ScheduleAPIProvider = ScheduleAPIContext.Provider
+export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
 
-export const getEventsQueryOptions = (
+export const getItemsQueryOptions = (
   config: ScheduleConfig,
-  api: EventAPI,
-): UseSuspenseQueryOptions<EventStore> => ({
-  queryKey: ["schedule", config.id, "events"],
+  api: ScheduleAPI,
+): UseSuspenseQueryOptions<
+  Readonly<{
+    items: ScheduleItemStore
+    events: ScheduleItemStore<ScheduleEvent>
+    vendors: ScheduleItemStore<Vendor>
+  }>
+> => ({
+  queryKey: ["schedule", config.id, "items"],
   async queryFn() {
-    if (Array.isArray(config.events)) {
-      const events = config.events.map((data) => makeEvent(data))
-      return new EventStore(events)
-    } else {
-      const res = await api.getEvents()
-      return new EventStore(res)
-    }
+    const res = await api.getItems()
+    const items = new ScheduleItemStore(res)
+    const events = makeScheduleEventStore(items)
+    const vendors = makeVendorStore(items)
+    return { items, events, vendors }
   },
   staleTime: 300000,
 })
 
-export const useEvents = (): EventStore => {
+export const useItems = (): Readonly<{
+  items: ScheduleItemStore
+  events: ScheduleItemStore<ScheduleEvent>
+  vendors: ScheduleItemStore<Vendor>
+}> => {
   const config = useScheduleConfig()
-  const api = useEventAPI()
-  const res = useSuspenseQuery(getEventsQueryOptions(config, api))
+  const api = useScheduleAPI()
+  const res = useSuspenseQuery(getItemsQueryOptions(config, api))
   return res.data
 }
 
@@ -117,15 +136,15 @@ export const useSelectionsById = (id: string): Selections | null => {
 export const getBookmarkCountsQueryOptions = (
   config: ScheduleConfig,
   api: BookmarkServiceAPI | null,
-): UseSuspenseQueryOptions<ReadonlyMap<string, number> | null> => ({
+): UseSuspenseQueryOptions<ReadonlyMap<string, number | undefined> | null> => ({
   queryKey: ["schedule", config.id, "counts"],
   async queryFn() {
     if (api) {
       const res = await api.getBookmarkCounts()
-      const map = new Map()
+      const map = new Map<string, number | undefined>()
 
-      for (const key of Object.keys(res.counts)) {
-        map.set(key, res.counts[key])
+      for (const key of Object.keys(res)) {
+        map.set(key, res[key])
       }
 
       return map
@@ -137,7 +156,7 @@ export const getBookmarkCountsQueryOptions = (
 })
 
 export const useBookmarkCounts = ():
-  | ReadonlyMap<string, number>
+  | ReadonlyMap<string, number | undefined>
   | undefined => {
   const config = useScheduleConfig()
   const api = useBookmarkServiceAPI()
@@ -149,4 +168,87 @@ export const useBookmarkCounts = ():
 export const useBookmarkCount = (eventId: string): number | undefined => {
   const counts = useBookmarkCounts()
   return counts?.get(eventId)
+}
+
+export type FilterSettings = Readonly<{
+  text: string
+  disabledTags: ReadonlySet<string>
+  onlyBookmarked: boolean
+  showPast: boolean
+}>
+
+export const FilterContext = createContext<
+  [FilterSettings, (update: Partial<FilterSettings>) => void]
+>([
+  {
+    text: "",
+    disabledTags: new Set(),
+    onlyBookmarked: false,
+    showPast: false,
+  },
+  () => {},
+])
+export const FilterProvider = FilterContext.Provider
+export const useFilter = (): [
+  FilterSettings,
+  (update: Partial<FilterSettings>) => void,
+] => useContext(FilterContext)
+
+export const useFilterState = (): [
+  FilterSettings,
+  (update: Partial<FilterSettings>) => void,
+] => {
+  const reducer = (
+    state: FilterSettings,
+    action: Partial<FilterSettings>,
+  ): FilterSettings => {
+    const newState = {
+      ...state,
+      ...action,
+    }
+    return newState
+  }
+
+  return useReducer(reducer, {
+    text: "",
+    disabledTags: new Set(),
+    onlyBookmarked: false,
+    showPast: false,
+  })
+}
+
+export const useFilteredItems = <
+  T extends ScheduleItem & {
+    readonly title?: string
+    readonly tags?: ReadonlySet<string>
+  },
+>(
+  items: ScheduleItemStore<T>,
+  now: Date,
+  selections?: Selections,
+): ScheduleItemStore<T> => {
+  const [filter] = useFilter()
+  const byBookmarked = useMemo(() => {
+    if (filter.onlyBookmarked) {
+      return selections
+        ? items.filter(makeBookmarkFilter(selections.events))
+        : new ScheduleItemStore([])
+    } else {
+      return items
+    }
+  }, [filter.onlyBookmarked, items, selections])
+  const byTag = useMemo(
+    () => byBookmarked.filter(makeTagFilter(filter.disabledTags)),
+    [byBookmarked, filter.disabledTags],
+  )
+  const byPast = useMemo(
+    () => (!filter.showPast ? byTag.filter(makePastItemFilter(now)) : byTag),
+    [filter.showPast, byTag, now],
+  )
+  const byTitle = useMemo(
+    () => (filter.text ? byPast.filter(makeTitleFilter(filter.text)) : byPast),
+    [filter.text, byPast],
+  )
+
+  return byTitle
 }

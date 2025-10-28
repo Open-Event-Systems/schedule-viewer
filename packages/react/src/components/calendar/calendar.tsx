@@ -5,17 +5,17 @@ import {
   Title,
   useProps,
 } from "@mantine/core"
-import { Event, isScheduled } from "@open-event-systems/schedule-lib"
 import { forwardRef, ReactNode, useContext, useMemo } from "react"
 import { CalendarContext } from "./context.js"
 import clsx from "clsx"
 import { toPercent } from "./utils.js"
 import { add, format, isBefore } from "date-fns"
-import { EventHoverCard } from "../hovercard/event-hover-card.js"
+import { ItemHoverCard } from "../hovercard/item-hover-card.js"
+import { Bounded, ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type CalendarColumnData = {
   title?: ReactNode
-  events?: Event[]
+  items?: readonly Bounded<ScheduleItem & { readonly title?: string }>[]
 }
 
 export type CalendarProps = {
@@ -98,9 +98,9 @@ const CalendarColumn = ({
 }) => {
   const items = useMemo(
     () =>
-      column.events?.filter(isScheduled).map((e) => {
+      column.items?.map((e) => {
         return (
-          <EventHoverCard key={e.id} event={e}>
+          <ItemHoverCard key={e.id} item={e}>
             <Calendar.Item
               component="a"
               className="Calendar-event"
@@ -109,10 +109,10 @@ const CalendarColumn = ({
             >
               {e.title}
             </Calendar.Item>
-          </EventHoverCard>
+          </ItemHoverCard>
         )
       }),
-    [column.events],
+    [column.items],
   )
 
   const dividers = useMemo(

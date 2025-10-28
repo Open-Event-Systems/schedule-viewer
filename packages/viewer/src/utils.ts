@@ -1,24 +1,23 @@
 import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import {
   contains,
-  Event,
   getDay,
-  sortByDate,
+  sortIntervalsByStartDate,
 } from "@open-event-systems/schedule-lib"
 import { format, isBefore } from "date-fns"
 
 /**
- * Get the days for a collection of events.
+ * Get the days for a collection of items.
  */
 export const getDays = (
-  events: Iterable<Required<Pick<Event, "start">>>,
+  items: Iterable<{ readonly start: Date }>,
   tz: string,
   dayChangeHour?: number,
 ): readonly DayFilterDay[] => {
   const days = new Map<string, DayFilterDay>()
 
-  for (const event of events) {
-    const day = getDay(event.start, tz, dayChangeHour)
+  for (const item of items) {
+    const day = getDay(item.start, tz, dayChangeHour)
     const key = format(day.start, "yyyy-MM-dd")
     if (!days.has(key)) {
       days.set(key, { key, ...day })
@@ -26,7 +25,7 @@ export const getDays = (
   }
 
   const dayArr = Array.from(days.values())
-  sortByDate(dayArr)
+  sortIntervalsByStartDate(dayArr)
   return dayArr
 }
 
