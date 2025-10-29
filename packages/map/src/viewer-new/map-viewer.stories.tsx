@@ -1,23 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { MapViewer } from "./map-viewer.js"
-import {
-  useCallback,
-  useMemo,
-  useReducer,
-  useRef,
-  type ComponentType,
-} from "react"
+import { MapViewer, type MapViewerProps } from "./map-viewer.js"
+import { useCallback, useMemo, useReducer } from "react"
 
 import "../panzoom/panzoom.scss"
 import "./map-viewer.scss"
 import "./map.scss"
 
-import {
-  MapViewerCallbacksContext,
-  MapViewerContext,
-  type MapViewerCallbacks,
-  type MapViewerContextValue,
-} from "./context.js"
+import { type MapViewerCallbacks } from "./context.js"
 import type { MapConfig } from "../types-new.js"
 
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
@@ -36,9 +25,9 @@ export const Default: StoryObj<typeof MapViewer> = {
   render() {
     const reducer = useCallback(
       (
-        cur: MapViewerContextValue,
-        action: Partial<MapViewerContextValue>,
-      ): MapViewerContextValue => {
+        cur: MapViewerProps,
+        action: Partial<MapViewerProps>,
+      ): MapViewerProps => {
         return {
           ...cur,
           ...action,
@@ -48,15 +37,12 @@ export const Default: StoryObj<typeof MapViewer> = {
     )
 
     const [state, dispatch] = useReducer(reducer, {
+      contentWidth: mapCfg.width,
+      contentHeight: mapCfg.height,
       currentLevelId: "lobby",
-      flags: ["test"],
-      hiddenLayers: [],
-      isometric: false,
       layers: mapCfg.layers,
       levels: mapCfg.levels,
-      contentHeight: 960,
-      contentWidth: 960,
-      locations: [
+      locationInfo: [
         {
           id: "room-1",
           title: "Event 1",
@@ -82,14 +68,22 @@ export const Default: StoryObj<typeof MapViewer> = {
     }, [dispatch])
 
     return (
-      <MapViewerContext value={state}>
-        <MapViewerCallbacksContext value={callbacks}>
-          <MapViewer
-            frameWidth={window.innerWidth}
-            frameHeight={window.innerHeight}
-          />
-        </MapViewerCallbacksContext>
-      </MapViewerContext>
+      <MapViewer
+        contentWidth={state.contentWidth}
+        contentHeight={state.contentHeight}
+        currentLevelId={state.currentLevelId}
+        levels={state.levels}
+        layers={state.layers}
+        isometric={state.isometric}
+        hiddenLayers={state.hiddenLayers}
+        locationInfo={state.locationInfo}
+        flags={state.flags}
+        activeLocationId={state.activeLocationId}
+        onSetLevelId={callbacks.onSetCurrentLevelId}
+        onSetHiddenLayers={callbacks.onSetHiddenLayers}
+        onSetActiveLocationId={callbacks.onSetSelectedLocation}
+        onSetIsometric={callbacks.onSetIsometric}
+      />
     )
   },
 }
@@ -103,4 +97,6 @@ const mapCfg = {
     { id: "text", title: "Text" },
     { id: "detail", title: "Detail" },
   ],
+  width: 960,
+  height: 960,
 } as const satisfies MapConfig

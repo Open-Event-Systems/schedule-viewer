@@ -28,11 +28,13 @@ const Item = (props: MapItemProps) => {
 
   return (
     <Box className={clsx("Map-item", className)} {...other}>
-      <MapSVG
-        svgData={svgData}
-        {...svgProps}
-        className={clsx("Map-itemSVG", svgProps?.className)}
-      />
+      {svgData && (
+        <MapSVG
+          svgData={svgData}
+          {...svgProps}
+          className={clsx("Map-itemSVG", svgProps?.className)}
+        />
+      )}
     </Box>
   )
 }

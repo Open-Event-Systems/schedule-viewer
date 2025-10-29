@@ -4,7 +4,6 @@ import { MapSVG } from "./map-svg.js"
 import svgMap from "../../../viewer/public/example-map-lobby.svg"
 import { useEffect, useState } from "react"
 import { parseSVGData, type SVGData } from "./svg.js"
-import { Box } from "@mantine/core"
 
 const meta: Meta<typeof MapSVG> = {
   component: MapSVG,

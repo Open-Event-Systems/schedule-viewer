@@ -12,4 +12,7 @@ export type MapLayer = Readonly<{
 export type MapConfig = Readonly<{
   levels: readonly MapLevel[]
   layers: readonly MapLayer[]
+  width: number
+  height: number
+  homeURL?: string
 }>

@@ -40,7 +40,7 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
       svgRef.current = el
 
       if (el) {
-        el.innerHTML = svgData?.innerHTML ?? ""
+        el.innerHTML = svgData.innerHTML
         initSVG(el)
       }
 
@@ -103,7 +103,6 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     <svg
       ref={setRef}
       {...svgData.props}
-      preserveAspectRatio="xMidYMid meet"
       className={clsx("MapSVG-root", svgData?.props.className, className)}
       {...other}
       onClick={clickHandler}

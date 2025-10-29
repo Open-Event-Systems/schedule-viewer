@@ -5,9 +5,9 @@ import {
   type Ref,
   useCallback,
   useEffect,
-  useLayoutEffect,
+  useMemo,
+  useRef,
   useState,
-  useSyncExternalStore,
 } from "react"
 import {
   type ReactZoomPanPinchContentRef,
@@ -37,23 +37,22 @@ export const PanZoom = (props: PanZoomProps) => {
     ...other
   } = useProps("PanZoom", {}, props)
 
-  // very complicated way to determine the correct 100% scale
-  const [sizeState] = useState(() => new SizeState(contentWidth, contentHeight))
+  const [el, setEl] = useState<HTMLDivElement | null>(null)
+
+  const initialScaleRef = useRef(1)
+
+  const initialScale = useMemo(() => {
+    return computeInitialScale(
+      contentWidth,
+      contentHeight,
+      el?.clientWidth,
+      el?.clientHeight,
+    )
+  }, [contentWidth, contentHeight, el])
 
   useEffect(() => {
-    return () => {
-      sizeState.dispose()
-    }
-  }, [sizeState])
-
-  useLayoutEffect(() => {
-    sizeState.setContentSize(contentWidth, contentHeight)
-  })
-
-  const [initialScale, ready] = useSyncExternalStore(
-    sizeState.subscribe,
-    sizeState.getSnapshot,
-  )
+    initialScaleRef.current = initialScale
+  }, [initialScale])
 
   const setZoomRef = useCallback(
     (ref: ReactZoomPanPinchContentRef | null) => {
@@ -70,7 +69,7 @@ export const PanZoom = (props: PanZoomProps) => {
         } else if (arg0 == "out") {
           ref?.zoomOut()
         } else if (arg0 == "reset") {
-          ref?.centerView(sizeState.getSnapshot()[0])
+          ref?.centerView(initialScaleRef.current)
         }
       }
 
@@ -84,12 +83,8 @@ export const PanZoom = (props: PanZoomProps) => {
   )
 
   return (
-    <Box
-      ref={sizeState.setEl}
-      className={clsx("PanZoom-root", className)}
-      {...other}
-    >
-      {ready && (
+    <Box ref={setEl} className={clsx("PanZoom-root", className)} {...other}>
+      {el && (
         <TransformWrapper
           ref={setZoomRef}
           limitToBounds={false}
@@ -113,90 +108,6 @@ export const PanZoom = (props: PanZoomProps) => {
       )}
     </Box>
   )
-}
-
-class SizeState {
-  private frameWidth: number | undefined = undefined
-  private frameHeight: number | undefined = undefined
-
-  private el: HTMLDivElement | null = null
-
-  private state: readonly [number, boolean] = [1, false]
-
-  private resizeObserver: ResizeObserver | null = null
-  private observers: (() => void)[] = []
-
-  constructor(
-    private contentWidth?: number,
-    private contentHeight?: number,
-  ) {
-    if ("ResizeObserver" in window) {
-      this.resizeObserver = new ResizeObserver(this.onResize)
-    }
-  }
-
-  private onResize = (entries: ResizeObserverEntry[]) => {
-    const e = entries[0]
-    if (e) {
-      this.frameWidth = e.contentRect.width
-      this.frameHeight = e.contentRect.height
-      this.update()
-    }
-  }
-
-  private update() {
-    const scale = computeInitialScale(
-      this.contentWidth,
-      this.contentHeight,
-      this.frameWidth,
-      this.frameHeight,
-    )
-    const prevState = this.state
-    this.state = [scale, this.el != null || this.state[1]]
-
-    if (this.state[0] != prevState[0] || this.state[1] != prevState[1]) {
-      this.observers.forEach((cb) => cb())
-    }
-  }
-
-  setEl = (el: HTMLDivElement | null) => {
-    if (this.el && this.resizeObserver) {
-      this.resizeObserver.unobserve(this.el)
-    }
-
-    this.el = el
-    if (el) {
-      this.frameWidth = el.clientWidth
-      this.frameHeight = el.clientHeight
-
-      this.resizeObserver?.observe(el)
-
-      this.update()
-    }
-  }
-
-  setContentSize = (width?: number, height?: number) => {
-    this.contentWidth = width
-    this.contentHeight = height
-  }
-
-  subscribe = (cb: () => void): (() => void) => {
-    this.observers.push(cb)
-    return () => {
-      const idx = this.observers.indexOf(cb)
-      if (idx != -1) {
-        this.observers.splice(idx, 1)
-      }
-    }
-  }
-
-  getSnapshot = (): readonly [number, boolean] => {
-    return this.state
-  }
-
-  dispose() {
-    this.resizeObserver?.disconnect()
-  }
 }
 
 const computeInitialScale = (
