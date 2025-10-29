@@ -4,8 +4,10 @@ import {
   type ReactNode,
   type Ref,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useState,
+  useSyncExternalStore,
 } from "react"
 import {
   type ReactZoomPanPinchContentRef,
@@ -13,61 +15,63 @@ import {
   TransformWrapper,
 } from "react-zoom-pan-pinch"
 
-export type ZoomFunc = (el: HTMLElement | SVGElement, scale?: number) => void
+export interface ZoomFunc {
+  (el: HTMLElement | SVGElement, scale?: number): void
+  (action: "in" | "out" | "reset"): void
+}
 
 export type PanZoomProps = {
   children?: ReactNode
-  width?: number
-  height?: number
-  mapWidth?: number
-  mapHeight?: number
+  contentWidth?: number
+  contentHeight?: number
   zoomFuncRef?: Ref<ZoomFunc>
 } & BoxProps
 
 export const PanZoom = (props: PanZoomProps) => {
   const {
     className,
-    width,
-    height,
-    mapWidth,
-    mapHeight,
+    contentWidth,
+    contentHeight,
     children,
     zoomFuncRef,
     ...other
   } = useProps("PanZoom", {}, props)
 
-  const [elSize, setElSize] =
-    useState<Readonly<{ width: number; height: number }>>()
+  // very complicated way to determine the correct 100% scale
+  const [sizeState] = useState(() => new SizeState(contentWidth, contentHeight))
 
-  const [observer] = useState<ResizeObserver>(
-    () =>
-      new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setElSize({
-            width: entry.contentRect.width,
-            height: entry.contentRect.height,
-          })
-        }
-      }),
-  )
-
-  const [el, setEl] = useState<HTMLDivElement | null>(null)
+  useEffect(() => {
+    return () => {
+      sizeState.dispose()
+    }
+  }, [sizeState])
 
   useLayoutEffect(() => {
-    if (el) {
-      observer.observe(el)
-      return () => {
-        observer.unobserve(el)
-      }
-    }
-  }, [el, observer])
+    sizeState.setContentSize(contentWidth, contentHeight)
+  })
+
+  const [initialScale, ready] = useSyncExternalStore(
+    sizeState.subscribe,
+    sizeState.getSnapshot,
+  )
 
   const setZoomRef = useCallback(
     (ref: ReactZoomPanPinchContentRef | null) => {
-      const zoomFunc = (el: HTMLElement | SVGElement, scale?: number) => {
-        // docs say you can't zoom to svgelement, but appears to work?
-        // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-        ref?.zoomToElement(el as HTMLElement, scale)
+      const zoomFunc = (
+        arg0: HTMLElement | SVGElement | string,
+        arg1?: number,
+      ) => {
+        if (arg0 instanceof HTMLElement || arg0 instanceof SVGElement) {
+          // docs say you can't zoom to svgelement, but appears to work?
+          // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
+          ref?.zoomToElement(arg0 as HTMLElement, arg1)
+        } else if (arg0 == "in") {
+          ref?.zoomIn()
+        } else if (arg0 == "out") {
+          ref?.zoomOut()
+        } else if (arg0 == "reset") {
+          ref?.centerView(sizeState.getSnapshot()[0])
+        }
       }
 
       if (typeof zoomFuncRef == "function") {
@@ -79,16 +83,13 @@ export const PanZoom = (props: PanZoomProps) => {
     [zoomFuncRef],
   )
 
-  const initialScale = computeScale(
-    elSize?.width ?? el?.clientWidth,
-    elSize?.height ?? el?.clientHeight,
-    mapWidth,
-    mapHeight,
-  )
-
   return (
-    <Box ref={setEl} className={clsx("PanZoom-root", className)} {...other}>
-      {el && (
+    <Box
+      ref={sizeState.setEl}
+      className={clsx("PanZoom-root", className)}
+      {...other}
+    >
+      {ready && (
         <TransformWrapper
           ref={setZoomRef}
           limitToBounds={false}
@@ -98,6 +99,7 @@ export const PanZoom = (props: PanZoomProps) => {
             velocityDisabled: true,
           }}
           initialScale={initialScale}
+          centerOnInit
         >
           {() => (
             <TransformComponent
@@ -113,21 +115,105 @@ export const PanZoom = (props: PanZoomProps) => {
   )
 }
 
-const computeScale = (
-  width: number | undefined,
-  height: number | undefined,
-  mapWidth: number | undefined,
-  mapHeight: number | undefined,
-): number => {
-  let initialScale
+class SizeState {
+  private frameWidth: number | undefined = undefined
+  private frameHeight: number | undefined = undefined
 
-  if (width && height && mapWidth && mapHeight) {
-    if (width < height) {
-      initialScale = width / mapWidth
-    } else {
-      initialScale = height / mapHeight
+  private el: HTMLDivElement | null = null
+
+  private state: readonly [number, boolean] = [1, false]
+
+  private resizeObserver: ResizeObserver | null = null
+  private observers: (() => void)[] = []
+
+  constructor(
+    private contentWidth?: number,
+    private contentHeight?: number,
+  ) {
+    if ("ResizeObserver" in window) {
+      this.resizeObserver = new ResizeObserver(this.onResize)
     }
   }
 
-  return initialScale ?? 1
+  private onResize = (entries: ResizeObserverEntry[]) => {
+    const e = entries[0]
+    if (e) {
+      this.frameWidth = e.contentRect.width
+      this.frameHeight = e.contentRect.height
+      this.update()
+    }
+  }
+
+  private update() {
+    const scale = computeInitialScale(
+      this.contentWidth,
+      this.contentHeight,
+      this.frameWidth,
+      this.frameHeight,
+    )
+    const prevState = this.state
+    this.state = [scale, this.el != null || this.state[1]]
+
+    if (this.state[0] != prevState[0] || this.state[1] != prevState[1]) {
+      this.observers.forEach((cb) => cb())
+    }
+  }
+
+  setEl = (el: HTMLDivElement | null) => {
+    if (this.el && this.resizeObserver) {
+      this.resizeObserver.unobserve(this.el)
+    }
+
+    this.el = el
+    if (el) {
+      this.frameWidth = el.clientWidth
+      this.frameHeight = el.clientHeight
+
+      this.resizeObserver?.observe(el)
+
+      this.update()
+    }
+  }
+
+  setContentSize = (width?: number, height?: number) => {
+    this.contentWidth = width
+    this.contentHeight = height
+  }
+
+  subscribe = (cb: () => void): (() => void) => {
+    this.observers.push(cb)
+    return () => {
+      const idx = this.observers.indexOf(cb)
+      if (idx != -1) {
+        this.observers.splice(idx, 1)
+      }
+    }
+  }
+
+  getSnapshot = (): readonly [number, boolean] => {
+    return this.state
+  }
+
+  dispose() {
+    this.resizeObserver?.disconnect()
+  }
+}
+
+const computeInitialScale = (
+  contentWidth?: number,
+  contentHeight?: number,
+  frameWidth?: number,
+  frameHeight?: number,
+) => {
+  if (!contentWidth || !contentHeight || !frameWidth || !frameHeight) {
+    return 1
+  }
+
+  const contentRatio = contentWidth / contentHeight
+  const frameRatio = frameWidth / frameHeight
+  if (frameRatio > contentRatio) {
+    return frameHeight / contentHeight
+  } else {
+    return frameWidth / contentWidth
+  }
 }

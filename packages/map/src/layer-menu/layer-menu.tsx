@@ -16,7 +16,7 @@ export type LayerMenuProps = PaperProps & {
   onSetOpened?: (opened: boolean) => void
   layers?: readonly MapLayer[]
   hiddenLayers?: Iterable<string>
-  onChangeLayers?: (layers: Set<string>) => void
+  onChangeLayers?: (layers: Iterable<string>) => void
 }
 
 export const LayerMenu = (props: LayerMenuProps) => {

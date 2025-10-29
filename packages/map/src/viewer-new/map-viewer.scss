@@ -60,8 +60,6 @@
 
   .PanZoom-content {
     display: grid;
-    justify-items: start;
-    align-items: start;
   }
 }
 
@@ -78,6 +76,7 @@
 }
 
 .MapViewer-level {
+  // using grid area to force all layers into the same space
   grid-area: 1 / 1 / -1 / -1;
 
   // Hidden by default

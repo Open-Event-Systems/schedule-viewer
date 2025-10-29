@@ -9,34 +9,58 @@ import {
 import { parseSVGData, type SVGData } from "../svg-new/svg.js"
 import {
   type ReactNode,
+  type Ref,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
-import { MapSVG } from "../svg-new/map-svg.js"
+import { MapSVG, type MapSVGProps } from "../svg-new/map-svg.js"
 import clsx from "clsx"
 import { mapViewerClassNames } from "./classes.js"
-import { MapViewerCallbacksContext, MapViewerStateContext } from "./context.js"
 import { ZoomMenu, type ZoomMenuProps } from "../zoom-menu/zoom-menu.js"
 import { LevelMenu, type LevelMenuProps } from "../level-menu/level-menu.js"
 import { LayerMenu, type LayerMenuProps } from "../layer-menu/layer-menu.js"
-import { PanZoom, type PanZoomProps } from "../panzoom/panzoom.js"
+import {
+  PanZoom,
+  type PanZoomProps,
+  type ZoomFunc,
+} from "../panzoom/panzoom.js"
 import { IconCube } from "@tabler/icons-react"
 import { useIsometricTransition } from "./util.js"
 import { mapSVGClassNames } from "../svg-new/classes.js"
+import { MapViewerCallbacksContext, MapViewerContext } from "./context.js"
 
 export type MapViewerProps = {
-  className?: string
-  children?: ReactNode
+  zoomFuncRef?: Ref<ZoomFunc>
+  frameWidth?: number
+  frameHeight?: number
 }
 
 export const MapViewer = (props: MapViewerProps) => {
-  const { className, children } = useProps("MapViewer", {}, props)
-
-  const state = useContext(MapViewerStateContext)
+  const { zoomFuncRef, frameWidth, frameHeight } = useProps(
+    "MapViewer",
+    {},
+    props,
+  )
+  const ctx = useContext(MapViewerContext)
   const callbacks = useContext(MapViewerCallbacksContext)
+
+  const localZoomFuncRef = useRef<ZoomFunc | null>(null)
+  const setZoomFuncRef = useCallback(
+    (func: ZoomFunc | null) => {
+      localZoomFuncRef.current = func
+
+      if (typeof zoomFuncRef == "function") {
+        zoomFuncRef(func)
+      } else if (zoomFuncRef) {
+        zoomFuncRef.current = func
+      }
+    },
+    [zoomFuncRef],
+  )
 
   const [loaded, setLoaded] = useState(false)
   const [svgData, setSVGData] = useState<ReadonlyMap<string, SVGData>>(
@@ -44,28 +68,45 @@ export const MapViewer = (props: MapViewerProps) => {
   )
 
   const levelEls = useMemo(() => {
-    return state.levels.map((lvl) => {
+    return ctx.levels.map((lvl) => {
       const lvlSvg = svgData.get(lvl.id)
       if (!lvlSvg) {
         return null
       }
 
-      const active = state.currentLevelId == lvl.id
+      const active = ctx.currentLevelId == lvl.id
 
       return (
         <MapViewer.Level
           key={lvl.id}
           levelId={lvl.id}
           active={active}
-          isometric={state.isometric}
+          isometric={ctx.isometric}
           svgData={lvlSvg}
+          MapSVGProps={{
+            hiddenLayers: ctx.hiddenLayers,
+            flags: ctx.flags,
+            locationInfo: ctx.locations,
+            activeLocation: ctx.activeLocationId,
+            onClickArea: callbacks?.onSetSelectedLocation,
+          }}
         />
       )
     })
-  }, [state.levels, state.currentLevelId, state.isometric, svgData])
+  }, [
+    ctx.levels,
+    ctx.currentLevelId,
+    ctx.activeLocationId,
+    ctx.isometric,
+    ctx.hiddenLayers,
+    ctx.flags,
+    ctx.locations,
+    svgData,
+    callbacks?.onSetSelectedLocation,
+  ])
 
   useEffect(() => {
-    const promises = state.levels.map((lvl) =>
+    const promises = ctx.levels.map((lvl) =>
       fetchMapSVG(lvl.url).then((data) => [lvl.id, data] as const),
     )
     Promise.all(promises).then((svgs) => {
@@ -73,30 +114,40 @@ export const MapViewer = (props: MapViewerProps) => {
       setSVGData(asMap)
       setLoaded(true)
     })
-  }, [state.levels])
+  }, [ctx.levels])
+
+  const handleZoom = useCallback((type: "in" | "out" | "reset") => {
+    localZoomFuncRef.current && localZoomFuncRef.current(type)
+  }, [])
 
   return (
     <MapViewer.Root>
       {!loaded && <MapViewer.Loading />}
-      {loaded && <MapViewer.Content>{levelEls}</MapViewer.Content>}
-      <MapViewer.ZoomMenu />
+      {loaded && (
+        <MapViewer.Content
+          zoomFuncRef={setZoomFuncRef}
+          contentWidth={ctx.contentWidth}
+          contentHeight={ctx.contentHeight}
+          frameWidth={frameWidth}
+          frameHeight={frameHeight}
+        >
+          {levelEls}
+        </MapViewer.Content>
+      )}
+      <MapViewer.ZoomMenu onZoom={handleZoom} />
       <MapViewer.LevelMenu
-        selectedLevel={state.currentLevelId}
-        levels={state.levels}
-        onSelectLevel={(id) => {
-          callbacks.setCurrentLevelId(id)
-        }}
+        selectedLevel={ctx.currentLevelId}
+        levels={ctx.levels}
+        onSelectLevel={callbacks?.onSetCurrentLevelId}
       />
       <MapViewer.IsoMenu
-        isometric={state.isometric}
-        onSetIsometric={(isometric) => {
-          callbacks.setIsometric(isometric)
-        }}
+        isometric={ctx.isometric}
+        onSetIsometric={callbacks?.onSetIsometric}
       />
       <MapViewer.LayerMenu
-        layers={state.layers}
-        hiddenLayers={state.hiddenLayers}
-        onChangeLayers={(layers) => callbacks.setHiddenLayers(layers)}
+        layers={ctx.layers}
+        hiddenLayers={ctx.hiddenLayers}
+        onChangeLayers={callbacks?.onSetHiddenLayers}
       />
     </MapViewer.Root>
   )
@@ -199,15 +250,13 @@ export type MapViewerLevelProps = {
   levelId: string
   active?: boolean
   isometric?: boolean
-  svgData?: SVGData
+  svgData: SVGData
+  MapSVGProps?: Partial<MapSVGProps>
 } & { className?: string }
 
 const MapViewerLevel = (props: MapViewerLevelProps) => {
-  const { levelId, active, isometric, svgData, className } = useProps(
-    "MapViewerLevel",
-    {},
-    props,
-  )
+  const { levelId, active, isometric, svgData, MapSVGProps, className } =
+    useProps("MapViewerLevel", {}, props)
 
   const [_svgRef, setSVGRef] = useState<SVGSVGElement | null>(null)
 
@@ -240,6 +289,7 @@ const MapViewerLevel = (props: MapViewerLevelProps) => {
           [mapSVGClassNames.isometricTransform]: hasTransformCls,
           [mapSVGClassNames.isometricTransitionFinished]: hasFinishedCls,
         })}
+        {...MapSVGProps}
       />
     </Box>
   )

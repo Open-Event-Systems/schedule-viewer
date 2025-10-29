@@ -4,9 +4,13 @@ import { MapSVG } from "./map-svg.js"
 import svgMap from "../../../viewer/public/example-map-lobby.svg"
 import { useEffect, useState } from "react"
 import { parseSVGData, type SVGData } from "./svg.js"
+import { Box } from "@mantine/core"
 
 const meta: Meta<typeof MapSVG> = {
   component: MapSVG,
+  parameters: {
+    layout: "fullscreen",
+  },
 }
 
 export default meta
@@ -23,6 +27,10 @@ export const Default: StoryObj<typeof MapSVG> = {
           setData(parseSVGData(txt))
         })
     }, [])
+
+    if (!data) {
+      return <></>
+    }
 
     return <MapSVG {...args} svgData={data} />
   },

@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { MapViewer, type MapViewerProps } from "./map-viewer.js"
-import type { ComponentType } from "react"
+import { MapViewer } from "./map-viewer.js"
+import {
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  type ComponentType,
+} from "react"
 
 import "../panzoom/panzoom.scss"
 import "./map-viewer.scss"
@@ -8,17 +14,16 @@ import "./map.scss"
 
 import {
   MapViewerCallbacksContext,
-  MapViewerStateContext,
-  useMapViewer,
+  MapViewerContext,
+  type MapViewerCallbacks,
+  type MapViewerContextValue,
 } from "./context.js"
 import type { MapConfig } from "../types-new.js"
 
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
 import f2Svg from "../../../viewer/public/example-map-2f.svg"
 
-type CT = ComponentType<MapViewerProps & { visible?: boolean }>
-
-const meta: Meta<CT> = {
+const meta: Meta<typeof MapViewer> = {
   component: MapViewer,
   parameters: {
     layout: "fullscreen",
@@ -27,16 +32,64 @@ const meta: Meta<CT> = {
 
 export default meta
 
-export const Default: StoryObj<CT> = {
+export const Default: StoryObj<typeof MapViewer> = {
   render() {
-    const [mapState, mapCallbacks] = useMapViewer(mapCfg)
+    const reducer = useCallback(
+      (
+        cur: MapViewerContextValue,
+        action: Partial<MapViewerContextValue>,
+      ): MapViewerContextValue => {
+        return {
+          ...cur,
+          ...action,
+        }
+      },
+      [],
+    )
+
+    const [state, dispatch] = useReducer(reducer, {
+      currentLevelId: "lobby",
+      flags: ["test"],
+      hiddenLayers: [],
+      isometric: false,
+      layers: mapCfg.layers,
+      levels: mapCfg.levels,
+      contentHeight: 960,
+      contentWidth: 960,
+      locations: [
+        {
+          id: "room-1",
+          title: "Event 1",
+        },
+      ],
+    })
+
+    const callbacks = useMemo<MapViewerCallbacks>(() => {
+      return {
+        onSetCurrentLevelId(id) {
+          dispatch({ currentLevelId: id })
+        },
+        onSetHiddenLayers(layers) {
+          dispatch({ hiddenLayers: [...layers] })
+        },
+        onSetIsometric(isometric) {
+          dispatch({ isometric })
+        },
+        onSetSelectedLocation(id) {
+          dispatch({ activeLocationId: id })
+        },
+      }
+    }, [dispatch])
 
     return (
-      <MapViewerStateContext value={mapState}>
-        <MapViewerCallbacksContext value={mapCallbacks}>
-          <MapViewer />
+      <MapViewerContext value={state}>
+        <MapViewerCallbacksContext value={callbacks}>
+          <MapViewer
+            frameWidth={window.innerWidth}
+            frameHeight={window.innerHeight}
+          />
         </MapViewerCallbacksContext>
-      </MapViewerStateContext>
+      </MapViewerContext>
     )
   },
 }

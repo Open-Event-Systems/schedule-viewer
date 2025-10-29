@@ -1,71 +1,42 @@
-import { createContext, useMemo, useReducer } from "react"
-import type { MapConfig, MapLayer, MapLevel } from "../types-new.js"
+import { createContext } from "react"
+import type { MapLayer, MapLevel } from "../types-new.js"
 
-type MapViewerState = Readonly<{
+type MapViewerLocationSettings = Readonly<{
+  id: string
+  title?: string
+  icon?: string
+}>
+
+export type MapViewerContextValue = Readonly<{
+  contentWidth?: number
+  contentHeight?: number
   levels: readonly MapLevel[]
   layers: readonly MapLayer[]
-  hiddenLayers: ReadonlySet<string>
+  flags: readonly string[]
+  locations: readonly MapViewerLocationSettings[]
+  hiddenLayers: readonly string[]
   currentLevelId: string
   isometric: boolean
+  activeLocationId?: string | undefined
 }>
 
-export type MapViewerCallbacks = Readonly<{
-  setCurrentLevelId(id: string): void
-  setIsometric(isometric: boolean): void
-  setHiddenLayers(layers: Iterable<string>): void
-}>
+export type MapViewerCallbacks = {
+  onSetCurrentLevelId?: (id: string) => void
+  onSetHiddenLayers?: (layers: Iterable<string>) => void
+  onSetSelectedLocation?: (id: string | undefined) => void
+  onSetIsometric?: (isometric: boolean) => void
+}
 
-export const MapViewerStateContext = createContext<MapViewerState>({
+export const MapViewerContext = createContext<MapViewerContextValue>({
   levels: [],
   layers: [],
-  hiddenLayers: new Set(),
+  flags: [],
+  locations: [],
+  hiddenLayers: [],
   currentLevelId: "",
   isometric: false,
 })
-export const MapViewerCallbacksContext = createContext<MapViewerCallbacks>({
-  setCurrentLevelId() {},
-  setIsometric() {},
-  setHiddenLayers() {},
-})
 
-export const useMapViewer = (
-  config: MapConfig,
-): [MapViewerState, MapViewerCallbacks] => {
-  const init = (): MapViewerState => {
-    const initLevelId = config.levels[0]?.id ?? "" // TODO: get from config
-
-    return {
-      levels: config.levels,
-      layers: config.layers,
-      hiddenLayers: new Set(),
-      currentLevelId: initLevelId,
-      isometric: false,
-    }
-  }
-
-  const reducer = (
-    cur: MapViewerState,
-    action: Partial<MapViewerState>,
-  ): MapViewerState => {
-    return { ...cur, ...action }
-  }
-
-  const [state, dispatch] = useReducer(reducer, {}, init)
-
-  const callbacks = useMemo((): MapViewerCallbacks => {
-    return {
-      setCurrentLevelId(currentLevelId) {
-        dispatch({ currentLevelId })
-      },
-      setIsometric(isometric) {
-        dispatch({ isometric })
-      },
-      setHiddenLayers(layers) {
-        console.log("doing", layers)
-        dispatch({ hiddenLayers: new Set(layers) })
-      },
-    }
-  }, [dispatch])
-
-  return [state, callbacks]
-}
+export const MapViewerCallbacksContext = createContext<
+  MapViewerCallbacks | undefined
+>(undefined)

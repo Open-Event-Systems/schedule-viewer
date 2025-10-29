@@ -2,10 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { PanZoom, type ZoomFunc } from "./panzoom.js"
 import { useEffect, useRef, useState } from "react"
 import { parseSVGData, type SVGData } from "../svg-new/svg.js"
-import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
-import { Map } from "../map/map.js"
 
+import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
 import "./panzoom.scss"
+import { MapSVG } from "../svg-new/map-svg.js"
 
 const meta: Meta<typeof PanZoom> = {
   component: PanZoom,
@@ -35,23 +35,13 @@ export const Default: StoryObj<typeof PanZoom> = {
 
     return (
       <PanZoom
-        mapWidth={960}
-        mapHeight={960}
         bd="#000 solid 1px"
         zoomFuncRef={zoomFuncRef}
+        contentWidth={960}
+        contentHeight={960}
         {...args}
       >
-        <Map>
-          <Map.Level
-            svgData={lobbyData}
-            svgProps={{
-              onClick: (e) => {
-                zoomFuncRef.current &&
-                  zoomFuncRef.current(e.target as SVGElement)
-              },
-            }}
-          />
-        </Map>
+        {lobbyData && <MapSVG svgData={lobbyData} />}
       </PanZoom>
     )
   },
