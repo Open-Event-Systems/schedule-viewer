@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-webpack5"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapSVG } from "./map-svg.js"
 
 import svgMap from "../../../viewer/public/example-map-lobby.svg"
 import { useEffect, useState } from "react"
-import { parseSVGData, SVGData } from "./svg.js"
+import { parseSVGData, type SVGData } from "./svg.js"
 
 const meta: Meta<typeof MapSVG> = {
   component: MapSVG,

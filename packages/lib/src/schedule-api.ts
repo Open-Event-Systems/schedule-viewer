@@ -1,6 +1,6 @@
 import z from "zod"
 import wretch from "wretch"
-import { ScheduleAPI, ScheduleItem } from "./types.js"
+import type { ScheduleAPI, ScheduleItem } from "./types.js"
 import { intervalToTimezone } from "./time.js"
 import { sortScheduleItems } from "./utils.js"
 import { parseScheduleItem } from "./item.js"

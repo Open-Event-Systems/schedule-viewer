@@ -1,11 +1,9 @@
 import { eventRoute, dataRoute, sharedScheduleRoute } from "./index.js"
 import { Grid, Stack, Title } from "@mantine/core"
-import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
-import { MouseEvent, useCallback, useContext } from "react"
+import { type DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
+import { type MouseEvent, useCallback, useContext } from "react"
 import {
   createICS,
-  Event,
-  isScheduled,
   makeTagFilter,
   makeTitleFilter,
 } from "@open-event-systems/schedule-lib"
@@ -19,139 +17,138 @@ import {
 } from "@tanstack/react-router"
 import {
   useBookmarkCounts,
-  useEvents,
   useSelectionsById,
   useSetSelections,
 } from "@open-event-systems/schedule-react"
 import { makeBookmarkFilter } from "@open-event-systems/schedule-lib"
-import { FilterContext } from "../components/App.js"
 import { ScheduleView } from "../components/schedule-view.js"
 import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
 
 export const SharedScheduleRoute = observer(() => {
-  const { config } = dataRoute.useRouteContext()
-  const { selectionId } = sharedScheduleRoute.useParams()
-  const allEvents = useEvents()
-  const selections = useSelectionsById(selectionId)
-  if (!selections) {
-    throw notFound({ routeId: rootRouteId })
-  }
-  const counts = useBookmarkCounts()
-  const updateSelections = useSetSelections()
+  return null
+  // const { config } = dataRoute.useRouteContext()
+  // const { selectionId } = sharedScheduleRoute.useParams()
+  // const allEvents = useEvents()
+  // const selections = useSelectionsById(selectionId)
+  // if (!selections) {
+  //   throw notFound({ routeId: rootRouteId })
+  // }
+  // const counts = useBookmarkCounts()
+  // const updateSelections = useSetSelections()
 
-  const [filter, setFilter] = useContext(FilterContext)
-  const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
+  // const [filter, setFilter] = useContext(FilterContext)
+  // const { text: filterText, disabledTags, showPast, onlyBookmarked } = filter
 
-  const loc = useLocation()
-  const navigate = sharedScheduleRoute.useNavigate()
-  const router = useRouter()
+  // const loc = useLocation()
+  // const navigate = sharedScheduleRoute.useNavigate()
+  // const router = useRouter()
 
-  const hashParams = new URLSearchParams(loc.hash)
-  const selectedDayKey = hashParams.get("day")
+  // const hashParams = new URLSearchParams(loc.hash)
+  // const selectedDayKey = hashParams.get("day")
 
-  const setSelectedDay = useCallback(
-    (day: DayFilterDay) => {
-      navigate({
-        hash: `day=${day.key}`,
-        replace: true,
-      })
-    },
-    [navigate],
-  )
-  const onClick = useCallback(
-    (e: MouseEvent, event: Event) => {
-      e.preventDefault()
-      navigate({
-        to: eventRoute.to,
-        params: {
-          eventId: event.id,
-        },
-      })
-    },
-    [navigate],
-  )
+  // const setSelectedDay = useCallback(
+  //   (day: DayFilterDay) => {
+  //     navigate({
+  //       hash: `day=${day.key}`,
+  //       replace: true,
+  //     })
+  //   },
+  //   [navigate],
+  // )
+  // const onClick = useCallback(
+  //   (e: MouseEvent, event: Event) => {
+  //     e.preventDefault()
+  //     navigate({
+  //       to: eventRoute.to,
+  //       params: {
+  //         eventId: event.id,
+  //       },
+  //     })
+  //   },
+  //   [navigate],
+  // )
 
-  const getHref = useCallback(
-    (event: Event) => {
-      return router.history.createHref(
-        router.buildLocation({
-          to: eventRoute.to,
-          params: {
-            eventId: event.id,
-          },
-        }).href,
-      )
-    },
-    [router],
-  )
+  // const getHref = useCallback(
+  //   (event: Event) => {
+  //     return router.history.createHref(
+  //       router.buildLocation({
+  //         to: eventRoute.to,
+  //         params: {
+  //           eventId: event.id,
+  //         },
+  //       }).href,
+  //     )
+  //   },
+  //   [router],
+  // )
 
-  return (
-    <Grid>
-      <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
-        <Stack>
-          <Title order={2} ta="center">
-            Shared Schedule
-          </Title>
-          <ScheduleView
-            config={config}
-            events={allEvents}
-            filter={{ ...filter, onlyBookmarked: true }}
-            counts={counts}
-            selectedDay={selectedDayKey}
-            setSelectedDay={setSelectedDay}
-            selections={selections}
-            updateSelections={updateSelections}
-            onClickEvent={onClick}
-            getHref={getHref}
-          />
-        </Stack>
-      </Grid.Col>
-      <Grid.Col span={{ xs: 12, sm: 4 }} order={{ base: 1, xs: 1, sm: 2 }}>
-        <Stack align="end" gap="xs">
-          <Filter
-            text={filterText}
-            disabledTags={disabledTags}
-            showPastEvents={showPast}
-            onChangeText={(text: string) => setFilter({ ...filter, text })}
-            onChangeTags={(disabledTags: Set<string>) =>
-              setFilter({ ...filter, disabledTags })
-            }
-            onChangeShowPastEvents={(showPast: boolean) =>
-              setFilter({ ...filter, showPast })
-            }
-          />
-          <ShareMenu
-            onExport={() => {
-              let events = Array.from(allEvents).filter(isScheduled)
+  // return (
+  //   <Grid>
+  //     <Grid.Col span={{ xs: 12, sm: 8 }} order={{ base: 2, xs: 2, sm: 1 }}>
+  //       <Stack>
+  //         <Title order={2} ta="center">
+  //           Shared Schedule
+  //         </Title>
+  //         <ScheduleView
+  //           config={config}
+  //           events={allEvents}
+  //           filter={{ ...filter, onlyBookmarked: true }}
+  //           counts={counts}
+  //           selectedDay={selectedDayKey}
+  //           setSelectedDay={setSelectedDay}
+  //           selections={selections}
+  //           updateSelections={updateSelections}
+  //           onClickEvent={onClick}
+  //           getHref={getHref}
+  //         />
+  //       </Stack>
+  //     </Grid.Col>
+  //     <Grid.Col span={{ xs: 12, sm: 4 }} order={{ base: 1, xs: 1, sm: 2 }}>
+  //       <Stack align="end" gap="xs">
+  //         <Filter
+  //           text={filterText}
+  //           disabledTags={disabledTags}
+  //           showPastEvents={showPast}
+  //           onChangeText={(text: string) => setFilter({ ...filter, text })}
+  //           onChangeTags={(disabledTags: Set<string>) =>
+  //             setFilter({ ...filter, disabledTags })
+  //           }
+  //           onChangeShowPastEvents={(showPast: boolean) =>
+  //             setFilter({ ...filter, showPast })
+  //           }
+  //         />
+  //         <ShareMenu
+  //           onExport={() => {
+  //             let events = Array.from(allEvents).filter(isScheduled)
 
-              if (filterText) {
-                events = events.filter(makeTitleFilter(filterText))
-              }
+  //             if (filterText) {
+  //               events = events.filter(makeTitleFilter(filterText))
+  //             }
 
-              events = events.filter(makeTagFilter(disabledTags))
+  //             events = events.filter(makeTagFilter(disabledTags))
 
-              if (onlyBookmarked) {
-                events = events.filter(makeBookmarkFilter(selections.events))
-              }
+  //             if (onlyBookmarked) {
+  //               events = events.filter(makeBookmarkFilter(selections.events))
+  //             }
 
-              const data = createICS(
-                events,
-                `schedule-${config.icalPrefix || "event"}`,
-                config.icalDomain || window.location.hostname,
-              )
-              const blob = new Blob([data], { type: "text/calendar" })
-              const dataURL = URL.createObjectURL(blob)
-              const el = document.createElement("a")
-              el.setAttribute("href", dataURL)
-              el.setAttribute("download", `${config.id}-schedule.ics`)
-              el.click()
-              URL.revokeObjectURL(dataURL)
-            }}
-          />
-        </Stack>
-      </Grid.Col>
-    </Grid>
-  )
+  //             const data = createICS(
+  //               events,
+  //               `schedule-${config.icalPrefix || "event"}`,
+  //               config.icalDomain || window.location.hostname,
+  //             )
+  //             const blob = new Blob([data], { type: "text/calendar" })
+  //             const dataURL = URL.createObjectURL(blob)
+  //             const el = document.createElement("a")
+  //             el.setAttribute("href", dataURL)
+  //             el.setAttribute("download", `${config.id}-schedule.ics`)
+  //             el.click()
+  //             URL.revokeObjectURL(dataURL)
+  //           }}
+  //         />
+  //       </Stack>
+  //     </Grid.Col>
+  //   </Grid>
+  // )
 })
 
 SharedScheduleRoute.displayName = "EventsRoute"

@@ -9,7 +9,7 @@ import {
   mapLayoutRoute,
   mapRoute,
   rootRoute,
-  RouterContext,
+  type RouterContext,
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,

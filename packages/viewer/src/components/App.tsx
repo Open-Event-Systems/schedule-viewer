@@ -6,9 +6,9 @@ import {
 import { createContext, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
-  MantineColorScheme,
+  type MantineColorScheme,
   MantineProvider,
-  MantineThemeOverride,
+  type MantineThemeOverride,
 } from "@mantine/core"
 import { router } from "../router.js"
 import { makeAppConfig } from "../config.js"

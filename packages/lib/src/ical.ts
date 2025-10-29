@@ -1,4 +1,4 @@
-import { Bounded, ScheduleItem } from "./types.js"
+import type { Bounded, ScheduleItem } from "./types.js"
 import * as ics from "ics"
 
 /**

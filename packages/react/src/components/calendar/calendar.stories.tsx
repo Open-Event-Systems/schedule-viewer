@@ -1,11 +1,11 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Calendar } from "./calendar.js"
-import { MouseEvent, useCallback } from "react"
+import { type MouseEvent, useCallback } from "react"
 import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
 import "../details/item-details.scss"
 import "./calendar.scss"
-import { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
+import type { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <title></title>
     <meta name="description" content="Browse the schedule for this event." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -13,11 +13,10 @@
     />
     <link rel="apple-touch-icon" href="/icon-180x180.png" />
     <link rel="manifest" href="/schedule.webmanifest" />
-    <script src="/config.js"></script>
-    <%= htmlWebpackPlugin.tags.headTags %>
-    <link rel="stylesheet" href="/custom.css" />
+    <script src="/config.js" vite-ignore></script>
   </head>
   <body>
     <div id="schedule"></div>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

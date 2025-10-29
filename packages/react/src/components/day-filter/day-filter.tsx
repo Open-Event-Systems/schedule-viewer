@@ -1,4 +1,4 @@
-import { ActionIcon, Box, BoxProps, Title, useProps } from "@mantine/core"
+import { ActionIcon, Box, type BoxProps, Title, useProps } from "@mantine/core"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useMemo } from "react"
@@ -46,7 +46,8 @@ export const DayFilter = (props: DayFilterProps) => {
         color="var(--mantine-color-text)"
         disabled={selectedIdx <= 0}
         onClick={() => {
-          selectedIdx > 0 && onSelectDay && onSelectDay(days[selectedIdx - 1])
+          const prevDay = days[selectedIdx - 1]
+          prevDay && onSelectDay && onSelectDay(prevDay)
         }}
       >
         <IconChevronLeft />
@@ -61,9 +62,8 @@ export const DayFilter = (props: DayFilterProps) => {
         color="var(--mantine-color-text)"
         disabled={selectedIdx >= days.length - 1}
         onClick={() => {
-          selectedIdx < days.length - 1 &&
-            onSelectDay &&
-            onSelectDay(days[selectedIdx + 1])
+          const nextDay = days[selectedIdx + 1]
+          nextDay && onSelectDay && onSelectDay(nextDay)
         }}
       >
         <IconChevronRight />

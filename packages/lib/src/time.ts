@@ -1,6 +1,6 @@
 import { add, isAfter, isBefore, isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { Bounded, Interval } from "./types.js"
+import type { Bounded, Interval } from "./types.js"
 
 /**
  * Return whether an interval contains a date.

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-webpack5"
-import { MapViewer, MapViewerProps } from "./map-viewer.js"
-import { ComponentType } from "react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { MapViewer, type MapViewerProps } from "./map-viewer.js"
+import type { ComponentType } from "react"
 
 import "../panzoom/panzoom.scss"
 import "./map-viewer.scss"
@@ -11,7 +11,7 @@ import {
   MapViewerStateContext,
   useMapViewer,
 } from "./context.js"
-import { MapConfig } from "../types-new.js"
+import type { MapConfig } from "../types-new.js"
 
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
 import f2Svg from "../../../viewer/public/example-map-2f.svg"

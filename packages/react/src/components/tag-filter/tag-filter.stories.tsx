@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { TagFilter } from "./tag-filter.js"
 import { useState } from "react"
 

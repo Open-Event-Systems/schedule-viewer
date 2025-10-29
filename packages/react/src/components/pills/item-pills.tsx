@@ -1,17 +1,17 @@
-import { Pills, PillsProps } from "./pills.js"
+import { Pills, type PillsProps } from "./pills.js"
 import { useProps } from "@mantine/core"
 import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { ReactNode, useCallback, useMemo } from "react"
+import { type ReactNode, useCallback, useMemo } from "react"
 import clsx from "clsx"
 import {
   makeTagIndicatorFunc,
-  TagEntry,
-  TagIndicatorEntry,
+  type TagEntry,
+  type TagIndicatorEntry,
 } from "../../config/config.js"
 import { useItemDetails } from "../details/context.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
-import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemPillsItemType = ScheduleItem &
   Readonly<{

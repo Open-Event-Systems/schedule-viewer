@@ -2,7 +2,7 @@ import {
   Alert,
   Box,
   Modal,
-  ModalProps,
+  type ModalProps,
   Skeleton,
   Stack,
   Text,

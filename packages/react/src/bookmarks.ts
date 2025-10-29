@@ -1,12 +1,12 @@
 import {
-  BookmarkAPI,
-  BookmarkServiceAPI,
+  type BookmarkAPI,
+  type BookmarkServiceAPI,
   composeBookmarkAPI,
   makeLocalStorageBookmarkAPI,
   setupBookmarkServiceAPI,
   syncBookmarkAPIs,
 } from "@open-event-systems/schedule-lib"
-import { ScheduleConfig } from "./config/config.js"
+import type { ScheduleConfig } from "./config/config.js"
 import { createContext, useContext } from "react"
 
 /**

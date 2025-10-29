@@ -1,7 +1,7 @@
-import { HoverCard, HoverCardProps, useProps } from "@mantine/core"
-import { ReactNode } from "react"
-import { ItemDetails, ItemDetailsProps } from "../details/item-details.js"
-import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import { HoverCard, type HoverCardProps, useProps } from "@mantine/core"
+import type { ReactNode } from "react"
+import { ItemDetails, type ItemDetailsProps } from "../details/item-details.js"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemHoverCardProps = HoverCardProps & {
   item: ScheduleItem

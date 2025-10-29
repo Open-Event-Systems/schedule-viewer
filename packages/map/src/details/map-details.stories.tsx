@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapDetails } from "./map-details.js"
 import { useState } from "react"
 import { Button } from "@mantine/core"

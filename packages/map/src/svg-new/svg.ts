@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from "react"
+import type { ComponentPropsWithoutRef } from "react"
 
 export type SVGData = Readonly<{
   props: Readonly<Omit<ComponentPropsWithoutRef<"svg">, "children">>

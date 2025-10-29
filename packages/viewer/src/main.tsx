@@ -2,8 +2,8 @@ import { createRoot } from "react-dom/client"
 import { App } from "./components/App.js"
 import {
   createTheme,
-  MantineColorScheme,
-  MantineThemeOverride,
+  type MantineColorScheme,
+  type MantineThemeOverride,
 } from "@mantine/core"
 import { SWStore, SWStoreContext } from "./service-worker.js"
 
@@ -22,7 +22,7 @@ declare global {
   var __webpack_public_path__: string | undefined
 }
 
-__webpack_public_path__ = scheduleBasePath ?? "/"
+window.__webpack_public_path__ = scheduleBasePath ?? "/"
 
 const scheduleEl = document.getElementById("schedule")
 if (scheduleEl) {

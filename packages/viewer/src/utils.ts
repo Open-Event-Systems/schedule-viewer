@@ -1,4 +1,4 @@
-import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
+import type { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import {
   contains,
   getDay,
@@ -46,7 +46,9 @@ export const getDefaultDay = (
     }
   }
 
-  if (!isBefore(now, days[days.length - 1].end)) {
+  const lastDay = days[days.length - 1]
+
+  if (lastDay && !isBefore(now, lastDay.end)) {
     return days[days.length - 1]
   } else {
     return days[0]

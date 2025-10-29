@@ -2,23 +2,23 @@ import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
 import { getDays, getDefaultDay } from "../utils.js"
 import {
-  Bounded,
+  type Bounded,
   isBounded,
   makeDateFilter,
-  ScheduleItem,
+  type ScheduleItem,
   ScheduleItemStore,
   toTimezone,
 } from "@open-event-systems/schedule-lib"
 import {
   DayFilter,
-  DayFilterDay,
+  type DayFilterDay,
 } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import {
   binItemsByTime,
   ItemPills,
 } from "@open-event-systems/schedule-react/components/pills/item-pills"
 import { Stack, Text } from "@mantine/core"
-import { useTime, ViewerConfig } from "../config.js"
+import { useTime, type ViewerConfig } from "../config.js"
 
 export type ScheduleViewProps = {
   config: ViewerConfig

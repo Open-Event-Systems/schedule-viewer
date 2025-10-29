@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { LayerMenu } from "./layer-menu.js"
 import { useState } from "react"
 
@@ -16,15 +16,15 @@ export const Default: StoryObj<typeof LayerMenu> = {
     layers: [
       {
         id: "text",
-        label: "Text",
+        title: "Text",
       },
       {
         id: "detail",
-        label: "Detail",
+        title: "Detail",
       },
       {
         id: "landmarks",
-        label: "Landmarks",
+        title: "Landmarks",
       },
     ],
   },

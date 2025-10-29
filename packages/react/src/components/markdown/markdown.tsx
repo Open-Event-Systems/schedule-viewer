@@ -1,6 +1,10 @@
 import { forwardRef, useMemo } from "react"
 import markdownit from "markdown-it"
-import { BoxProps, createPolymorphicComponent, Typography } from "@mantine/core"
+import {
+  type BoxProps,
+  createPolymorphicComponent,
+  Typography,
+} from "@mantine/core"
 import clsx from "clsx"
 
 export type MarkdownProps = { children?: string } & BoxProps
@@ -16,7 +20,7 @@ export const Markdown = createPolymorphicComponent<"div", MarkdownProps>(
 
       md.renderer.rules.link_open = (tokens, idx, options) => {
         const token = tokens[idx]
-        token.attrSet("target", "_blank")
+        token?.attrSet("target", "_blank")
         return md.renderer.renderToken(tokens, idx, options)
       }
 

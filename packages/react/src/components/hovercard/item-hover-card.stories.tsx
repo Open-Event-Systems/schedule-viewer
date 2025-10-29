@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemHoverCard } from "./item-hover-card.js"
 import { Button } from "@mantine/core"
 

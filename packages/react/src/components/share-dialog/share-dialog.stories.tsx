@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ShareDialog } from "./share-dialog.js"
 
 const meta: Meta<typeof ShareDialog> = {

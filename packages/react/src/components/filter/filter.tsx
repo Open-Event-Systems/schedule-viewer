@@ -1,6 +1,6 @@
 import {
   Grid,
-  GridProps,
+  type GridProps,
   Switch,
   Text,
   TextInput,
@@ -9,7 +9,7 @@ import {
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/tag-filter.js"
-import { TagEntry, TagIndicatorEntry } from "../../config/config.js"
+import type { TagEntry, TagIndicatorEntry } from "../../config/config.js"
 export type FilterProps = {
   disabledTags?: Iterable<string>
   tags?: readonly TagEntry[]

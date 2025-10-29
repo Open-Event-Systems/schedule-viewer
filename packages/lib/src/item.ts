@@ -1,7 +1,12 @@
 import { isBefore } from "date-fns"
-import { Interval } from "./types.js"
 import { contains } from "./time.js"
-import { Contact, ScheduleEvent, ScheduleItem, Vendor } from "./types.js"
+import type {
+  Interval,
+  Contact,
+  ScheduleEvent,
+  ScheduleItem,
+  Vendor,
+} from "./types.js"
 import { opt, optStr, strDate, strSetSchema } from "./schema.js"
 import z from "zod"
 import { ScheduleItemStore } from "./item-store.js"

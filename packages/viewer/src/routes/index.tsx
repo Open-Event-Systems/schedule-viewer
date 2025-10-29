@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-router"
 import { ScheduleLayout } from "../components/schedule-layout.js"
 import { Loading } from "../components/Loading.js"
-import { AppConfig, ViewerConfigProvider } from "../config.js"
+import { type AppConfig, ViewerConfigProvider } from "../config.js"
 import { NotFoundRoute } from "./NotFoundRoute.js"
 import {
   FilterProvider,

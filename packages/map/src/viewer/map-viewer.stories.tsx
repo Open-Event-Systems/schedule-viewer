@@ -1,8 +1,8 @@
-import { Meta, StoryObj } from "@storybook/react-webpack5"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapViewer } from "./map-viewer.js"
 import svgMap from "../../../viewer/public/example-map.svg"
 import { useRef, useState } from "react"
-import { MapConfig } from "../types.js"
+import type { MapConfig } from "../types.js"
 
 // import "./map-viewer.scss"
 // import "./map.scss"

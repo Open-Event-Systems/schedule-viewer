@@ -1,7 +1,7 @@
 import { FilterContext } from "@open-event-systems/schedule-react"
 import {
   Filter as BaseFilter,
-  FilterProps,
+  type FilterProps,
 } from "@open-event-systems/schedule-react/components/filter/filter"
 import { useCallback, useContext } from "react"
 

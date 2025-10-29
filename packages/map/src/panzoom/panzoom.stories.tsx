@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-webpack5"
-import { PanZoom, ZoomFunc } from "./panzoom.js"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { PanZoom, type ZoomFunc } from "./panzoom.js"
 import { useEffect, useRef, useState } from "react"
-import { parseSVGData, SVGData } from "../svg-new/svg.js"
+import { parseSVGData, type SVGData } from "../svg-new/svg.js"
 import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
 import { Map } from "../map/map.js"
 

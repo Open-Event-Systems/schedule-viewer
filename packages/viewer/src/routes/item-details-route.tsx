@@ -1,4 +1,7 @@
-import { makeSelections, ScheduleItem } from "@open-event-systems/schedule-lib"
+import {
+  makeSelections,
+  type ScheduleItem,
+} from "@open-event-systems/schedule-lib"
 import {
   ItemDetailsProvider,
   makeItemDetailsFunc,

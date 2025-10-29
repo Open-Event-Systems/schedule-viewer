@@ -1,5 +1,5 @@
 import { createContext, useMemo, useReducer } from "react"
-import { MapConfig, MapLayer, MapLevel } from "../types-new.js"
+import type { MapConfig, MapLayer, MapLevel } from "../types-new.js"
 
 type MapViewerState = Readonly<{
   levels: readonly MapLevel[]
@@ -32,7 +32,7 @@ export const useMapViewer = (
   config: MapConfig,
 ): [MapViewerState, MapViewerCallbacks] => {
   const init = (): MapViewerState => {
-    const initLevelId = config.levels[0].id ?? "" // TODO: get from config
+    const initLevelId = config.levels[0]?.id ?? "" // TODO: get from config
 
     return {
       levels: config.levels,

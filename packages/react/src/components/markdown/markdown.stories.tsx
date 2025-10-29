@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Markdown } from "./markdown.js"
 
 const meta: Meta<typeof Markdown> = {

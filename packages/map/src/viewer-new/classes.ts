@@ -1,6 +1,9 @@
-export const mapClassNames = {
+export const mapViewerClassNames = {
   visible: "MapViewer-visible",
-  isometric: "MapViewer-isometric",
-  isometricTransform: "MapViewer-isometric-transform",
-  active: "MapViewer-active",
+  level: "MapViewer-level",
+  levelId: (id: string) => `MapViewer-level-id-${id}`,
+  levelActive: "MapViewer-level-active",
+  levelIsometric: "MapViewer-level-isometric",
+  levelIsometricTransform: "MapViewer-level-isometric-transform",
+  levelNoIsometricTransition: "MapViewer-level-no-isometric-transition",
 } as const

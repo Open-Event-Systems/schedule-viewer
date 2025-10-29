@@ -1,13 +1,13 @@
 import {
   Box,
-  BoxProps,
+  type BoxProps,
   Divider,
   Indicator,
   Title,
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import { MouseEvent, ReactNode } from "react"
+import type { MouseEvent, ReactNode } from "react"
 
 export type PillsProps = BoxProps & { children?: ReactNode }
 

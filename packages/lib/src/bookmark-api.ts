@@ -1,4 +1,4 @@
-import { BookmarkAPI, BookmarkServiceAPI, Selections } from "./types.js"
+import type { BookmarkAPI, BookmarkServiceAPI, Selections } from "./types.js"
 import wretch from "wretch"
 import { formatISO, isAfter } from "date-fns"
 import { makeSelections, parseSelections } from "./selections.js"

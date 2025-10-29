@@ -1,11 +1,11 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import { useMemo } from "react"
-import { Pills, PillsProps } from "../pills/pills.js"
+import { Pills, type PillsProps } from "../pills/pills.js"
 import {
   makeTagIndicatorFunc,
-  TagEntry,
-  TagIndicatorEntry,
+  type TagEntry,
+  type TagIndicatorEntry,
 } from "../../config/config.js"
 
 export type TagFilterProps = {

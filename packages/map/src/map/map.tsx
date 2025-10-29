@@ -1,8 +1,8 @@
-import { Box, BoxProps, useProps } from "@mantine/core"
+import { Box, type BoxProps, useProps } from "@mantine/core"
 import clsx from "clsx"
 import { MapSVG } from "../svg-new/map-svg.js"
-import { ComponentPropsWithoutRef, ReactNode } from "react"
-import { SVGData } from "../svg-new/svg.js"
+import type { ComponentPropsWithoutRef, ReactNode } from "react"
+import type { SVGData } from "../svg-new/svg.js"
 
 export type MapProps = {
   children?: ReactNode

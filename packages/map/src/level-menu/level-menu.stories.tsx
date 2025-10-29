@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-webpack5"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { LevelMenu } from "./level-menu.js"
 import { Box } from "@mantine/core"
 import { useState } from "react"

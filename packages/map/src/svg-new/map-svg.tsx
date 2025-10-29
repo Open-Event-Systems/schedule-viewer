@@ -1,7 +1,7 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
-import { ComponentPropsWithoutRef, forwardRef } from "react"
-import { SVGData } from "./svg.js"
+import { type ComponentPropsWithoutRef, forwardRef } from "react"
+import type { SVGData } from "./svg.js"
 
 export type MapSVGProps = {
   svgData?: SVGData

@@ -1,4 +1,9 @@
-import { ActionIcon, ActionIconProps, Tooltip, useProps } from "@mantine/core"
+import {
+  ActionIcon,
+  type ActionIconProps,
+  Tooltip,
+  useProps,
+} from "@mantine/core"
 import { IconShare3 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { useEffect, useMemo, useState } from "react"

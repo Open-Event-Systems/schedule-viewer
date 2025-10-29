@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemDetails } from "./item-details.js"
 import { events, tagEntries } from "../../test-data.js"
 import { useState } from "react"

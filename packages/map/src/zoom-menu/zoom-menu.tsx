@@ -1,4 +1,4 @@
-import { ActionIcon, Group, GroupProps, useProps } from "@mantine/core"
+import { ActionIcon, Group, type GroupProps, useProps } from "@mantine/core"
 import {
   IconHome,
   IconMinus,

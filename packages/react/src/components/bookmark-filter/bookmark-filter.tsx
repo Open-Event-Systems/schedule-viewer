@@ -1,6 +1,6 @@
 import {
   SegmentedControl,
-  SegmentedControlProps,
+  type SegmentedControlProps,
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"

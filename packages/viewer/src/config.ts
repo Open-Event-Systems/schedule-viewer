@@ -1,11 +1,14 @@
-import {
+import type {
   BookmarkAPI,
   BookmarkServiceAPI,
   ScheduleAPI,
 } from "@open-event-systems/schedule-lib"
-import { QueryClient, UseSuspenseQueryOptions } from "@tanstack/react-query"
+import {
+  QueryClient,
+  type UseSuspenseQueryOptions,
+} from "@tanstack/react-query"
 import wretch from "wretch"
-import { MapConfig } from "@open-event-systems/schedule-map/types"
+import type { MapConfig } from "@open-event-systems/schedule-map/types"
 import { createContext, useContext } from "react"
 import { useLocation } from "@tanstack/react-router"
 import { parseISO } from "date-fns"
@@ -14,8 +17,8 @@ import {
   DEFAULT_SCHEDULE_CONFIG,
   makeConfig,
   makeScheduleAPIFromConfig,
-  ScheduleConfig,
-  ScheduleConfigInput,
+  type ScheduleConfig,
+  type ScheduleConfigInput,
 } from "@open-event-systems/schedule-react"
 import { setupBookmarks } from "@open-event-systems/schedule-react"
 

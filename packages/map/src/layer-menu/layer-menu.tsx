@@ -2,14 +2,14 @@ import {
   Button,
   Checkbox,
   Paper,
-  PaperProps,
+  type PaperProps,
   Stack,
   useProps,
 } from "@mantine/core"
 import { IconCaretDown, IconCaretUp } from "@tabler/icons-react"
 import clsx from "clsx"
 import { useMemo } from "react"
-import { MapLayer } from "../types-new.js"
+import type { MapLayer } from "../types-new.js"
 
 export type LayerMenuProps = PaperProps & {
   opened?: boolean

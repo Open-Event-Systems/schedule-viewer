@@ -1,5 +1,5 @@
 import { isAfter } from "date-fns"
-import { Selections } from "./types.js"
+import type { Selections } from "./types.js"
 import z from "zod"
 import { opt, strDate, strSetSchema } from "./schema.js"
 

@@ -2,7 +2,7 @@ import {
   Button,
   Group,
   Modal,
-  ModalProps,
+  type ModalProps,
   Stack,
   Text,
   useProps,

@@ -1,9 +1,9 @@
 import {
   Anchor,
   Box,
-  BoxProps,
+  type BoxProps,
   Drawer,
-  DrawerProps,
+  type DrawerProps,
   Grid,
   Stack,
   Text,
@@ -11,8 +11,8 @@ import {
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import { MapEvent } from "../types.js"
-import { MouseEvent } from "react"
+import type { MapEvent } from "../types.js"
+import type { MouseEvent } from "react"
 
 export type MapDetailsProps = BoxProps & {
   title?: string

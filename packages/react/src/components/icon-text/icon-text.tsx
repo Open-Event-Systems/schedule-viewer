@@ -1,6 +1,6 @@
-import { Box, Text, TextProps, useProps } from "@mantine/core"
+import { Box, Text, type TextProps, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 
 export type IconTextProps = {
   icon?: ReactNode

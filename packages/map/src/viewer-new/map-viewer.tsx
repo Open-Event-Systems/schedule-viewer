@@ -1,14 +1,14 @@
 import {
   ActionIcon,
   Box,
-  BoxProps,
+  type BoxProps,
   Loader,
-  LoaderProps,
+  type LoaderProps,
   useProps,
 } from "@mantine/core"
-import { parseSVGData, SVGData } from "../svg-new/svg.js"
+import { parseSVGData, type SVGData } from "../svg-new/svg.js"
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -17,13 +17,15 @@ import {
 } from "react"
 import { MapSVG } from "../svg-new/map-svg.js"
 import clsx from "clsx"
-import { mapClassNames } from "./classes.js"
+import { mapViewerClassNames } from "./classes.js"
 import { MapViewerCallbacksContext, MapViewerStateContext } from "./context.js"
-import { ZoomMenu, ZoomMenuProps } from "../zoom-menu/zoom-menu.js"
-import { LevelMenu, LevelMenuProps } from "../level-menu/level-menu.js"
-import { LayerMenu, LayerMenuProps } from "../layer-menu/layer-menu.js"
-import { PanZoom, PanZoomProps } from "../panzoom/panzoom.js"
+import { ZoomMenu, type ZoomMenuProps } from "../zoom-menu/zoom-menu.js"
+import { LevelMenu, type LevelMenuProps } from "../level-menu/level-menu.js"
+import { LayerMenu, type LayerMenuProps } from "../layer-menu/layer-menu.js"
+import { PanZoom, type PanZoomProps } from "../panzoom/panzoom.js"
 import { IconCube } from "@tabler/icons-react"
+import { useIsometricTransition } from "./util.js"
+import { mapSVGClassNames } from "../svg-new/classes.js"
 
 export type MapViewerProps = {
   className?: string
@@ -48,9 +50,19 @@ export const MapViewer = (props: MapViewerProps) => {
         return null
       }
 
-      return <MapViewer.Level key={lvl.id} levelId={lvl.id} svgData={lvlSvg} />
+      const active = state.currentLevelId == lvl.id
+
+      return (
+        <MapViewer.Level
+          key={lvl.id}
+          levelId={lvl.id}
+          active={active}
+          isometric={state.isometric}
+          svgData={lvlSvg}
+        />
+      )
     })
-  }, [state.levels, svgData])
+  }, [state.levels, state.currentLevelId, state.isometric, svgData])
 
   useEffect(() => {
     const promises = state.levels.map((lvl) =>
@@ -90,7 +102,12 @@ export const MapViewer = (props: MapViewerProps) => {
   )
 }
 
-const MapViewerRoot = (props: MapViewerProps) => {
+export type MapViewerRootProps = {
+  className?: string
+  children?: ReactNode
+}
+
+const MapViewerRoot = (props: MapViewerRootProps) => {
   const { className, children } = useProps("MapViewerRoot", {}, props)
 
   return <Box className={clsx("MapViewer-root", className)}>{children}</Box>
@@ -180,13 +197,17 @@ const MapViewerContent = (props: MapViewerContentProps) => {
 
 export type MapViewerLevelProps = {
   levelId: string
+  active?: boolean
+  isometric?: boolean
   svgData?: SVGData
 } & { className?: string }
 
 const MapViewerLevel = (props: MapViewerLevelProps) => {
-  const { currentLevelId, isometric } = useContext(MapViewerStateContext)
-
-  const { levelId, svgData, className } = useProps("MapViewerLevel", {}, props)
+  const { levelId, active, isometric, svgData, className } = useProps(
+    "MapViewerLevel",
+    {},
+    props,
+  )
 
   const [_svgRef, setSVGRef] = useState<SVGSVGElement | null>(null)
 
@@ -194,22 +215,32 @@ const MapViewerLevel = (props: MapViewerLevelProps) => {
     setSVGRef(el)
   }, [])
 
-  const active = currentLevelId == levelId
+  const [hasIsoCls, hasTransformCls, hasFinishedCls, onTransitionEnd] =
+    useIsometricTransition(!!isometric)
 
   return (
     <Box
       className={clsx(
-        "MapViewer-level",
-        `MapViewer-level-id-${levelId}`,
-        className,
+        mapViewerClassNames.level,
+        mapViewerClassNames.levelId(levelId),
         {
-          [mapClassNames.active]: active,
-          [mapClassNames.isometric]: isometric,
-          [mapClassNames.isometricTransform]: isometric,
+          [mapViewerClassNames.levelActive]: active,
+          [mapViewerClassNames.levelIsometric]: hasIsoCls,
+          [mapViewerClassNames.levelIsometricTransform]: hasTransformCls,
         },
+        className,
       )}
+      onTransitionEnd={onTransitionEnd}
     >
-      <MapSVG ref={svgRefCallback} svgData={svgData} />
+      <MapSVG
+        ref={svgRefCallback}
+        svgData={svgData}
+        className={clsx({
+          [mapSVGClassNames.isometric]: hasIsoCls,
+          [mapSVGClassNames.isometricTransform]: hasTransformCls,
+          [mapSVGClassNames.isometricTransitionFinished]: hasFinishedCls,
+        })}
+      />
     </Box>
   )
 }

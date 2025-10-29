@@ -1,8 +1,14 @@
-import { Box, BoxProps, useProps } from "@mantine/core"
+import { Box, type BoxProps, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { ReactNode, Ref, useCallback, useLayoutEffect, useState } from "react"
 import {
-  ReactZoomPanPinchContentRef,
+  type ReactNode,
+  type Ref,
+  useCallback,
+  useLayoutEffect,
+  useState,
+} from "react"
+import {
+  type ReactZoomPanPinchContentRef,
   TransformComponent,
   TransformWrapper,
 } from "react-zoom-pan-pinch"

@@ -1,7 +1,6 @@
 import { TZDate } from "@date-fns/tz"
-import { ScheduleEvent, ScheduleItem } from "@open-event-systems/schedule-lib"
-import z from "zod"
-import { ScheduleConfigInput } from "./config/config.js"
+import type { ScheduleEvent } from "@open-event-systems/schedule-lib"
+import type { ScheduleConfigInput } from "./config/config.js"
 
 const timeZone = "America/New_York"
 
@@ -42,7 +41,7 @@ export const events = [
       { name: "Model", url: "https://example.net" },
     ],
   },
-] satisfies readonly ScheduleEvent[]
+] as const satisfies readonly ScheduleEvent[]
 
 export const config = {
   id: "example-event",
@@ -57,7 +56,7 @@ export const config = {
   ],
   tagIndicators: [["mature", "18+"]],
   timeZone,
-} satisfies ScheduleConfigInput
+} as const satisfies ScheduleConfigInput
 
 export const tagEntries = [
   { tag: "main-event", title: "Main Event" },
@@ -65,4 +64,4 @@ export const tagEntries = [
   { tag: "photography", title: "Photography" },
   { tag: "art", title: "Art" },
   { tag: "mature", title: "Mature" },
-]
+] as const

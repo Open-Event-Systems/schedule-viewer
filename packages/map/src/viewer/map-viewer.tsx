@@ -1,7 +1,7 @@
 import {
   ActionIcon,
   Box,
-  BoxProps,
+  type BoxProps,
   Button,
   Group,
   Stack,
@@ -9,10 +9,10 @@ import {
 } from "@mantine/core"
 import clsx from "clsx"
 import {
-  MouseEvent,
-  ReactNode,
-  RefCallback,
-  RefObject,
+  type MouseEvent,
+  type ReactNode,
+  type RefCallback,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -20,7 +20,7 @@ import {
   useState,
 } from "react"
 import { observer } from "mobx-react-lite"
-import {
+import type {
   MapConfig,
   MapEvent,
   MapLevel,
@@ -28,7 +28,7 @@ import {
   MapVendor,
 } from "../types.js"
 import {
-  ReactZoomPanPinchContentRef,
+  type ReactZoomPanPinchContentRef,
   TransformComponent,
   TransformWrapper,
 } from "react-zoom-pan-pinch"
@@ -128,12 +128,12 @@ export const MapViewer = observer((props: MapViewerProps) => {
     const future = new Map<string, MapEvent>()
     for (const [locId, locEvents] of eventsByLocation.entries()) {
       const curEvents = locEvents.filter(makeCurrentEventFilter(now))
-      if (curEvents.length > 0) {
+      if (curEvents[0]) {
         cur.set(locId, curEvents[0])
       }
 
       const futureEvents = locEvents.filter(makeFutureEventFilter(240, now))
-      if (futureEvents.length > 0) {
+      if (futureEvents[0]) {
         future.set(locId, futureEvents[0])
       }
     }
@@ -320,7 +320,7 @@ export const MapViewer = observer((props: MapViewerProps) => {
                 <LayerMenu
                   layers={config.layers.map(({ id, title }) => ({
                     id,
-                    label: title,
+                    title,
                   }))}
                   opened={layerMenuOpened}
                   onSetOpened={setLayerMenuOpened}

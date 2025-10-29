@@ -81,9 +81,9 @@
   grid-area: 1 / 1 / -1 / -1;
 
   // Hidden by default
-  // display: none;
+  display: none;
 
-  &:not(.MapViewer-no-isometric-transition) {
+  .MapViewer-root:not(.MapViewer-no-isometric-transition) & {
     transition: transform var(--map-isometric-transition-duration) ease-in-out;
     transform: translate(
         var(--map-isometric-center-x-offset),
@@ -97,12 +97,12 @@
   }
 
   // Visible if active or isometric view enabled
-  &.MapViewer-active,
-  &.MapViewer-isometric {
+  &.MapViewer-level-active,
+  &.MapViewer-level-isometric {
     display: block;
   }
 
-  &.MapViewer-isometric-transform {
+  .MapViewer-root &.MapViewer-level-isometric-transform {
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
     transform: translate(
         var(--map-isometric-center-x-offset),

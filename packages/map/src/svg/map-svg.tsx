@@ -1,7 +1,7 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import {
-  ComponentPropsWithoutRef,
+  type ComponentPropsWithoutRef,
   forwardRef,
   useCallback,
   useLayoutEffect,
@@ -193,12 +193,12 @@ export const getMapSVGProps = (
 
   const props: Record<string, unknown> = {}
 
-  for (const attr of svg.getAttributeNames()) {
-    const val = svg.getAttribute(attr)
+  for (const attr of svg?.getAttributeNames() ?? []) {
+    const val = svg?.getAttribute(attr)
     if (val != null) {
       props[attr] = val
     }
   }
 
-  return [props as ComponentPropsWithoutRef<"svg">, svg.innerHTML]
+  return [props as ComponentPropsWithoutRef<"svg">, svg?.innerHTML ?? ""]
 }

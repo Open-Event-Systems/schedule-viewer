@@ -1,6 +1,6 @@
-import { createContext, MouseEvent, useContext } from "react"
-import { ItemDetailsItemType, ItemDetailsProps } from "./item-details.js"
-import { TagEntry } from "../../config/config.js"
+import { createContext, type MouseEvent, useContext } from "react"
+import type { ItemDetailsItemType, ItemDetailsProps } from "./item-details.js"
+import type { TagEntry } from "../../config/config.js"
 
 export type ItemDetailsFuncReturn = Partial<ItemDetailsProps> & {
   onClickItem?: (e: MouseEvent) => void

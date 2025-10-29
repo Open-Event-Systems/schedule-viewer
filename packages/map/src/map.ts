@@ -1,5 +1,5 @@
 import { add, isBefore, parseISO } from "date-fns"
-import { MapConfig, MapEvent, MapLocation } from "./types.js"
+import type { MapConfig, MapEvent, MapLocation } from "./types.js"
 
 export const getMapLocations = (
   config: MapConfig,

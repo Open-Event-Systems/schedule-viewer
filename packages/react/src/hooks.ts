@@ -1,6 +1,6 @@
 import {
-  BookmarkAPI,
-  BookmarkServiceAPI,
+  type BookmarkAPI,
+  type BookmarkServiceAPI,
   makeBookmarkFilter,
   makePastItemFilter,
   makeScheduleEventStore,
@@ -8,23 +8,23 @@ import {
   makeTagFilter,
   makeTitleFilter,
   makeVendorStore,
-  ScheduleAPI,
-  ScheduleEvent,
-  ScheduleItem,
+  type ScheduleAPI,
+  type ScheduleEvent,
+  type ScheduleItem,
   ScheduleItemStore,
-  Selections,
-  Vendor,
+  type Selections,
+  type Vendor,
 } from "@open-event-systems/schedule-lib"
-import { ScheduleConfig, useScheduleConfig } from "./config/config.js"
+import { type ScheduleConfig, useScheduleConfig } from "./config/config.js"
 import { createContext, useContext, useMemo, useReducer } from "react"
 import {
   QueryClient,
   useMutation,
-  UseMutationOptions,
+  type UseMutationOptions,
   useQueryClient,
-  UseQueryOptions,
+  type UseQueryOptions,
   useSuspenseQuery,
-  UseSuspenseQueryOptions,
+  type UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
 import { useBookmarkAPI, useBookmarkServiceAPI } from "./bookmarks.js"
 

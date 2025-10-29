@@ -2,7 +2,7 @@ import {
   ActionIcon,
   Anchor,
   Box,
-  BoxProps,
+  type BoxProps,
   Text,
   Title,
   useMantineColorScheme,
@@ -17,16 +17,16 @@ import {
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { add, differenceInSeconds, format, formatISO } from "date-fns"
-import { MouseEvent, ReactNode } from "react"
+import type { MouseEvent, ReactNode } from "react"
 import {
   makeTagFormatter,
   makeValidTagsFilter,
-  TagEntry,
+  type TagEntry,
 } from "../../config/config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown } from "../markdown/markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
-import { ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemDetailsItemType = ScheduleItem &
   Readonly<{

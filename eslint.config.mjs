@@ -32,4 +32,5 @@ export default [
     },
   },
   ...storybook.configs["flat/recommended"],
+  ...storybook.configs["flat/recommended"],
 ]

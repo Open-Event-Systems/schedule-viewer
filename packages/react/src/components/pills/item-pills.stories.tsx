@@ -1,7 +1,7 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { binItemsByTime, binItemsByTitle, ItemPills } from "./item-pills.js"
 import { events, tagEntries } from "../../test-data.js"
-import { MouseEvent, useCallback } from "react"
+import { type MouseEvent, useCallback } from "react"
 import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
 
 import "../details/item-details.scss"

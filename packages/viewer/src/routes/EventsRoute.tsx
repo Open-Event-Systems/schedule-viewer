@@ -6,14 +6,7 @@ import {
   shareScheduleRoute,
   syncScheduleRoute,
 } from "./index.js"
-import {
-  Grid,
-  Group,
-  SegmentedControl,
-  Select,
-  Stack,
-  Text,
-} from "@mantine/core"
+import { Grid, Select, Stack, Text } from "@mantine/core"
 import { useCallback, useRef, useState } from "react"
 import {
   clearSelections,

@@ -1,17 +1,17 @@
 import {
   Box,
-  BoxProps,
+  type BoxProps,
   createPolymorphicComponent,
   Title,
   useProps,
 } from "@mantine/core"
-import { forwardRef, ReactNode, useContext, useMemo } from "react"
+import { forwardRef, type ReactNode, useContext, useMemo } from "react"
 import { CalendarContext } from "./context.js"
 import clsx from "clsx"
 import { toPercent } from "./utils.js"
 import { add, format, isBefore } from "date-fns"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
-import { Bounded, ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { Bounded, ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type CalendarColumnData = {
   title?: ReactNode

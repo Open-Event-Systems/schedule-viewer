@@ -4,14 +4,14 @@ import { useLocation, useRouter } from "@tanstack/react-router"
 import { getMapLocations } from "@open-event-systems/schedule-map/map"
 import { eventRoute, mapRoute } from "./index.js"
 import {
-  MouseEvent,
+  type MouseEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react"
-import { MapEvent } from "@open-event-systems/schedule-map/types"
+import { type MapEvent } from "@open-event-systems/schedule-map/types"
 import { useItems } from "@open-event-systems/schedule-react"
 
 export const MapRoute = () => {

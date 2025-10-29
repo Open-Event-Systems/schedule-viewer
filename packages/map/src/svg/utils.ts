@@ -1,6 +1,6 @@
-import { RefObject } from "react"
+import type { RefObject } from "react"
 import { getIDFromMapClass, getMapClass, MAP_CLASSES } from "../map-classes.js"
-import { MapSVGVendor } from "./map-svg.js"
+import type { MapSVGVendor } from "./map-svg.js"
 
 export const updateLevel = (el: SVGSVGElement, level: string) => {
   const levelCls = getMapClass(MAP_CLASSES.levelPrefix, level)
@@ -219,9 +219,11 @@ const setElementText = (el: SVGElement, text: string) => {
   if (el instanceof SVGForeignObjectElement) {
     const textEls = el.getElementsByClassName(MAP_CLASSES.foreignObjectText)
     if (textEls.length > 0) {
-      textEls[0].innerHTML = ""
+      if (textEls[0]) {
+        textEls[0].innerHTML = ""
+      }
       const textNode = document.createTextNode(text)
-      textEls[0].appendChild(textNode)
+      textEls[0]?.appendChild(textNode)
     }
   } else if (el instanceof SVGTextElement || el instanceof SVGTSpanElement) {
     el.innerHTML = ""

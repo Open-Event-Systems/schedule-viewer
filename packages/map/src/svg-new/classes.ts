@@ -1,0 +1,18 @@
+export const mapSVGClassNames = {
+  layer: "Map-layer",
+  layerId: (id: string) => `Map-layer-id-${id}`,
+  area: "Map-area",
+  areaId: (id: string) => `Map-area-id-${id}`,
+  click: "Map-click",
+  clickId: (id: string) => `Map-click-id-${id}`,
+  itemTitle: "Map-item-title",
+  itemTitleId: (id: string) => `Map-item-title-id-${id}`,
+  itemIcon: "Map-item-icon",
+  itemIconId: (id: string) => `Map-item-icon-id-${id}`,
+  flagId: (id: string) => `Map-flag-id-${id}`,
+  foreignObjectText: "Map-foreignObjectText",
+  isometric: "Map-isometric",
+  isometricTransform: "Map-isometric-transform",
+  isometricTransitionFinished: "Map-isometric-transition-finished",
+  isometricTransitionHidden: "Map-isometric-transition-hidden",
+} as const

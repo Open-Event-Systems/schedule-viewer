@@ -4,7 +4,7 @@ import {
   makeScheduleItemsArrayAPI,
   makeSortedScheduleAPI,
   makeTZScheduleAPI,
-  ScheduleAPI,
+  type ScheduleAPI,
 } from "@open-event-systems/schedule-lib"
 import { createContext, useContext } from "react"
 import z from "zod"

@@ -12,7 +12,7 @@ import {
   useScheduleConfig,
   useSelections,
 } from "@open-event-systems/schedule-react"
-import { ValidateLinkOptions } from "@tanstack/react-router"
+import type { ValidateLinkOptions } from "@tanstack/react-router"
 import { Stack, Text } from "@mantine/core"
 import { DayFilter } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import {

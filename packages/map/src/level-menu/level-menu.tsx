@@ -1,5 +1,5 @@
-import { Button, Stack, StackProps, useProps } from "@mantine/core"
-import { MapLevel } from "../types-new.js"
+import { Button, Stack, type StackProps, useProps } from "@mantine/core"
+import type { MapLevel } from "../types-new.js"
 import clsx from "clsx"
 
 export type LevelMenuProps = {
@@ -22,8 +22,8 @@ export const LevelMenu = (props: LevelMenuProps) => {
   const setFocus = (els: HTMLButtonElement[], d: number) => {
     const newIdx =
       (((curIdx + d) % levels.length) + levels.length) % levels.length
-    els[newIdx].focus()
-    els[newIdx].click()
+    els[newIdx]?.focus()
+    els[newIdx]?.click()
   }
 
   const btns = levels.map((lvl) => {

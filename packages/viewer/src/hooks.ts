@@ -1,5 +1,5 @@
-import { useLocation, ValidateLinkOptions } from "@tanstack/react-router"
-import { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
+import { useLocation, type ValidateLinkOptions } from "@tanstack/react-router"
+import type { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback } from "react"
 

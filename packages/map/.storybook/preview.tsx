@@ -1,7 +1,6 @@
-import type { Preview } from "@storybook/react-webpack5"
-import React from "react"
-import "@mantine/core/styles.css"
+import type { Preview } from "@storybook/react-vite"
 import { MantineProvider, DEFAULT_THEME } from "@mantine/core"
+import "@mantine/core/styles.css"
 
 const preview: Preview = {
   parameters: {

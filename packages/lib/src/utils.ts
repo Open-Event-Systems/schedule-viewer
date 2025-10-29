@@ -1,11 +1,5 @@
 import { sortIntervalsByStartDate } from "./time.js"
-import {
-  Bounded,
-  Interval,
-  ScheduleEvent,
-  ScheduleItem,
-  Vendor,
-} from "./types.js"
+import type { Bounded, Interval, ScheduleItem } from "./types.js"
 
 /**
  * Set equality comparison.

@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react-webpack5"
-import { Map, MapProps } from "./map.js"
-import { ComponentType, useEffect, useState } from "react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { Map, type MapProps } from "./map.js"
+import { type ComponentType, useEffect, useState } from "react"
 
 import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
 import f2Map from "../../../viewer/public/example-map-2f.svg"
 
 import "./styles.scss"
 import clsx from "clsx"
-import { parseSVGData, SVGData } from "../svg-new/svg.js"
+import { parseSVGData, type SVGData } from "../svg-new/svg.js"
 
 type MapStoryArgs = MapProps & {
   isometric?: boolean

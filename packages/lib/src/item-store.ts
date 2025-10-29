@@ -1,5 +1,5 @@
 import { isAfter } from "date-fns"
-import { ScheduleItem } from "./types.js"
+import type { ScheduleItem } from "./types.js"
 
 /**
  * Collection of {@link ScheduleItem} with utility methods.

@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ShareButton } from "./share-button.js"
 
 const meta: Meta<typeof ShareButton> = {
