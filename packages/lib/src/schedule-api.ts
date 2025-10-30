@@ -19,12 +19,13 @@ export const makeScheduleItemsArrayAPI = (
     async getItems() {
       return items
         .map(parseScheduleItem)
-        .map((parsed, i) => {
+        .map((parsed) => {
           if (parsed.success) {
-            return parsed.data
+            return parsed.value
           } else {
             console.error(
-              `failed to parse schedule item ${i}:\n${parsed.error}`,
+              `failed to parse schedule item:\n${parsed.error}`,
+              parsed,
             )
             return undefined
           }

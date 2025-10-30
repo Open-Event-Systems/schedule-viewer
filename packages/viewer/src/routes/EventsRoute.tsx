@@ -2,6 +2,7 @@ import {
   confirmSyncScheduleRoute,
   dataRoute,
   eventsRoute,
+  itemParsers,
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,
@@ -35,7 +36,7 @@ import { TagsView } from "../components/schedule/tags-view.js"
 
 export const EventsRoute = observer(() => {
   const { config } = dataRoute.useRouteContext()
-  const { events: allEvents } = useItems()
+  const { events: allEvents } = dataRoute.useLoaderData()
   const selections = useSelections()
   const bookmarkServiceAPI = useBookmarkServiceAPI()
 

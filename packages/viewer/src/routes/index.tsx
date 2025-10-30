@@ -25,6 +25,11 @@ import {
 } from "@open-event-systems/schedule-react"
 import { ScheduleConfigProvider } from "@open-event-systems/schedule-react"
 import { BookmarkAPIProvider } from "@open-event-systems/schedule-react"
+import {
+  parseMapFlag,
+  parseScheduleEvent,
+  parseVendor,
+} from "@open-event-systems/schedule-lib"
 
 export type RouterContext = {
   appConfigPromise: Promise<AppConfig>
@@ -79,6 +84,12 @@ export const configRoute = createRoute({
   pendingComponent: Loading,
 })
 
+export const itemParsers = {
+  event: parseScheduleEvent,
+  vendor: parseVendor,
+  "map-flag": parseMapFlag,
+} as const
+
 export const dataRoute = createRoute({
   getParentRoute: () => configRoute,
   id: "data",
@@ -91,8 +102,14 @@ export const dataRoute = createRoute({
       bookmarkServiceAPI,
     } = context
 
-    const [{ items, events, vendors }, counts, selections] = await Promise.all([
-      queryClient.fetchQuery(getItemsQueryOptions(config, scheduleAPI)),
+    const [
+      { event: events, vendor: vendors, "map-flag": mapFlags },
+      counts,
+      selections,
+    ] = await Promise.all([
+      queryClient.fetchQuery(
+        getItemsQueryOptions(config, scheduleAPI, itemParsers),
+      ),
       queryClient.fetchQuery(
         getBookmarkCountsQueryOptions(config, bookmarkServiceAPI),
       ),
@@ -100,9 +117,9 @@ export const dataRoute = createRoute({
     ])
 
     return {
-      items,
       events,
       vendors,
+      mapFlags,
       selections,
       counts,
     }
@@ -170,8 +187,8 @@ export const eventRoute = createRoute({
   async loader({ context, params }) {
     const { eventId } = params
     const { queryClient, config, scheduleAPI } = context
-    const { events } = await queryClient.fetchQuery(
-      getItemsQueryOptions(config, scheduleAPI),
+    const { event: events } = await queryClient.fetchQuery(
+      getItemsQueryOptions(config, scheduleAPI, itemParsers),
     )
 
     const event = events.get(eventId)

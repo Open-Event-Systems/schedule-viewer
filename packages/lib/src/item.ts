@@ -6,6 +6,9 @@ import type {
   ScheduleEvent,
   ScheduleItem,
   Vendor,
+  ParseResult,
+  Parser,
+  MapFlag,
 } from "./types.js"
 import { opt, optStr, strDate, strSetSchema } from "./schema.js"
 import z from "zod"
@@ -62,17 +65,18 @@ const vendorSchema = z.looseObject({
   type: z.literal("vendor"),
 })
 
+const mapFlagSchema = z.looseObject({
+  ...scheduleItemSchema.shape,
+  type: z.literal("map-flag"),
+})
+
 /**
  * Parse a {@link ScheduleItem}.
  */
-export const parseScheduleItem = (
-  data: unknown,
-):
-  | { success: true; data: ScheduleItem }
-  | { success: false; error: string } => {
+export const parseScheduleItem = (data: unknown): ParseResult<ScheduleItem> => {
   const res = scheduleItemSchema.safeParse(data)
   if (res.success) {
-    return { success: true, data: res.data }
+    return { success: true, value: res.data }
   } else {
     return { success: false, error: z.prettifyError(res.error) }
   }
@@ -83,12 +87,10 @@ export const parseScheduleItem = (
  */
 export const parseScheduleEvent = (
   data: unknown,
-):
-  | { success: true; data: ScheduleEvent }
-  | { success: false; error: string } => {
+): ParseResult<ScheduleEvent> => {
   const res = scheduleEventSchema.safeParse(data)
   if (res.success) {
-    return { success: true, data: res.data }
+    return { success: true, value: res.data }
   } else {
     return { success: false, error: z.prettifyError(res.error) }
   }
@@ -97,51 +99,93 @@ export const parseScheduleEvent = (
 /**
  * Parse a {@link Vendor}.
  */
-export const parseVendor = (
-  data: unknown,
-): { success: true; data: Vendor } | { success: false; error: string } => {
+export const parseVendor = (data: unknown): ParseResult<Vendor> => {
   const res = vendorSchema.safeParse(data)
   if (res.success) {
-    return { success: true, data: res.data }
+    return { success: true, value: res.data }
   } else {
     return { success: false, error: z.prettifyError(res.error) }
   }
 }
 
-export const makeScheduleEventStore = (
-  store: ScheduleItemStore,
-): ScheduleItemStore<ScheduleEvent> => {
-  return store
-    .filter((item) => item.type == "event")
-    .map((item) => {
-      const parsed = parseScheduleEvent(item)
-      if (parsed.success) {
-        return parsed.data
-      } else {
-        console.error(
-          `error parsing schedule item as event:\n${parsed.error}`,
-          item,
-        )
-      }
-    })
+/**
+ * Parse a {@link MapFlag}.
+ */
+export const parseMapFlag = (data: unknown): ParseResult<MapFlag> => {
+  const res = mapFlagSchema.safeParse(data)
+  if (res.success) {
+    return { success: true, value: res.data }
+  } else {
+    return { success: false, error: z.prettifyError(res.error) }
+  }
 }
 
-export const makeVendorStore = (
-  store: ScheduleItemStore,
-): ScheduleItemStore<Vendor> => {
-  return store
-    .filter((item) => item.type == "vendor")
-    .map((item) => {
-      const parsed = parseVendor(item)
-      if (parsed.success) {
-        return parsed.data
-      } else {
-        console.error(
-          `error parsing schedule item as vendor:\n${parsed.error}`,
-          item,
-        )
+export type ItemTypeMap = {
+  readonly [type: string]: ScheduleItem
+}
+
+export type ItemParserMap<M extends ItemTypeMap> = {
+  readonly [T in keyof M]: Parser<M[T], ScheduleItem>
+}
+
+export type ParseItemResult<M extends ItemTypeMap> = ParseResult<M[keyof M]>
+
+export type ParseItemsResult<M extends ItemTypeMap> = {
+  readonly [T in keyof M]: ScheduleItemStore<M[T]>
+}
+
+/**
+ * Parse a {@link ScheduleItem} using the provided parsers.
+ */
+export const parseItemType = <M extends ItemTypeMap>(
+  typeParsers: ItemParserMap<M>,
+  item: ScheduleItem,
+): ParseItemResult<M> => {
+  const parser = typeParsers[item.type]
+  if (!parser) {
+    return { success: false, error: `Unknown item type: ${item.type}` }
+  }
+
+  return parser(item)
+}
+
+/**
+ * Parse an iterable of {@link ScheduleItem} using the provided parsers.
+ *
+ * The provided iterable should be sorted.
+ */
+export const parseItems = <M extends ItemTypeMap>(
+  typeParsers: ItemParserMap<M>,
+  items: Iterable<ScheduleItem>,
+): ParseItemsResult<M> => {
+  const results: Record<string, ScheduleItem[]> = {}
+
+  for (const key of Object.keys(typeParsers)) {
+    results[key] = []
+  }
+
+  for (const value of items) {
+    const res = parseItemType(typeParsers, value)
+    if (res.success) {
+      let arr = results[res.value.type]
+      if (arr) {
+        arr.push(res.value)
       }
-    })
+    } else {
+      console.error(`Failed to parse schedule item:\n${res.error}`, value)
+    }
+  }
+
+  const stores: Record<string, ScheduleItemStore> = {}
+
+  for (const key of Object.keys(results)) {
+    const arr = results[key]
+    if (arr) {
+      stores[key] = new ScheduleItemStore(arr)
+    }
+  }
+
+  return stores as { [T in keyof M]: ScheduleItemStore<M[T]> }
 }
 
 /**

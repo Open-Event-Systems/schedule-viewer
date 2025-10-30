@@ -20,12 +20,6 @@ export type Selections = Readonly<{
   events: ReadonlySet<string>
 }>
 
-/** @deprecated */
-export type Host = Readonly<{
-  name?: string
-  url?: string
-}>
-
 /**
  * A contact related to a schedule item.
  */
@@ -64,25 +58,15 @@ export type Vendor = ScheduleItem &
     readonly type: "vendor"
   }
 
-/** @deprecated */
-export type Event = Readonly<{
-  id: string
-  title?: string
-  description?: string
-  location?: string
-  start?: Date
-  end?: Date
-  hosts: readonly (string | Host)[]
-  tags: ReadonlySet<string>
-}>
+export type MapFlag = ScheduleItem & {
+  readonly type: "map-flag"
+}
 
-/** @deprecated */
-export type EventJSON = Omit<Event, "start" | "date" | "tags"> &
-  Readonly<{
-    start?: string
-    end?: string
-    tags?: readonly string[]
-  }>
+export type ParseResult<T> = Readonly<
+  { success: true; value: T } | { success: false; error: string }
+>
+
+export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
 
 /**
  * Fetches schedule items.
@@ -108,8 +92,3 @@ export type BookmarkServiceAPI = BookmarkAPI &
     get sessionId(): string
     getBookmarkCounts(): Promise<Readonly<Record<string, number | undefined>>>
   }>
-
-/** @deprecated */
-export type EventAPI = Readonly<{
-  getEvents(): Promise<readonly Event[]>
-}>

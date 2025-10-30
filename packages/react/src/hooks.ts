@@ -1,13 +1,19 @@
 import {
   type BookmarkAPI,
   type BookmarkServiceAPI,
+  type ItemParserMap,
+  type ItemTypeMap,
   makeBookmarkFilter,
   makePastItemFilter,
-  makeScheduleEventStore,
   makeScheduleItemsArrayAPI,
   makeTagFilter,
   makeTitleFilter,
-  makeVendorStore,
+  type MapFlag,
+  parseItems,
+  type ParseItemsResult,
+  parseMapFlag,
+  parseScheduleEvent,
+  parseVendor,
   type ScheduleAPI,
   type ScheduleEvent,
   type ScheduleItem,
@@ -34,35 +40,29 @@ export const ScheduleAPIContext = createContext<ScheduleAPI>(
 export const ScheduleAPIProvider = ScheduleAPIContext.Provider
 export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
 
-export const getItemsQueryOptions = (
+export const getItemsQueryOptions = <M extends ItemTypeMap>(
   config: ScheduleConfig,
   api: ScheduleAPI,
-): UseSuspenseQueryOptions<
-  Readonly<{
-    items: ScheduleItemStore
-    events: ScheduleItemStore<ScheduleEvent>
-    vendors: ScheduleItemStore<Vendor>
-  }>
-> => ({
-  queryKey: ["schedule", config.id, "items"],
-  async queryFn() {
-    const res = await api.getItems()
-    const items = new ScheduleItemStore(res)
-    const events = makeScheduleEventStore(items)
-    const vendors = makeVendorStore(items)
-    return { items, events, vendors }
-  },
-  staleTime: 300000,
-})
+  parsers: ItemParserMap<M>,
+): UseSuspenseQueryOptions<ParseItemsResult<M>> => {
+  const keys = Object.keys(parsers)
+  return {
+    queryKey: ["schedule", config.id, "items", keys],
+    async queryFn() {
+      const res = await api.getItems()
+      const parsed = parseItems(parsers, res)
+      return parsed
+    },
+    staleTime: 300000,
+  }
+}
 
-export const useItems = (): Readonly<{
-  items: ScheduleItemStore
-  events: ScheduleItemStore<ScheduleEvent>
-  vendors: ScheduleItemStore<Vendor>
-}> => {
+export const useItems = <M extends ItemTypeMap>(
+  parsers: ItemParserMap<M>,
+): Readonly<ParseItemsResult<M>> => {
   const config = useScheduleConfig()
   const api = useScheduleAPI()
-  const res = useSuspenseQuery(getItemsQueryOptions(config, api))
+  const res = useSuspenseQuery(getItemsQueryOptions(config, api, parsers))
   return res.data
 }
 
