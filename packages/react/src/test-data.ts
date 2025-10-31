@@ -1,6 +1,10 @@
 import { TZDate } from "@date-fns/tz"
-import type { ScheduleEvent } from "@open-event-systems/schedule-lib"
-import type { ScheduleConfigInput } from "./config/config.js"
+import {
+  parseScheduleEvent,
+  ScheduleItemStore,
+  type ScheduleEvent,
+} from "@open-event-systems/schedule-lib"
+import { makeConfig, type ScheduleConfigInput } from "./config/config.js"
 
 const timeZone = "America/New_York"
 
@@ -43,6 +47,13 @@ export const events = [
   },
 ] as const satisfies readonly ScheduleEvent[]
 
+export const parsedEvents = new ScheduleItemStore(
+  events
+    .map(parseScheduleEvent)
+    .filter((r) => r.success)
+    .map((r) => r.value),
+)
+
 export const config = {
   id: "example-event",
   title: "Example Event",
@@ -57,6 +68,8 @@ export const config = {
   tagIndicators: [["mature", "18+"]],
   timeZone,
 } as const satisfies ScheduleConfigInput
+
+export const parsedConfig = makeConfig(config)
 
 export const tagEntries = [
   { tag: "main-event", title: "Main Event" },

@@ -40,8 +40,9 @@ export const opt = <OutT, InT>(
 export const optStr = opt(z.string())
 export const strDate = opt(z.preprocess(parseDate, z.date()))
 
-export const strSetSchema = z
-  .array(z.string())
-  .transform((v): ReadonlySet<string> => {
+export const strSetSchema = z.union([
+  z.set(z.string()),
+  z.array(z.string()).transform((v): ReadonlySet<string> => {
     return new Set(v)
-  })
+  }),
+])

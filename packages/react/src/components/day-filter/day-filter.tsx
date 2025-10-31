@@ -1,41 +1,43 @@
-import { ActionIcon, Box, type BoxProps, Title, useProps } from "@mantine/core"
+import { ActionIcon, Box, type BoxProps, Select, useProps } from "@mantine/core"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useMemo } from "react"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
-
-export type DayFilterDay = Readonly<{
-  key: string
-  start: Date
-  end: Date
-}>
+import type { Day } from "@open-event-systems/schedule-lib"
 
 export type DayFilterProps = {
-  days?: readonly DayFilterDay[]
+  days?: Iterable<Day>
+  dayFormat?: string
   selectedDay?: string
-  onSelectDay?: (day: DayFilterDay) => void
+  onSelectDay?: (day: Day) => void
 } & BoxProps
+
+const defaultDayFormat = "EEEE, MMM d"
 
 export const DayFilter = (props: DayFilterProps) => {
   const {
     className,
     days = [],
+    dayFormat = defaultDayFormat,
     selectedDay,
     onSelectDay,
     ...other
   } = useProps("DayFilter", {}, props)
 
-  const dayLabels = useMemo(() => {
-    const labels = new Map<string, string>()
-    for (const day of days) {
-      const label = format(day.start, "EEEE")
-      labels.set(day.key, label)
-    }
-    return labels
-  }, [days])
+  const { daysByKey, dayData } = useMemo(() => {
+    const daysByKey = new Map<string, Day>()
+    const dayData = []
 
-  const selectedDayLabel = dayLabels.get(selectedDay ?? "")
-  const selectedIdx = days.findIndex((d) => d.key == selectedDay)
+    for (const day of days) {
+      const label = format(day.start, dayFormat)
+      daysByKey.set(day.key, day)
+      dayData.push({ value: day.key, label })
+    }
+
+    return { daysByKey, dayData }
+  }, [days, dayFormat])
+
+  const selectedIdx = dayData.findIndex((o) => o.value == selectedDay)
 
   return (
     <Box className={clsx("DayFilter-root", className)} {...other}>
@@ -43,26 +45,43 @@ export const DayFilter = (props: DayFilterProps) => {
         className="DayFilter-prev DayFilter-button"
         variant="subtle"
         title="Previous Day"
-        color="var(--mantine-color-text)"
         disabled={selectedIdx <= 0}
         onClick={() => {
-          const prevDay = days[selectedIdx - 1]
+          const prevDayOpt = dayData[selectedIdx - 1]
+          const prevDay = prevDayOpt
+            ? daysByKey.get(prevDayOpt.value)
+            : undefined
           prevDay && onSelectDay && onSelectDay(prevDay)
         }}
       >
         <IconChevronLeft />
       </ActionIcon>
-      <Title order={5} className="DayFilter-title">
-        {selectedDayLabel}
-      </Title>
+      <Select
+        className="DayFilter-select"
+        classNames={{
+          input: "DayFilter-selectInput",
+        }}
+        variant="unstyled"
+        data={dayData}
+        value={selectedDay}
+        onChange={(v) => {
+          if (v) {
+            const day = daysByKey.get(v)
+            day && onSelectDay && onSelectDay(day)
+          }
+        }}
+        rightSection={null}
+      />
       <ActionIcon
         className="DayFilter-next DayFilter-button"
         variant="subtle"
         title="Next Day"
-        color="var(--mantine-color-text)"
-        disabled={selectedIdx >= days.length - 1}
+        disabled={selectedIdx >= dayData.length - 1}
         onClick={() => {
-          const nextDay = days[selectedIdx + 1]
+          const nextDayOpt = dayData[selectedIdx + 1]
+          const nextDay = nextDayOpt
+            ? daysByKey.get(nextDayOpt.value)
+            : undefined
           nextDay && onSelectDay && onSelectDay(nextDay)
         }}
       >

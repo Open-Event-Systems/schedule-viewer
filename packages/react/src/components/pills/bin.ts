@@ -1,129 +1,23 @@
-import { Pills, type PillsProps } from "./pills.js"
-import { useProps } from "@mantine/core"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { TagEntry } from "../../config/config.js"
 import { format, formatISO } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import { type ReactNode, useCallback, useMemo } from "react"
-import clsx from "clsx"
-import {
-  makeTagIndicatorFunc,
-  type TagEntry,
-  type TagIndicatorEntry,
-} from "../../config/config.js"
-import { useItemDetails } from "../details/context.js"
-import { ItemHoverCard } from "../hovercard/item-hover-card.js"
-import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
-export type ItemPillsItemType = ScheduleItem &
+export type PillsItemType = ScheduleItem &
   Readonly<{
     title?: string
     tags?: ReadonlySet<string>
   }>
 
-export type ItemPillsBin = Readonly<{
+export type PillsItemBin = Readonly<{
   id: string
-  title: ReactNode
-  items: Iterable<ItemPillsItemType>
+  title: string
+  items: Iterable<PillsItemType>
 }>
 
-export type ItemPillsProps = PillsProps & {
-  bins: readonly ItemPillsBin[]
-  tagIndicators?: readonly TagIndicatorEntry[]
-}
-
-export const ItemPills = (props: ItemPillsProps) => {
-  const {
-    className,
-    bins,
-    tagIndicators = [],
-    ...other
-  } = useProps("ItemPills", {}, props)
-
-  const getIndicator = useMemo(() => {
-    const tagFunc = makeTagIndicatorFunc(tagIndicators)
-    return (ev: ItemPillsItemType) => tagFunc(ev.tags ?? [])
-  }, [tagIndicators])
-
-  const binEls = useMemo(() => {
-    const res: ReactNode[] = []
-    bins.forEach((b) => {
-      res.push(
-        <ItemPillsBin
-          key={b.id}
-          title={b.title}
-          items={b.items}
-          getIndicator={getIndicator}
-        />,
-      )
-    })
-    return res
-  }, [bins, getIndicator])
-
-  return <Pills {...other}>{binEls}</Pills>
-}
-
-const ItemPillsBin = ({
-  title,
-  items,
-  getIndicator,
-}: {
-  title: ReactNode
-  items: Iterable<ItemPillsItemType>
-  getIndicator?: (item: ItemPillsItemType) => string | undefined
-}) => {
-  const els = Array.from(items, (e) => (
-    <ItemPillsPill key={e.id} item={e} getIndicator={getIndicator} />
-  ))
-
-  return <Pills.Bin title={title}>{els}</Pills.Bin>
-}
-
-const ItemPillsPill = ({
-  item,
-  getIndicator,
-}: {
-  item: ItemPillsItemType
-  getIndicator?: (item: ItemPillsItemType) => string | undefined
-}) => {
-  const detailsFunc = useItemDetails()
-
-  const itemProps = useMemo(() => {
-    return detailsFunc ? detailsFunc(item) : {}
-  }, [item, detailsFunc])
-
-  const indicator = useMemo(() => {
-    return getIndicator ? getIndicator(item) : undefined
-  }, [item, getIndicator])
-
-  const renderFunc = useCallback(
-    (c: ReactNode) => {
-      const { onClickItem, ...other } = itemProps
-      return (
-        <ItemHoverCard item={item} ItemDetailsProps={other}>
-          {c}
-        </ItemHoverCard>
-      )
-    },
-    [item, itemProps],
-  )
-
-  return (
-    <Pills.Pill
-      children={item.title}
-      href={itemProps.url}
-      onClick={itemProps.onClickItem}
-      renderContent={renderFunc}
-      className={clsx(
-        `Pill-item-id-${item.id}`,
-        item.tags ? [...item.tags].map((t) => `Pill-item-tag-${t}`) : [],
-      )}
-      indicator={indicator}
-    />
-  )
-}
-
 export const binItemsByTitle = (
-  items: Iterable<ItemPillsItemType>,
-): readonly ItemPillsBin[] => {
+  items: Iterable<PillsItemType>,
+): readonly PillsItemBin[] => {
   const sorted = [...items]
   sorted.sort((a, b) => {
     if (a.title && b.title) {
@@ -137,7 +31,7 @@ export const binItemsByTitle = (
     }
   })
 
-  const map = new Map<string, ItemPillsItemType[]>()
+  const map = new Map<string, PillsItemType[]>()
 
   for (const item of sorted) {
     let char
@@ -159,7 +53,7 @@ export const binItemsByTitle = (
     bin.push(item)
   }
 
-  const bins: ItemPillsBin[] = []
+  const bins: PillsItemBin[] = []
 
   for (const [char, items] of map.entries()) {
     bins.push({
@@ -183,9 +77,9 @@ export const binItemsByTitle = (
 }
 
 export const binItemsByTag = (
-  items: Iterable<ItemPillsItemType>,
+  items: Iterable<PillsItemType>,
   tags: Iterable<TagEntry>,
-): readonly ItemPillsBin[] => {
+): readonly PillsItemBin[] => {
   const sortedItems = [...items]
   sortedItems.sort((a, b) => {
     if (a.title && b.title) {
@@ -204,7 +98,7 @@ export const binItemsByTag = (
     tagTitleMap[tag.tag] = tag.title
   }
 
-  const map = new Map<string, ItemPillsItemType[]>()
+  const map = new Map<string, PillsItemType[]>()
 
   for (const item of sortedItems) {
     let empty = true
@@ -234,7 +128,7 @@ export const binItemsByTag = (
     }
   }
 
-  const bins: ItemPillsBin[] = []
+  const bins: PillsItemBin[] = []
 
   for (const [title, items] of map.entries()) {
     bins.push({
@@ -258,10 +152,10 @@ export const binItemsByTag = (
 }
 
 export const binItemsByTime = (
-  items: Iterable<ItemPillsItemType>,
+  items: Iterable<PillsItemType>,
   binMinutes: number,
-): readonly ItemPillsBin[] => {
-  const map = new Map<string, [Date, ItemPillsItemType[]]>()
+): readonly PillsItemBin[] => {
+  const map = new Map<string, [Date, PillsItemType[]]>()
 
   for (const item of items) {
     if (item.start) {
@@ -277,7 +171,7 @@ export const binItemsByTime = (
     }
   }
 
-  const bins: ItemPillsBin[] = []
+  const bins: PillsItemBin[] = []
 
   for (const [id, [date, items]] of map.entries()) {
     bins.push({

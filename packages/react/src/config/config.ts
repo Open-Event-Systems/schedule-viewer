@@ -142,7 +142,6 @@ export const makeConfig = (configData: ScheduleConfigInput): ScheduleConfig => {
 export const ScheduleConfigContext = createContext<ScheduleConfig>(
   DEFAULT_SCHEDULE_CONFIG,
 )
-export const ScheduleConfigProvider = ScheduleConfigContext.Provider
 export const useScheduleConfig = (): ScheduleConfig =>
   useContext(ScheduleConfigContext)
 

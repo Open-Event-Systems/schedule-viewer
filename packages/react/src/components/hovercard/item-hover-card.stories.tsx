@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemHoverCard } from "./item-hover-card.js"
 import { Button } from "@mantine/core"
 
-import "./item-hover-card.js"
 import { events, tagEntries } from "../../test-data.js"
 
 const meta: Meta<typeof ItemHoverCard> = {

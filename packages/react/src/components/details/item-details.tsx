@@ -50,7 +50,7 @@ export type ItemDetailsProps = {
   showShare?: boolean
   locationHref?: string
   onClickLocation?: (e: MouseEvent) => void
-  tags?: readonly TagEntry[]
+  tags?: Iterable<TagEntry>
 } & BoxProps
 
 export const ItemDetails = (props: ItemDetailsProps) => {
@@ -278,11 +278,11 @@ const Location = ({
 }
 
 const Tags = ({
-  tags,
+  tags = [],
   eventTags,
   c,
 }: {
-  tags: readonly TagEntry[]
+  tags?: Iterable<TagEntry>
   eventTags?: Iterable<string>
   c?: string
 }) => {

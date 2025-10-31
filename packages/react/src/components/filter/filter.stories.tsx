@@ -2,9 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Filter } from "./filter.js"
 import { useState } from "react"
 
-import "../pills/pills.scss"
-import "../tag-filter/tag-filter.scss"
-
 const meta: Meta<typeof Filter> = {
   component: Filter,
   args: {

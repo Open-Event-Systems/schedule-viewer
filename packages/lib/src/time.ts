@@ -1,6 +1,6 @@
-import { add, isAfter, isBefore, isEqual } from "date-fns"
+import { add, format, isAfter, isBefore, isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import type { Bounded, Interval } from "./types.js"
+import type { Interval } from "./types.js"
 
 /**
  * Return whether an interval contains a date.
@@ -79,14 +79,27 @@ export const sortIntervalsByStartDate = <T extends Interval[]>(arr: T): T => {
 }
 
 /**
- * Get a Date representing the day a date occurs on, subject to the day change
- * hour.
+ * Get the default timezone from the browser.
  */
-export const getDay = (
-  d: Date,
-  tz: string,
-  dayChangeHour = 0,
-): Bounded<Interval> => {
+export const getDefaultTZ = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  } catch (_e) {
+    return "America/New_York"
+  }
+}
+
+export type Day = Readonly<{
+  key: string
+  start: Date
+  end: Date
+}>
+
+/**
+ * Get an interval representing the day a date occurs on, subject to the day
+ * change hour.
+ */
+export const getDay = (d: Date, tz: string, dayChangeHour = 0): Day => {
   const shift = add(d, { hours: -dayChangeHour })
   const start = new TZDate(
     shift.getFullYear(),
@@ -98,5 +111,55 @@ export const getDay = (
     0,
     tz,
   )
-  return { start, end: add(start, { days: 1 }) }
+  const key = format(start, "yyyy-MM-dd")
+
+  return { key, start, end: add(start, { days: 1 }) }
+}
+
+/**
+ * Get the days for a collection of items.
+ */
+export const getDays = (
+  items: Iterable<{ readonly start: Date }>,
+  tz: string,
+  dayChangeHour?: number,
+): readonly Day[] => {
+  const days = new Map<string, Day>()
+
+  for (const item of items) {
+    const day = getDay(item.start, tz, dayChangeHour)
+    days.set(day.key, day)
+  }
+
+  const dayArr = [...days.values()]
+  sortIntervalsByStartDate(dayArr)
+  return dayArr
+}
+
+/**
+ * Get the current day from an iterable of days.
+ */
+export const getDefaultDay = (
+  days: Iterable<Day>,
+  now: Date,
+): Day | undefined => {
+  const daysArr = [...days]
+
+  if (daysArr.length == 0) {
+    return
+  }
+
+  for (const day of days) {
+    if (contains(day, now)) {
+      return day
+    }
+  }
+
+  const lastDay = daysArr[daysArr.length - 1]
+
+  if (lastDay && !isBefore(now, lastDay.end)) {
+    return lastDay
+  } else {
+    return daysArr[0]
+  }
 }

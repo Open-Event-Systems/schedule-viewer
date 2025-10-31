@@ -1,22 +1,39 @@
 .DayFilter-root {
-  --title-min-width: 150px;
+  --title-min-width: 14rem;
 }
 
 .DayFilter-root {
   display: grid;
-  grid-template:
-    "prev title next" 1fr / auto minmax(var(--title-min-width), max-content)
-    auto;
+  grid-template: "prev select next" 1fr / auto auto auto;
   justify-content: center;
   align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.DayFilter-button {
+  color: var(--mantine-color-text);
+  background: none;
+
+  &[data-disabled] {
+    color: var(--mantine-color-disabled-color);
+  }
 }
 
 .DayFilter-prev {
   grid-area: prev;
 }
 
-.DayFilter-title {
+.DayFilter-select {
+  grid-area: select;
   justify-self: center;
+  min-width: var(--title-min-width);
+}
+
+.DayFilter-selectInput {
+  text-align: center;
+  font-size: var(--mantine-h4-font-size);
+  line-height: var(--mantine-h4-line-height);
+  font-weight: var(--mantine-h4-font-weight);
 }
 
 .DayFilter-next {

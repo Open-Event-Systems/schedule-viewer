@@ -7,11 +7,73 @@ import {
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import type { MouseEvent, ReactNode } from "react"
+import { useMemo, type MouseEvent, type ReactNode } from "react"
+import type { PillsItemBin, PillsItemType } from "./bin.js"
+import { usePillPropsFunc } from "./context.js"
 
-export type PillsProps = BoxProps & { children?: ReactNode }
+export type PillsProps = {
+  bins?: Iterable<PillsItemBin>
+  titleComponent?: string
+} & PillsRootProps
 
 export const Pills = (props: PillsProps) => {
+  const { bins = [], titleComponent, ...other } = props
+
+  const binEls = []
+
+  for (const bin of bins) {
+    binEls.push(
+      <ManagedBin key={bin.id} bin={bin} titleComponent={titleComponent} />,
+    )
+  }
+
+  return <Pills.Root {...other}>{binEls}</Pills.Root>
+}
+
+const ManagedBin = (
+  props: {
+    bin: PillsItemBin
+  } & PillBinProps,
+) => {
+  const { bin, ...other } = props
+
+  const els = []
+
+  for (const item of bin.items) {
+    els.push(<ManagedPill key={item.id} item={item} />)
+  }
+
+  return (
+    <Pills.Bin title={bin.title} {...other}>
+      {els}
+    </Pills.Bin>
+  )
+}
+
+const ManagedPill = (
+  props: {
+    item: PillsItemType
+  } & PillProps,
+) => {
+  const { item, ...other } = props
+
+  const propsFunc = usePillPropsFunc()
+  const otherProps = useMemo(() => {
+    return propsFunc(item)
+  }, [propsFunc, item])
+
+  return (
+    <Pills.Pill {...otherProps} {...other}>
+      {item.title}
+    </Pills.Pill>
+  )
+}
+
+export type PillsRootProps = BoxProps & {
+  children?: ReactNode
+}
+
+export const PillsRoot = (props: PillsRootProps) => {
   const { className, children, ...other } = useProps("Pills", {}, props)
 
   return (
@@ -25,14 +87,18 @@ export type PillBinProps = {
   children?: ReactNode
   title?: ReactNode
   menu?: boolean
+  titleComponent?: string
 } & BoxProps
 
 const PillBin = (props: PillBinProps) => {
-  const { className, children, title, menu, ...other } = useProps(
-    "PillBin",
-    {},
-    props,
-  )
+  const {
+    className,
+    children,
+    title,
+    menu,
+    titleComponent = "h3",
+    ...other
+  } = useProps("PillBin", {}, props)
 
   return (
     <Box
@@ -42,7 +108,7 @@ const PillBin = (props: PillBinProps) => {
     >
       {title ? (
         <>
-          <Title order={3} className="PillBin-title">
+          <Title component={titleComponent} order={3} className="PillBin-title">
             {title}
           </Title>
           <Divider className="PillBin-divider" />
@@ -54,8 +120,6 @@ const PillBin = (props: PillBinProps) => {
     </Box>
   )
 }
-
-Pills.Bin = PillBin
 
 export type PillProps = {
   indicator?: ReactNode
@@ -105,4 +169,6 @@ const Pill = (props: PillProps) => {
   )
 }
 
+Pills.Root = PillsRoot
+Pills.Bin = PillBin
 Pills.Pill = Pill

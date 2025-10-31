@@ -1,6 +1,6 @@
 import { useProps } from "@mantine/core"
 import clsx from "clsx"
-import { useMemo } from "react"
+import { useMemo, type ReactNode } from "react"
 import { Pills, type PillsProps } from "../pills/pills.js"
 import {
   makeTagIndicatorFunc,
@@ -10,7 +10,7 @@ import {
 
 export type TagFilterProps = {
   disabledTags?: Iterable<string>
-  tags?: readonly TagEntry[]
+  tags?: Iterable<TagEntry>
   tagIndicators?: readonly TagIndicatorEntry[]
   onChangeTags?: (tags: Set<string>) => void
 } & PillsProps
@@ -25,7 +25,6 @@ export const TagFilter = (props: TagFilterProps) => {
     ...other
   } = useProps("TagFilter", {}, props)
 
-  const disabledTagsSet = new Set(disabledTags)
   const getIndicator = useMemo(() => {
     return makeTagIndicatorFunc(tagIndicators)
   }, [tagIndicators])
@@ -37,7 +36,7 @@ export const TagFilter = (props: TagFilterProps) => {
         key={tag.tag}
         tag={tag.tag}
         title={tag.title}
-        disabledTagsSet={disabledTagsSet}
+        disabledTags={disabledTags}
         getIndicator={getIndicator}
         onChangeTags={onChangeTags}
       />,
@@ -45,25 +44,26 @@ export const TagFilter = (props: TagFilterProps) => {
   }
 
   return (
-    <Pills {...other}>
+    <Pills.Root {...other}>
       <Pills.Bin menu>{tagEls}</Pills.Bin>
-    </Pills>
+    </Pills.Root>
   )
 }
 
 const TagFilterTag = ({
   tag,
-  title: name,
-  disabledTagsSet,
+  title,
+  disabledTags,
   getIndicator,
   onChangeTags,
 }: {
   tag: string
-  title: string
-  disabledTagsSet: Set<string>
-  getIndicator?: (tags: readonly string[]) => string | undefined
+  title?: string
+  disabledTags?: Iterable<string>
+  getIndicator?: (tags: Iterable<string>) => ReactNode
   onChangeTags?: (tags: Set<string>) => void
 }) => {
+  const disabledTagsSet = new Set(disabledTags)
   const enabled = !disabledTagsSet.has(tag)
 
   return (
@@ -85,7 +85,7 @@ const TagFilterTag = ({
         onChangeTags && onChangeTags(newSet)
       }}
     >
-      {name}
+      {title}
     </Pills.Pill>
   )
 }

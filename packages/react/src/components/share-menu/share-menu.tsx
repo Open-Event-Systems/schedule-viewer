@@ -1,30 +1,34 @@
-import { Button, Menu, type MenuProps, useProps } from "@mantine/core"
 import {
-  IconCalendarDown,
-  IconSettings,
-  IconShare3,
-  IconTransfer,
-} from "@tabler/icons-react"
+  Button,
+  type ButtonProps,
+  Menu,
+  type MenuProps,
+  useProps,
+} from "@mantine/core"
+import { IconCalendarDown, IconShare3, IconTransfer } from "@tabler/icons-react"
 
 export type ShareMenuProps = {
   enableSync?: boolean
   onShare?: () => void
   onSync?: () => void
   onExport?: () => void
+  ButtonProps?: Partial<ButtonProps>
 } & MenuProps
 
 export const ShareMenu = (props: ShareMenuProps) => {
-  const { enableSync, onShare, onSync, onExport, ...other } = useProps(
-    "ShareMenu",
-    {},
-    props,
-  )
+  const { enableSync, onShare, onSync, onExport, ButtonProps, ...other } =
+    useProps("ShareMenu", {}, props)
 
   return (
     <Menu {...other}>
       <Menu.Target>
-        <Button leftSection={<IconSettings />} variant="subtle" size="xs">
-          Options
+        <Button
+          leftSection={<IconShare3 />}
+          variant="subtle"
+          size="sm"
+          {...ButtonProps}
+        >
+          Share
         </Button>
       </Menu.Target>
       <Menu.Dropdown>

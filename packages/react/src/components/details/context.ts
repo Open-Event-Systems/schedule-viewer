@@ -1,18 +1,17 @@
 import { createContext, type MouseEvent, useContext } from "react"
 import type { ItemDetailsItemType, ItemDetailsProps } from "./item-details.js"
 import type { TagEntry } from "../../config/config.js"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
-export type ItemDetailsFuncReturn = Partial<ItemDetailsProps> & {
-  onClickItem?: (e: MouseEvent) => void
-}
+export type GetItemDetailsFunc = (item: ScheduleItem) => Readonly<
+  Partial<ItemDetailsProps> & {
+    onClickItem?: (e: MouseEvent) => void
+  }
+>
 
-export const ItemDetailsContext = createContext<
-  ((item: ItemDetailsItemType) => ItemDetailsFuncReturn) | undefined
->(undefined)
-export const ItemDetailsProvider = ItemDetailsContext.Provider
-export const useItemDetails = ():
-  | ((item: ItemDetailsItemType) => ItemDetailsFuncReturn)
-  | undefined => useContext(ItemDetailsContext)
+export const ItemDetailsContext = createContext<GetItemDetailsFunc>(() => ({}))
+export const useItemDetailsFunc = (): GetItemDetailsFunc =>
+  useContext(ItemDetailsContext)
 
 export const makeItemDetailsFunc = ({
   getHref,
@@ -32,9 +31,11 @@ export const makeItemDetailsFunc = ({
   getLocationHref?: (item: ItemDetailsItemType) => string | undefined
   onClickLocation?: (e: MouseEvent, item: ItemDetailsItemType) => void
   tags?: readonly TagEntry[]
-}): ((item: ItemDetailsItemType) => ItemDetailsFuncReturn) => {
+}): GetItemDetailsFunc => {
   return (item) => {
-    const props: ItemDetailsFuncReturn = {}
+    const props: Partial<
+      ItemDetailsProps & { onClickItem?: (e: MouseEvent) => void }
+    > = {}
 
     if (getHref) {
       props.url = getHref(item)

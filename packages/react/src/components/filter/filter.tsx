@@ -10,9 +10,10 @@ import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/tag-filter.js"
 import type { TagEntry, TagIndicatorEntry } from "../../config/config.js"
+
 export type FilterProps = {
   disabledTags?: Iterable<string>
-  tags?: readonly TagEntry[]
+  tags?: Iterable<TagEntry>
   tagIndicators?: readonly TagIndicatorEntry[]
   text?: string
   showPastEvents?: boolean

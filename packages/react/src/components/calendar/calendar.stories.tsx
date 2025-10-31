@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Calendar } from "./calendar.js"
 import { type MouseEvent, useCallback } from "react"
-import { ItemDetailsProvider, makeItemDetailsFunc } from "../details/context.js"
+import { ItemDetailsContext, makeItemDetailsFunc } from "../details/context.js"
 
-import "../details/item-details.scss"
-import "./calendar.scss"
 import type { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Calendar> = {
@@ -19,7 +17,7 @@ export const Default: StoryObj<typeof Calendar> = {
     const getHref = useCallback(() => "#", [])
 
     return (
-      <ItemDetailsProvider
+      <ItemDetailsContext
         value={makeItemDetailsFunc({
           getHref,
           onClickItem,
@@ -64,7 +62,7 @@ export const Default: StoryObj<typeof Calendar> = {
           start={new Date(2020, 0, 1, 9, 0)}
           end={new Date(2020, 0, 1, 17)}
         />
-      </ItemDetailsProvider>
+      </ItemDetailsContext>
     )
   },
 }

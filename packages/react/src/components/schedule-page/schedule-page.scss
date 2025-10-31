@@ -1,0 +1,34 @@
+.SchedulePage-topMenu {
+  display: grid;
+  grid-template:
+    "bookmark . view share" auto
+    / auto 1fr auto auto;
+  justify-items: end;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+
+  @media (max-width: 48rem) {
+    justify-items: stretch;
+    grid-template:
+      "view share" auto
+      "bookmark bookmark" auto
+      / 1fr auto;
+  }
+}
+
+.SchedulePage-viewSelect {
+  grid-area: view;
+}
+
+.SchedulePage-bookmarkFilter {
+  grid-area: bookmark;
+  justify-self: start;
+
+  @media (max-width: 48rem) {
+    justify-self: stretch;
+  }
+}
+
+.SchedulePage-shareButton {
+  grid-area: share;
+}

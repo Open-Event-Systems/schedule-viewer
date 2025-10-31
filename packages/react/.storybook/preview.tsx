@@ -2,12 +2,10 @@ import type { Preview } from "@storybook/react-vite"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
 
 import "@mantine/core/styles.css"
-import {
-  DEFAULT_SCHEDULE_CONFIG,
-  ScheduleConfigProvider,
-} from "../src/config/config.js"
+import "../src/styles.scss"
 
-import { config } from "../src/test-data.js"
+import { parsedConfig } from "../src/test-data.js"
+import { ScheduleConfigContext } from "../src/config/config.js"
 
 const preview: Preview = {
   parameters: {
@@ -21,11 +19,9 @@ const preview: Preview = {
   decorators: [
     (Story) => {
       return (
-        <ScheduleConfigProvider
-          value={{ ...DEFAULT_SCHEDULE_CONFIG, ...config }}
-        >
+        <ScheduleConfigContext value={parsedConfig}>
           <Story />
-        </ScheduleConfigProvider>
+        </ScheduleConfigContext>
       )
     },
     (Story) => {

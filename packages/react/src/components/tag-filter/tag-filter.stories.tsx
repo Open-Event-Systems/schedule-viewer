@@ -2,9 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { TagFilter } from "./tag-filter.js"
 import { useState } from "react"
 
-import "../pills/pills.scss"
-import "./tag-filter.scss"
-
 const meta: Meta<typeof TagFilter> = {
   component: TagFilter,
   args: {

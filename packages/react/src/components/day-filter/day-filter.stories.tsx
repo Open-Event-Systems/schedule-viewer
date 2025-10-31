@@ -2,10 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { DayFilter } from "./day-filter.js"
 import { useState } from "react"
 
-import "./day-filter.scss"
-
 const meta: Meta<typeof DayFilter> = {
   component: DayFilter,
+  parameters: {
+    layout: "centered",
+  },
 }
 
 export default meta

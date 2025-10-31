@@ -8,18 +8,12 @@ import {
   makeScheduleItemsArrayAPI,
   makeTagFilter,
   makeTitleFilter,
-  type MapFlag,
   parseItems,
   type ParseItemsResult,
-  parseMapFlag,
-  parseScheduleEvent,
-  parseVendor,
   type ScheduleAPI,
-  type ScheduleEvent,
   type ScheduleItem,
   ScheduleItemStore,
   type Selections,
-  type Vendor,
 } from "@open-event-systems/schedule-lib"
 import { type ScheduleConfig, useScheduleConfig } from "./config/config.js"
 import { createContext, useContext, useMemo, useReducer } from "react"
@@ -28,7 +22,6 @@ import {
   useMutation,
   type UseMutationOptions,
   useQueryClient,
-  type UseQueryOptions,
   useSuspenseQuery,
   type UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
