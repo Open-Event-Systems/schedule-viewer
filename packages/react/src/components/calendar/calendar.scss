@@ -8,13 +8,17 @@
 
   &.Calendar-vertical {
     --header-size: 1.75rem;
+    --start-gap-size: 1rem;
+    --end-gap-size: 1rem;
     --label-size: 5rem;
     --track-size: 8rem;
     --cell-size: 3rem;
 
     grid-template:
       ".      header" var(--header-size)
+      ".      start-gap" var(--start-gap-size)
       "labels content" minmax(calc(var(--cell-size) * var(--num-cells)), 1fr)
+      ".      end-gap" var(--end-gap-size)
       / var(--label-size) minmax(
         calc(var(--track-size) * var(--num-tracks)),
         1fr
@@ -23,17 +27,23 @@
 
   &.Calendar-horizontal {
     --header-size: 8rem;
+    --start-gap-size: 2rem;
+    --end-gap-size: 2rem;
     --label-size: 1.75rem;
     --track-size: 3rem;
     --cell-size: 5rem;
 
     grid-template:
-      ".      labels" var(--label-size)
-      "header content" minmax(calc(var(--track-size) * var(--num-tracks)), 1fr)
-      / var(--header-size) minmax(
+      ".      .         labels  ." var(--label-size)
+      "header start-gap content end-gap" minmax(
+        calc(var(--track-size) * var(--num-tracks)),
+        1fr
+      )
+      / var(--header-size) var(--start-gap-size) minmax(
         calc(var(--cell-size) * var(--num-cells)),
         1fr
-      );
+      )
+      var(--end-gap-size);
   }
 }
 
@@ -47,6 +57,10 @@
 
 .Calendar-content {
   grid-area: content;
+}
+
+.Calendar-gaps {
+  grid-area: 2 / 2 / -1 / -1;
 }
 
 .Calendar-tracks {
@@ -141,14 +155,16 @@
   .Calendar-vertical & {
     grid-template:
       "header" var(--header-size)
+      "start-gap" var(--start-gap-size)
       "content" 1fr
+      "end-gap" var(--end-gap-size)
       / 1fr;
   }
 
   .Calendar-horizontal & {
     grid-template:
-      "header content" 1fr
-      / var(--header-size);
+      "header start-gap content end-gap" 1fr
+      / var(--header-size) var(--start-gap-size) 1fr var(--end-gap-size);
   }
 }
 

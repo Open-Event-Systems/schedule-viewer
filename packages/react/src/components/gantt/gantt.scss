@@ -1,0 +1,164 @@
+.Gantt-root.Calendar-root {
+  &.Calendar-vertical {
+    --header-size: 8rem;
+    --start-gap-size: 2rem;
+    --label-size: 5rem;
+    --track-size: 2rem;
+    --cell-size: 4rem;
+    --bar-size: calc(var(--track-size) * 0.75);
+    --cap-size: calc(var(--bar-size) * 0.67);
+
+    grid-template:
+      ".      header" var(--header-size)
+      ".      start-gap" var(--start-gap-size)
+      "labels content" minmax(calc(var(--cell-size) * var(--num-cells)), 1fr)
+      ".      end-gap" var(--end-gap-size)
+      / var(--label-size) auto;
+
+    justify-content: start;
+  }
+
+  &.Calendar-horizontal {
+    --header-size: 8rem;
+    --label-size: 1.75rem;
+    --track-size: 2rem;
+    --cell-size: 5rem;
+    --bar-size: calc(var(--track-size) * 0.75);
+    --cap-size: calc(var(--bar-size) * 0.67);
+
+    grid-template:
+      ".      .         labels  ." var(--label-size)
+      "header start-gap content end-gap" auto
+      / var(--header-size) var(--start-gap-size) minmax(
+        calc(var(--cell-size) * var(--num-cells)),
+        1fr
+      )
+      var(--end-gap-size);
+
+    align-content: start;
+  }
+}
+
+.Calendar-trackSpacing {
+  .Gantt-root.Calendar-vertical & {
+    grid-auto-columns: var(--track-size);
+  }
+
+  .Gantt-root.Calendar-horizontal & {
+    grid-auto-rows: var(--track-size);
+  }
+}
+
+.Calendar-headerTitle {
+  .Gantt-root.Calendar-vertical & {
+    writing-mode: vertical-lr;
+    writing-mode: sideways-lr;
+
+    width: calc(var(--track-size) / 1.414);
+    transform-origin: bottom right;
+    transform: translateX(calc(-1 * var(--track-size) / 1.414 / 2))
+      translateY(calc(var(--track-size) / 2)) rotate(45deg);
+  }
+
+  .Gantt-root.Calendar-vertical :nth-child(odd) > & {
+    background-color: var(--odd-background-color);
+  }
+
+  .Gantt-root.Calendar-vertical :nth-child(even) > & {
+    background-color: var(--even-background-color);
+  }
+}
+
+.Gantt-bar.Calendar-trackItem {
+  display: grid;
+  border-radius: calc(var(--bar-size) / 2);
+
+  .Calendar-vertical & {
+    width: var(--bar-size);
+    left: initial;
+    right: initial;
+    justify-self: center;
+
+    // w/ start cap
+    margin-top: calc(-1 * var(--bar-size) / 2);
+
+    grid-template: auto 1fr auto / 1fr;
+    justify-items: center;
+    align-content: space-between;
+
+    &::before {
+      content: "";
+      display: block;
+      width: var(--cap-size);
+      height: var(--cap-size);
+      background-color: #fff;
+      border-radius: calc(var(--cap-size) / 2);
+      margin-top: calc((var(--bar-size) - var(--cap-size)) / 2);
+    }
+
+    // w/ end cap
+    margin-bottom: calc(-1 * var(--bar-size) / 2);
+
+    &::after {
+      grid-row: -2 / -1;
+      content: "";
+      display: block;
+      width: var(--cap-size);
+      height: var(--cap-size);
+      background-color: #fff;
+      border-radius: calc(var(--cap-size) / 2);
+      margin-bottom: calc((var(--bar-size) - var(--cap-size)) / 2);
+    }
+  }
+
+  .Calendar-horizontal & {
+    height: var(--bar-size);
+    top: initial;
+    bottom: initial;
+    align-self: center;
+
+    // w/ start cap
+    margin-left: calc(-1 * var(--bar-size) / 2);
+
+    grid-template: 1fr / auto 1fr auto;
+    align-items: center;
+    align-content: space-between;
+
+    &::before {
+      content: "";
+      display: block;
+      width: var(--cap-size);
+      height: var(--cap-size);
+      background-color: #fff;
+      border-radius: calc(var(--cap-size) / 2);
+      margin-left: calc((var(--bar-size) - var(--cap-size)) / 2);
+    }
+
+    // w/ end cap
+    margin-right: calc(-1 * var(--bar-size) / 2);
+
+    &::after {
+      grid-column: -2 / -1;
+      content: "";
+      display: block;
+      width: var(--cap-size);
+      height: var(--cap-size);
+      background-color: #fff;
+      border-radius: calc(var(--cap-size) / 2);
+      margin-right: calc((var(--bar-size) - var(--cap-size)) / 2);
+    }
+  }
+}
+
+.Gantt-barLabel {
+  white-space: pre;
+  .Calendar-vertical & {
+    writing-mode: vertical-lr;
+    writing-mode: sideways-lr;
+    align-self: center;
+  }
+
+  .Calendar-horizontal & {
+    justify-self: center;
+  }
+}

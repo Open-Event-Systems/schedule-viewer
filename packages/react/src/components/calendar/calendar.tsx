@@ -81,7 +81,7 @@ const Background = (props: CalendarBackgroundProps) => {
 
   return (
     <Box
-      className={clsx("Calendar-content", "Calendar-trackSpacing", className)}
+      className={clsx("Calendar-gaps", "Calendar-trackSpacing", className)}
       {...other}
     >
       {els}
