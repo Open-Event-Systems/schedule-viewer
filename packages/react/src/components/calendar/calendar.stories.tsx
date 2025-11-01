@@ -1,9 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { Calendar } from "./calendar.js"
-import { type MouseEvent, useCallback } from "react"
-import { ItemDetailsContext, makeItemDetailsFunc } from "../details/context.js"
 
-import type { Bounded, ScheduleEvent } from "@open-event-systems/schedule-lib"
+import { Calendar } from "./calendar.js"
+import { useCalendarMarks } from "./utils.js"
+
+import "./calendar.scss"
+import { Box } from "@mantine/core"
+
+const start = new Date(2020, 0, 1, 9)
+const end = new Date(2020, 0, 1, 17)
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -12,57 +16,49 @@ const meta: Meta<typeof Calendar> = {
 export default meta
 
 export const Default: StoryObj<typeof Calendar> = {
+  args: {
+    orientation: "vertical",
+  },
   render(args) {
-    const onClickItem = useCallback((e: MouseEvent) => e.preventDefault(), [])
-    const getHref = useCallback(() => "#", [])
+    const marks = useCalendarMarks(start, end)
 
     return (
-      <ItemDetailsContext
-        value={makeItemDetailsFunc({
-          getHref,
-          onClickItem,
-        })}
-      >
-        <Calendar
-          columns={[
-            {
-              title: "Room A",
-              items: [
-                {
-                  id: "e1",
-                  type: "event",
-                  location: "Room A",
-                  start: new Date(2020, 0, 1, 12),
-                  end: new Date(2020, 0, 1, 13),
-                  title: "Event A",
-                  description: "",
-                  contacts: [],
-                  tags: new Set(),
-                },
-              ] as Bounded<ScheduleEvent>[],
-            },
-            {
-              title: "Room B",
-              items: [
-                {
-                  id: "e2",
-                  type: "event",
-                  location: "Room B",
-                  start: new Date(2020, 0, 1, 12, 30),
-                  end: new Date(2020, 0, 1, 13, 30),
-                  title: "Event B",
-                  description: "",
-                  contacts: [],
-                  tags: new Set(),
-                },
-              ] as Bounded<ScheduleEvent>[],
-            },
-          ]}
-          {...args}
-          start={new Date(2020, 0, 1, 9, 0)}
-          end={new Date(2020, 0, 1, 17)}
-        />
-      </ItemDetailsContext>
+      <Calendar numTracks={3} numCells={8} {...args} start={start} end={end}>
+        <Calendar.Background numTracks={3} />
+        <Calendar.Marks numMarks={marks.length} />
+        <Calendar.Labels>
+          {marks.map((s, i) => (
+            <Calendar.Label key={i}>{s}</Calendar.Label>
+          ))}
+        </Calendar.Labels>
+        <Calendar.Tracks>
+          <Calendar.Track>
+            <Calendar.TrackHeader>Room 1</Calendar.TrackHeader>
+            <Calendar.TrackContent>
+              <Calendar.TrackItem
+                bg="cyan"
+                start={new Date(2020, 0, 1, 12)}
+                end={new Date(2020, 0, 1, 16)}
+              >
+                Item 1
+              </Calendar.TrackItem>
+            </Calendar.TrackContent>
+          </Calendar.Track>
+          <Calendar.Track>
+            <Calendar.TrackHeader>Room 2</Calendar.TrackHeader>
+          </Calendar.Track>
+          <Calendar.Track>
+            <Calendar.TrackHeader>Room 3</Calendar.TrackHeader>
+          </Calendar.Track>
+        </Calendar.Tracks>
+      </Calendar>
     )
   },
+  decorators: [
+    (Story) => (
+      <Box w={800} h={500}>
+        <Story />
+      </Box>
+    ),
+  ],
 }

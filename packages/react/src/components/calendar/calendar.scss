@@ -1,158 +1,202 @@
 .Calendar-root {
-  --border-color: var(--mantine-color-dimmed);
-  --border-color-minor: #ddd;
+  --num-tracks: 0;
+  --num-cells: 0;
+  --odd-background-color: #eeeeee;
+  --even-background-color: #ffffff;
 
-  --time-column-width: 60px;
-  --time-row-height: calc(1.75 * var(--mantine-font-size-xs));
-
-  --column-min-width: 100px;
-  --column-min-height: 500px;
-
-  --row-min-width: 500px;
-  --row-min-height: 100px;
-}
-
-.Calendar-root {
   display: grid;
-  overflow: auto;
 
-  &.Calendar-dirColumn {
-    grid-template-rows: auto 1fr;
+  &.Calendar-vertical {
+    --header-size: 1.75rem;
+    --label-size: 5rem;
+    --track-size: 8rem;
+    --cell-size: 3rem;
+
+    grid-template:
+      ".      header" var(--header-size)
+      "labels content" minmax(calc(var(--cell-size) * var(--num-cells)), 1fr)
+      / var(--label-size) minmax(
+        calc(var(--track-size) * var(--num-tracks)),
+        1fr
+      );
   }
 
-  &.Calendar-dirRow {
-    grid-template-columns: auto 1fr;
+  &.Calendar-horizontal {
+    --header-size: 8rem;
+    --label-size: 1.75rem;
+    --track-size: 3rem;
+    --cell-size: 5rem;
+
+    grid-template:
+      ".      labels" var(--label-size)
+      "header content" minmax(calc(var(--track-size) * var(--num-tracks)), 1fr)
+      / var(--header-size) minmax(
+        calc(var(--cell-size) * var(--num-cells)),
+        1fr
+      );
   }
 }
 
-.Calendar-columns {
-  display: grid;
-}
-
-.Calendar-columnTitles {
-  background: #fff;
-  z-index: 400;
+.Calendar-header {
+  grid-area: header;
 }
 
 .Calendar-labels {
-  background-color: #fff;
-  z-index: 100;
+  grid-area: labels;
 }
 
-.Calendar-dirColumn {
-  .Calendar-columns {
-    grid-template-columns: var(--time-column-width);
-    grid-auto-columns: minmax(var(--column-min-width), 1fr);
-    grid-auto-flow: column;
-    min-height: var(--column-min-height);
+.Calendar-content {
+  grid-area: content;
+}
+
+.Calendar-tracks {
+  .Calendar-vertical & {
+    grid-area: 1 / 2 / -1 / -1;
   }
 
-  .Calendar-columns.Calendar-columnTitles {
-    min-height: initial;
-    position: sticky;
-    top: 0;
-  }
-
-  .Calendar-corner {
-    border-bottom: var(--border-color) solid 1px;
-  }
-
-  .Calendar-columnTitle {
-    text-align: center;
-    border-left: var(--border-color) solid 1px;
-    border-bottom: var(--border-color) solid 1px;
-  }
-
-  .Calendar-column {
-    border-left: var(--border-color) solid 1px;
-  }
-
-  .Calendar-labels {
-    border-left: none;
-    position: sticky;
-    left: 0;
-    border-right: var(--border-color) solid 1px;
-  }
-
-  .Calendar-divider {
-    border-top: var(--border-color) solid 1px;
-  }
-
-  .Calendar-dividerMinor {
-    border-top: var(--border-color-minor) solid 1px;
+  .Calendar-horizontal & {
+    grid-area: 2 / 1 / -1 / -1;
   }
 }
 
-.Calendar-dirRow {
-  .Calendar-columns {
-    grid-template-rows: var(--time-row-height);
-    grid-auto-rows: minmax(var(--row-min-height), 1fr);
+.Calendar-markSpacing {
+  display: grid;
+
+  .Calendar-vertical & {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 0px;
     grid-auto-flow: row;
-    min-width: var(--row-min-width);
+    align-content: space-between;
   }
 
-  .Calendar-columns.Calendar-columnTitles {
-    min-width: initial;
-    position: sticky;
-    left: 0;
-  }
-
-  .Calendar-corner {
-    border-bottom: var(--border-color) solid 1px;
-  }
-
-  .Calendar-columnTitle {
-    text-align: center;
-    border-top: var(--border-color) solid 1px;
-    border-right: var(--border-color) solid 1px;
-    writing-mode: vertical-lr;
-    writing-mode: sideways-lr;
-  }
-
-  .Calendar-column {
-    border-top: var(--border-color) solid 1px;
-  }
-
-  .Calendar-labels {
-    border-top: none;
-    position: sticky;
-    top: 0;
-    border-bottom: var(--border-color) solid 1px;
-  }
-
-  .Calendar-divider {
-    border-left: var(--border-color) solid 1px;
-  }
-
-  .Calendar-dividerMinor {
-    border-left: var(--border-color-minor) solid 1px;
+  .Calendar-horizontal & {
+    grid-template-rows: 1fr;
+    grid-auto-columns: 0;
+    grid-auto-flow: column;
+    justify-content: space-between;
   }
 }
 
-.Calendar-divider {
-  color: var(--mantine-color-gray-text);
-  font-size: var(--mantine-font-size-xs);
-  padding: 2px;
-  text-wrap: nowrap;
+.Calendar-mark {
+  .Calendar-vertical & {
+    height: 0;
+    border-top: gray dashed 1px;
+  }
+
+  .Calendar-horizontal & {
+    width: 0;
+    border-left: gray dashed 1px;
+  }
 }
 
-.Calendar-column {
+.Calendar-labels {
+  display: grid;
+  white-space: pre;
+
+  .Calendar-vertical & {
+    align-items: center;
+    justify-items: end;
+  }
+
+  .Calendar-horizontal & {
+    align-items: end;
+    justify-items: center;
+  }
+}
+
+.Calendar-label {
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.Calendar-trackSpacing {
+  display: grid;
+
+  .Calendar-vertical & {
+    grid-auto-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-auto-flow: column;
+  }
+
+  .Calendar-horizontal & {
+    grid-auto-rows: 1fr;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+  }
+}
+
+.Calendar-trackBackground {
+  &:nth-child(odd) {
+    background-color: var(--odd-background-color);
+  }
+
+  &:nth-child(even) {
+    background-color: var(--even-background-color);
+  }
+}
+
+.Calendar-track {
+  display: grid;
+
+  .Calendar-vertical & {
+    grid-template:
+      "header" var(--header-size)
+      "content" 1fr
+      / 1fr;
+  }
+
+  .Calendar-horizontal & {
+    grid-template:
+      "header content" 1fr
+      / var(--header-size);
+  }
+}
+
+.Calendar-trackHeader {
+  grid-area: header;
+}
+
+.Calendar-headerTitle {
+  display: block;
+
+  .Calendar-vertical & {
+    justify-self: center;
+    align-self: end;
+  }
+
+  .Calendar-horizontal & {
+    justify-self: end;
+    align-self: center;
+  }
+}
+
+.Calendar-trackContent {
+  grid-area: content;
+}
+
+.Calendar-trackItems {
   position: relative;
+  display: grid;
+  grid-template: 1fr / 1fr;
 }
 
-.Calendar-item {
+.Calendar-trackItem {
+  --item-start: 0%;
+  --item-end: 0%;
+  grid-area: 1 / 1 / -1 / -1;
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
 
-.Calendar-event {
-  border: #000 solid 1px;
-  border-radius: 4px;
-  padding: 2px;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
+  .Calendar-vertical & {
+    top: var(--item-start);
+    right: 0px;
+    bottom: var(--item-end);
+    left: 0px;
+  }
+
+  .Calendar-horizontal & {
+    top: 0px;
+    left: var(--item-start);
+    bottom: 0px;
+    right: var(--item-end);
+  }
 }

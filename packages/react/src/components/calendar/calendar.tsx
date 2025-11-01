@@ -1,210 +1,259 @@
-import {
-  Box,
-  type BoxProps,
-  createPolymorphicComponent,
-  Title,
-  useProps,
-} from "@mantine/core"
-import { forwardRef, type ReactNode, useContext, useMemo } from "react"
-import { CalendarContext } from "./context.js"
+import { Box, useProps, type BoxProps } from "@mantine/core"
 import clsx from "clsx"
-import { toPercent } from "./utils.js"
-import { add, format, isBefore } from "date-fns"
-import { ItemHoverCard } from "../hovercard/item-hover-card.js"
-import type { Bounded, ScheduleItem } from "@open-event-systems/schedule-lib"
+import { createContext, useContext, type ReactNode } from "react"
 
-export type CalendarColumnData = {
-  title?: ReactNode
-  items?: readonly Bounded<ScheduleItem & { readonly title?: string }>[]
-}
-
-export type CalendarProps = {
-  columns?: CalendarColumnData[]
-  direction?: "column" | "row"
+export type CalendarContextValue = Readonly<{
   start: Date
   end: Date
-} & BoxProps
+}>
+
+export const CalendarContext = createContext<CalendarContextValue>({
+  start: new Date(),
+  end: new Date(),
+})
+
+export type CalendarProps = CalendarRootProps & {
+  start: Date
+  end: Date
+}
 
 export const Calendar = (props: CalendarProps) => {
-  const {
-    className,
-    columns = [],
-    direction = "column",
-    start,
-    end,
-    ...other
-  } = useProps("Calendar", {}, props)
-
-  const columnTitles = columns.map((c, i) => (
-    <Title key={i} order={5} className="Calendar-columnTitle">
-      {c.title}
-    </Title>
-  ))
-
-  const columnBoxes = columns.map((c, i) => (
-    <CalendarColumn key={i} column={c} start={start} end={end} />
-  ))
-
-  const dirClass =
-    direction == "column" ? "Calendar-dirColumn" : "Calendar-dirRow"
-
-  const dividers = useMemo(
-    () =>
-      makeDividers(start, end, (s, e) => (
-        <Calendar.Item
-          key={s.toISOString()}
-          start={s}
-          end={e}
-          className={clsx("Calendar-divider", {
-            "Calendar-dividerMinor": s.getMinutes() != 0,
-          })}
-        >
-          {s.getMinutes() == 0 ? format(s, "h aaa") : null}
-        </Calendar.Item>
-      )),
-    [start, end],
-  )
+  const { start, end, ...other } = props
 
   return (
-    <CalendarContext.Provider
-      value={{
-        direction,
-        start,
-        end,
-      }}
-    >
-      <Box className={clsx("Calendar-root", dirClass, className)} {...other}>
-        <Box className={clsx("Calendar-columns", "Calendar-columnTitles")}>
-          <Box className="Calendar-corner" />
-          {columnTitles}
-        </Box>
-        <Box className="Calendar-columns">
-          <Box className={clsx("Calendar-labels", "Calendar-column")}>
-            {dividers}
-          </Box>
-          {columnBoxes}
-        </Box>
-      </Box>
-    </CalendarContext.Provider>
+    <CalendarContext value={{ start, end }}>
+      <Calendar.Root {...other} />
+    </CalendarContext>
   )
 }
 
-const CalendarColumn = ({
-  column,
-  start,
-  end,
-}: Pick<CalendarProps, "start" | "end"> & {
-  column: CalendarColumnData
-}) => {
-  const items = useMemo(
-    () =>
-      column.items?.map((e) => {
-        return (
-          <ItemHoverCard key={e.id} item={e}>
-            <Calendar.Item
-              component="a"
-              className="Calendar-event"
-              start={e.start}
-              end={e.end}
-            >
-              {e.title}
-            </Calendar.Item>
-          </ItemHoverCard>
-        )
-      }),
-    [column.items],
-  )
+export type CalendarRootProps = {
+  orientation?: "vertical" | "horizontal"
+  numTracks?: number
+  numCells?: number
+  children?: ReactNode
+} & BoxProps
 
-  const dividers = useMemo(
-    () =>
-      makeDividers(start, end, (s) => (
-        <Calendar.Item
-          key={s.toISOString()}
-          start={s}
-          end={s}
-          className={clsx("Calendar-divider", {
-            "Calendar-dividerMinor": s.getMinutes() != 0,
-          })}
-        />
-      )),
-    [start, end],
-  )
+const Root = (props: CalendarRootProps) => {
+  const {
+    className,
+    orientation = "vertical",
+    numTracks = 0,
+    numCells = 0,
+    ...other
+  } = useProps("CalendarRoot", {}, props)
 
   return (
-    <Box className="Calendar-column">
-      {dividers}
-      {items}
+    <Box
+      className={clsx(
+        "Calendar-root",
+        {
+          "Calendar-vertical": orientation == "vertical",
+          "Calendar-horizontal": orientation == "horizontal",
+        },
+        className,
+      )}
+      {...other}
+      style={{
+        ...other.style,
+        "--num-tracks": numTracks,
+        "--num-cells": numCells,
+      }}
+    />
+  )
+}
+
+export type CalendarBackgroundProps = {
+  numTracks?: number
+} & Omit<BoxProps, "children">
+
+const Background = (props: CalendarBackgroundProps) => {
+  const {
+    className,
+    numTracks = 0,
+    ...other
+  } = useProps("CalendarBackground", {}, props)
+
+  const els = []
+  for (let i = 0; i < numTracks; i++) {
+    els.push(<Box key={i} className="Calendar-trackBackground" />)
+  }
+
+  return (
+    <Box
+      className={clsx("Calendar-content", "Calendar-trackSpacing", className)}
+      {...other}
+    >
+      {els}
     </Box>
   )
 }
 
-export type CalendarItemProps = {
-  start: Date
-  end: Date
-  children?: ReactNode
-} & BoxProps
+export type CalendarMarksProps = {
+  numMarks?: number
+} & Omit<BoxProps, "children">
 
-const CalendarItem = createPolymorphicComponent<"div", CalendarItemProps>(
-  // eslint-disable-next-line react/display-name
-  forwardRef<HTMLDivElement, CalendarItemProps>((props, ref) => {
-    const { className, start, end, ...other } = useProps(
-      "CalendarItem",
-      {},
-      props,
-    )
+const Marks = (props: CalendarMarksProps) => {
+  const {
+    className,
+    numMarks = 0,
+    ...other
+  } = useProps("CalendarMarks", {}, props)
 
-    const ctx = useContext(CalendarContext)
-    const boxProps: BoxProps = {}
-
-    const startPct = toPercent(ctx.start, ctx.end, start)
-    const endPct = 1 - toPercent(ctx.start, ctx.end, end)
-
-    if (ctx.direction == "column") {
-      boxProps.top = `${100 * startPct}%`
-      boxProps.bottom = `${100 * endPct}%`
-    } else {
-      boxProps.left = `${100 * startPct}%`
-      boxProps.right = `${100 * endPct}%`
-    }
-    return (
-      <Box
-        className={clsx("Calendar-item", className)}
-        component="div"
-        ref={ref}
-        {...boxProps}
-        {...other}
-      />
-    )
-  }),
-)
-
-CalendarItem.displayName = "Calendar.Item"
-
-Calendar.Item = CalendarItem
-
-const makeDividers = (
-  start: Date,
-  end: Date,
-  f: (start: Date, end: Date) => ReactNode,
-): ReactNode[] => {
-  let cur = new Date(
-    start.getFullYear(),
-    start.getMonth(),
-    start.getDate(),
-    start.getHours(),
-    start.getMinutes() >= 30 ? 30 : 0,
-    0,
-    0,
-  )
-  const results: ReactNode[] = []
-
-  while (isBefore(cur, end)) {
-    const tEnd = add(cur, { minutes: 30 })
-    if (!isBefore(cur, start)) {
-      results.push(f(cur, tEnd))
-    }
-    cur = tEnd
+  const els = []
+  for (let i = 0; i < numMarks; i++) {
+    els.push(<Box key={i} className="Calendar-mark" />)
   }
 
-  return results
+  return (
+    <Box
+      className={clsx("Calendar-content", "Calendar-markSpacing", className)}
+      {...other}
+    >
+      {els}
+    </Box>
+  )
+}
+
+export type CalendarLabelsProps = { children?: ReactNode } & BoxProps
+
+const Labels = (props: CalendarLabelsProps) => {
+  const { className, ...other } = useProps("CalendarLabels", {}, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-labels", "Calendar-markSpacing", className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarLabelProps = { children?: ReactNode } & BoxProps
+
+const Label = (props: CalendarLabelProps) => {
+  const { className, ...other } = useProps("CalendarLabel", {}, props)
+
+  return <Box className={clsx("Calendar-label", className)} {...other} />
+}
+
+export type CalendarTracksProps = { children?: ReactNode } & BoxProps
+
+const Tracks = (props: CalendarTracksProps) => {
+  const { className, ...other } = useProps("CalendarTracks", {}, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-tracks", "Calendar-trackSpacing", className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTrackProps = { children?: ReactNode } & BoxProps
+
+const Track = (props: CalendarTrackProps) => {
+  const { className, ...other } = useProps("CalendarTrack", {}, props)
+
+  return <Box className={clsx("Calendar-track", className)} {...other} />
+}
+
+export type CalendarTrackHeaderProps = { children?: ReactNode } & BoxProps
+
+const TrackHeader = (props: CalendarTrackHeaderProps) => {
+  const { className, ...other } = useProps("CalendarTrackHeader", {}, props)
+
+  return (
+    <Box
+      className={clsx(
+        "Calendar-trackHeader",
+        "Calendar-headerTitle",
+        className,
+      )}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTrackContentProps = { children?: ReactNode } & BoxProps
+
+const TrackContent = (props: CalendarTrackContentProps) => {
+  const { className, ...other } = useProps("CalendarTrackContent", {}, props)
+
+  return (
+    <Box
+      className={clsx(
+        "Calendar-trackContent",
+        "Calendar-trackItems",
+        className,
+      )}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTrackItemProps = {
+  children?: ReactNode
+  start?: Date
+  end?: Date
+} & BoxProps
+
+const TrackItem = (props: CalendarTrackItemProps) => {
+  const { className, start, end, ...other } = useProps(
+    "CalendarTrackItem",
+    {},
+    props,
+  )
+
+  const styleProps = useTrackItemInset(start, end)
+
+  return (
+    <Box
+      className={clsx("Calendar-trackItem", className)}
+      {...other}
+      style={{ ...other.style, ...styleProps }}
+    />
+  )
+}
+
+Calendar.Root = Root
+Calendar.Background = Background
+Calendar.Marks = Marks
+Calendar.Labels = Labels
+Calendar.Label = Label
+Calendar.Tracks = Tracks
+Calendar.Track = Track
+Calendar.TrackHeader = TrackHeader
+Calendar.TrackContent = TrackContent
+Calendar.TrackItem = TrackItem
+
+const useTrackItemInset = (
+  start?: Date,
+  end?: Date,
+): Record<string, string> => {
+  const { start: trackStart, end: trackEnd } = useContext(CalendarContext)
+  const trackStartT = trackStart.getTime()
+  const trackEndT = trackEnd.getTime()
+  const range = trackEndT - trackStartT
+  const startT = start?.getTime()
+  const endT = end?.getTime()
+
+  let startPct: string
+  let endPct: string
+
+  if (startT != null && startT >= trackStartT) {
+    startPct = `${(100 * (startT - trackStartT)) / range}%`
+  } else {
+    startPct = "0%"
+  }
+
+  if (endT != null && endT <= trackEndT) {
+    endPct = `${(100 * (trackEndT - endT)) / range}%`
+  } else {
+    endPct = "0%"
+  }
+
+  return {
+    "--item-start": startPct,
+    "--item-end": endPct,
+  }
 }
