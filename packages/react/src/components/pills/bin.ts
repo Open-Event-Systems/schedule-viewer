@@ -1,7 +1,6 @@
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
-import type { TagEntry } from "../../config/config.js"
-import { format, formatISO } from "date-fns"
-import { TZDate } from "@date-fns/tz"
+import { format, formatISO, set } from "date-fns"
+import type { TagEntry } from "../../types.js"
 
 export type PillsItemType = ScheduleItem &
   Readonly<{
@@ -185,24 +184,11 @@ export const binItemsByTime = (
 }
 
 const binDate = (d: Date, binMinutes: number): Date => {
-  const tz = d instanceof TZDate ? d.timeZone : undefined
   const roundedMinutes = Math.floor(d.getMinutes() / binMinutes) * binMinutes
-  const rounded = tz
-    ? new TZDate(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        d.getHours(),
-        roundedMinutes,
-        tz,
-      )
-    : new TZDate(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        d.getHours(),
-        roundedMinutes,
-      )
-
+  const rounded = set(d, {
+    minutes: roundedMinutes,
+    seconds: 0,
+    milliseconds: 0,
+  })
   return rounded
 }

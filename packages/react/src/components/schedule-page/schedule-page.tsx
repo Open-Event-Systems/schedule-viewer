@@ -15,25 +15,18 @@ import {
 import clsx from "clsx"
 import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
 import { Filter } from "../filter/filter.js"
-import type { TagEntry } from "../../config/config.js"
 import { IconEye } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
+import { useScheduleConfig } from "../../hooks/config.js"
 
 export type SchedulePageProps = {
   items: ScheduleItemStore
-  tags?: Iterable<TagEntry>
   type?: ScheduleProps["type"]
   onlyBookmarked?: boolean
   selectedDayKey?: string
   enableSync?: boolean
-  icalPrefix?: string
-  icalDomain?: string
   icalFileName?: string
-  binMinutes?: number
-  dayChangeHour?: number
-  timeZone?: string
-  dayFormat?: string
   dayTitleComponent?: string
   binTitleComponent?: string
   onChangeType?: (type: ScheduleProps["type"]) => void
@@ -47,18 +40,11 @@ export const SchedulePage = (props: SchedulePageProps) => {
   const {
     className,
     items,
-    tags = [],
     type = "daily-agenda",
     onlyBookmarked,
     selectedDayKey,
     enableSync,
-    icalPrefix = "event",
-    icalDomain,
     icalFileName = "schedule",
-    binMinutes,
-    dayChangeHour,
-    timeZone,
-    dayFormat,
     dayTitleComponent,
     binTitleComponent,
     onChangeType,
@@ -68,6 +54,8 @@ export const SchedulePage = (props: SchedulePageProps) => {
     onSync,
     ...other
   } = useProps("SchedulePage", {}, props)
+
+  const { icalPrefix, icalDomain } = useScheduleConfig()
 
   return (
     <Stack className={clsx("SchedulePage-root", className)} {...other}>
@@ -133,20 +121,15 @@ export const SchedulePage = (props: SchedulePageProps) => {
       <Grid>
         <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
           <Stack gap="xs" align="start">
-            <Filter tags={tags} />
+            <Filter />
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>
           <Schedule
             items={items}
             type={type}
-            tags={tags}
-            binMinutes={binMinutes}
             dayTitleComponent={dayTitleComponent}
             binTitleComponent={binTitleComponent}
-            dayChangeHour={dayChangeHour}
-            dayFormat={dayFormat}
-            timeZone={timeZone}
             selectedDayKey={selectedDayKey}
             onSelectDay={onSelectDay}
           />

@@ -5,7 +5,7 @@ import "@mantine/core/styles.css"
 import "../src/styles.scss"
 
 import { parsedConfig } from "../src/test-data.js"
-import { ScheduleConfigContext } from "../src/config/config.js"
+import { ScheduleConfigContext } from "../src/hooks/config.js"
 
 const preview: Preview = {
   parameters: {

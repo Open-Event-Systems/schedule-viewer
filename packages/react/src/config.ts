@@ -6,33 +6,8 @@ import {
   makeTZScheduleAPI,
   type ScheduleAPI,
 } from "@open-event-systems/schedule-lib"
-import { createContext, useContext } from "react"
 import z from "zod"
-
-export type TagEntry = Readonly<{
-  tag: string
-  title: string
-}>
-
-export type TagIndicatorEntry = Readonly<{
-  tags: readonly string[]
-  label: string
-}>
-
-export type ScheduleConfig = Readonly<{
-  id: string
-  items: readonly (string | Record<string, unknown>)[]
-  title: string
-  description: string
-  dayChangeHour: number
-  binMinutes: number
-  timeZone: string
-  tags: readonly TagEntry[]
-  tagIndicators: readonly TagIndicatorEntry[]
-  bookmarks?: string
-  icalPrefix: string
-  icalDomain: string
-}>
+import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
 
 const opt = <OutT, InT>(
   s: z.ZodType<OutT, InT>,
@@ -93,6 +68,7 @@ const configSchema = z
     description: opt(z.string()),
     dayChangeHour: opt(z.number()),
     binMinutes: opt(z.number()),
+    dayFormat: opt(z.string()),
     timeZone: opt(z.string()),
     tags: opt(z.array(tagEntrySchema)),
     tagIndicators: opt(z.array(tagIndicatorSchema)),
@@ -119,6 +95,7 @@ export const DEFAULT_SCHEDULE_CONFIG = {
   description: "",
   dayChangeHour: 6,
   binMinutes: 30,
+  dayFormat: "EEEE, MMM d",
   timeZone: getDefaultTZ(),
   tags: [],
   tagIndicators: [],
@@ -127,9 +104,11 @@ export const DEFAULT_SCHEDULE_CONFIG = {
 } as const satisfies ScheduleConfig
 
 /**
- * Make a {@link ScheduleConfig} object.
+ * Parse a {@link ScheduleConfig} object.
  */
-export const makeConfig = (configData: ScheduleConfigInput): ScheduleConfig => {
+export const parseConfig = (
+  configData: ScheduleConfigInput,
+): ScheduleConfig => {
   const parsed = configSchema.parse(configData)
   const config = {
     ...DEFAULT_SCHEDULE_CONFIG,
@@ -138,12 +117,6 @@ export const makeConfig = (configData: ScheduleConfigInput): ScheduleConfig => {
 
   return config
 }
-
-export const ScheduleConfigContext = createContext<ScheduleConfig>(
-  DEFAULT_SCHEDULE_CONFIG,
-)
-export const useScheduleConfig = (): ScheduleConfig =>
-  useContext(ScheduleConfigContext)
 
 export const makeScheduleAPIFromConfig = (
   config: ScheduleConfig,

@@ -4,7 +4,7 @@ import {
   ScheduleItemStore,
   type ScheduleEvent,
 } from "@open-event-systems/schedule-lib"
-import { makeConfig, type ScheduleConfigInput } from "./config/config.js"
+import { parseConfig, type ScheduleConfigInput } from "./config.js"
 
 const timeZone = "America/New_York"
 
@@ -69,7 +69,7 @@ export const config = {
   timeZone,
 } as const satisfies ScheduleConfigInput
 
-export const parsedConfig = makeConfig(config)
+export const parsedConfig = parseConfig(config)
 
 export const tagEntries = [
   { tag: "main-event", title: "Main Event" },

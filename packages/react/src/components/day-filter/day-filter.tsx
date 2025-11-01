@@ -6,10 +6,10 @@ import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import type { Day } from "@open-event-systems/schedule-lib"
 
 export type DayFilterProps = {
-  days?: Iterable<Day>
-  dayFormat?: string
-  selectedDay?: string
-  onSelectDay?: (day: Day) => void
+  days?: Iterable<Day> | undefined
+  dayFormat?: string | undefined
+  selectedDay?: string | undefined
+  onSelectDay?: ((day: Day) => void) | undefined
 } & BoxProps
 
 const defaultDayFormat = "EEEE, MMM d"
@@ -63,7 +63,7 @@ export const DayFilter = (props: DayFilterProps) => {
         }}
         variant="unstyled"
         data={dayData}
-        value={selectedDay}
+        value={selectedDay ?? null}
         onChange={(v) => {
           if (v) {
             const day = daysByKey.get(v)

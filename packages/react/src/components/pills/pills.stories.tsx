@@ -3,11 +3,11 @@ import type { MouseEvent, ReactNode } from "react"
 import { Pills } from "./pills.js"
 import { useCallback, useMemo } from "react"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
-import { makeTagIndicatorFunc } from "../../config/config.js"
-import { useItemDetailsFunc } from "../details/context.js"
+import { makeTagIndicatorFunc } from "../../config.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import { binItemsByTime, type PillsItemType } from "./bin.js"
 import { PillPropsContext } from "./context.js"
+import { useItemDetailsFunc } from "../../hooks/details.js"
 
 const meta: Meta<typeof Pills> = {
   component: Pills,
@@ -34,9 +34,9 @@ export const Default: StoryObj<typeof Pills> = {
           },
           indicator: indicatorFunc(item.tags ?? []),
           renderContent(c: ReactNode) {
-            const detailsProps = detailsFunc(item)
+            const { ItemDetailsProps } = detailsFunc(item)
             return (
-              <ItemHoverCard item={item} ItemDetailsProps={detailsProps}>
+              <ItemHoverCard item={item} ItemDetailsProps={ItemDetailsProps}>
                 {c}
               </ItemHoverCard>
             )

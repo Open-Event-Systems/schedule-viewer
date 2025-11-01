@@ -12,7 +12,11 @@ export const createICS = (
   events: Iterable<
     Bounded<
       ScheduleItem &
-        Readonly<{ title?: string; description?: string; location?: string }>
+        Readonly<{
+          title?: string
+          description?: string
+          location?: string
+        }>
     >
   >,
   prefix: string,
@@ -20,14 +24,25 @@ export const createICS = (
 ): string => {
   const eventAttrs: ics.EventAttributes[] = []
   for (const event of events) {
-    eventAttrs.push({
+    const attrs: ics.EventAttributes = {
       uid: `${prefix}-${event.id}@${domain}`,
       start: event.start.getTime(),
       end: event.end.getTime(),
-      title: event.title,
-      description: event.description,
-      location: event.location,
-    })
+    }
+
+    if (event.title) {
+      attrs.title = event.title
+    }
+
+    if (event.description) {
+      attrs.description = event.description
+    }
+
+    if (event.location) {
+      attrs.location = event.location
+    }
+
+    eventAttrs.push(attrs)
   }
 
   return ics.createEvents(eventAttrs).value || ""

@@ -167,7 +167,7 @@ export const parseItems = <M extends ItemTypeMap>(
   for (const value of items) {
     const res = parseItemType(typeParsers, value)
     if (res.success) {
-      let arr = results[res.value.type]
+      const arr = results[res.value.type]
       if (arr) {
         arr.push(res.value)
       }
@@ -218,10 +218,10 @@ export const makeTagFilter = (
  */
 export const makePastItemFilter = (
   now: Date,
-): (<T extends { readonly end?: Date }>(
+): (<T extends { readonly end?: Date | undefined }>(
   event: T,
 ) => event is T & { readonly end: Date }) => {
-  return <T extends { readonly end?: Date }>(
+  return <T extends { readonly end?: Date | undefined }>(
     event: T,
   ): event is T & { readonly end: Date } =>
     !event.end || isBefore(now, event.end)
@@ -232,10 +232,10 @@ export const makePastItemFilter = (
  */
 export const makeDateFilter = (
   range: Interval,
-): (<T extends { readonly start?: Date }>(
+): (<T extends { readonly start?: Date | undefined }>(
   event: T,
 ) => event is T & { readonly start: Date }) => {
-  return <T extends { readonly start?: Date }>(
+  return <T extends { readonly start?: Date | undefined }>(
     e: T,
   ): e is T & { readonly start: Date } => {
     if (!e.start) {

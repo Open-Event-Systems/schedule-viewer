@@ -6,8 +6,7 @@ import {
   setupBookmarkServiceAPI,
   syncBookmarkAPIs,
 } from "@open-event-systems/schedule-lib"
-import type { ScheduleConfig } from "./config/config.js"
-import { createContext, useContext } from "react"
+import type { ScheduleConfig } from "./types.js"
 
 /**
  * Set up the bookmarks API.
@@ -37,12 +36,3 @@ export const setupBookmarks = async (
     return [local, null]
   }
 }
-
-export const BookmarkAPIContext = createContext<
-  readonly [BookmarkAPI, BookmarkServiceAPI | null]
->([makeLocalStorageBookmarkAPI(""), null])
-export const BookmarkAPIProvider = BookmarkAPIContext.Provider
-export const useBookmarkAPI = (): BookmarkAPI =>
-  useContext(BookmarkAPIContext)[0]
-export const useBookmarkServiceAPI = (): BookmarkServiceAPI | null =>
-  useContext(BookmarkAPIContext)[1]

@@ -18,15 +18,12 @@ import {
 import clsx from "clsx"
 import { add, differenceInSeconds, format, formatISO } from "date-fns"
 import type { MouseEvent, ReactNode } from "react"
-import {
-  makeTagFormatter,
-  makeValidTagsFilter,
-  type TagEntry,
-} from "../../config/config.js"
+import { makeTagFormatter, makeValidTagsFilter } from "../../config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown } from "../markdown/markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { TagEntry } from "../../types.js"
 
 export type ItemDetailsItemType = ScheduleItem &
   Readonly<{

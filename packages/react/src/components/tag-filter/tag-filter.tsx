@@ -2,11 +2,8 @@ import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import { useMemo, type ReactNode } from "react"
 import { Pills, type PillsProps } from "../pills/pills.js"
-import {
-  makeTagIndicatorFunc,
-  type TagEntry,
-  type TagIndicatorEntry,
-} from "../../config/config.js"
+import { makeTagIndicatorFunc } from "../../config.js"
+import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 
 export type TagFilterProps = {
   disabledTags?: Iterable<string>

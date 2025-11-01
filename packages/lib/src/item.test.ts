@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest"
-import type { ScheduleEvent } from "./types.js"
 import {
   parseItems,
   parseItemType,

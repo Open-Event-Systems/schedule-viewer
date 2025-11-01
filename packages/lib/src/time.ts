@@ -1,6 +1,6 @@
-import { add, format, isAfter, isBefore, isEqual } from "date-fns"
+import { add, format, isAfter, isBefore, isEqual, set } from "date-fns"
 import { TZDate } from "@date-fns/tz"
-import type { Interval } from "./types.js"
+import type { Day, Interval } from "./types.js"
 
 /**
  * Return whether an interval contains a date.
@@ -89,28 +89,18 @@ export const getDefaultTZ = (): string => {
   }
 }
 
-export type Day = Readonly<{
-  key: string
-  start: Date
-  end: Date
-}>
-
 /**
  * Get an interval representing the day a date occurs on, subject to the day
  * change hour.
  */
-export const getDay = (d: Date, tz: string, dayChangeHour = 0): Day => {
-  const shift = add(d, { hours: -dayChangeHour })
-  const start = new TZDate(
-    shift.getFullYear(),
-    shift.getMonth(),
-    shift.getDate(),
-    dayChangeHour,
-    0,
-    0,
-    0,
-    tz,
-  )
+export const getDay = (d: Date, dayChangeHour = 0): Day => {
+  const shifted = add(d, { hours: -dayChangeHour })
+  const start = set(shifted, {
+    hours: dayChangeHour,
+    minutes: 0,
+    seconds: 0,
+    milliseconds: 0,
+  })
   const key = format(start, "yyyy-MM-dd")
 
   return { key, start, end: add(start, { days: 1 }) }
@@ -121,13 +111,12 @@ export const getDay = (d: Date, tz: string, dayChangeHour = 0): Day => {
  */
 export const getDays = (
   items: Iterable<{ readonly start: Date }>,
-  tz: string,
   dayChangeHour?: number,
 ): readonly Day[] => {
   const days = new Map<string, Day>()
 
   for (const item of items) {
-    const day = getDay(item.start, tz, dayChangeHour)
+    const day = getDay(item.start, dayChangeHour)
     days.set(day.key, day)
   }
 

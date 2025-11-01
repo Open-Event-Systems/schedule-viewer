@@ -41,6 +41,7 @@ export class ScheduleItemStore<out T extends ScheduleItem = ScheduleItem> {
   map<N extends ScheduleItem>(
     f: (item: T, i: number) => N | undefined,
   ): ScheduleItemStore<N> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     function* gen(): Generator<N> {
       let i = 0
@@ -61,6 +62,7 @@ export class ScheduleItemStore<out T extends ScheduleItem = ScheduleItem> {
   ): ScheduleItemStore<N>
   filter(f: (item: T, i: number) => boolean): ScheduleItemStore<T>
   filter(f: (item: T, i: number) => boolean): ScheduleItemStore<T> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     function* gen(): Generator<T> {
       let i = 0

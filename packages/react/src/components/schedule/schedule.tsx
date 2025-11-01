@@ -1,7 +1,6 @@
 import {
   getDays,
   getDefaultDay,
-  getDefaultTZ,
   makeDateFilter,
   ScheduleItemStore,
   type Day,
@@ -10,27 +9,20 @@ import {
 import { useMemo } from "react"
 import { Stack, Text, Title, useProps, type TitleProps } from "@mantine/core"
 import { format } from "date-fns"
-import type { TagEntry } from "../../config/config.js"
 import { DayFilter } from "../day-filter/day-filter.js"
 import { binItemsByTag, binItemsByTime, binItemsByTitle } from "../pills/bin.js"
 import { Pills } from "../pills/pills.js"
+import { useScheduleConfig } from "../../hooks/config.js"
 
 export type ScheduleProps = {
   items: ScheduleItemStore
   type?: "daily-agenda" | "full-agenda" | "catalog" | "tags"
   selectedDayKey?: string
-  tags?: Iterable<TagEntry>
   now?: Date
-  timeZone?: string
-  binMinutes?: number
-  dayChangeHour?: number
-  dayFormat?: string
   dayTitleComponent?: string
   binTitleComponent?: string
   onSelectDay?: (day: Day) => void
 }
-
-const defaultDayFormat = "EEEE, MMM d"
 
 export const Schedule = (props: ScheduleProps) => {
   const { items, type = "daily-agenda" } = props
@@ -64,27 +56,24 @@ const DailyAgendaView = (props: ScheduleProps) => {
     now = new Date(),
     items,
     selectedDayKey,
-    timeZone = getDefaultTZ(),
-    dayChangeHour,
-    binMinutes = 30,
     binTitleComponent,
-    dayFormat,
     onSelectDay,
   } = useProps("DailyAgendaView", {}, props)
+
+  const { dayChangeHour, binMinutes, dayFormat } = useScheduleConfig()
 
   const { days, defaultDay } = useMemo(() => {
     const days = getDays(
       items.filter(
         (t): t is ScheduleItem & { readonly start: Date } => !!t.start,
       ),
-      timeZone,
       dayChangeHour,
     )
 
     const defaultDay = getDefaultDay(days, now)
 
     return { days, defaultDay }
-  }, [now, items, timeZone, dayChangeHour])
+  }, [now, items, dayChangeHour])
 
   const selectedDay = days.find((d) => d.key == selectedDayKey) || defaultDay
 
@@ -121,20 +110,17 @@ const DailyAgendaView = (props: ScheduleProps) => {
 const FullAgendaView = (props: ScheduleProps) => {
   const {
     items,
-    timeZone = getDefaultTZ(),
-    dayChangeHour,
-    binMinutes = 30,
-    dayFormat = defaultDayFormat,
     dayTitleComponent = "h3",
     binTitleComponent = "h4",
   } = useProps("FullAgendaView", {}, props)
+
+  const { dayChangeHour, dayFormat, binMinutes } = useScheduleConfig()
 
   const { dayLabels, binsByDay } = useMemo(() => {
     const days = getDays(
       items.filter(
         (d): d is ScheduleItem & { readonly start: Date } => !!d.start,
       ),
-      timeZone,
       dayChangeHour,
     )
 
@@ -153,7 +139,7 @@ const FullAgendaView = (props: ScheduleProps) => {
     )
 
     return { dayLabels, binsByDay }
-  }, [items, timeZone, dayChangeHour, dayFormat, binMinutes])
+  }, [items, dayChangeHour, dayFormat, binMinutes])
 
   const elements = []
 
@@ -203,7 +189,10 @@ const CatalogView = (props: ScheduleProps) => {
 }
 
 const TagsView = (props: ScheduleProps) => {
-  const { items, tags = [] } = useProps("TagsView", {}, props)
+  const { items } = useProps("TagsView", {}, props)
+
+  const { tags } = useScheduleConfig()
+
   const bins = useMemo(() => binItemsByTag(items, tags), [items, tags])
 
   return <Pills bins={bins} />

@@ -257,17 +257,20 @@ describe("time module", () => {
   test("getDay", () => {
     const dt = parseISO("2020-01-01T03:00:00-05:00")
 
-    expect(getDay(dt, "America/New_York", 0)).toEqual({
+    expect(getDay(dt, 0)).toEqual({
+      key: "2020-01-01",
       start: parseISO("2020-01-01T00:00:00-05:00"),
       end: parseISO("2020-01-02T00:00:00-05:00"),
     })
 
-    expect(getDay(dt, "America/New_York", 6)).toEqual({
+    expect(getDay(dt, 6)).toEqual({
+      key: "2019-12-31",
       start: parseISO("2019-12-31T06:00:00-05:00"),
       end: parseISO("2020-01-01T06:00:00-05:00"),
     })
 
-    expect(getDay(dt, "America/New_York", 3)).toEqual({
+    expect(getDay(dt, 3)).toEqual({
+      key: "2020-01-01",
       start: parseISO("2020-01-01T03:00:00-05:00"),
       end: parseISO("2020-01-02T03:00:00-05:00"),
     })

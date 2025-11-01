@@ -9,7 +9,16 @@ export type Interval = Readonly<{
 /**
  * An {@link Interval} with start and end.
  */
-export type Bounded<T extends Interval> = T & Required<Interval>
+export type Bounded<T extends Interval> = T & { start: Date; end: Date }
+
+/**
+ * An interval representing a day, subject to the day change hour.
+ */
+export type Day = Readonly<{
+  key: string
+  start: Date
+  end: Date
+}>
 
 /**
  * A collection of selected event IDs.

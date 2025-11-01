@@ -9,24 +9,62 @@ import {
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/tag-filter.js"
-import type { TagEntry, TagIndicatorEntry } from "../../config/config.js"
+import { createContext, useContext, useMemo, useReducer } from "react"
+import type { TagEntry, TagIndicatorEntry } from "../../types.js"
+import { useScheduleConfig } from "../../hooks/config.js"
 
-export type FilterProps = {
+export type FilterSettings = Readonly<{
   disabledTags?: Iterable<string>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: readonly TagIndicatorEntry[]
   text?: string
   showPastEvents?: boolean
+}>
+
+export type FilterCallbacks = Readonly<{
   onChangeTags?: (tags: Set<string>) => void
   onChangeText?: (text: string) => void
   onChangeShowPastEvents?: (show: boolean) => void
-} & GridProps
+}>
+
+export type FilterProps = FilterSettings &
+  FilterCallbacks & {
+    tags?: Iterable<TagEntry>
+    tagIndicators?: readonly TagIndicatorEntry[]
+  } & GridProps
+
+export const FilterContext = createContext<FilterSettings & FilterCallbacks>({})
+
+export const useNewFilterContext = (): FilterSettings & FilterCallbacks => {
+  const reducer = (
+    cur: FilterSettings,
+    action: FilterSettings,
+  ): FilterSettings => ({ ...cur, ...action })
+
+  const [state, dispatch] = useReducer(reducer, {})
+
+  const callbacks = useMemo<FilterCallbacks>(() => {
+    return {
+      onChangeShowPastEvents(show) {
+        dispatch({ showPastEvents: show })
+      },
+      onChangeTags(tags) {
+        dispatch({ disabledTags: tags })
+      },
+      onChangeText(text) {
+        dispatch({ text })
+      },
+    }
+  }, [dispatch])
+
+  return { ...state, ...callbacks }
+}
 
 export const Filter = (props: FilterProps) => {
+  const config = useScheduleConfig()
+  const ctx = useContext(FilterContext)
   const {
     className,
     disabledTags,
-    tags,
+    tags = config.tags,
     tagIndicators,
     text,
     showPastEvents,
@@ -34,7 +72,7 @@ export const Filter = (props: FilterProps) => {
     onChangeText,
     onChangeShowPastEvents,
     ...other
-  } = useProps("Filter", {}, props)
+  } = useProps("Filter", { ...ctx }, props)
 
   return (
     <Grid className={clsx("Filter-root", className)} {...other}>
