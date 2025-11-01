@@ -1,41 +1,36 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapSVG } from "./map-svg.js"
-import { useEffect, useState } from "react"
-import svgMap from "../../../viewer/public/example-map.svg"
 
-const meta: Meta<typeof MapSVG> = {}
+import svgMap from "../../../viewer/public/example-map-lobby.svg"
+import { useEffect, useState } from "react"
+import { parseSVGData, type SVGData } from "./svg.js"
+
+const meta: Meta<typeof MapSVG> = {
+  component: MapSVG,
+  parameters: {
+    layout: "fullscreen",
+  },
+}
 
 export default meta
 
 export const Default: StoryObj<typeof MapSVG> = {
-  args: {
-    level: "lobby",
-  },
   render(args) {
-    const [dataFunc, setDataFunc] = useState<(() => string) | null>(null)
-    const [highlight, setHighlight] = useState<string | null>(null)
-
+    const [data, setData] = useState<SVGData | undefined>(undefined)
     useEffect(() => {
       fetch(svgMap)
-        .then((resp) => resp.text())
-        .then((svgData) => {
-          setDataFunc(() => () => svgData)
+        .then((res) => {
+          return res.text()
+        })
+        .then((txt) => {
+          setData(parseSVGData(txt))
         })
     }, [])
 
-    if (dataFunc) {
-      return (
-        <MapSVG
-          {...args}
-          getSVGData={dataFunc}
-          onSelectLocation={(id) => {
-            setHighlight(id)
-          }}
-          highlightId={highlight}
-        />
-      )
-    } else {
-      return <>Loading</>
+    if (!data) {
+      return <></>
     }
+
+    return <MapSVG {...args} svgData={data} />
   },
 }

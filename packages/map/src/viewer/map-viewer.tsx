@@ -2,424 +2,353 @@ import {
   ActionIcon,
   Box,
   type BoxProps,
-  Button,
-  Group,
-  Stack,
+  Loader,
+  type LoaderProps,
   useProps,
 } from "@mantine/core"
-import clsx from "clsx"
+import { parseSVGData, type SVGData } from "../svg/svg.js"
 import {
-  type MouseEvent,
   type ReactNode,
-  type RefCallback,
-  type RefObject,
+  type Ref,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react"
-import { observer } from "mobx-react-lite"
-import type {
-  MapConfig,
-  MapEvent,
-  MapLevel,
-  MapLocation,
-  MapVendor,
-} from "../types.js"
-import {
-  type ReactZoomPanPinchContentRef,
-  TransformComponent,
-  TransformWrapper,
-} from "react-zoom-pan-pinch"
 import { MapSVG } from "../svg/map-svg.js"
-import { getMapClass, MAP_CLASSES } from "../map-classes.js"
+import clsx from "clsx"
+import { mapViewerClassNames } from "./classes.js"
+import { ZoomMenu, type ZoomMenuProps } from "../zoom-menu/zoom-menu.js"
+import { LevelMenu, type LevelMenuProps } from "../level-menu/level-menu.js"
+import { LayerMenu, type LayerMenuProps } from "../layer-menu/layer-menu.js"
 import {
-  getMapEventsByLocation,
-  getMapFlags,
-  getMapLocations,
-  makeCurrentEventFilter,
-  makeFutureEventFilter,
-} from "../map.js"
-import { MapDetails } from "../details/map-details.js"
-import {
-  IconCube,
-  IconHome,
-  IconMinus,
-  IconPlus,
-  IconZoomScan,
-} from "@tabler/icons-react"
-import { LayerMenu } from "../layer-menu/layer-menu.js"
+  PanZoom,
+  type PanZoomProps,
+  type ZoomFunc,
+} from "../panzoom/panzoom.js"
+import { IconCube } from "@tabler/icons-react"
+import { useIsometricTransition } from "./util.js"
+import { mapSVGClassNames } from "../svg/classes.js"
+import type { MapLayer, MapLevel } from "../types-new.js"
 
 export type MapViewerProps = {
-  config: MapConfig
-  homeURL?: string
-  events?: Iterable<MapEvent>
-  level?: string | null
-  onSetLevel?: (level: string) => void
-  highlightId?: string | null
-  onSelectLocation?: (id: string | null) => void
-  selectionId?: string | null
+  levels: readonly MapLevel[]
+  layers: readonly MapLayer[]
+  currentLevelId: string
+  contentWidth: number
+  contentHeight: number
+  isometric?: boolean
+  zoomFuncRef?: Ref<ZoomFunc>
+  hiddenLayers?: Iterable<string>
   flags?: Iterable<string>
-  now?: Date
-  noIsometricTransition?: boolean
-  zoomFuncRef?:
-    | RefObject<((id: string) => void) | null>
-    | RefCallback<((id: string) => void) | null>
-  onClickEvent?: (e: MouseEvent, event: MapEvent) => void
-  getEventHref?: (event: MapEvent) => string | undefined
-} & BoxProps
+  activeLocationId?: string
+  locationInfo?: Iterable<
+    Readonly<{ id: string; title?: string; icon?: string }>
+  >
+  onSetLevelId?: (id: string) => void
+  onSetIsometric?: (isometric: boolean) => void
+  onSetHiddenLayers?: (layers: Iterable<string>) => void
+  onSetActiveLocationId?: (id: string | undefined) => void
+}
 
-export const MapViewer = observer((props: MapViewerProps) => {
+export const MapViewer = (props: MapViewerProps) => {
   const {
-    className,
-    config,
-    homeURL,
-    events = [],
-    level,
-    onSetLevel,
-    highlightId,
-    onSelectLocation,
-    selectionId,
-    flags,
-    now: propNow,
-    noIsometricTransition,
+    levels,
+    layers,
+    currentLevelId,
+    contentWidth,
+    contentHeight,
     zoomFuncRef,
-    onClickEvent,
-    getEventHref,
-    ...other
+    isometric,
+    hiddenLayers,
+    flags,
+    activeLocationId,
+    locationInfo,
+    onSetLevelId,
+    onSetIsometric,
+    onSetHiddenLayers,
+    onSetActiveLocationId,
   } = useProps("MapViewer", {}, props)
 
-  const [svgDataFunc, setSVGDataFunc] = useState<(() => string) | null>(null)
-  const [isometric, setIsometric] = useState(false)
-
-  const [svgEl, setSVGEl] = useState<SVGSVGElement | null>(null)
-
-  // locations/vendors
-  const locations = useMemo(() => getMapLocations(config), [config])
-  const vendors = useMemo(() => {
-    // TODO: put this in a function like getMapLocations
-    const map = new Map<string, MapVendor>()
-    for (const entry of config.vendors) {
-      map.set(entry.location, entry)
-    }
-    return map
-  }, [config])
-
-  // layers
-  const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
-    new Set(),
-  )
-  const [layerMenuOpened, setLayerMenuOpened] = useState(false)
-
-  // events
-  const eventsByLocation = useMemo(() => {
-    const sorted = Array.from(events).sort(
-      (a, b) => (a.start?.getTime() ?? 0) - (b.start?.getTime() ?? 0),
-    )
-    return getMapEventsByLocation(locations.values(), sorted)
-  }, [events, locations])
-
-  const [defaultNow] = useState(() => new Date()) // just use time from first render
-  const now = propNow || defaultNow
-
-  const [curEventByLocation, futureEventByLocation] = useMemo(() => {
-    const cur = new Map<string, MapEvent>()
-    const future = new Map<string, MapEvent>()
-    for (const [locId, locEvents] of eventsByLocation.entries()) {
-      const curEvents = locEvents.filter(makeCurrentEventFilter(now))
-      if (curEvents[0]) {
-        cur.set(locId, curEvents[0])
-      }
-
-      const futureEvents = locEvents.filter(makeFutureEventFilter(240, now))
-      if (futureEvents[0]) {
-        future.set(locId, futureEvents[0])
-      }
-    }
-
-    return [cur, future]
-  }, [eventsByLocation, now])
-
-  const eventText = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const [loc, event] of curEventByLocation.entries()) {
-      if (event.title) {
-        map.set(loc, event.title)
-      }
-    }
-    return map
-  }, [curEventByLocation])
-
-  // selection
-  const selectedLoc = selectionId ? locations.get(selectionId) : undefined
-  const lastSelectedLoc = useRef<MapLocation | null>(selectedLoc ?? null)
-  if (selectedLoc) {
-    lastSelectedLoc.current = selectedLoc
-  }
-
-  // TODO: clean up/improve handling vendor vs location
-  const curSelectionData = selectedLoc ?? lastSelectedLoc.current
-  const selectedVendor = curSelectionData?.id
-    ? vendors.get(curSelectionData.id)
-    : undefined
-
-  useEffect(() => {
-    fetch(config.src)
-      .then((resp) => resp.text())
-      .then((body) => {
-        setSVGDataFunc(() => () => body)
-      })
-  }, [config.src])
-
-  // flags
-  const curFlags = useMemo(() => {
-    const flagSet = getMapFlags(config, now)
-    for (const flag of flags ?? []) {
-      flagSet.add(flag)
-    }
-    return flagSet
-  }, [config, flags, now])
-
-  const setZoomRef = useCallback(
-    (ctx: ReactZoomPanPinchContentRef | null) => {
-      let zoomFunc = null
-
-      if (svgEl && ctx) {
-        zoomFunc = (id: string) => {
-          const areaEls =
-            svgEl?.getElementsByClassName(
-              getMapClass(MAP_CLASSES.areaPrefix, id),
-            ) ?? []
-          if (areaEls[0]) {
-            const location = locations.get(id)
-
-            const zoomScale = location?.zoomScale
-
-            // docs say you can't zoom to svgelement, but appears to work?
-            // https://github.com/BetterTyped/react-zoom-pan-pinch/issues/215#issuecomment-1416803480
-            ctx.zoomToElement(areaEls[0] as Element as HTMLElement, zoomScale)
-          }
-        }
-      }
+  const localZoomFuncRef = useRef<ZoomFunc | null>(null)
+  const setZoomFuncRef = useCallback(
+    (func: ZoomFunc | null) => {
+      localZoomFuncRef.current = func
 
       if (typeof zoomFuncRef == "function") {
-        zoomFuncRef(zoomFunc)
-      } else if (zoomFuncRef && typeof zoomFuncRef == "object") {
-        zoomFuncRef.current = zoomFunc
+        zoomFuncRef(func)
+      } else if (zoomFuncRef) {
+        zoomFuncRef.current = func
       }
     },
-    [zoomFuncRef, locations, svgEl],
+    [zoomFuncRef],
   )
 
-  return (
-    <TransformWrapper
-      ref={setZoomRef}
-      limitToBounds={false}
-      centerOnInit
-      panning={{
-        velocityDisabled: true,
-      }}
-      minScale={config.minScale}
-      maxScale={config.maxScale}
-    >
-      {(ctx) => {
-        return (
-          <>
-            <Box className={clsx("MapViewer-root", className)} {...other}>
-              <TransformComponent
-                wrapperClass="MapViewer-wrapper"
-                contentClass="MapViewer-content"
-              >
-                {svgDataFunc ? (
-                  <MapSVG
-                    ref={setSVGEl}
-                    getSVGData={svgDataFunc}
-                    level={level ?? config.defaultLevel}
-                    hiddenLayers={hiddenLayers}
-                    highlightId={highlightId}
-                    onSelectLocation={(id) => {
-                      onSelectLocation && onSelectLocation(id)
-                    }}
-                    vendors={config.vendors}
-                    flags={curFlags}
-                    eventText={eventText}
-                    isometric={isometric}
-                    noIsometricTransition={noIsometricTransition}
-                  />
-                ) : null}
-              </TransformComponent>
-              <ControlsTopRight>
-                {!isometric && (
-                  <LevelButtons
-                    levels={config.levels}
-                    selected={level ?? config.defaultLevel}
-                    onChangeLevel={(lvl) => {
-                      onSetLevel && onSetLevel(lvl)
-                    }}
-                  />
-                )}
-              </ControlsTopRight>
-              <ControlsTopLeft>
-                {homeURL && (
-                  <ActionIcon
-                    component="a"
-                    title="Home"
-                    radius="xl"
-                    variant="default"
-                    href={homeURL}
-                  >
-                    <IconHome />
-                  </ActionIcon>
-                )}
-                <ActionIcon
-                  title="Zoom In"
-                  radius="xl"
-                  variant="default"
-                  onClick={() => {
-                    ctx.zoomIn()
-                  }}
-                >
-                  <IconPlus />
-                </ActionIcon>
-                <ActionIcon
-                  title="Zoom Out"
-                  radius="xl"
-                  variant="default"
-                  onClick={() => {
-                    ctx.zoomOut()
-                  }}
-                >
-                  <IconMinus />
-                </ActionIcon>
-                <ActionIcon
-                  title="Reset Zoom"
-                  radius="xl"
-                  variant="default"
-                  onClick={() => {
-                    ctx.resetTransform()
-                  }}
-                >
-                  <IconZoomScan />
-                </ActionIcon>
-              </ControlsTopLeft>
-              <ControlsBottomLeft>
-                <ActionIcon
-                  title="Toggle Isometric View"
-                  radius="xl"
-                  variant={isometric ? "filled" : "default"}
-                  onClick={() => {
-                    ctx.resetTransform(0)
-                    setIsometric(!isometric)
-                  }}
-                >
-                  <IconCube />
-                </ActionIcon>
-              </ControlsBottomLeft>
-              <ControlsBottomRight>
-                <LayerMenu
-                  layers={config.layers.map(({ id, title }) => ({
-                    id,
-                    title,
-                  }))}
-                  opened={layerMenuOpened}
-                  onSetOpened={setLayerMenuOpened}
-                  hiddenLayers={hiddenLayers}
-                  onChangeLayers={setHiddenLayers}
-                />
-              </ControlsBottomRight>
-            </Box>
-            <MapDetails.Drawer
-              opened={!!selectedLoc}
-              onClose={() => onSelectLocation && onSelectLocation(null)}
-              title={
-                selectedVendor ? selectedVendor.name : curSelectionData?.title
-              }
-              description={
-                selectedVendor
-                  ? selectedVendor.description
-                  : curSelectionData?.description
-              }
-              type={curSelectionData?.type}
-              currentEvent={
-                curSelectionData
-                  ? curEventByLocation.get(curSelectionData.id)
-                  : undefined
-              }
-              futureEvent={
-                curSelectionData
-                  ? futureEventByLocation.get(curSelectionData.id)
-                  : undefined
-              }
-              getEventHref={getEventHref}
-              onClickEvent={onClickEvent}
-            />
-          </>
-        )
-      }}
-    </TransformWrapper>
+  const [loaded, setLoaded] = useState(false)
+  const [svgData, setSVGData] = useState<ReadonlyMap<string, SVGData>>(
+    new Map(),
   )
-})
 
-MapViewer.displayName = "MapViewer"
+  const levelEls = useMemo(() => {
+    return levels.map((lvl) => {
+      const lvlSvg = svgData.get(lvl.id)
+      if (!lvlSvg) {
+        return null
+      }
 
-const ControlsTopRight = ({ children }: { children?: ReactNode }) => {
-  return (
-    <Stack className="MapViewer-controlsTopRight" gap="xs" p="xs">
-      {children}
-    </Stack>
-  )
-}
+      const active = currentLevelId == lvl.id
 
-const LevelButtons = ({
-  levels,
-  selected,
-  onChangeLevel,
-}: {
-  selected?: string
-  levels: readonly MapLevel[]
-  onChangeLevel?: (lvl: string) => void
-}) => {
-  return (
-    <Stack className="MapViewer-levelButtons" gap="xs">
-      {levels.map((lvl) => (
-        <Button
+      return (
+        <MapViewer.Level
           key={lvl.id}
-          size="compact-xs"
-          variant={lvl.id === selected ? "filled" : "default"}
-          onClick={() => {
-            if (lvl.id !== selected) {
-              onChangeLevel && onChangeLevel(lvl.id)
-            }
-          }}
+          levelId={lvl.id}
+          active={active}
+          isometric={isometric}
+          svgData={lvlSvg}
+          hiddenLayers={hiddenLayers}
+          flags={flags}
+          locationInfo={locationInfo}
+          activeLocationId={activeLocationId}
+          onClickArea={onSetActiveLocationId}
+        />
+      )
+    })
+  }, [
+    levels,
+    currentLevelId,
+    activeLocationId,
+    isometric,
+    hiddenLayers,
+    flags,
+    locationInfo,
+    svgData,
+    onSetActiveLocationId,
+  ])
+
+  useEffect(() => {
+    const promises = levels.map((lvl) =>
+      fetchMapSVG(lvl.url).then((data) => [lvl.id, data] as const),
+    )
+    Promise.all(promises).then((svgs) => {
+      const asMap = new Map(svgs)
+      setSVGData(asMap)
+      setLoaded(true)
+    })
+  }, [levels])
+
+  const handleZoom = useCallback((type: "in" | "out" | "reset") => {
+    localZoomFuncRef.current && localZoomFuncRef.current(type)
+  }, [])
+
+  return (
+    <MapViewer.Root>
+      {!loaded && <MapViewer.Loading />}
+      {loaded && (
+        <MapViewer.Content
+          zoomFuncRef={setZoomFuncRef}
+          contentWidth={contentWidth}
+          contentHeight={contentHeight}
         >
-          {lvl.title}
-        </Button>
-      ))}
-    </Stack>
+          {levelEls}
+        </MapViewer.Content>
+      )}
+      <MapViewer.ZoomMenu onZoom={handleZoom} />
+      <MapViewer.LevelMenu
+        selectedLevel={currentLevelId}
+        levels={levels}
+        onSelectLevel={onSetLevelId}
+      />
+      <MapViewer.IsoMenu
+        isometric={isometric}
+        onSetIsometric={onSetIsometric}
+      />
+      <MapViewer.LayerMenu
+        layers={layers}
+        hiddenLayers={hiddenLayers}
+        onChangeLayers={onSetHiddenLayers}
+      />
+    </MapViewer.Root>
   )
 }
 
-const ControlsTopLeft = ({ children }: { children?: ReactNode }) => {
+export type MapViewerRootProps = {
+  className?: string
+  children?: ReactNode
+}
+
+const MapViewerRoot = (props: MapViewerRootProps) => {
+  const { className, children } = useProps("MapViewerRoot", {}, props)
+
+  return <Box className={clsx("MapViewer-root", className)}>{children}</Box>
+}
+
+export type MapViewerZoomMenuProps = ZoomMenuProps
+
+const MapViewerZoomMenu = (props: MapViewerZoomMenuProps) => {
+  const { ...other } = useProps("MapViewerZoomMenu", {}, props)
+
+  return <ZoomMenu className="MapViewer-zoomMenu" {...other} />
+}
+
+export type MapViewerLevelMenuProps = LevelMenuProps
+
+const MapViewerLevelMenu = (props: MapViewerLevelMenuProps) => {
+  const { ...other } = useProps("MapViewerLevelMenu", {}, props)
+
+  return <LevelMenu className="MapViewer-levelMenu" {...other} />
+}
+
+export type MapViewerIsoMenuProps = {
+  isometric?: boolean
+  onSetIsometric?: (isometric: boolean) => void
+}
+
+const MapViewerIsoMenu = (props: MapViewerIsoMenuProps) => {
+  const { isometric, onSetIsometric } = useProps("MapViewerIsoMenu", {}, props)
+
   return (
-    <Group className="MapViewer-controlsTopLeft" gap="xs" p="xs">
-      {children}
-    </Group>
+    <ActionIcon
+      className="MapViewer-isoMenu"
+      title="Toggle Isometric View"
+      aria-label="toggle isometric view"
+      role="checkbox"
+      aria-checked={isometric ? "true" : "false"}
+      radius="xl"
+      variant={isometric ? "filled" : "default"}
+      onClick={() => {
+        onSetIsometric && onSetIsometric(!isometric)
+      }}
+    >
+      <IconCube />
+    </ActionIcon>
   )
 }
 
-const ControlsBottomLeft = ({ children }: { children?: ReactNode }) => {
+export type MapViewerLayerMenuProps = LayerMenuProps
+
+const MapViewerLayerMenu = (props: MapViewerLayerMenuProps) => {
+  const { ...other } = useProps("MapViewerLayerMenu", {}, props)
+
+  const [opened, setOpened] = useState(false)
+
   return (
-    <Group className="MapViewer-controlsBottomLeft" gap="xs" p="xs">
-      {children}
-    </Group>
+    <Box className="MapViewer-layerMenu">
+      <LayerMenu {...other} opened={opened} onSetOpened={setOpened} />
+    </Box>
   )
 }
 
-const ControlsBottomRight = ({ children }: { children?: ReactNode }) => {
+export type MapViewerLoadingProps = BoxProps & {
+  LoaderProps?: Partial<LoaderProps>
+}
+
+const MapViewerLoading = (props: MapViewerLoadingProps) => {
+  const { LoaderProps, ...other } = useProps("MapViewerLoading", {}, props)
+
   return (
-    <Group className="MapViewer-controlsBottomRight" gap="xs" p="xs">
-      {children}
-    </Group>
+    <Box className="MapViewer-loading" {...other}>
+      <Loader className="MapViewer-loader" type="dots" {...LoaderProps} />
+    </Box>
   )
+}
+
+export type MapViewerContentProps = PanZoomProps
+
+const MapViewerContent = (props: MapViewerContentProps) => {
+  const { children, ...other } = useProps("MapViewerContent", {}, props)
+
+  return (
+    <PanZoom className="MapViewer-content" {...other}>
+      {children}
+    </PanZoom>
+  )
+}
+
+export type MapViewerLevelProps = {
+  levelId: string
+  svgData: SVGData
+  active?: boolean
+  isometric?: boolean
+  hiddenLayers?: Iterable<string>
+  flags?: Iterable<string>
+  activeLocationId?: string
+  locationInfo?: Iterable<
+    Readonly<{ id: string; title?: string; icon?: string }>
+  >
+  onClickArea?: (id: string | undefined) => void
+} & { className?: string }
+
+const MapViewerLevel = (props: MapViewerLevelProps) => {
+  const {
+    levelId,
+    active,
+    isometric,
+    svgData,
+    hiddenLayers,
+    flags,
+    activeLocationId,
+    locationInfo,
+    onClickArea,
+    className,
+  } = useProps("MapViewerLevel", {}, props)
+
+  const [_svgRef, setSVGRef] = useState<SVGSVGElement | null>(null)
+
+  const svgRefCallback = useCallback((el: SVGSVGElement | null) => {
+    setSVGRef(el)
+  }, [])
+
+  const [hasIsoCls, hasTransformCls, hasFinishedCls, onTransitionEnd] =
+    useIsometricTransition(!!isometric)
+
+  return (
+    <Box
+      className={clsx(
+        mapViewerClassNames.level,
+        mapViewerClassNames.levelId(levelId),
+        {
+          [mapViewerClassNames.levelActive]: active,
+          [mapViewerClassNames.levelIsometric]: hasIsoCls,
+          [mapViewerClassNames.levelIsometricTransform]: hasTransformCls,
+        },
+        className,
+      )}
+      onTransitionEnd={onTransitionEnd}
+    >
+      <MapSVG
+        ref={svgRefCallback}
+        svgData={svgData}
+        className={clsx({
+          [mapSVGClassNames.isometric]: hasIsoCls,
+          [mapSVGClassNames.isometricTransform]: hasTransformCls,
+          [mapSVGClassNames.isometricTransitionFinished]: hasFinishedCls,
+        })}
+        hiddenLayers={hiddenLayers}
+        flags={flags}
+        activeLocation={activeLocationId}
+        locationInfo={locationInfo}
+        onClickArea={onClickArea}
+      />
+    </Box>
+  )
+}
+
+MapViewer.Root = MapViewerRoot
+MapViewer.ZoomMenu = MapViewerZoomMenu
+MapViewer.LevelMenu = MapViewerLevelMenu
+MapViewer.IsoMenu = MapViewerIsoMenu
+MapViewer.LayerMenu = MapViewerLayerMenu
+MapViewer.Loading = MapViewerLoading
+MapViewer.Content = MapViewerContent
+MapViewer.Level = MapViewerLevel
+
+const fetchMapSVG = async (url: string): Promise<SVGData> => {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`Could not fetch map ${url}: http status ${res.status}`)
+  }
+
+  const text = await res.text()
+  return parseSVGData(text)
 }

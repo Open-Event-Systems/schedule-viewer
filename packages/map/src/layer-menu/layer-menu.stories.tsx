@@ -30,9 +30,7 @@ export const Default: StoryObj<typeof LayerMenu> = {
   },
   render(args) {
     const [opened, setOpened] = useState(false)
-    const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
-      new Set(),
-    )
+    const [hiddenLayers, setHiddenLayers] = useState<Iterable<string>>([])
 
     return (
       <LayerMenu

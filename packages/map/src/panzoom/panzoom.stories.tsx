@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { PanZoom, type ZoomFunc } from "./panzoom.js"
 import { useEffect, useRef, useState } from "react"
-import { parseSVGData, type SVGData } from "../svg-new/svg.js"
+import { parseSVGData, type SVGData } from "../svg/svg.js"
 
 import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
-import "./panzoom.scss"
-import { MapSVG } from "../svg-new/map-svg.js"
+import { MapSVG } from "../svg/map-svg.js"
 
 const meta: Meta<typeof PanZoom> = {
   component: PanZoom,

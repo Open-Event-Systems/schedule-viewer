@@ -3,202 +3,279 @@ import clsx from "clsx"
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
+  type MouseEvent,
   useCallback,
   useLayoutEffect,
-  useMemo,
   useRef,
-  useState,
 } from "react"
-import {
-  fixDisplayTransitionHidden,
-  setClickHandlers,
-  setEventText,
-  setFlags,
-  setVendorIcons,
-  setVendorNames,
-  updateHighlight,
-  updateIsometric,
-  updateIsometricDelayed,
-  updateLayers,
-  updateLevel,
-} from "./utils.js"
-import { MAP_CLASSES } from "../map-classes.js"
+import type { SVGData } from "./svg.js"
+import { mapSVGClassNames } from "./classes.js"
 
-export type MapSVGVendor = Readonly<{
-  location: string
-  name: string
-  icon?: string
-}>
-
-export type MapSVGProps = Omit<ComponentPropsWithoutRef<"svg">, "children"> & {
-  className?: string
-  getSVGData: () => string
-  level: string
+export type MapSVGProps = {
+  svgData: SVGData
   hiddenLayers?: Iterable<string>
-  highlightId?: string | null
-  vendors?: readonly MapSVGVendor[]
   flags?: Iterable<string>
-  isometric?: boolean
-  eventText?: ReadonlyMap<string, string>
-  noIsometricTransition?: boolean
-  onSelectLocation?: (id: string | null) => void
-}
+  activeLocation?: string
+  locationInfo?: Iterable<
+    Readonly<{ id: string; title?: string; icon?: string }>
+  >
+  onClickArea?: (id: string | undefined) => void
+} & Omit<ComponentPropsWithoutRef<"svg">, "children">
 
 export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   const {
     className,
-    getSVGData,
-    level,
-    hiddenLayers = [],
-    highlightId,
-    vendors = [],
-    flags = [],
-    isometric = false,
-    eventText,
-    noIsometricTransition,
-    onSelectLocation,
+    svgData,
+    hiddenLayers,
+    flags,
+    activeLocation,
+    locationInfo,
+    onClickArea,
     ...other
   } = useProps("MapSVG", {}, props)
 
-  const [el, setEl] = useState<SVGSVGElement | null>(null)
-  const isometricRef = useRef(isometric)
-  isometricRef.current = isometric
-
-  const [svgProps, innerHTML] = useMemo(() => {
-    return getMapSVGProps(getSVGData())
-  }, [getSVGData])
-
-  useLayoutEffect(() => {
-    if (el && innerHTML) {
-      el.innerHTML = innerHTML
-    }
-  }, [el, innerHTML])
-
+  const svgRef = useRef<SVGSVGElement | null>(null)
   const setRef = useCallback(
     (el: SVGSVGElement | null) => {
-      setEl(el)
+      svgRef.current = el
+
+      if (el) {
+        el.innerHTML = svgData.innerHTML
+        initSVG(el)
+      }
+
       if (typeof ref == "function") {
         ref(el)
-      } else if (ref && typeof ref == "object") {
+      } else if (ref) {
         ref.current = el
       }
     },
     [ref],
   )
 
-  // transition
   useLayoutEffect(() => {
-    if (el) {
-      if (noIsometricTransition) {
-        el.classList.add(MAP_CLASSES.noIsometricTransition)
-      } else {
-        el.classList.remove(MAP_CLASSES.noIsometricTransition)
+    if (svgRef.current) {
+      updateActiveArea(svgRef.current, activeLocation)
+    }
+  }, [activeLocation])
+
+  useLayoutEffect(() => {
+    if (svgRef.current) {
+      updateLayers(svgRef.current, hiddenLayers ?? [])
+    }
+  }, [hiddenLayers])
+
+  useLayoutEffect(() => {
+    if (svgRef.current) {
+      updateFlags(svgRef.current, flags ?? [])
+    }
+  }, [flags])
+
+  useLayoutEffect(() => {
+    if (svgRef.current) {
+      updateLocationText(svgRef.current, locationInfo ?? [])
+      updateLocationIcon(svgRef.current, locationInfo ?? [])
+    }
+  }, [locationInfo])
+
+  const clickHandler = useCallback(
+    (e: MouseEvent<SVGElement>) => {
+      const base = mapSVGClassNames.clickId("")
+      if (onClickArea) {
+        if (e.target instanceof SVGElement) {
+          const clsIds = [...e.target.classList]
+            .filter((cls) => cls.startsWith(base))
+            .map((cls) => cls.substring(base.length))
+          if (clsIds[0]) {
+            onClickArea(clsIds[0])
+          } else {
+            onClickArea(undefined)
+          }
+        } else {
+          onClickArea(undefined)
+        }
       }
-    }
-  }, [el, noIsometricTransition])
-
-  // Update level
-  useLayoutEffect(() => {
-    if (el) {
-      updateLevel(el, level)
-    }
-  }, [el, level])
-
-  // Update hidden layers
-  useLayoutEffect(() => {
-    if (el) {
-      updateLayers(el, hiddenLayers)
-    }
-  }, [el, hiddenLayers])
-
-  // Update highlight
-  useLayoutEffect(() => {
-    if (el) {
-      updateHighlight(el, highlightId)
-    }
-  }, [el, highlightId])
-
-  // fix display for items hidden during transition
-  useLayoutEffect(() => {
-    if (el) {
-      fixDisplayTransitionHidden(el)
-    }
-  }, [el])
-
-  // Update isometric
-  useLayoutEffect(() => {
-    if (el) {
-      updateIsometric(el, isometric, noIsometricTransition)
-    }
-  }, [el, isometric, noIsometricTransition])
-
-  // Delayed isometric handling
-  useLayoutEffect(() => {
-    if (el) {
-      return updateIsometricDelayed(el, isometricRef)
-    }
-  }, [el])
-
-  // Set click handlers
-  useLayoutEffect(() => {
-    if (el) {
-      return setClickHandlers(el, onSelectLocation)
-    }
-  }, [el, onSelectLocation])
-
-  // set vendor icons
-  useLayoutEffect(() => {
-    if (el) {
-      setVendorIcons(el, vendors)
-    }
-  }, [el, vendors])
-
-  // set vendor names
-  useLayoutEffect(() => {
-    if (el) {
-      setVendorNames(el, vendors)
-    }
-  }, [el, vendors])
-
-  // set flags
-  useLayoutEffect(() => {
-    if (el) {
-      setFlags(el, flags)
-    }
-  }, [el, flags])
-
-  // set event text
-  useLayoutEffect(() => {
-    if (el) {
-      setEventText(el, eventText ?? new Map())
-    }
-  }, [el, eventText])
+    },
+    [onClickArea],
+  )
 
   return (
     <svg
-      {...svgProps}
-      {...other}
       ref={setRef}
-      className={clsx("MapSVG-root", className, svgProps.className)}
+      {...svgData.props}
+      className={clsx("MapSVG-root", svgData?.props.className, className)}
+      {...other}
+      onClick={clickHandler}
     />
   )
 })
 
-export const getMapSVGProps = (
-  svgData: string,
-): [ComponentPropsWithoutRef<"svg">, string] => {
-  const tmp = document.createElement("div")
-  tmp.innerHTML = svgData
-  const svg = tmp.getElementsByTagName("svg")[0]
+const initSVG = (svg: SVGSVGElement) => {
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.layer)) {
+    removeInlineDisplay(el)
+  }
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.locationTitle)) {
+    if (el instanceof SVGRectElement) {
+      replaceWithForeignTextObject(el)
+    }
+  }
+}
 
-  const props: Record<string, unknown> = {}
+const updateActiveArea = (svg: SVGSVGElement, id?: string) => {
+  const activeCls = id ? mapSVGClassNames.areaId(id) : undefined
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.area)) {
+    if (activeCls && el.classList.contains(activeCls)) {
+      el.classList.add(mapSVGClassNames.active)
+    } else {
+      el.classList.remove(mapSVGClassNames.active)
+    }
+  }
+}
 
-  for (const attr of svg?.getAttributeNames() ?? []) {
-    const val = svg?.getAttribute(attr)
-    if (val != null) {
-      props[attr] = val
+const updateLayers = (svg: SVGSVGElement, hidden: Iterable<string>) => {
+  const hiddenClasses = [...hidden].map((id) => mapSVGClassNames.layerId(id))
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.layer)) {
+    if (hiddenClasses.some((cls) => el.classList.contains(cls))) {
+      el.classList.add(mapSVGClassNames.hidden)
+    } else {
+      el.classList.remove(mapSVGClassNames.hidden)
+    }
+  }
+}
+
+const updateFlags = (svg: SVGSVGElement, flags: Iterable<string>) => {
+  const toRemove = [...svg.classList].filter((cls) =>
+    cls.startsWith(mapSVGClassNames.flagId("")),
+  )
+  const toAdd = [...flags].map((f) => mapSVGClassNames.flagId(f))
+  toRemove.forEach((cls) => svg.classList.remove(cls))
+  svg.classList.add(...toAdd)
+}
+
+const updateLocationText = (
+  svg: SVGSVGElement,
+  locationInfo: Iterable<
+    Readonly<{ id: string; title?: string; icon?: string }>
+  >,
+) => {
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.locationTitle)) {
+    if (el instanceof SVGElement) {
+      setLocationText(el, "")
     }
   }
 
-  return [props as ComponentPropsWithoutRef<"svg">, svg?.innerHTML ?? ""]
+  for (const info of locationInfo) {
+    for (const el of svg.getElementsByClassName(
+      mapSVGClassNames.locationTitleId(info.id),
+    )) {
+      if (info.title && el instanceof SVGElement) {
+        setLocationText(el, info.title)
+      }
+    }
+  }
+}
+
+const updateLocationIcon = (
+  svg: SVGSVGElement,
+  locationInfo: Iterable<
+    Readonly<{ id: string; title?: string; icon?: string }>
+  >,
+) => {
+  for (const el of svg.getElementsByClassName(mapSVGClassNames.locationIcon)) {
+    if (el instanceof SVGElement) {
+      setLocationIcon(el)
+    }
+  }
+
+  for (const info of locationInfo) {
+    for (const el of svg.getElementsByClassName(
+      mapSVGClassNames.locationTitleId(info.id),
+    )) {
+      if (info.icon && el instanceof SVGElement) {
+        setLocationIcon(el, info.icon)
+      }
+    }
+  }
+}
+
+const removeInlineDisplay = (el: Element) => {
+  if (el instanceof SVGElement && el.style.display) {
+    el.style.display = ""
+  }
+}
+
+const setLocationIcon = (el: SVGElement, icon?: string) => {
+  if (icon) {
+    el.classList.remove(mapSVGClassNames.empty)
+
+    if (el instanceof SVGImageElement) {
+      el.setAttributeNS("http://www.w3.org/1999/xlink", "href", icon)
+    }
+  } else {
+    el.classList.add(mapSVGClassNames.empty)
+    if (el instanceof SVGImageElement) {
+      el.setAttributeNS("http://www.w3.org/1999/xlink", "href", "data:,")
+    }
+  }
+}
+
+const setLocationText = (el: SVGElement, text: string) => {
+  if (el instanceof SVGForeignObjectElement) {
+    const textEls = el.getElementsByClassName(
+      mapSVGClassNames.foreignObjectText,
+    )
+    if (textEls[0]) {
+      textEls[0].innerHTML = ""
+    }
+    const textNode = document.createTextNode(text)
+    textEls[0]?.appendChild(textNode)
+  } else if (el instanceof SVGTextElement || el instanceof SVGTSpanElement) {
+    el.innerHTML = ""
+    const textNode = document.createTextNode(text)
+    el.appendChild(textNode)
+  } else if (el instanceof SVGGElement) {
+    // don't directly change groups
+  } else {
+    console.warn("Cannot replace text on this element", el)
+  }
+
+  if (text == "") {
+    el.classList.add(mapSVGClassNames.empty)
+  } else {
+    el.classList.remove(mapSVGClassNames.empty)
+  }
+}
+
+const replaceWithForeignTextObject = (
+  replaceEl: SVGElement,
+): HTMLDivElement => {
+  const parent = replaceEl.parentElement
+  const div = document.createElement("div")
+  div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml")
+  div.classList.add(mapSVGClassNames.foreignObjectText)
+
+  if (!(parent instanceof SVGElement)) {
+    return div
+  }
+
+  const x = replaceEl.getAttribute("x") ?? ""
+  const y = replaceEl.getAttribute("y") ?? ""
+  const transform = replaceEl.getAttribute("transform") ?? ""
+  const width = replaceEl.getAttribute("width") ?? ""
+  const height = replaceEl.getAttribute("height") ?? ""
+  const fObj = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "foreignObject",
+  )
+  fObj.appendChild(div)
+  fObj.setAttribute("x", x)
+  fObj.setAttribute("y", y)
+  fObj.setAttribute("width", width)
+  fObj.setAttribute("height", height)
+  fObj.setAttribute("transform", transform)
+
+  replaceEl.classList.forEach((cn) => fObj.classList.add(cn))
+
+  parent.replaceChild(fObj, replaceEl)
+  return div
 }
