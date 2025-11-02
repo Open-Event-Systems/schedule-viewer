@@ -19,10 +19,12 @@ import { IconEye } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
+import type { TagEntry } from "../../types.js"
 
 export type SchedulePageProps = {
   items: ScheduleItemStore
   type?: ScheduleProps["type"]
+  tags?: Iterable<TagEntry>
   onlyBookmarked?: boolean
   selectedDayKey?: string
   enableSync?: boolean
@@ -41,6 +43,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
     className,
     items,
     type = "daily-agenda",
+    tags,
     onlyBookmarked,
     selectedDayKey,
     enableSync,
@@ -121,7 +124,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
       <Grid>
         <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
           <Stack gap="xs" align="start">
-            <Filter />
+            <Filter tags={tags} />
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>

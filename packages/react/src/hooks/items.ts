@@ -5,13 +5,14 @@ import {
   type ItemTypeMap,
   type ParseItemsResult,
   type ScheduleAPI,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
-import type { ScheduleConfig } from "../types.js"
+import type { ScheduleConfig, TagEntry } from "../types.js"
 import {
   useSuspenseQuery,
   type UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
-import { createContext, useContext } from "react"
+import { createContext, useContext, useMemo } from "react"
 import { useScheduleConfig } from "./config.js"
 
 export const ScheduleAPIContext = createContext<ScheduleAPI>(
@@ -44,4 +45,21 @@ export const useItems = <M extends ItemTypeMap>(
   const api = useScheduleAPI()
   const res = useSuspenseQuery(getItemsQueryOptions(config, api, parsers))
   return res.data
+}
+
+export const useRelevantTags = (
+  tags: Iterable<TagEntry>,
+  items: Iterable<ScheduleItem & { readonly tags?: Iterable<string> }>,
+): readonly TagEntry[] => {
+  return useMemo(() => {
+    const seen = new Set<string>()
+
+    for (const item of items) {
+      for (const tag of item.tags ?? []) {
+        seen.add(tag)
+      }
+    }
+
+    return [...tags].filter((t) => seen.has(t.tag))
+  }, [tags, items])
 }
