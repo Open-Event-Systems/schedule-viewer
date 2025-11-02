@@ -27,6 +27,7 @@ export type SchedulePageProps = {
   allowTypes?: Iterable<ScheduleProps["type"]>
   tags?: Iterable<TagEntry>
   noPastEventsOption?: boolean
+  noShareMenu?: boolean
   onlyBookmarked?: boolean
   selectedDayKey?: string
   enableSync?: boolean
@@ -48,6 +49,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
     allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
     tags,
     noPastEventsOption,
+    noShareMenu,
     onlyBookmarked,
     selectedDayKey,
     enableSync,
@@ -106,28 +108,30 @@ export const SchedulePage = (props: SchedulePageProps) => {
           onChange={onChangeType as (v: string | null) => void}
           leftSection={<IconEye size={18} />}
         />
-        <ShareMenu
-          ButtonProps={{
-            className: "SchedulePage-shareButton",
-          }}
-          enableSync={enableSync}
-          onShare={onShare}
-          onSync={onSync}
-          onExport={() => {
-            const data = createICS(
-              items.filter(isBounded),
-              `schedule-${icalPrefix}`,
-              icalDomain || window.location.hostname,
-            )
-            const blob = new Blob([data], { type: "text/calendar" })
-            const dataURL = URL.createObjectURL(blob)
-            const el = document.createElement("a")
-            el.setAttribute("href", dataURL)
-            el.setAttribute("download", `${icalFileName}.ics`)
-            el.click()
-            URL.revokeObjectURL(dataURL)
-          }}
-        />
+        {!noShareMenu && (
+          <ShareMenu
+            ButtonProps={{
+              className: "SchedulePage-shareButton",
+            }}
+            enableSync={enableSync}
+            onShare={onShare}
+            onSync={onSync}
+            onExport={() => {
+              const data = createICS(
+                items.filter(isBounded),
+                `schedule-${icalPrefix}`,
+                icalDomain || window.location.hostname,
+              )
+              const blob = new Blob([data], { type: "text/calendar" })
+              const dataURL = URL.createObjectURL(blob)
+              const el = document.createElement("a")
+              el.setAttribute("href", dataURL)
+              el.setAttribute("download", `${icalFileName}.ics`)
+              el.click()
+              URL.revokeObjectURL(dataURL)
+            }}
+          />
+        )}
       </Box>
       <Grid>
         <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
