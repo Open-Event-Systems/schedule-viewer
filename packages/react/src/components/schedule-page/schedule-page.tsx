@@ -26,6 +26,7 @@ export type SchedulePageProps = {
   type?: ScheduleProps["type"]
   allowTypes?: Iterable<ScheduleProps["type"]>
   tags?: Iterable<TagEntry>
+  noPastEventsOption?: boolean
   onlyBookmarked?: boolean
   selectedDayKey?: string
   enableSync?: boolean
@@ -46,6 +47,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
     type = "daily-agenda",
     allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
     tags,
+    noPastEventsOption,
     onlyBookmarked,
     selectedDayKey,
     enableSync,
@@ -130,7 +132,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
       <Grid>
         <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
           <Stack gap="xs" align="start">
-            <Filter tags={tags} />
+            <Filter tags={tags} noPastEventsOption={noPastEventsOption} />
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>

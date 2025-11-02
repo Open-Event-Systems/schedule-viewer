@@ -17,6 +17,7 @@ import { FilterContext } from "../../hooks/filter.js"
 export type FilterProps = {
   tags?: Iterable<TagEntry>
   tagIndicators?: readonly TagIndicatorEntry[]
+  noPastEventsOption?: boolean
 
   disabledTags?: Iterable<string>
   text?: string
@@ -34,6 +35,7 @@ export const Filter = (props: FilterProps) => {
     disabledTags = ctx.disabledTags,
     tags = config.tags,
     tagIndicators = config.tagIndicators,
+    noPastEventsOption,
     text = ctx.text,
     showPastEvents = ctx.showPastEvents,
     onChangeTags = ctx.onChangeTags,
@@ -54,15 +56,17 @@ export const Filter = (props: FilterProps) => {
           }}
         />
       </Grid.Col>
-      <Grid.Col span={{ xs: 12 }}>
-        <Switch
-          label="Show past events"
-          checked={!!showPastEvents}
-          onChange={(e) => {
-            onChangeShowPastEvents && onChangeShowPastEvents(e.target.checked)
-          }}
-        />
-      </Grid.Col>
+      {!noPastEventsOption && (
+        <Grid.Col span={{ xs: 12 }}>
+          <Switch
+            label="Show past events"
+            checked={!!showPastEvents}
+            onChange={(e) => {
+              onChangeShowPastEvents && onChangeShowPastEvents(e.target.checked)
+            }}
+          />
+        </Grid.Col>
+      )}
       <Grid.Col span={{ xs: 12 }}>
         <Text size="xs" c="dimmed">
           Filter Tags

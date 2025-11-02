@@ -28,7 +28,7 @@ export const Schedule = (props: ScheduleProps) => {
   const { items, type = "daily-agenda" } = props
 
   if (items.size == 0 && type != "daily-agenda") {
-    return <Schedule.NoEvents />
+    return <Schedule.NoItems />
   }
 
   let Component
@@ -101,7 +101,7 @@ const DailyAgendaView = (props: ScheduleProps) => {
       {dayFiltered.size > 0 ? (
         <Pills bins={bins} titleComponent={binTitleComponent} />
       ) : (
-        <Schedule.NoEvents />
+        <Schedule.NoItems />
       )}
     </Stack>
   )
@@ -198,9 +198,9 @@ const TagsView = (props: ScheduleProps) => {
   return <Pills bins={bins} />
 }
 
-const NoEvents = () => (
+const NoItems = () => (
   <Text c="dimmed" ta="center">
-    No events
+    No items
   </Text>
 )
 
@@ -208,4 +208,4 @@ Schedule.DailyAgenda = DailyAgendaView
 Schedule.FullAgenda = FullAgendaView
 Schedule.Catalog = CatalogView
 Schedule.Tags = TagsView
-Schedule.NoEvents = NoEvents
+Schedule.NoItems = NoItems
