@@ -24,6 +24,7 @@ import type { TagEntry } from "../../types.js"
 export type SchedulePageProps = {
   items: ScheduleItemStore
   type?: ScheduleProps["type"]
+  allowTypes?: Iterable<ScheduleProps["type"]>
   tags?: Iterable<TagEntry>
   onlyBookmarked?: boolean
   selectedDayKey?: string
@@ -43,6 +44,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
     className,
     items,
     type = "daily-agenda",
+    allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
     tags,
     onlyBookmarked,
     selectedDayKey,
@@ -57,6 +59,8 @@ export const SchedulePage = (props: SchedulePageProps) => {
     onSync,
     ...other
   } = useProps("SchedulePage", {}, props)
+
+  const allowTypesArr = [...allowTypes]
 
   const { icalPrefix, icalDomain } = useScheduleConfig()
 
@@ -74,24 +78,26 @@ export const SchedulePage = (props: SchedulePageProps) => {
           size="sm"
           title="View"
           aria-label="view"
-          data={[
-            {
-              value: "daily-agenda",
-              label: "Daily Agenda",
-            },
-            {
-              value: "full-agenda",
-              label: "Full Agenda",
-            },
-            {
-              value: "catalog",
-              label: "Catalog",
-            },
-            {
-              value: "tags",
-              label: "Tags",
-            },
-          ]}
+          data={(
+            [
+              {
+                value: "daily-agenda",
+                label: "Daily Agenda",
+              },
+              {
+                value: "full-agenda",
+                label: "Full Agenda",
+              },
+              {
+                value: "catalog",
+                label: "Catalog",
+              },
+              {
+                value: "tags",
+                label: "Tags",
+              },
+            ] as const
+          ).filter((o) => allowTypesArr.includes(o.value))}
           value={type}
           allowDeselect={false}
           variant="default"
