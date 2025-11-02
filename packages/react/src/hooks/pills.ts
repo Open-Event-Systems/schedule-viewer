@@ -1,12 +1,10 @@
-import type { PillProps } from "@mantine/core"
-import { createContext, useContext, type MouseEvent } from "react"
+import { createContext, useContext } from "react"
 import type { PillsItemType } from "../components/pills/bin.js"
+import type { PillProps } from "../components/index.js"
 
 export type GetPillPropsFunc = (
   item: PillsItemType,
-) => Readonly<
-  Partial<Omit<PillProps, "onClick"> & { onClick?: (e: MouseEvent) => void }>
->
+) => Readonly<Partial<PillProps>>
 export const PillPropsContext = createContext<GetPillPropsFunc>(() => ({}))
 export const usePillPropsFunc = (): GetPillPropsFunc =>
   useContext(PillPropsContext)
