@@ -10,49 +10,47 @@ import {
 import { createContext, useContext, useMemo, useReducer } from "react"
 
 export type FilterSettings = Readonly<{
-  text: string
-  disabledTags: ReadonlySet<string>
-  onlyBookmarked: boolean
-  showPast: boolean
+  disabledTags?: Iterable<string>
+  text?: string
+  showPastEvents?: boolean
+  onlyBookmarked?: boolean
 }>
 
-export const FilterContext = createContext<
-  readonly [FilterSettings, (update: Partial<FilterSettings>) => void]
->([
-  {
-    text: "",
-    disabledTags: new Set(),
-    onlyBookmarked: false,
-    showPast: false,
-  },
-  () => {},
-])
-export const useFilter = (): readonly [
-  FilterSettings,
-  (update: Partial<FilterSettings>) => void,
-] => useContext(FilterContext)
+export type FilterCallbacks = Readonly<{
+  onChangeTags?: (tags: Set<string>) => void
+  onChangeText?: (text: string) => void
+  onChangeShowPastEvents?: (showPastEvents: boolean) => void
+  onChangeOnlyBookmarked?: (onlyBookmarked?: boolean) => void
+}>
 
-export const useFilterState = (): readonly [
-  FilterSettings,
-  (update: Partial<FilterSettings>) => void,
-] => {
+export const FilterContext = createContext<FilterSettings & FilterCallbacks>({})
+
+export const useNewFilterContext = (): FilterSettings & FilterCallbacks => {
   const reducer = (
-    state: FilterSettings,
-    action: Partial<FilterSettings>,
-  ): FilterSettings => {
-    const newState = {
-      ...state,
-      ...action,
-    }
-    return newState
-  }
+    cur: FilterSettings,
+    action: FilterSettings,
+  ): FilterSettings => ({ ...cur, ...action })
 
-  return useReducer(reducer, {
-    text: "",
-    disabledTags: new Set(),
-    onlyBookmarked: false,
-    showPast: false,
-  })
+  const [state, dispatch] = useReducer(reducer, {})
+
+  const callbacks = useMemo<FilterCallbacks>(() => {
+    return {
+      onChangeShowPastEvents(show) {
+        dispatch({ showPastEvents: show })
+      },
+      onChangeTags(tags) {
+        dispatch({ disabledTags: tags })
+      },
+      onChangeText(text) {
+        dispatch({ text })
+      },
+      onChangeOnlyBookmarked(onlyBookmarked) {
+        dispatch({ onlyBookmarked })
+      },
+    }
+  }, [dispatch])
+
+  return { ...state, ...callbacks }
 }
 
 export const useFilteredItems = <
@@ -65,7 +63,7 @@ export const useFilteredItems = <
   now: Date,
   selections?: Selections,
 ): ScheduleItemStore<T> => {
-  const [filter] = useFilter()
+  const filter = useContext(FilterContext)
   const byBookmarked = useMemo(() => {
     if (filter.onlyBookmarked) {
       return selections
@@ -76,12 +74,16 @@ export const useFilteredItems = <
     }
   }, [filter.onlyBookmarked, items, selections])
   const byTag = useMemo(
-    () => byBookmarked.filter(makeTagFilter(filter.disabledTags)),
+    () =>
+      filter.disabledTags
+        ? byBookmarked.filter(makeTagFilter(filter.disabledTags))
+        : byBookmarked,
     [byBookmarked, filter.disabledTags],
   )
   const byPast = useMemo(
-    () => (!filter.showPast ? byTag.filter(makePastItemFilter(now)) : byTag),
-    [filter.showPast, byTag, now],
+    () =>
+      !filter.showPastEvents ? byTag.filter(makePastItemFilter(now)) : byTag,
+    [filter.showPastEvents, byTag, now],
   )
   const byTitle = useMemo(
     () => (filter.text ? byPast.filter(makeTitleFilter(filter.text)) : byPast),

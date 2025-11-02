@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import type { MapLayer, MapLevel } from "../types-new.js"
+import type { MapLayer, MapLevel } from "../types.js"
 
 type MapViewerLocationSettings = Readonly<{
   id: string

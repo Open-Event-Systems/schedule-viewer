@@ -3,7 +3,7 @@ import { MapViewer, type MapViewerProps } from "./map-viewer.js"
 import { useCallback, useMemo, useReducer } from "react"
 
 import { type MapViewerCallbacks } from "./context.js"
-import type { MapConfig } from "../types-new.js"
+import type { MapConfig } from "../types.js"
 
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
 import f2Svg from "../../../viewer/public/example-map-2f.svg"

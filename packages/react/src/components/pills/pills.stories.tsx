@@ -6,8 +6,8 @@ import { parsedConfig, parsedEvents } from "../../test-data.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import { binItemsByTime, type PillsItemType } from "./bin.js"
-import { PillPropsContext } from "./context.js"
 import { useItemDetailsFunc } from "../../hooks/details.js"
+import { PillPropsContext } from "../../hooks/pills.js"
 
 const meta: Meta<typeof Pills> = {
   component: Pills,

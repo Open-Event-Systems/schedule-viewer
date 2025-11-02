@@ -6,8 +6,7 @@
   "exports": {
     "./styles.scss": "./src/styles.scss",
     "./*.scss": "./*.scss",
-    ".": "./dist/src/index.js",
-    "./components/*": "./dist/src/components/*.js"
+    ".": "./dist/src/index.js"
   },
   "files": [
     "dist/src/**/*.js",

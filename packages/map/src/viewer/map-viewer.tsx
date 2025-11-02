@@ -30,7 +30,7 @@ import {
 import { IconCube } from "@tabler/icons-react"
 import { useIsometricTransition } from "./util.js"
 import { mapSVGClassNames } from "../svg/classes.js"
-import type { MapLayer, MapLevel } from "../types-new.js"
+import type { MapLayer, MapLevel } from "../types.js"
 
 export type MapViewerProps = {
   levels: readonly MapLevel[]

@@ -1,5 +1,5 @@
 import { Button, Stack, type StackProps, useProps } from "@mantine/core"
-import type { MapLevel } from "../types-new.js"
+import type { MapLevel } from "../types.js"
 import clsx from "clsx"
 
 export type LevelMenuProps = {

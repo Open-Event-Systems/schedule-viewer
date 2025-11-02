@@ -9,7 +9,7 @@ import {
 import clsx from "clsx"
 import { useMemo, type MouseEvent, type ReactNode } from "react"
 import type { PillsItemBin, PillsItemType } from "./bin.js"
-import { usePillPropsFunc } from "./context.js"
+import { usePillPropsFunc } from "../../hooks/pills.js"
 
 export type PillsProps = {
   bins?: Iterable<PillsItemBin>

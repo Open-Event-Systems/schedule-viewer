@@ -1,5 +1,5 @@
 import z from "zod"
-import type { MapConfig } from "./types-new.js"
+import type { MapConfig } from "./types.js"
 
 const levelSchema = z.looseObject({
   id: z.string(),

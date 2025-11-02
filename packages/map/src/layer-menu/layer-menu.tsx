@@ -9,7 +9,7 @@ import {
 import { IconCaretDown, IconCaretUp } from "@tabler/icons-react"
 import clsx from "clsx"
 import { useMemo } from "react"
-import type { MapLayer } from "../types-new.js"
+import type { MapLayer } from "../types.js"
 
 export type LayerMenuProps = PaperProps & {
   opened?: boolean

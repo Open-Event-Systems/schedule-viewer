@@ -5,8 +5,8 @@ import { parsedEvents } from "../../test-data.js"
 import { useCallback, useState, type MouseEvent, type ReactNode } from "react"
 import { ItemHoverCard } from "../hovercard/item-hover-card.js"
 import type { PillsItemType } from "../pills/bin.js"
-import { PillPropsContext } from "../pills/context.js"
 import { useItemDetailsFunc } from "../../hooks/details.js"
+import { PillPropsContext } from "../../hooks/pills.js"
 
 const meta: Meta<typeof Schedule> = {
   component: Schedule,

@@ -5,7 +5,7 @@ import type { TagEntry } from "../../types.js"
 export type PillsItemType = ScheduleItem &
   Readonly<{
     title?: string
-    tags?: ReadonlySet<string>
+    tags?: Iterable<string>
   }>
 
 export type PillsItemBin = Readonly<{
