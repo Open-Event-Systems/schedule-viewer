@@ -17,7 +17,7 @@ import {
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { add, differenceInSeconds, format, formatISO } from "date-fns"
-import type { MouseEvent, ReactNode } from "react"
+import { memo, type MouseEvent, type ReactNode } from "react"
 import { makeTagFormatter, makeValidTagsFilter } from "../../config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown } from "../markdown/markdown.js"
@@ -50,7 +50,11 @@ export type ItemDetailsProps = {
   tags?: Iterable<TagEntry>
 } & BoxProps
 
-export const ItemDetails = (props: ItemDetailsProps) => {
+export const ItemDetails = (props: ItemDetailsProps) => (
+  <ItemDetailsMemo {...props} />
+)
+
+const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
   const {
     className,
     item,
@@ -130,182 +134,204 @@ export const ItemDetails = (props: ItemDetailsProps) => {
       <ItemDetails.Tags tags={tags} eventTags={item.tags} c={altTextColor} />
     </Box>
   )
-}
+})
 
-const Contacts = ({
-  contacts,
-  c,
-}: {
-  contacts?: readonly Readonly<{ name?: string; url?: string }>[]
-  c?: string
-}) => {
-  if (!contacts || contacts.length == 0) {
-    return null
-  }
+ItemDetailsMemo.displayName = "ItemDetailsMemo"
 
-  const children: ReactNode[] = []
-
-  contacts?.forEach((c, i) => {
-    if (i > 0) {
-      children.push(", ")
+const Contacts = memo(
+  ({
+    contacts,
+    c,
+  }: {
+    contacts?: readonly Readonly<{ name?: string; url?: string }>[]
+    c?: string
+  }) => {
+    if (!contacts || contacts.length == 0) {
+      return null
     }
 
-    children.push(<ItemDetails.Contact key={i} {...c} />)
-  })
+    const children: ReactNode[] = []
 
-  return (
-    <IconText
-      className="ItemDetails-contacts"
-      icon={<IconUser size={18} />}
-      c={c}
-    >
-      {children}
-    </IconText>
-  )
-}
+    contacts?.forEach((c, i) => {
+      if (i > 0) {
+        children.push(", ")
+      }
 
-const Contact = ({ name, url }: Readonly<{ name?: string; url?: string }>) => {
-  if (url) {
-    return (
-      <Anchor className="ItemDetails-contact" href={url} target="_blank">
-        {name}
-      </Anchor>
-    )
-  } else {
-    return <span className="ItemDetails-contact">{name}</span>
-  }
-}
+      children.push(<ItemDetails.Contact key={i} {...c} />)
+    })
 
-const Time = ({ start, end, c }: { start?: Date; end?: Date; c?: string }) => {
-  let content: ReactNode
-
-  if (start && end) {
-    const offsetStart = add(start, { hours: -6 })
-    const offsetEnd = add(end, { hours: -6 })
-    const multiDay =
-      offsetStart.getDate() != offsetEnd.getDate() ||
-      differenceInSeconds(offsetEnd, offsetStart) >= 86400
-    const startStr = format(start, "EEE MMM d, h:mm aaa")
-    const endStr = multiDay
-      ? format(end, "EEE MMM d, h:mm aaa")
-      : format(end, "h:mm aaa")
-    content = (
-      <>
-        <time className="start" dateTime={formatISO(start)}>
-          {startStr}
-        </time>{" "}
-        &ndash;{" "}
-        <time className="end" dateTime={formatISO(end)}>
-          {endStr}
-        </time>
-      </>
-    )
-  } else if (start) {
-    const startStr = format(start, "EEE MMM d, h:mm aaa")
-    content = (
-      <time className="start" dateTime={formatISO(start)}>
-        {startStr}
-      </time>
-    )
-  } else if (end) {
-    const endStr = format(end, "EEE MMM d, h:mm aaa")
-    content = (
-      <>
-        Ends{" "}
-        <time className="end" dateTime={formatISO(end)}>
-          {endStr}
-        </time>
-      </>
-    )
-  }
-
-  if (content) {
     return (
       <IconText
-        className="ItemDetails-time"
-        icon={<IconClockHour4 size={18} />}
+        className="ItemDetails-contacts"
+        icon={<IconUser size={18} />}
+        c={c}
+      >
+        {children}
+      </IconText>
+    )
+  },
+)
+
+Contacts.displayName = "Contacts"
+
+const Contact = memo(
+  ({ name, url }: Readonly<{ name?: string; url?: string }>) => {
+    if (url) {
+      return (
+        <Anchor className="ItemDetails-contact" href={url} target="_blank">
+          {name}
+        </Anchor>
+      )
+    } else {
+      return <span className="ItemDetails-contact">{name}</span>
+    }
+  },
+)
+
+Contact.displayName = "Contact"
+
+const Time = memo(
+  ({ start, end, c }: { start?: Date; end?: Date; c?: string }) => {
+    let content: ReactNode
+
+    if (start && end) {
+      const offsetStart = add(start, { hours: -6 })
+      const offsetEnd = add(end, { hours: -6 })
+      const multiDay =
+        offsetStart.getDate() != offsetEnd.getDate() ||
+        differenceInSeconds(offsetEnd, offsetStart) >= 86400
+      const startStr = format(start, "EEE MMM d, h:mm aaa")
+      const endStr = multiDay
+        ? format(end, "EEE MMM d, h:mm aaa")
+        : format(end, "h:mm aaa")
+      content = (
+        <>
+          <time className="start" dateTime={formatISO(start)}>
+            {startStr}
+          </time>{" "}
+          &ndash;{" "}
+          <time className="end" dateTime={formatISO(end)}>
+            {endStr}
+          </time>
+        </>
+      )
+    } else if (start) {
+      const startStr = format(start, "EEE MMM d, h:mm aaa")
+      content = (
+        <time className="start" dateTime={formatISO(start)}>
+          {startStr}
+        </time>
+      )
+    } else if (end) {
+      const endStr = format(end, "EEE MMM d, h:mm aaa")
+      content = (
+        <>
+          Ends{" "}
+          <time className="end" dateTime={formatISO(end)}>
+            {endStr}
+          </time>
+        </>
+      )
+    }
+
+    if (content) {
+      return (
+        <IconText
+          className="ItemDetails-time"
+          icon={<IconClockHour4 size={18} />}
+          c={c}
+        >
+          {content}
+        </IconText>
+      )
+    } else {
+      return null
+    }
+  },
+)
+
+Time.displayName = "Time"
+
+const Location = memo(
+  ({
+    children,
+    href,
+    onClick,
+    c,
+  }: {
+    children?: ReactNode
+    href?: string
+    onClick?: (e: MouseEvent) => void
+    c?: string
+  }) => {
+    if (!children) {
+      return null
+    }
+
+    let content = children
+
+    if (href) {
+      content = (
+        <Anchor
+          className="ItemDetails-locationLink"
+          href={href}
+          onClick={onClick}
+        >
+          {children}
+        </Anchor>
+      )
+    }
+
+    return (
+      <IconText
+        className="ItemDetails-location"
+        icon={<IconMapPin size={18} />}
         c={c}
       >
         {content}
       </IconText>
     )
-  } else {
-    return null
-  }
-}
+  },
+)
 
-const Location = ({
-  children,
-  href,
-  onClick,
-  c,
-}: {
-  children?: ReactNode
-  href?: string
-  onClick?: (e: MouseEvent) => void
-  c?: string
-}) => {
-  if (!children) {
-    return null
-  }
+Location.displayName = "Location"
 
-  let content = children
+const Tags = memo(
+  ({
+    tags = [],
+    eventTags,
+    c,
+  }: {
+    tags?: Iterable<TagEntry>
+    eventTags?: Iterable<string>
+    c?: string
+  }) => {
+    const isValidTag = makeValidTagsFilter(tags)
+    const formatTag = makeTagFormatter(tags)
+    const filteredTags = eventTags ? [...eventTags].filter(isValidTag) : []
+    const formattedTags = filteredTags.map(formatTag)
+    const els: ReactNode[] = []
 
-  if (href) {
-    content = (
-      <Anchor
-        className="ItemDetails-locationLink"
-        href={href}
-        onClick={onClick}
-      >
-        {children}
-      </Anchor>
-    )
-  }
-
-  return (
-    <IconText
-      className="ItemDetails-location"
-      icon={<IconMapPin size={18} />}
-      c={c}
-    >
-      {content}
-    </IconText>
-  )
-}
-
-const Tags = ({
-  tags = [],
-  eventTags,
-  c,
-}: {
-  tags?: Iterable<TagEntry>
-  eventTags?: Iterable<string>
-  c?: string
-}) => {
-  const isValidTag = makeValidTagsFilter(tags)
-  const formatTag = makeTagFormatter(tags)
-  const filteredTags = eventTags ? [...eventTags].filter(isValidTag) : []
-  const formattedTags = filteredTags.map(formatTag)
-  const els: ReactNode[] = []
-
-  if (formattedTags.length == 0) {
-    return null
-  }
-
-  formattedTags.forEach((t, i) => {
-    if (i > 0) {
-      els.push(", ")
+    if (formattedTags.length == 0) {
+      return null
     }
-    els.push(t)
-  })
 
-  return (
-    <IconText className="ItemDetails-tags" icon={<IconTag size={18} />} c={c}>
-      {els}
-    </IconText>
-  )
-}
+    formattedTags.forEach((t, i) => {
+      if (i > 0) {
+        els.push(", ")
+      }
+      els.push(t)
+    })
+
+    return (
+      <IconText className="ItemDetails-tags" icon={<IconTag size={18} />} c={c}>
+        {els}
+      </IconText>
+    )
+  },
+)
+
+Tags.displayName = "Tags"
 
 ItemDetails.Time = Time
 ItemDetails.Location = Location

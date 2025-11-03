@@ -7,7 +7,7 @@ import {
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import { useMemo, type MouseEvent, type ReactNode } from "react"
+import { memo, useMemo, type MouseEvent, type ReactNode } from "react"
 import type { PillsItemBin, PillsItemType } from "./bin.js"
 import { usePillPropsFunc } from "../../hooks/pills.js"
 
@@ -30,44 +30,52 @@ export const Pills = (props: PillsProps) => {
   return <Pills.Root {...other}>{binEls}</Pills.Root>
 }
 
-const ManagedBin = (
-  props: {
-    bin: PillsItemBin
-  } & PillBinProps,
-) => {
-  const { bin, ...other } = props
+const ManagedBin = memo(
+  (
+    props: {
+      bin: PillsItemBin
+    } & PillBinProps,
+  ) => {
+    const { bin, ...other } = props
 
-  const els = []
+    const els = []
 
-  for (const item of bin.items) {
-    els.push(<ManagedPill key={item.id} item={item} />)
-  }
+    for (const item of bin.items) {
+      els.push(<ManagedPill key={item.id} item={item} />)
+    }
 
-  return (
-    <Pills.Bin title={bin.title} {...other}>
-      {els}
-    </Pills.Bin>
-  )
-}
+    return (
+      <Pills.Bin title={bin.title} {...other}>
+        {els}
+      </Pills.Bin>
+    )
+  },
+)
 
-const ManagedPill = (
-  props: {
-    item: PillsItemType
-  } & PillProps,
-) => {
-  const { item, ...other } = props
+ManagedBin.displayName = "ManagedBin"
 
-  const propsFunc = usePillPropsFunc()
-  const otherProps = useMemo(() => {
-    return propsFunc(item)
-  }, [propsFunc, item])
+const ManagedPill = memo(
+  (
+    props: {
+      item: PillsItemType
+    } & PillProps,
+  ) => {
+    const { item, ...other } = props
 
-  return (
-    <Pills.Pill {...otherProps} {...other}>
-      {item.title}
-    </Pills.Pill>
-  )
-}
+    const propsFunc = usePillPropsFunc()
+    const otherProps = useMemo(() => {
+      return propsFunc(item)
+    }, [propsFunc, item])
+
+    return (
+      <Pills.Pill {...otherProps} {...other}>
+        {item.title}
+      </Pills.Pill>
+    )
+  },
+)
+
+ManagedPill.displayName = "ManagedPill"
 
 export type PillsRootProps = BoxProps & {
   children?: ReactNode
@@ -90,7 +98,7 @@ export type PillBinProps = {
   titleComponent?: string
 } & BoxProps
 
-const PillBin = (props: PillBinProps) => {
+const PillBin = memo((props: PillBinProps) => {
   const {
     className,
     children,
@@ -119,7 +127,9 @@ const PillBin = (props: PillBinProps) => {
       </Box>
     </Box>
   )
-}
+})
+
+PillBin.displayName = "PillBin"
 
 export type PillProps = {
   indicator?: ReactNode
@@ -130,7 +140,7 @@ export type PillProps = {
   onClick?: (e: MouseEvent) => void
 } & BoxProps
 
-const Pill = (props: PillProps) => {
+const Pill = memo((props: PillProps) => {
   const {
     className,
     indicator,
@@ -167,7 +177,9 @@ const Pill = (props: PillProps) => {
       {wrapped}
     </Box>
   )
-}
+})
+
+Pill.displayName = "Pill"
 
 Pills.Root = PillsRoot
 Pills.Bin = PillBin

@@ -1,5 +1,5 @@
 import { HoverCard, type HoverCardProps, useProps } from "@mantine/core"
-import type { ReactNode } from "react"
+import { memo, type ReactNode } from "react"
 import { ItemDetails, type ItemDetailsProps } from "../details/item-details.js"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
@@ -9,7 +9,7 @@ export type ItemHoverCardProps = HoverCardProps & {
   ItemDetailsProps?: Partial<ItemDetailsProps>
 }
 
-export const ItemHoverCard = (props: ItemHoverCardProps) => {
+export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
   const { item, children, ItemDetailsProps, ...other } = useProps(
     "ItemHoverCard",
     {},
@@ -29,4 +29,6 @@ export const ItemHoverCard = (props: ItemHoverCardProps) => {
       </HoverCard.Dropdown>
     </HoverCard>
   )
-}
+})
+
+ItemHoverCard.displayName = "ItemHoverCard"

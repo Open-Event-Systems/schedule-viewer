@@ -6,7 +6,7 @@ import {
   type Day,
   type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
-import { useMemo } from "react"
+import { Fragment, useMemo } from "react"
 import { Stack, Text, Title, useProps, type TitleProps } from "@mantine/core"
 import { format } from "date-fns"
 import { DayFilter } from "../day-filter/day-filter.js"
@@ -146,19 +146,12 @@ const FullAgendaView = (props: ScheduleProps) => {
   for (const [key, bins] of binsByDay.entries()) {
     const dayLabel = dayLabels.get(key) ?? key
     elements.push(
-      <>
-        <FullAgendaView.DayTitle
-          key={`title-${key}`}
-          component={dayTitleComponent}
-        >
+      <Fragment key={key}>
+        <FullAgendaView.DayTitle component={dayTitleComponent}>
           {dayLabel}
         </FullAgendaView.DayTitle>
-        <Pills
-          key={`bin-${key}`}
-          bins={bins}
-          titleComponent={binTitleComponent}
-        />
-      </>,
+        <Pills bins={bins} titleComponent={binTitleComponent} />
+      </Fragment>,
     )
   }
 

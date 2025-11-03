@@ -17,13 +17,15 @@ export type PillsItemBin = Readonly<{
 export const binItemsByTitle = (
   items: Iterable<PillsItemType>,
 ): readonly PillsItemBin[] => {
-  const sorted = [...items]
+  const sorted = [...items].map(
+    (it) => [alphaNameSortChar(it.title), it] as const,
+  )
   sorted.sort((a, b) => {
-    if (a.title && b.title) {
-      return a.title.localeCompare(b.title)
-    } else if (a.title) {
+    if (a[0] && b[0]) {
+      return a[0].localeCompare(b[0])
+    } else if (a[0]) {
       return -1
-    } else if (b.title) {
+    } else if (b[0]) {
       return 1
     } else {
       return 0
@@ -33,14 +35,9 @@ export const binItemsByTitle = (
   const map = new Map<string, PillsItemType[]>()
 
   for (const item of sorted) {
-    let char
-    if (!item.title) {
+    let char = item[0].charAt(0)
+    if (!char) {
       char = "Other"
-    } else {
-      char = item.title.charAt(0).toUpperCase()
-      if (!/[A-Z]/.test(char)) {
-        char = "Other"
-      }
     }
 
     let bin = map.get(char)
@@ -49,7 +46,7 @@ export const binItemsByTitle = (
       map.set(char, bin)
     }
 
-    bin.push(item)
+    bin.push(item[1])
   }
 
   const bins: PillsItemBin[] = []
@@ -73,6 +70,16 @@ export const binItemsByTitle = (
   })
 
   return bins
+}
+
+const alphaNameSortChar = (s: string | undefined): string => {
+  if (!s) {
+    return ""
+  }
+
+  s = s.toLocaleUpperCase()
+  s = s.replaceAll(/[^A-Z]/g, "")
+  return s
 }
 
 export const binItemsByTag = (
