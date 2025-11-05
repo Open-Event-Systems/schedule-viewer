@@ -21,6 +21,8 @@ import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import type { TagEntry } from "../../types.js"
 
+import classes from "./schedule-page.module.scss"
+
 export type SchedulePageProps = {
   items: ScheduleItemStore
   type?: ScheduleProps["type"]
@@ -69,16 +71,22 @@ export const SchedulePage = (props: SchedulePageProps) => {
   const { icalPrefix, icalDomain } = useScheduleConfig()
 
   return (
-    <Stack className={clsx("SchedulePage-root", className)} {...other}>
-      <Box className="SchedulePage-topMenu">
+    <Stack
+      className={clsx("SchedulePage-root", classes.root, className)}
+      {...other}
+    >
+      <Box className={clsx("SchedulePage-topMenu", classes.topMenu)}>
         <BookmarkFilter
-          className="SchedulePage-bookmarkFilter"
+          className={clsx(
+            "SchedulePage-bookmarkFilter",
+            classes.bookmarkFilter,
+          )}
           size="sm"
           value={onlyBookmarked}
           onChange={onChangeOnlyBookmarked}
         />
         <Select
-          className="SchedulePage-viewSelect"
+          className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
           size="sm"
           title="View"
           aria-label="view"
@@ -111,7 +119,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
         {!noShareMenu && (
           <ShareMenu
             ButtonProps={{
-              className: "SchedulePage-shareButton",
+              className: clsx("SchedulePage-shareButton", classes.shareButton),
             }}
             enableSync={enableSync}
             onShare={onShare}

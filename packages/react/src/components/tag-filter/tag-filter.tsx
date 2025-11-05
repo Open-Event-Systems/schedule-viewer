@@ -5,6 +5,8 @@ import { Pills, type PillsProps } from "../pills/pills.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 
+import classes from "./tag-filter.module.scss"
+
 export type TagFilterProps = {
   disabledTags?: Iterable<string>
   tags?: Iterable<TagEntry>
@@ -41,7 +43,10 @@ export const TagFilter = (props: TagFilterProps) => {
   }
 
   return (
-    <Pills.Root {...other}>
+    <Pills.Root
+      className={clsx("TagFilter-root", classes.root, className)}
+      {...other}
+    >
       <Pills.Bin menu>{tagEls}</Pills.Bin>
     </Pills.Root>
   )
@@ -67,9 +72,16 @@ const TagFilterTag = ({
     <Pills.Pill
       className={clsx(
         "TagFilter-tag",
-        { "TagFilter-disabled": !enabled },
+        classes.tag,
+        {
+          "TagFilter-disabled": !enabled,
+          [`${classes.disabled}`]: !enabled,
+        },
         `Pill-item-tag-${tag}`,
       )}
+      classNames={{
+        body: clsx("TagFilter-pillBody", classes.pillBody),
+      }}
       button
       indicator={getIndicator && getIndicator([tag])}
       onClick={() => {

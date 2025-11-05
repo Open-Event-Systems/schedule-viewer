@@ -5,6 +5,8 @@ import {
 } from "@mantine/core"
 import clsx from "clsx"
 
+import classes from "./bookmark-filter.module.scss"
+
 export type BookmarkFilterProps = Omit<
   SegmentedControlProps,
   "data" | "value" | "onChange"
@@ -23,7 +25,7 @@ export const BookmarkFilter = (props: BookmarkFilterProps) => {
   return (
     <SegmentedControl
       variant="unstyled"
-      className={clsx("BookmarkFilter-root", className)}
+      className={clsx("BookmarkFilter-root", classes.root, className)}
       data={[
         {
           label: "Show All",

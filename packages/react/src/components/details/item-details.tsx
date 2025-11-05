@@ -25,6 +25,8 @@ import { IconText } from "../icon-text/icon-text.js"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 import type { TagEntry } from "../../types.js"
 
+import classes from "./item-details.module.scss"
+
 export type ItemDetailsItemType = ScheduleItem &
   Readonly<{
     title?: string
@@ -78,12 +80,19 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
       component="article"
       className={clsx(
         "ItemDetails-root",
-        { "ItemDetails-large": large },
+        {
+          "ItemDetails-large": large,
+          [`${classes.large}`]: large,
+        },
+        classes.root,
         className,
       )}
       {...other}
     >
-      <Title className="ItemDetails-title" order={large ? 2 : 4}>
+      <Title
+        className={clsx("ItemDetails-title", classes.title)}
+        order={large ? 2 : 4}
+      >
         {item.title}
       </Title>
       <ItemDetails.Time start={item.start} end={item.end} c={altTextColor} />
@@ -95,22 +104,31 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
         {item.location}
       </ItemDetails.Location>
       <ItemDetails.Contacts contacts={item.contacts} c={altTextColor} />
-      <Box component="menu" className="ItemDetails-buttons">
+      <Box
+        component="menu"
+        className={clsx("ItemDetails-buttons", classes.buttons)}
+      >
         {showShare && (
           <li>
             <ShareButton
-              className="ItemDetails-shareButton"
+              className={clsx("ItemDetails-shareButton", classes.shareButton)}
               size={large ? "md" : "sm"}
               url={url}
             />
           </li>
         )}
-        <Box component="li" className="ItemDetails-bookmark">
+        <Box
+          component="li"
+          className={clsx("ItemDetails-bookmark", classes.bookmark)}
+        >
           <ActionIcon
             title={bookmarked ? "Unbookmark" : "Bookmark This Event"}
             size={large ? "md" : "sm"}
             variant={bookmarked ? "filled" : "default"}
-            className="ItemDetails-bookmarkButton"
+            className={clsx(
+              "ItemDetails-bookmarkButton",
+              classes.bookmarkButton,
+            )}
             onClick={() => setBookmarked && setBookmarked(!bookmarked)}
           >
             <IconBookmark />
@@ -121,14 +139,19 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
               size="xs"
               c={altTextColor}
               fw="bold"
-              className="ItemDetails-bookmarkCount"
+              className={clsx(
+                "ItemDetails-bookmarkCount",
+                classes.bookmarkCount,
+              )}
             >
               {bookmarkCount}
             </Text>
           )}
         </Box>
       </Box>
-      <Markdown className="ItemDetails-description">
+      <Markdown
+        className={clsx("ItemDetails-description", classes.description)}
+      >
         {item.description}
       </Markdown>
       <ItemDetails.Tags tags={tags} eventTags={item.tags} c={altTextColor} />
@@ -162,7 +185,7 @@ const Contacts = memo(
 
     return (
       <IconText
-        className="ItemDetails-contacts"
+        className={clsx("ItemDetails-contacts", classes.contacts)}
         icon={<IconUser size={18} />}
         c={c}
       >
@@ -178,12 +201,20 @@ const Contact = memo(
   ({ name, url }: Readonly<{ name?: string; url?: string }>) => {
     if (url) {
       return (
-        <Anchor className="ItemDetails-contact" href={url} target="_blank">
+        <Anchor
+          className={clsx("ItemDetails-contact", classes.contact)}
+          href={url}
+          target="_blank"
+        >
           {name}
         </Anchor>
       )
     } else {
-      return <span className="ItemDetails-contact">{name}</span>
+      return (
+        <span className={clsx("ItemDetails-contact", classes.contact)}>
+          {name}
+        </span>
+      )
     }
   },
 )
@@ -237,7 +268,7 @@ const Time = memo(
     if (content) {
       return (
         <IconText
-          className="ItemDetails-time"
+          className={clsx("ItemDetails-time", classes.time)}
           icon={<IconClockHour4 size={18} />}
           c={c}
         >
@@ -273,7 +304,7 @@ const Location = memo(
     if (href) {
       content = (
         <Anchor
-          className="ItemDetails-locationLink"
+          className={clsx("ItemDetails-locationLink", classes.locationLink)}
           href={href}
           onClick={onClick}
         >
@@ -284,7 +315,7 @@ const Location = memo(
 
     return (
       <IconText
-        className="ItemDetails-location"
+        className={clsx("ItemDetails-location", classes.location)}
         icon={<IconMapPin size={18} />}
         c={c}
       >
@@ -324,7 +355,11 @@ const Tags = memo(
     })
 
     return (
-      <IconText className="ItemDetails-tags" icon={<IconTag size={18} />} c={c}>
+      <IconText
+        className={clsx("ItemDetails-tags", classes.tags)}
+        icon={<IconTag size={18} />}
+        c={c}
+      >
         {els}
       </IconText>
     )

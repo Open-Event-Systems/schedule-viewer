@@ -4,22 +4,26 @@
   "description": "",
   "type": "module",
   "exports": {
-    ".": "./dist/src/index.js"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/schedule-lib.js"
+    }
   },
   "files": [
-    "dist/src/**/*.js",
-    "dist/src/**/*.d.ts",
-    "!dist/src/**/*.test.js",
-    "!dist/src/**/*.test.d.ts"
+    "dist/**"
   ],
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build": "vite build"
   },
   "devDependencies": {
     "@date-fns/tz": "^1.4.1",
     "@date-fns/utc": "^2.1.1",
     "date-fns": "^4.1.0",
     "mobx": "^6.15.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.4"
   },
   "peerDependencies": {

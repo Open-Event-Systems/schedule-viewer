@@ -1,8 +1,5 @@
-.DayFilter-root {
+.root {
   --title-min-width: 14rem;
-}
-
-.DayFilter-root {
   display: grid;
   grid-template: "prev select next" 1fr / auto auto auto;
   justify-content: center;
@@ -10,7 +7,7 @@
   gap: var(--mantine-spacing-xs);
 }
 
-.DayFilter-button {
+.button {
   color: var(--mantine-color-text);
   background: none;
 
@@ -19,23 +16,23 @@
   }
 }
 
-.DayFilter-prev {
+.prev {
   grid-area: prev;
 }
 
-.DayFilter-select {
+.select {
   grid-area: select;
   justify-self: center;
   min-width: var(--title-min-width);
 }
 
-.DayFilter-selectInput {
+.selectInput {
   text-align: center;
   font-size: var(--mantine-h4-font-size);
   line-height: var(--mantine-h4-line-height);
   font-weight: var(--mantine-h4-font-weight);
 }
 
-.DayFilter-next {
+.next {
   grid-area: next;
 }

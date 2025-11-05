@@ -1,7 +1,7 @@
-.TagFilter-disabled {
+.disabled {
   filter: brightness(50%);
 
-  & .Pill-body {
+  & .pillBody {
     border-style: dotted;
   }
 }

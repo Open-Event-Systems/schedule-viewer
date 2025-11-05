@@ -11,6 +11,9 @@ import { memo, useMemo, type MouseEvent, type ReactNode } from "react"
 import type { PillsItemBin, PillsItemType } from "./bin.js"
 import { usePillPropsFunc } from "../../hooks/pills.js"
 
+import binClasses from "./bin.module.scss"
+import pillClasses from "./pill.module.scss"
+
 export type PillsProps = {
   bins?: Iterable<PillsItemBin>
   titleComponent?: string
@@ -111,18 +114,25 @@ const PillBin = memo((props: PillBinProps) => {
   return (
     <Box
       component="section"
-      className={clsx("PillBin-root", className)}
+      className={clsx("PillBin-root", binClasses.root, className)}
       {...other}
     >
       {title ? (
         <>
-          <Title component={titleComponent} order={3} className="PillBin-title">
+          <Title
+            component={titleComponent}
+            order={3}
+            className={clsx("PillBin-title", binClasses.title)}
+          >
             {title}
           </Title>
-          <Divider className="PillBin-divider" />
+          <Divider className={clsx("PillBin-divider", binClasses.divider)} />
         </>
       ) : null}
-      <Box component={menu ? "menu" : "ul"} className="PillBin-pills">
+      <Box
+        component={menu ? "menu" : "ul"}
+        className={clsx("PillBin-pills", binClasses.pills)}
+      >
         {children}
       </Box>
     </Box>
@@ -132,6 +142,12 @@ const PillBin = memo((props: PillBinProps) => {
 PillBin.displayName = "PillBin"
 
 export type PillProps = {
+  classNames?: {
+    root?: string
+    button?: string
+    body?: string
+    indicator?: string
+  }
   indicator?: ReactNode
   href?: string
   button?: boolean
@@ -143,6 +159,7 @@ export type PillProps = {
 const Pill = memo((props: PillProps) => {
   const {
     className,
+    classNames,
     indicator,
     href,
     button,
@@ -153,11 +170,26 @@ const Pill = memo((props: PillProps) => {
   } = useProps("Pill", {}, props)
 
   let inner: ReactNode = button ? (
-    <Box component="button" className="Pill-body Pill-button" onClick={onClick}>
+    <Box
+      component="button"
+      className={clsx(
+        "Pill-body",
+        "Pill-button",
+        pillClasses.body,
+        pillClasses.button,
+        classNames?.body,
+      )}
+      onClick={onClick}
+    >
       {children}
     </Box>
   ) : (
-    <Box component="a" className="Pill-body" href={href} onClick={onClick}>
+    <Box
+      component="a"
+      className={clsx("Pill-body", pillClasses.body, classNames?.body)}
+      href={href}
+      onClick={onClick}
+    >
       {children}
     </Box>
   )
@@ -165,7 +197,14 @@ const Pill = memo((props: PillProps) => {
   inner = renderContent(inner)
 
   const wrapped = indicator ? (
-    <Indicator label={indicator} className="Pill-indicator">
+    <Indicator
+      label={indicator}
+      className={clsx(
+        "Pill-indicator",
+        pillClasses.indicator,
+        classNames?.indicator,
+      )}
+    >
       {inner}
     </Indicator>
   ) : (
@@ -173,7 +212,16 @@ const Pill = memo((props: PillProps) => {
   )
 
   return (
-    <Box component="li" className={clsx("Pill-root", className)} {...other}>
+    <Box
+      component="li"
+      className={clsx(
+        "Pill-root",
+        pillClasses.root,
+        classNames?.root,
+        className,
+      )}
+      {...other}
+    >
       {wrapped}
     </Box>
   )

@@ -1,5 +1,8 @@
 dist
 node_modules
+/packages/lib/docs
+/packages/react/docs
+/packages/map/docs
 
 *storybook.log
 

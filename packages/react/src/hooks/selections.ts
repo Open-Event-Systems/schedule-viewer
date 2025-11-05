@@ -6,7 +6,7 @@ import {
 } from "@open-event-systems/schedule-lib"
 import type { ScheduleConfig } from "../types.js"
 import {
-  QueryClient,
+  type QueryClient,
   useMutation,
   useQueryClient,
   useSuspenseQuery,

@@ -1,4 +1,4 @@
-.SchedulePage-topMenu {
+.topMenu {
   display: grid;
   grid-template:
     "bookmark . view share" auto
@@ -16,11 +16,11 @@
   }
 }
 
-.SchedulePage-viewSelect {
+.viewSelect {
   grid-area: view;
 }
 
-.SchedulePage-bookmarkFilter {
+.bookmarkFilter {
   grid-area: bookmark;
   justify-self: start;
 
@@ -29,6 +29,6 @@
   }
 }
 
-.SchedulePage-shareButton {
+.shareButton {
   grid-area: share;
 }

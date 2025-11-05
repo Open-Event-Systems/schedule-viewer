@@ -5,6 +5,8 @@ import { useMemo } from "react"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import type { Day } from "@open-event-systems/schedule-lib"
 
+import classes from "./day-filter.module.scss"
+
 export type DayFilterProps = {
   days?: Iterable<Day> | undefined
   dayFormat?: string | undefined
@@ -40,9 +42,14 @@ export const DayFilter = (props: DayFilterProps) => {
   const selectedIdx = dayData.findIndex((o) => o.value == selectedDay)
 
   return (
-    <Box className={clsx("DayFilter-root", className)} {...other}>
+    <Box className={clsx("DayFilter-root", classes.root, className)} {...other}>
       <ActionIcon
-        className="DayFilter-prev DayFilter-button"
+        className={clsx(
+          "DayFilter-prev",
+          "DayFilter-button",
+          classes.prev,
+          classes.button,
+        )}
         variant="subtle"
         title="Previous Day"
         disabled={selectedIdx <= 0}
@@ -57,9 +64,9 @@ export const DayFilter = (props: DayFilterProps) => {
         <IconChevronLeft />
       </ActionIcon>
       <Select
-        className="DayFilter-select"
+        className={clsx("DayFilter-select", classes.select)}
         classNames={{
-          input: "DayFilter-selectInput",
+          input: clsx("DayFilter-selectInput", classes.selectInput),
         }}
         variant="unstyled"
         data={dayData}
@@ -73,7 +80,12 @@ export const DayFilter = (props: DayFilterProps) => {
         rightSection={null}
       />
       <ActionIcon
-        className="DayFilter-next DayFilter-button"
+        className={clsx(
+          "DayFilter-next",
+          "DayFilter-button",
+          classes.next,
+          classes.button,
+        )}
         variant="subtle"
         title="Next Day"
         disabled={selectedIdx >= dayData.length - 1}

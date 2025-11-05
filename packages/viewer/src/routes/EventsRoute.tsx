@@ -2,7 +2,6 @@ import {
   confirmSyncScheduleRoute,
   dataRoute,
   eventsRoute,
-  itemParsers,
   sharedScheduleRoute,
   shareScheduleRoute,
   syncScheduleRoute,
@@ -15,16 +14,11 @@ import {
   isBounded,
   setupBookmarkServiceAPI,
 } from "@open-event-systems/schedule-lib"
-import { ConfirmSyncDialog } from "@open-event-systems/schedule-react/components/confirm-sync-dialog/confirm-sync-dialog"
-import { ShareDialog } from "@open-event-systems/schedule-react/components/share-dialog/share-dialog"
-import { ShareMenu } from "@open-event-systems/schedule-react/components/share-menu/share-menu"
-import { BookmarkFilter } from "@open-event-systems/schedule-react/components/bookmark-filter/bookmark-filter"
 import { observer } from "mobx-react-lite"
 import { useMatch, useRouter } from "@tanstack/react-router"
 import {
-  useFilter,
+  BookmarkFilter,
   useFilteredItems,
-  useItems,
   useSelections,
 } from "@open-event-systems/schedule-react"
 import { useTime } from "../config.js"
