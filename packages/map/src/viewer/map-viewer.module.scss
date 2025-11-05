@@ -1,4 +1,4 @@
-.MapViewer-root {
+.root {
   display: grid;
   grid-template:
     "zoom-menu . level-menu" auto
@@ -15,52 +15,46 @@
   height: 100vh;
 }
 
-.MapViewer-zoomMenu {
+.zoomMenu {
   grid-area: zoom-menu;
   justify-self: start;
   align-self: start;
   margin: 4px;
-  // z-index: 1000;
 }
 
-.MapViewer-levelMenu {
+.levelMenu {
   grid-area: level-menu;
   justify-self: end;
   align-self: start;
   margin: 4px;
-  // z-index: 1000;
 }
 
-.MapViewer-isoMenu {
+.isoMenu {
   grid-area: iso-menu;
   justify-self: start;
   align-self: end;
   margin: 4px;
-  // z-index: 1000;
 }
 
-.MapViewer-layerMenu {
+.layerMenu {
   grid-area: layer-menu;
   justify-self: end;
   align-self: end;
   margin: 4px;
-  // z-index: 1000;
 }
 
-.MapViewer-loading {
+.loading {
   grid-area: 1 / 1 / -1 / -1;
-  // z-index: 1;
 
   display: grid;
   justify-items: center;
   align-items: center;
 }
 
-.MapViewer-content {
+.content {
   grid-area: 1 / 1 / -1 / -1;
-  // z-index: 1;
 
-  .PanZoom-content {
+  .zoomContent {
     display: grid;
   }
 }
@@ -77,14 +71,14 @@
   --map-isometric-center-y-offset: 0px;
 }
 
-.MapViewer-level {
+:global(.MapViewer-level) {
   // using grid area to force all layers into the same space
   grid-area: 1 / 1 / -1 / -1;
 
   // Hidden by default
   display: none;
 
-  .MapViewer-root:not(.MapViewer-no-isometric-transition) & {
+  .root:not(:global(.MapViewer-no-isometric-transition)) & {
     transition: transform var(--map-isometric-transition-duration) ease-in-out;
     transform: translate(
         var(--map-isometric-center-x-offset),
@@ -98,12 +92,12 @@
   }
 
   // Visible if active or isometric view enabled
-  &.MapViewer-level-active,
-  &.MapViewer-level-isometric {
+  &:global(.MapViewer-level-active),
+  &:global(.MapViewer-level-isometric) {
     display: block;
   }
 
-  .MapViewer-root &.MapViewer-level-isometric-transform {
+  .root &:global(.MapViewer-level-isometric-transform) {
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
     transform: translate(
         var(--map-isometric-center-x-offset),
@@ -121,13 +115,13 @@
 
 // Temp rules for testing
 
-.MapViewer-level-id-lobby {
+:global(.MapViewer-level-id-lobby) {
   --map-isometric-y-offset: 400px;
   --map-isometric-center-x-offset: 480px;
   --map-isometric-center-y-offset: 480px;
 }
 
-.MapViewer-level-id-2f {
+:global(.MapViewer-level-id-2f) {
   --map-isometric-center-x-offset: 480px;
   --map-isometric-center-y-offset: 480px;
 }

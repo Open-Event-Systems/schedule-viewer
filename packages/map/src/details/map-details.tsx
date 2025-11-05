@@ -12,6 +12,8 @@ import { Markdown } from "@open-event-systems/schedule-react"
 import clsx from "clsx"
 import { type ReactNode } from "react"
 
+import classes from "./map-details.module.scss"
+
 export type MapDetailsProps = {
   title?: ReactNode
   description?: string
@@ -32,18 +34,29 @@ export const MapDetails = (props: MapDetailsProps) => {
   const defaultValue = nowChildren ? "now" : "later"
 
   return (
-    <Box className={clsx("MapDetails-root", className)} {...other}>
+    <Box
+      className={clsx("MapDetails-root", classes.root, className)}
+      {...other}
+    >
       {title && (
-        <Title className="MapDetails-title" order={4} component="h2">
+        <Title
+          className={clsx("MapDetails-title", classes.title)}
+          order={4}
+          component="h2"
+        >
           {title}
         </Title>
       )}
       {description && (
-        <Markdown className="MapDetails-description">{description}</Markdown>
+        <Markdown
+          className={clsx("MapDetails-description", classes.description)}
+        >
+          {description}
+        </Markdown>
       )}
       {laterChildren || (nowChildren && laterChildren) ? (
         <Accordion
-          className="MapDetails-accordion"
+          className={clsx("MapDetails-accordion", classes.accordion)}
           defaultValue={defaultValue}
           chevronPosition="left"
           {...other}
@@ -62,7 +75,7 @@ export const MapDetails = (props: MapDetailsProps) => {
           )}
         </Accordion>
       ) : (
-        <Box className="MapDetails-now">{nowChildren}</Box>
+        <Box className={clsx("MapDetails-now", classes.now)}>{nowChildren}</Box>
       )}
     </Box>
   )
@@ -76,10 +89,10 @@ const MapDetailsDrawer = (props: MapDetailsDrawerProps) => {
 
   return (
     <Drawer
-      className={clsx("MapDetails-drawer", className)}
+      className={clsx("MapDetails-drawer", classes.drawer, className)}
       classNames={{
-        content: "MapDetails-drawerContent",
-        body: "MapDetails-drawerBody",
+        content: clsx("MapDetails-drawerContent", classes.drawerContent),
+        body: clsx("MapDetails-drawerBody", classes.drawerBody),
       }}
       position={isLS ? "right" : "bottom"}
       withCloseButton={false}

@@ -39,6 +39,9 @@ import {
   type MapDetailsProps,
 } from "../details/map-details.js"
 
+import classes from "./map-viewer.module.scss"
+import "./map.module.scss"
+
 export type MapViewerLocationItemInfo = Readonly<{
   id: string
   title?: string
@@ -254,7 +257,10 @@ const MapViewerRoot = forwardRef<HTMLDivElement, MapViewerRootProps>(
     const { className, children } = useProps("MapViewerRoot", {}, props)
 
     return (
-      <Box ref={ref} className={clsx("MapViewer-root", className)}>
+      <Box
+        ref={ref}
+        className={clsx("MapViewer-root", classes.root, className)}
+      >
         {children}
       </Box>
     )
@@ -268,7 +274,12 @@ export type MapViewerZoomMenuProps = ZoomMenuProps
 const MapViewerZoomMenu = (props: MapViewerZoomMenuProps) => {
   const { ...other } = useProps("MapViewerZoomMenu", {}, props)
 
-  return <ZoomMenu className="MapViewer-zoomMenu" {...other} />
+  return (
+    <ZoomMenu
+      className={clsx("MapViewer-zoomMenu", classes.zoomMenu)}
+      {...other}
+    />
+  )
 }
 
 export type MapViewerLevelMenuProps = LevelMenuProps
@@ -276,7 +287,12 @@ export type MapViewerLevelMenuProps = LevelMenuProps
 const MapViewerLevelMenu = (props: MapViewerLevelMenuProps) => {
   const { ...other } = useProps("MapViewerLevelMenu", {}, props)
 
-  return <LevelMenu className="MapViewer-levelMenu" {...other} />
+  return (
+    <LevelMenu
+      className={clsx("MapViewer-levelMenu", classes.levelMenu)}
+      {...other}
+    />
+  )
 }
 
 export type MapViewerIsoMenuProps = {
@@ -289,7 +305,7 @@ const MapViewerIsoMenu = (props: MapViewerIsoMenuProps) => {
 
   return (
     <ActionIcon
-      className="MapViewer-isoMenu"
+      className={clsx("MapViewer-isoMenu", classes.isoMenu)}
       title="Toggle Isometric View"
       aria-label="toggle isometric view"
       role="checkbox"
@@ -313,7 +329,7 @@ const MapViewerLayerMenu = (props: MapViewerLayerMenuProps) => {
   const [opened, setOpened] = useState(false)
 
   return (
-    <Box className="MapViewer-layerMenu">
+    <Box className={clsx("MapViewer-layerMenu", classes.layerMenu)}>
       <LayerMenu {...other} opened={opened} onSetOpened={setOpened} />
     </Box>
   )
@@ -327,8 +343,12 @@ const MapViewerLoading = (props: MapViewerLoadingProps) => {
   const { LoaderProps, ...other } = useProps("MapViewerLoading", {}, props)
 
   return (
-    <Box className="MapViewer-loading" {...other}>
-      <Loader className="MapViewer-loader" type="dots" {...LoaderProps} />
+    <Box className={clsx("MapViewer-loading", classes.loading)} {...other}>
+      <Loader
+        className={clsx("MapViewer-loader", classes.loader)}
+        type="dots"
+        {...LoaderProps}
+      />
     </Box>
   )
 }
@@ -339,7 +359,13 @@ const MapViewerContent = (props: MapViewerContentProps) => {
   const { children, ...other } = useProps("MapViewerContent", {}, props)
 
   return (
-    <PanZoom className="MapViewer-content" {...other}>
+    <PanZoom
+      className={clsx("MapViewer-content", classes.content)}
+      classNames={{
+        content: classes.zoomContent,
+      }}
+      {...other}
+    >
       {children}
     </PanZoom>
   )
@@ -437,7 +463,11 @@ const MapViewerDetailsDrawer = (props: MapViewerDetailsDrawerProps) => {
 
   return (
     <MapDetails.Drawer
-      className={clsx("MapViewer-detailsDrawer", className)}
+      className={clsx(
+        "MapViewer-detailsDrawer",
+        classes.detailsDrawer,
+        className,
+      )}
       opened={opened}
       {...other}
     >

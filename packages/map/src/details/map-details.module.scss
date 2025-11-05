@@ -1,19 +1,19 @@
-.MapDetails-root {
+.root {
   display: flex;
   flex-direction: column;
 }
 
-.MapDetails-title {
+.title {
   margin: var(--mantine-spacing-sm);
   margin-bottom: 0;
 }
 
-.MapDetails-description {
+.description {
   margin: var(--mantine-spacing-sm);
   margin-bottom: 0;
 }
 
-.MapDetails-accordion {
+.accordion {
   flex: auto;
   margin-top: var(--mantine-spacing-sm);
   &:nth-child(1) {
@@ -21,7 +21,7 @@
   }
 }
 
-.MapDetails-now {
+.now {
   flex: auto;
   margin: var(--mantine-spacing-sm);
 
@@ -31,8 +31,8 @@
   grid-auto-flow: row;
 }
 
-.MapDetails-drawerContent,
-.MapDetails-drawerBody {
+.drawerContent,
+.drawerBody {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;

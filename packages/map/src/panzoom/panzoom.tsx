@@ -15,12 +15,19 @@ import {
   TransformWrapper,
 } from "react-zoom-pan-pinch"
 
+import classes from "./panzoom.module.scss"
+
 export interface ZoomFunc {
   (el: HTMLElement | SVGElement, scale?: number): void
   (action: "in" | "out" | "reset"): void
 }
 
 export type PanZoomProps = {
+  classNames?: {
+    root?: string
+    wrapper?: string
+    content?: string
+  }
   children?: ReactNode
   contentWidth?: number
   contentHeight?: number
@@ -30,6 +37,7 @@ export type PanZoomProps = {
 export const PanZoom = (props: PanZoomProps) => {
   const {
     className,
+    classNames,
     contentWidth,
     contentHeight,
     children,
@@ -83,7 +91,16 @@ export const PanZoom = (props: PanZoomProps) => {
   )
 
   return (
-    <Box ref={setEl} className={clsx("PanZoom-root", className)} {...other}>
+    <Box
+      ref={setEl}
+      className={clsx(
+        "PanZoom-root",
+        classes.root,
+        classNames?.root,
+        className,
+      )}
+      {...other}
+    >
       {el && (
         <TransformWrapper
           ref={setZoomRef}
@@ -98,8 +115,16 @@ export const PanZoom = (props: PanZoomProps) => {
         >
           {() => (
             <TransformComponent
-              wrapperClass="PanZoom-wrapper"
-              contentClass="PanZoom-content"
+              wrapperClass={clsx(
+                "PanZoom-wrapper",
+                classNames?.wrapper,
+                classes.wrapper,
+              )}
+              contentClass={clsx(
+                "PanZoom-content",
+                classNames?.content,
+                classes.content,
+              )}
             >
               {children}
             </TransformComponent>

@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { MapViewer, type MapViewerProps } from "./map-viewer.js"
+import {
+  MapViewer,
+  type MapViewerCallbacks,
+  type MapViewerProps,
+} from "./map-viewer.js"
 import { useCallback, useMemo, useReducer } from "react"
 
-import { type MapViewerCallbacks } from "./context.js"
 import type { MapConfig } from "../types.js"
 
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
