@@ -38,17 +38,18 @@ export const Default: StoryObj<typeof MapViewer> = {
       currentLevelId: "lobby",
       layers: mapCfg.layers,
       levels: mapCfg.levels,
-      locationInfo: [
+      locationItemInfo: [
         {
           id: "room-1",
           title: "Event 1",
         },
       ],
+      locations: mapCfg.locations,
     })
 
     const callbacks = useMemo<MapViewerCallbacks>(() => {
       return {
-        onSetCurrentLevelId(id) {
+        onSetLevelId(id) {
           dispatch({ currentLevelId: id })
         },
         onSetHiddenLayers(layers) {
@@ -57,8 +58,11 @@ export const Default: StoryObj<typeof MapViewer> = {
         onSetIsometric(isometric) {
           dispatch({ isometric })
         },
-        onSetSelectedLocation(id) {
-          dispatch({ activeLocationId: id })
+        onSetActiveLocationId(id) {
+          dispatch({ activeLocationId: id, zoomLocationId: id })
+        },
+        onSetDetailsLocationId(id) {
+          dispatch({ detailsLocationId: id })
         },
       }
     }, [dispatch])
@@ -72,13 +76,17 @@ export const Default: StoryObj<typeof MapViewer> = {
         layers={state.layers}
         isometric={state.isometric}
         hiddenLayers={state.hiddenLayers}
-        locationInfo={state.locationInfo}
+        locations={state.locations}
+        locationItemInfo={state.locationItemInfo}
         flags={state.flags}
         activeLocationId={state.activeLocationId}
-        onSetLevelId={callbacks.onSetCurrentLevelId}
+        detailsLocationId={state.detailsLocationId}
+        zoomLocationId={state.zoomLocationId}
+        onSetLevelId={callbacks.onSetLevelId}
         onSetHiddenLayers={callbacks.onSetHiddenLayers}
-        onSetActiveLocationId={callbacks.onSetSelectedLocation}
+        onSetActiveLocationId={callbacks.onSetActiveLocationId}
         onSetIsometric={callbacks.onSetIsometric}
+        onSetDetailsLocationId={callbacks.onSetDetailsLocationId}
       />
     )
   },
@@ -92,6 +100,18 @@ const mapCfg = {
   layers: [
     { id: "text", title: "Text" },
     { id: "detail", title: "Detail" },
+  ],
+  locations: [
+    {
+      id: "room-1",
+      title: "Room 1",
+      description: "Room 1",
+    },
+    {
+      id: "room-2",
+      title: "Room 2",
+      description: "Room 2",
+    },
   ],
   width: 960,
   height: 960,

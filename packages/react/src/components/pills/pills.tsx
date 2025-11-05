@@ -7,44 +7,101 @@ import {
   useProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import { memo, useMemo, type MouseEvent, type ReactNode } from "react"
+import {
+  memo,
+  type MouseEvent,
+  type NamedExoticComponent,
+  type ReactNode,
+} from "react"
 import type { PillsItemBin, PillsItemType } from "./bin.js"
-import { usePillPropsFunc } from "../../hooks/pills.js"
 
 import binClasses from "./bin.module.scss"
 import pillClasses from "./pill.module.scss"
 
 export type PillsProps = {
   bins?: Iterable<PillsItemBin>
+  BinProps?: Partial<PillBinProps>
+  PillProps?: Partial<PillProps>
+  renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
+  renderPill?: (
+    props: PillProps,
+    bin: PillsItemBin,
+    item: PillsItemType,
+  ) => ReactNode
   titleComponent?: string
 } & PillsRootProps
 
-export const Pills = (props: PillsProps) => {
-  const { bins = [], titleComponent, ...other } = props
+type PillsComponentType = NamedExoticComponent<PillsProps> & {
+  Root: typeof PillsRoot
+  Bin: typeof PillBin
+  Pill: typeof Pill
+}
+
+const _Pills = memo((props: PillsProps) => {
+  const {
+    bins = [],
+    titleComponent,
+    BinProps,
+    PillProps,
+    renderBin,
+    renderPill,
+    ...other
+  } = props
 
   const binEls = []
 
-  for (const bin of bins) {
-    binEls.push(
-      <ManagedBin key={bin.id} bin={bin} titleComponent={titleComponent} />,
-    )
+  if (renderBin) {
+    for (const bin of bins) {
+      binEls.push(renderBin({ titleComponent, ...BinProps }, bin))
+    }
+  } else {
+    for (const bin of bins) {
+      binEls.push(
+        <ManagedBin
+          key={bin.id}
+          bin={bin}
+          titleComponent={titleComponent}
+          PillProps={PillProps}
+          renderPill={renderPill}
+          {...BinProps}
+        />,
+      )
+    }
   }
 
   return <Pills.Root {...other}>{binEls}</Pills.Root>
-}
+}) as Partial<PillsComponentType>
+
+_Pills.displayName = "Pills"
 
 const ManagedBin = memo(
   (
     props: {
       bin: PillsItemBin
+      PillProps?: Partial<PillProps>
+      renderPill?: (
+        props: PillProps,
+        bin: PillsItemBin,
+        item: PillsItemType,
+      ) => ReactNode
     } & PillBinProps,
   ) => {
-    const { bin, ...other } = props
+    const { bin, PillProps, renderPill, ...other } = props
 
     const els = []
 
-    for (const item of bin.items) {
-      els.push(<ManagedPill key={item.id} item={item} />)
+    if (renderPill) {
+      for (const item of bin.items) {
+        els.push(renderPill({ ...PillProps, children: item.title }, bin, item))
+      }
+    } else {
+      for (const item of bin.items) {
+        els.push(
+          <Pills.Pill key={item.id} {...PillProps}>
+            {item.title}
+          </Pills.Pill>,
+        )
+      }
     }
 
     return (
@@ -56,29 +113,6 @@ const ManagedBin = memo(
 )
 
 ManagedBin.displayName = "ManagedBin"
-
-const ManagedPill = memo(
-  (
-    props: {
-      item: PillsItemType
-    } & PillProps,
-  ) => {
-    const { item, ...other } = props
-
-    const propsFunc = usePillPropsFunc()
-    const otherProps = useMemo(() => {
-      return propsFunc(item)
-    }, [propsFunc, item])
-
-    return (
-      <Pills.Pill {...otherProps} {...other}>
-        {item.title}
-      </Pills.Pill>
-    )
-  },
-)
-
-ManagedPill.displayName = "ManagedPill"
 
 export type PillsRootProps = BoxProps & {
   children?: ReactNode
@@ -164,7 +198,7 @@ const Pill = memo((props: PillProps) => {
     href,
     button,
     children,
-    renderContent = (c: ReactNode) => c,
+    renderContent,
     onClick,
     ...other
   } = useProps("Pill", {}, props)
@@ -194,7 +228,7 @@ const Pill = memo((props: PillProps) => {
     </Box>
   )
 
-  inner = renderContent(inner)
+  inner = renderContent ? renderContent(inner) : inner
 
   const wrapped = indicator ? (
     <Indicator
@@ -229,6 +263,8 @@ const Pill = memo((props: PillProps) => {
 
 Pill.displayName = "Pill"
 
-Pills.Root = PillsRoot
-Pills.Bin = PillBin
-Pills.Pill = Pill
+_Pills.Root = PillsRoot
+_Pills.Bin = PillBin
+_Pills.Pill = Pill
+
+export const Pills = _Pills as PillsComponentType

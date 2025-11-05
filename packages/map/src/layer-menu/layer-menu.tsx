@@ -14,7 +14,7 @@ import type { MapLayer } from "../types.js"
 export type LayerMenuProps = PaperProps & {
   opened?: boolean
   onSetOpened?: (opened: boolean) => void
-  layers?: readonly MapLayer[]
+  layers?: Iterable<MapLayer>
   hiddenLayers?: Iterable<string>
   onChangeLayers?: (layers: Iterable<string>) => void
 }
@@ -24,13 +24,15 @@ export const LayerMenu = (props: LayerMenuProps) => {
     className,
     opened,
     onSetOpened,
-    layers,
+    layers = [],
     hiddenLayers = [],
     onChangeLayers,
     ...other
   } = useProps("LayerMenu", {}, props)
 
   const hiddenSet = useMemo(() => new Set(hiddenLayers), [hiddenLayers])
+
+  const layersArr = [...layers]
 
   if (!opened) {
     return (
@@ -58,7 +60,7 @@ export const LayerMenu = (props: LayerMenuProps) => {
         >
           <IconCaretDown />
         </Button>
-        {layers?.map(({ id, title }) => (
+        {layersArr.map(({ id, title }) => (
           <Checkbox
             key={id}
             size="xs"

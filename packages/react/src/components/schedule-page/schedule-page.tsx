@@ -15,11 +15,13 @@ import {
 import clsx from "clsx"
 import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
 import { Filter } from "../filter/filter.js"
-import { IconEye } from "@tabler/icons-react"
+import { IconEye, type ReactNode } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import type { TagEntry } from "../../types.js"
+import type { PillBinProps, PillProps } from "../pills/pills.js"
+import type { PillsItemBin, PillsItemType } from "../pills/bin.js"
 
 import classes from "./schedule-page.module.scss"
 
@@ -36,6 +38,14 @@ export type SchedulePageProps = {
   icalFileName?: string
   dayTitleComponent?: string
   binTitleComponent?: string
+  BinProps?: Partial<PillBinProps>
+  PillProps?: Partial<PillProps>
+  renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
+  renderPill?: (
+    props: PillProps,
+    bin: PillsItemBin,
+    item: PillsItemType,
+  ) => ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
   onChangeOnlyBookmarked?: (onlyBookmarked: boolean) => void
   onSelectDay?: (day: Day) => void
@@ -58,6 +68,10 @@ export const SchedulePage = (props: SchedulePageProps) => {
     icalFileName = "schedule",
     dayTitleComponent,
     binTitleComponent,
+    BinProps,
+    PillProps,
+    renderBin,
+    renderPill,
     onChangeType,
     onChangeOnlyBookmarked,
     onSelectDay,
@@ -153,6 +167,10 @@ export const SchedulePage = (props: SchedulePageProps) => {
             type={type}
             dayTitleComponent={dayTitleComponent}
             binTitleComponent={binTitleComponent}
+            BinProps={BinProps}
+            PillProps={PillProps}
+            renderBin={renderBin}
+            renderPill={renderPill}
             selectedDayKey={selectedDayKey}
             onSelectDay={onSelectDay}
           />

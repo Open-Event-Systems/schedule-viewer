@@ -15,6 +15,7 @@ const _Markdown = forwardRef<HTMLDivElement, MarkdownProps>((props, ref) => {
     const md = markdownit({
       breaks: true,
       typographer: true,
+      linkify: true,
     })
 
     md.renderer.rules.link_open = (tokens, idx, options) => {

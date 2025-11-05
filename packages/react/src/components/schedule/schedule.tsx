@@ -6,12 +6,18 @@ import {
   type Day,
   type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
-import { Fragment, useMemo } from "react"
+import { Fragment, useMemo, type ReactNode } from "react"
 import { Stack, Text, Title, useProps, type TitleProps } from "@mantine/core"
 import { format } from "date-fns"
 import { DayFilter } from "../day-filter/day-filter.js"
-import { binItemsByTag, binItemsByTime, binItemsByTitle } from "../pills/bin.js"
-import { Pills } from "../pills/pills.js"
+import {
+  binItemsByTag,
+  binItemsByTime,
+  binItemsByTitle,
+  type PillsItemBin,
+  type PillsItemType,
+} from "../pills/bin.js"
+import { Pills, type PillBinProps, type PillProps } from "../pills/pills.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 
 export type ScheduleProps = {
@@ -21,6 +27,14 @@ export type ScheduleProps = {
   now?: Date
   dayTitleComponent?: string
   binTitleComponent?: string
+  BinProps?: Partial<PillBinProps>
+  PillProps?: Partial<PillProps>
+  renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
+  renderPill?: (
+    props: PillProps,
+    bin: PillsItemBin,
+    item: PillsItemType,
+  ) => ReactNode
   onSelectDay?: (day: Day) => void
 }
 
@@ -57,6 +71,10 @@ const DailyAgendaView = (props: ScheduleProps) => {
     items,
     selectedDayKey,
     binTitleComponent,
+    BinProps,
+    PillProps,
+    renderBin,
+    renderPill,
     onSelectDay,
   } = useProps("DailyAgendaView", {}, props)
 
@@ -99,7 +117,14 @@ const DailyAgendaView = (props: ScheduleProps) => {
         dayFormat={dayFormat}
       />
       {dayFiltered.size > 0 ? (
-        <Pills bins={bins} titleComponent={binTitleComponent} />
+        <Pills
+          bins={bins}
+          titleComponent={binTitleComponent}
+          BinProps={BinProps}
+          PillProps={PillProps}
+          renderBin={renderBin}
+          renderPill={renderPill}
+        />
       ) : (
         <Schedule.NoItems />
       )}
@@ -112,6 +137,10 @@ const FullAgendaView = (props: ScheduleProps) => {
     items,
     dayTitleComponent = "h3",
     binTitleComponent = "h4",
+    BinProps,
+    PillProps,
+    renderBin,
+    renderPill,
   } = useProps("FullAgendaView", {}, props)
 
   const { dayChangeHour, dayFormat, binMinutes } = useScheduleConfig()
@@ -150,7 +179,14 @@ const FullAgendaView = (props: ScheduleProps) => {
         <FullAgendaView.DayTitle component={dayTitleComponent}>
           {dayLabel}
         </FullAgendaView.DayTitle>
-        <Pills bins={bins} titleComponent={binTitleComponent} />
+        <Pills
+          bins={bins}
+          titleComponent={binTitleComponent}
+          BinProps={BinProps}
+          PillProps={PillProps}
+          renderBin={renderBin}
+          renderPill={renderPill}
+        />
       </Fragment>,
     )
   }
@@ -175,20 +211,44 @@ const FullAgendaViewDayTitle = ({
 FullAgendaView.DayTitle = FullAgendaViewDayTitle
 
 const CatalogView = (props: ScheduleProps) => {
-  const { items } = useProps("CatalogView", {}, props)
+  const { items, BinProps, PillProps, renderBin, renderPill } = useProps(
+    "CatalogView",
+    {},
+    props,
+  )
   const bins = useMemo(() => binItemsByTitle(items), [items])
 
-  return <Pills bins={bins} />
+  return (
+    <Pills
+      bins={bins}
+      BinProps={BinProps}
+      PillProps={PillProps}
+      renderBin={renderBin}
+      renderPill={renderPill}
+    />
+  )
 }
 
 const TagsView = (props: ScheduleProps) => {
-  const { items } = useProps("TagsView", {}, props)
+  const { items, BinProps, PillProps, renderBin, renderPill } = useProps(
+    "TagsView",
+    {},
+    props,
+  )
 
   const { tags } = useScheduleConfig()
 
   const bins = useMemo(() => binItemsByTag(items, tags), [items, tags])
 
-  return <Pills bins={bins} />
+  return (
+    <Pills
+      bins={bins}
+      BinProps={BinProps}
+      PillProps={PillProps}
+      renderBin={renderBin}
+      renderPill={renderPill}
+    />
+  )
 }
 
 const NoItems = () => (

@@ -1,152 +1,92 @@
-// import {
-//   Anchor,
-//   Box,
-//   type BoxProps,
-//   Drawer,
-//   type DrawerProps,
-//   Grid,
-//   Stack,
-//   Text,
-//   Title,
-//   useProps,
-// } from "@mantine/core"
-// import clsx from "clsx"
-// import type { MouseEvent } from "react"
+import {
+  Accordion,
+  Box,
+  Drawer,
+  Title,
+  useProps,
+  type BoxProps,
+  type DrawerProps,
+} from "@mantine/core"
+import { useMediaQuery } from "@mantine/hooks"
+import { Markdown } from "@open-event-systems/schedule-react"
+import clsx from "clsx"
+import { type ReactNode } from "react"
 
-// export type MapDetailsProps = BoxProps & {
-//   title?: string
-//   description?: string
-//   type?: "location" | "vendor"
-//   currentEvent?: MapEvent
-//   futureEvent?: MapEvent
-//   onClickEvent?: (e: MouseEvent, event: MapEvent) => void
-//   getEventHref?: (event: MapEvent) => string | undefined
-// }
+export type MapDetailsProps = {
+  title?: ReactNode
+  description?: string
+  nowChildren?: ReactNode
+  laterChildren?: ReactNode
+} & BoxProps
 
-// export const MapDetails = (props: MapDetailsProps) => {
-//   const {
-//     className,
-//     title,
-//     description,
-//     type = "location",
-//     currentEvent,
-//     futureEvent,
-//     onClickEvent,
-//     getEventHref,
-//     ...other
-//   } = useProps("MapDetails", {}, props)
+export const MapDetails = (props: MapDetailsProps) => {
+  const {
+    className,
+    title,
+    description,
+    nowChildren,
+    laterChildren,
+    ...other
+  } = props
 
-//   return (
-//     <Box className={clsx("MapDetails-root", className)} {...other}>
-//       <Stack>
-//         {title && <Title order={4}>{title}</Title>}
-//         {description && <Text size="sm">{description}</Text>}
-//         {type == "location" && (
-//           <MapDetailsEvent
-//             currentEvent={currentEvent}
-//             futureEvent={futureEvent}
-//             onClickEvent={onClickEvent}
-//             getEventHref={getEventHref}
-//           />
-//         )}
-//       </Stack>
-//     </Box>
-//   )
-// }
+  const defaultValue = nowChildren ? "now" : "later"
 
-// const MapDetailsEvent = ({
-//   currentEvent,
-//   futureEvent,
-//   onClickEvent,
-//   getEventHref,
-// }: {
-//   currentEvent?: MapEvent
-//   futureEvent?: MapEvent
-//   onClickEvent?: (e: MouseEvent, event: MapEvent) => void
-//   getEventHref?: (event: MapEvent) => string | undefined
-// }) => {
-//   return (
-//     <Grid gutter="xs" align="baseline">
-//       {currentEvent && (
-//         <>
-//           <Grid.Col span={{ base: 2, xs: 2, sm: 1 }}>
-//             <Text size="sm">
-//               <strong>Now:</strong>
-//             </Text>
-//           </Grid.Col>
-//           <Grid.Col span={{ base: 10, xs: 10, sm: 11 }}>
-//             <Anchor
-//               size="sm"
-//               href={getEventHref && getEventHref(currentEvent)}
-//               onClick={(e) => onClickEvent && onClickEvent(e, currentEvent)}
-//             >
-//               {currentEvent.title}
-//             </Anchor>
-//           </Grid.Col>
-//         </>
-//       )}
-//       {futureEvent && (
-//         <>
-//           <Grid.Col span={{ base: 2, xs: 2, sm: 1 }}>
-//             <Text size="sm">
-//               <strong>Later:</strong>
-//             </Text>
-//           </Grid.Col>
-//           <Grid.Col span={{ base: 10, xs: 10, sm: 11 }}>
-//             <Anchor
-//               size="sm"
-//               href={getEventHref && getEventHref(futureEvent)}
-//               onClick={(e) => onClickEvent && onClickEvent(e, futureEvent)}
-//             >
-//               {futureEvent.title}
-//             </Anchor>
-//           </Grid.Col>
-//         </>
-//       )}
-//     </Grid>
-//   )
-// }
+  return (
+    <Box className={clsx("MapDetails-root", className)} {...other}>
+      {title && (
+        <Title className="MapDetails-title" order={4} component="h2">
+          {title}
+        </Title>
+      )}
+      {description && (
+        <Markdown className="MapDetails-description">{description}</Markdown>
+      )}
+      {laterChildren || (nowChildren && laterChildren) ? (
+        <Accordion
+          className="MapDetails-accordion"
+          defaultValue={defaultValue}
+          chevronPosition="left"
+          {...other}
+        >
+          {nowChildren && (
+            <Accordion.Item key="now" value="now">
+              <Accordion.Control>Now</Accordion.Control>
+              <Accordion.Panel>{nowChildren}</Accordion.Panel>
+            </Accordion.Item>
+          )}
+          {laterChildren && (
+            <Accordion.Item key="later" value="later">
+              <Accordion.Control>Later</Accordion.Control>
+              <Accordion.Panel>{laterChildren}</Accordion.Panel>
+            </Accordion.Item>
+          )}
+        </Accordion>
+      ) : (
+        <Box className="MapDetails-now">{nowChildren}</Box>
+      )}
+    </Box>
+  )
+}
 
-// export type MapDetailsDrawerProps = DrawerProps & {
-//   title?: string
-//   description?: string
-//   type?: "location" | "vendor"
-//   currentEvent?: MapEvent
-//   futureEvent?: MapEvent
-//   onClickEvent?: (e: MouseEvent, event: MapEvent) => void
-//   getEventHref?: (event: MapEvent) => string | undefined
-// }
+export type MapDetailsDrawerProps = DrawerProps
 
-// const MapDetailsDrawer = (props: MapDetailsDrawerProps) => {
-//   const {
-//     className,
-//     title,
-//     description,
-//     currentEvent,
-//     futureEvent,
-//     onClickEvent,
-//     getEventHref,
-//     ...other
-//   } = useProps("MapDetailsDrawer", {}, props)
+const MapDetailsDrawer = (props: MapDetailsDrawerProps) => {
+  const { className, ...other } = useProps("MapDetailsDrawer", {}, props)
+  const isLS = useMediaQuery("(orientation: landscape)")
 
-//   return (
-//     <Drawer
-//       className={clsx("MapDetailsDrawer-root", className)}
-//       position="bottom"
-//       title={title}
-//       withOverlay={false}
-//       size="40%"
-//       {...other}
-//     >
-//       <MapDetails
-//         description={description}
-//         currentEvent={currentEvent}
-//         futureEvent={futureEvent}
-//         onClickEvent={onClickEvent}
-//         getEventHref={getEventHref}
-//       />
-//     </Drawer>
-//   )
-// }
+  return (
+    <Drawer
+      className={clsx("MapDetails-drawer", className)}
+      classNames={{
+        content: "MapDetails-drawerContent",
+        body: "MapDetails-drawerBody",
+      }}
+      position={isLS ? "right" : "bottom"}
+      withCloseButton={false}
+      padding={0}
+      {...other}
+    />
+  )
+}
 
-// MapDetails.Drawer = MapDetailsDrawer
+MapDetails.Drawer = MapDetailsDrawer

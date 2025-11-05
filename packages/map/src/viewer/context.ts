@@ -10,28 +10,31 @@ type MapViewerLocationSettings = Readonly<{
 export type MapViewerContextValue = Readonly<{
   contentWidth?: number
   contentHeight?: number
-  levels: readonly MapLevel[]
-  layers: readonly MapLayer[]
-  flags: readonly string[]
-  locations: readonly MapViewerLocationSettings[]
-  hiddenLayers: readonly string[]
+  levels: Iterable<MapLevel>
+  layers: Iterable<MapLayer>
+  flags: Iterable<string>
+  locationItemInfo: Iterable<MapViewerLocationSettings>
+  hiddenLayers: Iterable<string>
   currentLevelId: string
   isometric: boolean
   activeLocationId?: string | undefined
+  detailsLocationId?: string | undefined
+  zoomLocationId?: string | undefined
 }>
 
 export type MapViewerCallbacks = {
-  onSetCurrentLevelId?: (id: string) => void
-  onSetHiddenLayers?: (layers: Iterable<string>) => void
-  onSetSelectedLocation?: (id: string | undefined) => void
+  onSetLevelId?: (id: string) => void
   onSetIsometric?: (isometric: boolean) => void
+  onSetHiddenLayers?: (layers: Iterable<string>) => void
+  onSetActiveLocationId?: (id: string | undefined) => void
+  onSetDetailsLocationId?: (id: string | undefined) => void
 }
 
 export const MapViewerContext = createContext<MapViewerContextValue>({
   levels: [],
   layers: [],
   flags: [],
-  locations: [],
+  locationItemInfo: [],
   hiddenLayers: [],
   currentLevelId: "",
   isometric: false,

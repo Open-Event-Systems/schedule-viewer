@@ -1,0 +1,40 @@
+.MapDetails-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.MapDetails-title {
+  margin: var(--mantine-spacing-sm);
+  margin-bottom: 0;
+}
+
+.MapDetails-description {
+  margin: var(--mantine-spacing-sm);
+  margin-bottom: 0;
+}
+
+.MapDetails-accordion {
+  flex: auto;
+  margin-top: var(--mantine-spacing-sm);
+  &:nth-child(1) {
+    margin-top: 0;
+  }
+}
+
+.MapDetails-now {
+  flex: auto;
+  margin: var(--mantine-spacing-sm);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-auto-flow: row;
+}
+
+.MapDetails-drawerContent,
+.MapDetails-drawerBody {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-auto-flow: row;
+}

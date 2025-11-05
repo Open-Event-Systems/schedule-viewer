@@ -3,7 +3,7 @@ import type { MapLevel } from "../types.js"
 import clsx from "clsx"
 
 export type LevelMenuProps = {
-  levels?: readonly MapLevel[]
+  levels?: Iterable<MapLevel>
   selectedLevel?: string
   onSelectLevel?: (id: string) => void
 } & StackProps
@@ -16,17 +16,18 @@ export const LevelMenu = (props: LevelMenuProps) => {
     onSelectLevel,
     ...other
   } = useProps("LevelMenu", {}, props)
+  const levelsArr = [...levels]
 
-  const curIdx = levels.findIndex((lvl) => lvl.id == selectedLevel)
+  const curIdx = levelsArr.findIndex((lvl) => lvl.id == selectedLevel)
 
   const setFocus = (els: HTMLButtonElement[], d: number) => {
     const newIdx =
-      (((curIdx + d) % levels.length) + levels.length) % levels.length
+      (((curIdx + d) % levelsArr.length) + levelsArr.length) % levelsArr.length
     els[newIdx]?.focus()
     els[newIdx]?.click()
   }
 
-  const btns = levels.map((lvl) => {
+  const btns = levelsArr.map((lvl) => {
     const active = lvl.id == selectedLevel
     return (
       <Button

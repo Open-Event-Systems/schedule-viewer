@@ -110,6 +110,8 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
   )
 })
 
+MapSVG.displayName = "MapSVG"
+
 const initSVG = (svg: SVGSVGElement) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.layer)) {
     removeInlineDisplay(el)

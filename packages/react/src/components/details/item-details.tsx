@@ -17,7 +17,12 @@ import {
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import { add, differenceInSeconds, format, formatISO } from "date-fns"
-import { memo, type MouseEvent, type ReactNode } from "react"
+import {
+  memo,
+  type MouseEvent,
+  type NamedExoticComponent,
+  type ReactNode,
+} from "react"
 import { makeTagFormatter, makeValidTagsFilter } from "../../config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown } from "../markdown/markdown.js"
@@ -50,13 +55,18 @@ export type ItemDetailsProps = {
   locationHref?: string
   onClickLocation?: (e: MouseEvent) => void
   tags?: Iterable<TagEntry>
+  titleComponent?: string
 } & BoxProps
 
-export const ItemDetails = (props: ItemDetailsProps) => (
-  <ItemDetailsMemo {...props} />
-)
+type ItemDetailsComponentType = NamedExoticComponent<ItemDetailsProps> & {
+  Time: typeof Time
+  Location: typeof Location
+  Contacts: typeof Contacts
+  Contact: typeof Contact
+  Tags: typeof Tags
+}
 
-const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
+const _ItemDetails = memo((props: ItemDetailsProps) => {
   const {
     className,
     item,
@@ -69,6 +79,7 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
     locationHref,
     onClickLocation,
     tags = [],
+    titleComponent = "h2",
     ...other
   } = useProps("ItemDetails", {}, props)
 
@@ -91,6 +102,7 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
     >
       <Title
         className={clsx("ItemDetails-title", classes.title)}
+        component={titleComponent}
         order={large ? 2 : 4}
       >
         {item.title}
@@ -157,9 +169,9 @@ const ItemDetailsMemo = memo((props: ItemDetailsProps) => {
       <ItemDetails.Tags tags={tags} eventTags={item.tags} c={altTextColor} />
     </Box>
   )
-})
+}) as Partial<ItemDetailsComponentType>
 
-ItemDetailsMemo.displayName = "ItemDetailsMemo"
+_ItemDetails.displayName = "ItemDetails"
 
 const Contacts = memo(
   ({
@@ -368,8 +380,10 @@ const Tags = memo(
 
 Tags.displayName = "Tags"
 
-ItemDetails.Time = Time
-ItemDetails.Location = Location
-ItemDetails.Contacts = Contacts
-ItemDetails.Contact = Contact
-ItemDetails.Tags = Tags
+_ItemDetails.Time = Time
+_ItemDetails.Location = Location
+_ItemDetails.Contacts = Contacts
+_ItemDetails.Contact = Contact
+_ItemDetails.Tags = Tags
+
+export const ItemDetails = _ItemDetails as ItemDetailsComponentType
