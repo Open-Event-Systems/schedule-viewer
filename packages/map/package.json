@@ -25,27 +25,22 @@
     "@storybook/addon-docs": "^10.0.0",
     "@storybook/react-vite": "^10.0.0",
     "@types/react": "^19.2.2",
-    "mobx": "^6.15.0",
-    "mobx-react-lite": "^4.1.1",
     "react": "^19.2.0",
     "storybook": "^10.0.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
-    "vite-plugin-dts": "^4.5.4",
-    "zod": "^4.1.12"
+    "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
     "@open-event-systems/schedule-react": "^0.1.0",
-    "mobx": "^6.13.5",
-    "mobx-react-lite": "^4.1.0",
     "react": "^19.1.0"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.35.0",
     "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
-    "react-zoom-pan-pinch": "^3.7.0"
+    "react-zoom-pan-pinch": "^3.7.0",
+    "zod": "^4.1.12"
   }
 }
