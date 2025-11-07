@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { MouseEvent, ReactNode } from "react"
-import { Pills } from "./pills.js"
+import { Pills, type PillProps } from "./pills.js"
 import { useCallback, useMemo } from "react"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
 import { makeTagIndicatorFunc } from "../../config.js"
-import { ItemHoverCard } from "../hovercard/item-hover-card.js"
-import { binItemsByTime, type PillsItemType } from "./bin.js"
-import { useItemDetailsFunc } from "../../hooks/details.js"
-import { PillPropsContext } from "../../hooks/pills.js"
+import { binItemsByTime } from "./bin.js"
+import type {
+  ItemDetailsItemType,
+  ItemDetailsProps,
+} from "../details/item-details.js"
 
 const meta: Meta<typeof Pills> = {
   component: Pills,
@@ -23,33 +23,38 @@ export const Default: StoryObj<typeof Pills> = {
       [],
     )
 
-    const detailsFunc = useItemDetailsFunc()
+    const getDetailsProps = useCallback((): Partial<ItemDetailsProps> => {
+      return {
+        locationHref: "#",
+        onClickLocation(e) {
+          e.preventDefault()
+        },
+        tags: parsedConfig.tags,
+      }
+    }, [parsedConfig.tags])
 
-    const func = useCallback(
-      (item: PillsItemType) => {
-        return {
-          href: "#",
-          onClick(e: MouseEvent) {
-            e.preventDefault()
-          },
-          indicator: indicatorFunc(item.tags ?? []),
-          renderContent(c: ReactNode) {
-            const { ItemDetailsProps } = detailsFunc(item)
-            return (
-              <ItemHoverCard item={item} ItemDetailsProps={ItemDetailsProps}>
-                {c}
-              </ItemHoverCard>
-            )
-          },
-        }
+    const renderPill = useCallback(
+      (props: PillProps, item: ItemDetailsItemType) => {
+        return (
+          <Pills.Pill
+            key={item.id}
+            {...props}
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+            }}
+            indicator={indicatorFunc(item.tags ?? [])}
+            hasItemDetailsHoverCard
+            item={item}
+            ItemDetailsProps={getDetailsProps}
+          >
+            {item.title}
+          </Pills.Pill>
+        )
       },
-      [indicatorFunc, detailsFunc],
+      [indicatorFunc, getDetailsProps],
     )
 
-    return (
-      <PillPropsContext value={func}>
-        <Pills bins={bins} />
-      </PillPropsContext>
-    )
+    return <Pills bins={bins} renderPill={renderPill} />
   },
 }

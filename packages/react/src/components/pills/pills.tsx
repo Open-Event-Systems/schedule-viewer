@@ -9,6 +9,10 @@ import {
 import clsx from "clsx"
 import {
   memo,
+  useCallback,
+  useMemo,
+  useState,
+  type ComponentPropsWithoutRef,
   type MouseEvent,
   type NamedExoticComponent,
   type ReactNode,
@@ -17,17 +21,18 @@ import type { PillsItemBin, PillsItemType } from "./bin.js"
 
 import binClasses from "./bin.module.scss"
 import pillClasses from "./pill.module.scss"
+import { ItemHoverCard } from "../hovercard/item-hover-card.js"
+import type {
+  ItemDetailsItemType,
+  ItemDetailsProps,
+} from "../details/item-details.js"
 
 export type PillsProps = {
   bins?: Iterable<PillsItemBin>
   BinProps?: Partial<PillBinProps>
   PillProps?: Partial<PillProps>
   renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
-  renderPill?: (
-    props: PillProps,
-    bin: PillsItemBin,
-    item: PillsItemType,
-  ) => ReactNode
+  renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
   titleComponent?: string
 } & PillsRootProps
 
@@ -79,11 +84,7 @@ const ManagedBin = memo(
     props: {
       bin: PillsItemBin
       PillProps?: Partial<PillProps>
-      renderPill?: (
-        props: PillProps,
-        bin: PillsItemBin,
-        item: PillsItemType,
-      ) => ReactNode
+      renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
     } & PillBinProps,
   ) => {
     const { bin, PillProps, renderPill, ...other } = props
@@ -92,7 +93,7 @@ const ManagedBin = memo(
 
     if (renderPill) {
       for (const item of bin.items) {
-        els.push(renderPill({ ...PillProps, children: item.title }, bin, item))
+        els.push(renderPill({ ...PillProps, children: item.title }, item))
       }
     } else {
       for (const item of bin.items) {
@@ -181,14 +182,20 @@ export type PillProps = {
     button?: string
     body?: string
     indicator?: string
+    hoverCardDropdown?: string
   }
   indicator?: ReactNode
   href?: string
   button?: boolean
+  hasItemDetailsHoverCard?: boolean
+  item?: ItemDetailsItemType
+  ItemDetailsProps?:
+    | Partial<ItemDetailsProps>
+    | ((item: ItemDetailsItemType) => Partial<ItemDetailsProps>)
   children?: ReactNode
-  renderContent?: (children: ReactNode) => ReactNode
   onClick?: (e: MouseEvent) => void
-} & BoxProps
+} & BoxProps &
+  ComponentPropsWithoutRef<"li">
 
 const Pill = memo((props: PillProps) => {
   const {
@@ -197,13 +204,33 @@ const Pill = memo((props: PillProps) => {
     indicator,
     href,
     button,
+    hasItemDetailsHoverCard,
+    item,
+    ItemDetailsProps,
     children,
-    renderContent,
     onClick,
     ...other
   } = useProps("Pill", {}, props)
 
-  let inner: ReactNode = button ? (
+  const [hoverEnabled, setHoverEnabled] = useState(false)
+
+  const detailsProps = useMemo(() => {
+    if (!hoverEnabled) {
+      return
+    }
+
+    if (item && typeof ItemDetailsProps == "function") {
+      return ItemDetailsProps(item)
+    } else if (typeof ItemDetailsProps == "object") {
+      return ItemDetailsProps
+    }
+  }, [hoverEnabled, ItemDetailsProps, item])
+
+  const handleMouseEnter = useCallback(() => {
+    setHoverEnabled(true)
+  }, [])
+
+  const inner = button ? (
     <Box
       component="button"
       className={clsx(
@@ -214,6 +241,7 @@ const Pill = memo((props: PillProps) => {
         classNames?.body,
       )}
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
     >
       {children}
     </Box>
@@ -223,12 +251,25 @@ const Pill = memo((props: PillProps) => {
       className={clsx("Pill-body", pillClasses.body, classNames?.body)}
       href={href}
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
     >
       {children}
     </Box>
   )
 
-  inner = renderContent ? renderContent(inner) : inner
+  const withHover = hasItemDetailsHoverCard ? (
+    <ItemHoverCard
+      classNames={{
+        dropdown: clsx("Pill-hoverCardDropdown", classNames?.hoverCardDropdown),
+      }}
+      item={hoverEnabled ? item : undefined}
+      ItemDetailsProps={detailsProps}
+    >
+      {inner}
+    </ItemHoverCard>
+  ) : (
+    inner
+  )
 
   const wrapped = indicator ? (
     <Indicator
@@ -239,10 +280,10 @@ const Pill = memo((props: PillProps) => {
         classNames?.indicator,
       )}
     >
-      {inner}
+      {withHover}
     </Indicator>
   ) : (
-    inner
+    withHover
   )
 
   return (

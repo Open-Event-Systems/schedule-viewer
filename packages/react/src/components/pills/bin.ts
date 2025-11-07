@@ -1,12 +1,8 @@
-import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 import { format, formatISO, set } from "date-fns"
 import type { TagEntry } from "../../types.js"
+import type { ItemDetailsItemType } from "../details/item-details.js"
 
-export type PillsItemType = ScheduleItem &
-  Readonly<{
-    title?: string
-    tags?: Iterable<string>
-  }>
+export type PillsItemType = ItemDetailsItemType
 
 export type PillsItemBin = Readonly<{
   id: string

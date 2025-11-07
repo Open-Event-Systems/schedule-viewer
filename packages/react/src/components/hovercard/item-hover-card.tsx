@@ -7,13 +7,16 @@ import clsx from "clsx"
 import classes from "./item-hover-card.module.scss"
 
 export type ItemHoverCardProps = HoverCardProps & {
-  item: ScheduleItem
+  item?: ScheduleItem
   children?: ReactNode
   ItemDetailsProps?: Partial<ItemDetailsProps>
+  classNames?: {
+    dropdown?: string
+  }
 }
 
 export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
-  const { item, children, ItemDetailsProps, ...other } = useProps(
+  const { item, children, ItemDetailsProps, classNames, ...other } = useProps(
     "ItemHoverCard",
     {},
     props,
@@ -22,7 +25,12 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
   return (
     <HoverCard
       classNames={{
-        dropdown: clsx("ItemHoverCard-dropdown", classes.dropdown),
+        ...classNames,
+        dropdown: clsx(
+          "ItemHoverCard-dropdown",
+          classes.dropdown,
+          classNames?.dropdown,
+        ),
       }}
       position="top"
       withArrow
@@ -30,7 +38,7 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
     >
       <HoverCard.Target>{children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        <ItemDetails {...ItemDetailsProps} item={item} />
+        {item && <ItemDetails {...ItemDetailsProps} item={item} />}
       </HoverCard.Dropdown>
     </HoverCard>
   )

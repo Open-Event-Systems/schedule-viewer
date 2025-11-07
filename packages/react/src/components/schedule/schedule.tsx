@@ -30,11 +30,7 @@ export type ScheduleProps = {
   BinProps?: Partial<PillBinProps>
   PillProps?: Partial<PillProps>
   renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
-  renderPill?: (
-    props: PillProps,
-    bin: PillsItemBin,
-    item: PillsItemType,
-  ) => ReactNode
+  renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
   onSelectDay?: (day: Day) => void
 }
 

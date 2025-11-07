@@ -41,11 +41,7 @@ export type SchedulePageProps = {
   BinProps?: Partial<PillBinProps>
   PillProps?: Partial<PillProps>
   renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
-  renderPill?: (
-    props: PillProps,
-    bin: PillsItemBin,
-    item: PillsItemType,
-  ) => ReactNode
+  renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
   onChangeOnlyBookmarked?: (onlyBookmarked: boolean) => void
   onSelectDay?: (day: Day) => void

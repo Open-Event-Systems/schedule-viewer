@@ -41,7 +41,7 @@ export type ItemDetailsItemType = ScheduleItem &
       name?: string
       url?: string
     }>[]
-    tags?: ReadonlySet<string>
+    tags?: Iterable<string>
   }>
 
 export type ItemDetailsProps = {
