@@ -21,7 +21,7 @@
   "devDependencies": {
     "@mantine/core": "^8.3.5",
     "@mantine/hooks": "^8.3.5",
-    "@open-event-systems/schedule-react": "^0.1.0",
+    "@open-event-systems/schedule-react": "workspace:^0.1.0",
     "@storybook/addon-docs": "^10.0.0",
     "@storybook/react-vite": "^10.0.0",
     "@types/react": "^19.2.2",
@@ -34,7 +34,7 @@
   "peerDependencies": {
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
-    "@open-event-systems/schedule-react": "^0.1.0",
+    "@open-event-systems/schedule-react": "workspace:^0.1.0",
     "react": "^19.1.0"
   },
   "dependencies": {
