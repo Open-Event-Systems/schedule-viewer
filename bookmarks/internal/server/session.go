@@ -1,88 +1,65 @@
 package server
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
 
-	nanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/golang-jwt/jwt/v5"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
-const COOKIE_NAME = "schedule-session-"
-const COOKIE_EXPIRATION = 3 * 30 * 24 * time.Hour / time.Second
-
-var ErrInvalidSession = errors.New("invalid session")
-
-type sessionId struct {
-	Id        string
-	Signature string
+type SessionToken struct {
+	jwt.RegisteredClaims
+	Type       string `json:"typ"`
+	ScheduleId string `json:"sch"`
 }
 
-func newSessionId(secret string) sessionId {
-	id := nanoid.Must()
-	sig := sign(COOKIE_NAME+"="+id, secret)
-	return sessionId{
-		Id:        id,
-		Signature: sig,
+const tokenType = "bkmsess"
+const idPrefix = "bkmsess_"
+
+var ErrInvalidSessionId = errors.New("invalid session id")
+
+func NewSession(scheduleId string) SessionToken {
+	id := idPrefix + gonanoid.Must()
+	return SessionToken{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject: id,
+		},
+		Type:       tokenType,
+		ScheduleId: scheduleId,
 	}
 }
 
-func getSessionIdFromCookie(req *http.Request, secret string, scheduleId string) (sessionId, error) {
-	cookieVal, err := req.Cookie(getCookieName(scheduleId))
+func (s SessionToken) Validate() error {
+	if s.Type != tokenType {
+		return ErrInvalidSessionId
+	}
+	return nil
+}
+
+func DecodeSession(tokStr string, secret string) (SessionToken, error) {
+	var sess SessionToken
+
+	_, err := jwt.ParseWithClaims(
+		tokStr,
+		&sess,
+		func(t *jwt.Token) (any, error) { return []byte(secret), nil },
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),
+	)
+
 	if err != nil {
-		return sessionId{}, ErrInvalidSession
+		return sess, fmt.Errorf("%w: %w", ErrInvalidSessionId, err)
 	}
 
-	return verifySessionId(cookieVal.Value, secret)
+	return sess, nil
 }
 
-func verifySessionId(sessionValue string, secret string) (sessionId, error) {
-	parts := strings.Split(sessionValue, ".")
-	if len(parts) < 2 {
-		return sessionId{}, ErrInvalidSession
+func (s SessionToken) Encode(secret string) string {
+	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, s)
+	str, err := tok.SignedString([]byte(secret))
+	if err != nil {
+		panic(err)
 	}
 
-	id := parts[0]
-	sig := parts[1]
-	checkSig := sign(COOKIE_NAME+"="+id, secret)
-	if sig != checkSig {
-		return sessionId{}, ErrInvalidSession
-	}
-
-	return sessionId{
-		Id:        id,
-		Signature: sig,
-	}, nil
-}
-
-func (s sessionId) String() string {
-	return s.Id + "." + s.Signature
-}
-
-func (s sessionId) SetCookie(w http.ResponseWriter, domain string, scheduleId string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     getCookieName(scheduleId),
-		Value:    s.String(),
-		MaxAge:   int(COOKIE_EXPIRATION),
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-		Domain:   domain,
-	})
-}
-
-func sign(text string, secret string) string {
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write([]byte(text))
-	sig := mac.Sum(nil)
-	sigStr := base64.URLEncoding.EncodeToString(sig)
-	return strings.TrimRight(sigStr, "=")
-}
-
-func getCookieName(scheduleId string) string {
-	return fmt.Sprintf("%s%s", COOKIE_NAME, scheduleId)
+	return str
 }

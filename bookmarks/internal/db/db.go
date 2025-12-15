@@ -1,184 +1,171 @@
 package db
 
 import (
-	"bookmarks/internal/selection"
+	"bookmarks/internal/bookmarks"
+	"context"
 	"database/sql"
+	"errors"
 	"time"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type DB struct {
-	conn *sql.DB
+	scheduleId string
+	conn       *sql.Tx
+	context    context.Context
 }
 
-func NewDB(path string) *DB {
-	conn, err := sql.Open("sqlite3", path)
-	if err != nil {
-		panic(err)
-	}
-
+func NewDB(ctx context.Context, scheduleId string, conn *sql.Tx) *DB {
 	return &DB{
-		conn: conn,
+		scheduleId: scheduleId,
+		conn:       conn,
+		context:    ctx,
 	}
 }
 
-func (db *DB) Init() {
-	if _, err := db.conn.Exec(
-		"CREATE TABLE IF NOT EXISTS schedule_selection (" +
-			"schedule_id TEXT NOT NULL, " +
-			"selection_hash TEXT NOT NULL, " +
-			"event_id TEXT NOT NULL, " +
-			"PRIMARY KEY (schedule_id, selection_hash, event_id)" +
+func CreateTables(db *sql.Tx) error {
+	_, err := db.Exec(
+		"CREATE TABLE IF NOT EXISTS selection_item (" +
+			"schedule_id TEXT NOT NULL," +
+			"id TEXT NOT NULL," +
+			"item_id TEXT NOT NULL," +
+			"PRIMARY KEY (schedule_id, id, item_id)" +
 			");",
-	); err != nil {
-		panic(err)
+	)
+
+	if err != nil {
+		return err
 	}
 
-	if _, err := db.conn.Exec(
-		"CREATE INDEX IF NOT EXISTS ix_schedule_selection_event " +
-			"ON schedule_selection (schedule_id, event_id)",
-	); err != nil {
-		panic(err)
-	}
-
-	if _, err := db.conn.Exec(
+	_, err = db.Exec(
 		"CREATE TABLE IF NOT EXISTS session (" +
-			"id TEXT NOT NULL, " +
-			"schedule_id TEXT NOT NULL, " +
-			"date TEXT NOT NULL, " +
-			"selection_hash TEXT NOT NULL, " +
+			"schedule_id TEXT NOT NULL," +
+			"id TEXT NOT NULL," +
+			"date TEXT NOT NULL," +
+			"ip TEXT NOT NULL," +
+			"partial_ip TEXT NOT NULL," +
+			"selection_id TEXT NOT NULL," +
 			"PRIMARY KEY (id, schedule_id)" +
 			");",
-	); err != nil {
-		panic(err)
-	}
-
-	if _, err := db.conn.Exec(
-		"CREATE INDEX IF NOT EXISTS ix_session_schedule_selection_hash " +
-			"ON session (schedule_id, selection_hash)",
-	); err != nil {
-		panic(err)
-	}
-
-}
-
-func (db *DB) Close() error {
-	return db.conn.Close()
-}
-
-func (db *DB) SaveSelection(scheduleId string, set *selection.Selection) (string, error) {
-	hash := set.Hash()
-
-	tx, err := db.conn.Begin()
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	cur := tx.QueryRow("SELECT COUNT(1) FROM schedule_selection WHERE schedule_id = ? AND selection_hash = ?", scheduleId, hash)
-	var curCount int
-	err = cur.Scan(&curCount)
-	if err == nil && curCount > 0 {
-		return hash, nil
-	}
-
-	stmt, err := tx.Prepare("INSERT INTO schedule_selection VALUES (?, ?, ?) ON CONFLICT DO NOTHING")
-	if err != nil {
-		return "", err
-	}
-
-	for _, eventId := range set.GetEventIds() {
-		if _, err := stmt.Exec(scheduleId, hash, eventId); err != nil {
-			return "", err
-		}
-	}
-
-	if err = tx.Commit(); err != nil {
-		return "", err
-	}
-
-	return hash, nil
-}
-
-func (db *DB) GetSelection(scheduleId string, hash string) (*selection.Selection, error) {
-	res, err := db.conn.Query("SELECT event_id FROM schedule_selection WHERE schedule_id = ? AND selection_hash = ?", scheduleId, hash)
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]string, 0)
-
-	for res.Next() {
-		var event string
-		if err := res.Scan(&event); err != nil {
-			return nil, err
-		}
-		results = append(results, event)
-	}
-
-	return selection.NewSelection(results), nil
-}
-
-func (db *DB) SetSessionSelection(sessionId string, scheduleId string, hash string) (string, error) {
-	tx, err := db.conn.Begin()
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	now := time.Now().Format(time.RFC3339Nano)
-
-	if _, err = tx.Exec(
-		"INSERT INTO session VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET selection_hash = ?, date = ?", sessionId, scheduleId, now, hash, hash, now,
-	); err != nil {
-		return "", err
-	}
-	tx.Commit()
-
-	return now, nil
-}
-
-func (db *DB) GetSessionSelection(sessionId string, scheduleId string) (*selection.Selection, string, error) {
-	hashRow := db.conn.QueryRow("SELECT selection_hash, date FROM session WHERE schedule_id = ? AND id = ?", scheduleId, sessionId)
-	var hash string
-	var date string
-	var err error
-	if err = hashRow.Scan(&hash, &date); err != nil && err != sql.ErrNoRows {
-		return nil, "", err
-	}
-
-	if err == sql.ErrNoRows {
-		return nil, "", nil
-	}
-
-	selection, err := db.GetSelection(scheduleId, hash)
-
-	return selection, date, err
-}
-
-func (db *DB) GetEventSelectionCounts(scheduleId string) (map[string]int, error) {
-	res, err := db.conn.Query(
-		"SELECT sl.event_id, COUNT(1) FROM schedule_selection sl "+
-			"JOIN session s ON s.schedule_id = sl.schedule_ID "+
-			"AND s.selection_hash=sl.selection_hash "+
-			"WHERE s.schedule_id = ? GROUP BY sl.event_id",
-		scheduleId,
 	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *DB) SetSelections(selections *bookmarks.Selections) error {
+	_, err := db.conn.ExecContext(db.context, "DELETE FROM selection_item WHERE schedule_id = ? AND id = ?", db.scheduleId, selections.Id())
+	if err != nil {
+		return err
+	}
+
+	stmt, err := db.conn.PrepareContext(db.context, "INSERT INTO selection_item VALUES (?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for item := range selections.Iter() {
+		_, err := stmt.ExecContext(db.context, db.scheduleId, selections.Id(), item)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *DB) GetSelectionsExist(id string) (bool, error) {
+	res := db.conn.QueryRowContext(
+		db.context,
+		"SELECT EXISTS("+
+			"SELECT 1 FROM selection_item WHERE schedule_id = ? AND id = ? LIMIT 1"+
+			")",
+		db.scheduleId, id,
+	)
+
+	var exists bool
+	err := res.Scan(&exists)
+	return exists, err
+}
+
+func (db *DB) GetSelections(id string) (*bookmarks.Selections, error) {
+	res, err := db.conn.QueryContext(db.context, "SELECT item_id FROM selection_item WHERE schedule_id = ? AND id = ?", db.scheduleId, id)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	sels := bookmarks.NewSelections(func(yield func(string) bool) {
+		for res.Next() {
+			var item string
+			err = res.Scan(&item)
+			if err != nil {
+				return
+			}
+
+			if !yield(item) {
+				return
+			}
+		}
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	counts := make(map[string]int)
-	for res.Next() {
-		var eventId string
-		var count int
-		err = res.Scan(&eventId, &count)
-		if err != nil {
-			return nil, err
-		}
-		counts[eventId] = count
+	if res.Err() != nil {
+		return nil, res.Err()
 	}
 
-	return counts, nil
+	return sels, nil
+}
+
+func (db *DB) SetSessionSelectionId(sessionId string, id string, date time.Time, ip string, partialIp string) error {
+	nowStr := date.Format(time.RFC3339Nano)
+
+	_, err := db.conn.ExecContext(
+		db.context,
+		"INSERT INTO session VALUES (?, ?, ?, ?, ?, ?) "+
+			"ON CONFLICT DO UPDATE SET selection_id = ?, date = ?, ip = ?, partial_ip = ?",
+		db.scheduleId,
+		sessionId,
+		nowStr,
+		ip,
+		partialIp,
+		id,
+		id,
+		nowStr,
+		ip,
+		partialIp,
+	)
+
+	return err
+}
+
+func (db *DB) GetSessionSelectionId(sessionId string) (string, time.Time, error) {
+	row := db.conn.QueryRowContext(
+		db.context,
+		"SELECT date, selection_id FROM session WHERE schedule_id = ? AND id = ?",
+		db.scheduleId,
+		sessionId,
+	)
+
+	var (
+		dateStr     string
+		selectionId string
+	)
+
+	err := row.Scan(&dateStr, &selectionId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", time.Time{}, nil
+	} else if err != nil {
+		return "", time.Time{}, err
+	}
+
+	date, _ := time.Parse(time.RFC3339Nano, dateStr)
+
+	return selectionId, date, nil
 }

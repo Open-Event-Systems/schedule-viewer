@@ -3,29 +3,29 @@ package config
 import (
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
-	DBURL          string            `yaml:"db_url"`
+	DB_URL         string            `yaml:"db_url"`
 	AllowedOrigins []string          `yaml:"allowed_origins"`
-	Domain         string            `yaml:"domain"`
-	ScheduleURLs   map[string]string `yaml:"schedule_urls"`
+	URLPrefix      string            `yaml:"url_prefix"`
+	ScheduleURLs     map[string]string `yaml:"schedule_urls"`
 	Secret         string            `yaml:"secret"`
 }
 
-func ParseConfig(path string) *Config {
+func LoadConfig(path string) Config {
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
 
-	var config *Config
+	dec := yaml.NewDecoder(f)
+	var config Config
+	err = dec.Decode(&config)
 
-	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
+	if err != nil {
 		panic(err)
 	}
-
 	return config
 }
