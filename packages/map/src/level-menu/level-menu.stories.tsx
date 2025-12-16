@@ -12,9 +12,9 @@ export default meta
 export const Default: StoryObj<typeof LevelMenu> = {
   args: {
     levels: [
-      { id: "2f", title: "2F", url: "" },
-      { id: "lobby", title: "Lobby", url: "" },
-      { id: "ll", title: "Lower", url: "" },
+      { id: "ll", title: "Lower" },
+      { id: "lobby", title: "Lobby" },
+      { id: "2f", title: "2F" },
     ],
   },
   decorators: [
