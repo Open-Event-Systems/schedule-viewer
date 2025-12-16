@@ -17,6 +17,8 @@ const locationSchema = z.looseObject({
   level: z.string(),
   title: z.string().optional(),
   description: z.string().optional(),
+  aliases: z.array(z.string()).optional(),
+  zoomScale: z.number().optional(),
 })
 
 const configSchema = z.looseObject({

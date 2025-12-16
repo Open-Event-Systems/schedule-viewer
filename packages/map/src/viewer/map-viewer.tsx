@@ -109,10 +109,10 @@ export const MapViewer = (props: MapViewerProps) => {
 
   const rootRef = useRef<HTMLDivElement | null>(null)
 
-  const localZoomFuncRef = useRef<ZoomFunc | null>(null)
+  const [zoomFunc, setZoomFunc] = useState<ZoomFunc | null>(null)
   const setZoomFuncRef = useCallback(
     (func: ZoomFunc | null) => {
-      localZoomFuncRef.current = func
+      setZoomFunc(() => func)
 
       if (typeof zoomFuncRef == "function") {
         zoomFuncRef(func)
@@ -180,18 +180,21 @@ export const MapViewer = (props: MapViewerProps) => {
   }, [levels])
 
   useEffect(() => {
-    if (zoomLocationId && localZoomFuncRef.current && rootRef.current) {
+    if (zoomLocationId && zoomFunc && rootRef.current) {
+      const loc = [...locations].find((l) => l.id == zoomLocationId)
+      const zoomAmt = loc?.zoomScale
+
       const locCls = mapSVGClassNames.areaId(zoomLocationId)
       const els = rootRef.current.getElementsByClassName(locCls)
       for (const el of els) {
-        localZoomFuncRef.current(el as HTMLElement)
+        zoomFunc(el as HTMLElement, zoomAmt)
         break
       }
     }
-  }, [zoomLocationId])
+  }, [zoomLocationId, locations, zoomFunc])
 
   const handleZoom = useCallback((type: "in" | "out" | "reset") => {
-    localZoomFuncRef.current && localZoomFuncRef.current(type)
+    zoomFunc && zoomFunc(type)
   }, [])
 
   const locationObj = useMemo(() => {

@@ -15,6 +15,7 @@ export type MapLocation = Readonly<{
   title?: string
   description?: string
   aliases?: readonly string[]
+  zoomScale?: number
 }>
 
 export type MapConfig = Readonly<{
