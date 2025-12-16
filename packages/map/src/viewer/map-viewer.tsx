@@ -182,7 +182,7 @@ export const MapViewer = (props: MapViewerProps) => {
   useEffect(() => {
     if (zoomLocationId && zoomFunc && rootRef.current) {
       const loc = [...locations].find((l) => l.id == zoomLocationId)
-      const zoomAmt = loc?.zoomScale
+      const zoomAmt = loc?.zoomScale ?? 0.5
 
       const locCls = mapSVGClassNames.areaId(zoomLocationId)
       const els = rootRef.current.getElementsByClassName(locCls)
