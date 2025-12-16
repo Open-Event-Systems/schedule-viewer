@@ -13,3 +13,9 @@
     display: none;
   }
 }
+
+.Map-location-icon {
+  &.Map-empty {
+    display: none;
+  }
+}

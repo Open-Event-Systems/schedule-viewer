@@ -162,6 +162,7 @@ const updateLocationText = (
 ) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.locationTitle)) {
     if (el instanceof SVGElement) {
+      removeInlineDisplay(el)
       setLocationText(el, "")
     }
   }
@@ -185,6 +186,7 @@ const updateLocationIcon = (
 ) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.locationIcon)) {
     if (el instanceof SVGElement) {
+      removeInlineDisplay(el)
       setLocationIcon(el)
     }
   }
