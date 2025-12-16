@@ -1,0 +1,15 @@
+.Map-layer {
+  &.Map-hidden {
+    display: none;
+  }
+}
+
+.Map-click {
+  cursor: pointer;
+}
+
+.Map-location-title {
+  &.Map-empty {
+    display: none;
+  }
+}

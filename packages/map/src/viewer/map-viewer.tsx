@@ -40,7 +40,7 @@ import {
 } from "../details/map-details.js"
 
 import classes from "./map-viewer.module.scss"
-import "./map.module.scss"
+import "./map.scss"
 
 export type MapViewerLocationItemInfo = Readonly<{
   id: string
