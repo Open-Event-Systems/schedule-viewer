@@ -82,8 +82,17 @@ export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
     (e: MouseEvent<SVGElement>) => {
       const base = mapSVGClassNames.clickId("")
       if (onClickArea) {
-        if (e.target instanceof SVGElement) {
-          const clsIds = [...e.target.classList]
+        if (e.target instanceof SVGElement || e.target instanceof HTMLElement) {
+          let targetEl = e.target
+
+          if (
+            targetEl.classList.contains(mapSVGClassNames.foreignObjectText) &&
+            targetEl.parentElement
+          ) {
+            targetEl = targetEl.parentElement
+          }
+
+          const clsIds = [...targetEl.classList]
             .filter((cls) => cls.startsWith(base))
             .map((cls) => cls.substring(base.length))
           if (clsIds[0]) {
