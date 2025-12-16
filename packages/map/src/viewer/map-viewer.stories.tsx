@@ -109,11 +109,13 @@ const mapCfg = {
       id: "room-1",
       title: "Room 1",
       description: "Room 1",
+      level: "lobby",
     },
     {
       id: "room-2",
       title: "Room 2",
       description: "Room 2",
+      level: "2f",
     },
   ],
   width: 960,
