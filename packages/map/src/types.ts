@@ -1,8 +1,15 @@
-export type MapLevel = Readonly<{
-  id: string
-  title: string
+export type MapObject = Readonly<{
   url: string
+  type?: string
+  noIsometricTransform?: boolean
 }>
+
+export type MapLevel = MapObject &
+  Readonly<{
+    id: string
+    type: "level"
+    title: string
+  }>
 
 export type MapLayer = Readonly<{
   id: string
@@ -19,7 +26,7 @@ export type MapLocation = Readonly<{
 }>
 
 export type MapConfig = Readonly<{
-  levels: readonly MapLevel[]
+  objects: readonly (MapObject | MapLevel)[]
   layers: readonly MapLayer[]
   locations: readonly MapLocation[]
   width: number

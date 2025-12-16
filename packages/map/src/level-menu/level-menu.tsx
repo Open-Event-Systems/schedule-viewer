@@ -33,7 +33,7 @@ export const LevelMenu = (props: LevelMenuProps) => {
     return (
       <Button
         key={lvl.id}
-        className={clsx("LevelMenu-root", className, classes.button)}
+        className={clsx("LevelMenu-button", classes.button)}
         variant={active ? "filled" : "outline"}
         size="compact-xs"
         role="radio"
@@ -65,6 +65,7 @@ export const LevelMenu = (props: LevelMenuProps) => {
       gap="6px"
       role="radiogroup"
       aria-label="select level"
+      justify="stretch"
       {...other}
     >
       {btns}
