@@ -11,8 +11,10 @@ export type MapLayer = Readonly<{
 
 export type MapLocation = Readonly<{
   id: string
+  level: string
   title?: string
   description?: string
+  aliases?: readonly string[]
 }>
 
 export type MapConfig = Readonly<{

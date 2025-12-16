@@ -14,6 +14,7 @@ const layerSchema = z.looseObject({
 
 const locationSchema = z.looseObject({
   id: z.string(),
+  level: z.string(),
   title: z.string().optional(),
   description: z.string().optional(),
 })
