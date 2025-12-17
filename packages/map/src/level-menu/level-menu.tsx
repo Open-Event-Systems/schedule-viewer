@@ -1,9 +1,10 @@
 import { Button, Stack, type StackProps, useProps } from "@mantine/core"
-import type { MapLevel } from "../types.js"
 import clsx from "clsx"
 
+import classes from "./level-menu.module.scss"
+
 export type LevelMenuProps = {
-  levels?: Iterable<MapLevel>
+  levels?: Iterable<Readonly<{ id: string; title: string }>>
   selectedLevel?: string
   onSelectLevel?: (id: string) => void
 } & StackProps
@@ -16,7 +17,7 @@ export const LevelMenu = (props: LevelMenuProps) => {
     onSelectLevel,
     ...other
   } = useProps("LevelMenu", {}, props)
-  const levelsArr = [...levels]
+  const levelsArr = [...levels].reverse()
 
   const curIdx = levelsArr.findIndex((lvl) => lvl.id == selectedLevel)
 
@@ -32,6 +33,7 @@ export const LevelMenu = (props: LevelMenuProps) => {
     return (
       <Button
         key={lvl.id}
+        className={clsx("LevelMenu-root", className, classes.button)}
         variant={active ? "filled" : "outline"}
         size="compact-xs"
         role="radio"
