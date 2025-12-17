@@ -27,6 +27,7 @@ import classes from "./schedule-page.module.scss"
 
 export type SchedulePageProps = {
   items: ScheduleItemStore
+  now?: Date
   type?: ScheduleProps["type"]
   allowTypes?: Iterable<ScheduleProps["type"]>
   tags?: Iterable<TagEntry>
@@ -53,6 +54,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
   const {
     className,
     items,
+    now,
     type = "daily-agenda",
     allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
     tags,
@@ -160,6 +162,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>
           <Schedule
             items={items}
+            now={now}
             type={type}
             dayTitleComponent={dayTitleComponent}
             binTitleComponent={binTitleComponent}
