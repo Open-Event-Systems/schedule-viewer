@@ -59,6 +59,21 @@
   }
 }
 
+.object {
+  // using grid area to force all objects into the same space
+  grid-area: 1 / 1 / -1 / -1;
+
+  pointer-events: none;
+}
+
+.objectSvg {
+  pointer-events: none;
+
+  & > * {
+    pointer-events: visiblePainted;
+  }
+}
+
 // Map styles
 
 :root {
@@ -71,13 +86,7 @@
   --map-isometric-center-y-offset: 0px;
 }
 
-:global(.MapViewer-level) {
-  // using grid area to force all layers into the same space
-  grid-area: 1 / 1 / -1 / -1;
-
-  // Hidden by default
-  display: none;
-
+:global(.MapViewer-object) {
   .root:not(:global(.MapViewer-no-isometric-transition)) & {
     transition: transform var(--map-isometric-transition-duration) ease-in-out;
     transform: translate(
@@ -91,13 +100,7 @@
       );
   }
 
-  // Visible if active or isometric view enabled
-  &:global(.MapViewer-level-active),
-  &:global(.MapViewer-level-isometric) {
-    display: block;
-  }
-
-  .root &:global(.MapViewer-level-isometric-transform) {
+  .root &:global(.MapViewer-object-isometric-transform) {
     // https://www.petercollingridge.co.uk/tutorials/svg/isometric-projection/
     transform: translate(
         var(--map-isometric-center-x-offset),
@@ -110,6 +113,17 @@
         calc(-1 * var(--map-isometric-center-x-offset)),
         calc(-1 * var(--map-isometric-center-y-offset))
       );
+  }
+}
+
+:global(.MapViewer-level) {
+  // Hidden by default
+  display: none;
+
+  // Visible if active or isometric view enabled
+  &:global(.MapViewer-level-active),
+  &:global(.MapViewer-object-isometric) {
+    display: block;
   }
 }
 

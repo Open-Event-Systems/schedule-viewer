@@ -3,6 +3,7 @@ import clsx from "clsx"
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
+  memo,
   type MouseEvent,
   useCallback,
   useLayoutEffect,
@@ -22,93 +23,107 @@ export type MapSVGProps = {
   onClickArea?: (id: string | undefined) => void
 } & Omit<ComponentPropsWithoutRef<"svg">, "children">
 
-export const MapSVG = forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
-  const {
-    className,
-    svgData,
-    hiddenLayers,
-    flags,
-    activeLocation,
-    locationInfo,
-    onClickArea,
-    ...other
-  } = useProps("MapSVG", {}, props)
+export const MapSVG = memo(
+  forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
+    const {
+      className,
+      svgData,
+      hiddenLayers,
+      flags,
+      activeLocation,
+      locationInfo,
+      onClickArea,
+      ...other
+    } = useProps("MapSVG", {}, props)
 
-  const svgRef = useRef<SVGSVGElement | null>(null)
-  const setRef = useCallback(
-    (el: SVGSVGElement | null) => {
-      svgRef.current = el
+    const svgRef = useRef<SVGSVGElement | null>(null)
+    const setRef = useCallback(
+      (el: SVGSVGElement | null) => {
+        svgRef.current = el
 
-      if (el) {
-        el.innerHTML = svgData.innerHTML
-        initSVG(el)
+        if (el) {
+          el.innerHTML = svgData.innerHTML
+          initSVG(el)
+        }
+
+        if (typeof ref == "function") {
+          ref(el)
+        } else if (ref) {
+          ref.current = el
+        }
+      },
+      [ref],
+    )
+
+    useLayoutEffect(() => {
+      if (svgRef.current) {
+        updateActiveArea(svgRef.current, activeLocation)
       }
+    }, [activeLocation])
 
-      if (typeof ref == "function") {
-        ref(el)
-      } else if (ref) {
-        ref.current = el
+    useLayoutEffect(() => {
+      if (svgRef.current) {
+        updateLayers(svgRef.current, hiddenLayers ?? [])
       }
-    },
-    [ref],
-  )
+    }, [hiddenLayers])
 
-  useLayoutEffect(() => {
-    if (svgRef.current) {
-      updateActiveArea(svgRef.current, activeLocation)
-    }
-  }, [activeLocation])
+    useLayoutEffect(() => {
+      if (svgRef.current) {
+        updateFlags(svgRef.current, flags ?? [])
+      }
+    }, [flags])
 
-  useLayoutEffect(() => {
-    if (svgRef.current) {
-      updateLayers(svgRef.current, hiddenLayers ?? [])
-    }
-  }, [hiddenLayers])
+    useLayoutEffect(() => {
+      if (svgRef.current) {
+        updateLocationText(svgRef.current, locationInfo ?? [])
+        updateLocationIcon(svgRef.current, locationInfo ?? [])
+      }
+    }, [locationInfo])
 
-  useLayoutEffect(() => {
-    if (svgRef.current) {
-      updateFlags(svgRef.current, flags ?? [])
-    }
-  }, [flags])
+    const clickHandler = useCallback(
+      (e: MouseEvent<SVGElement>) => {
+        const base = mapSVGClassNames.clickId("")
+        if (onClickArea) {
+          if (
+            e.target instanceof SVGElement ||
+            e.target instanceof HTMLElement
+          ) {
+            let targetEl = e.target
 
-  useLayoutEffect(() => {
-    if (svgRef.current) {
-      updateLocationText(svgRef.current, locationInfo ?? [])
-      updateLocationIcon(svgRef.current, locationInfo ?? [])
-    }
-  }, [locationInfo])
+            if (
+              targetEl.classList.contains(mapSVGClassNames.foreignObjectText) &&
+              targetEl.parentElement
+            ) {
+              targetEl = targetEl.parentElement
+            }
 
-  const clickHandler = useCallback(
-    (e: MouseEvent<SVGElement>) => {
-      const base = mapSVGClassNames.clickId("")
-      if (onClickArea) {
-        if (e.target instanceof SVGElement) {
-          const clsIds = [...e.target.classList]
-            .filter((cls) => cls.startsWith(base))
-            .map((cls) => cls.substring(base.length))
-          if (clsIds[0]) {
-            onClickArea(clsIds[0])
+            const clsIds = [...targetEl.classList]
+              .filter((cls) => cls.startsWith(base))
+              .map((cls) => cls.substring(base.length))
+            if (clsIds[0]) {
+              onClickArea(clsIds[0])
+            } else {
+              onClickArea(undefined)
+            }
           } else {
             onClickArea(undefined)
           }
-        } else {
-          onClickArea(undefined)
         }
-      }
-    },
-    [onClickArea],
-  )
+      },
+      [onClickArea],
+    )
 
-  return (
-    <svg
-      ref={setRef}
-      {...svgData.props}
-      className={clsx("MapSVG-root", svgData?.props.className, className)}
-      {...other}
-      onClick={clickHandler}
-    />
-  )
-})
+    return (
+      <svg
+        ref={setRef}
+        {...svgData.props}
+        className={clsx("MapSVG-root", svgData?.props.className, className)}
+        {...other}
+        onClick={clickHandler}
+      />
+    )
+  }),
+)
 
 MapSVG.displayName = "MapSVG"
 
@@ -162,6 +177,7 @@ const updateLocationText = (
 ) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.locationTitle)) {
     if (el instanceof SVGElement) {
+      removeInlineDisplay(el)
       setLocationText(el, "")
     }
   }
@@ -185,6 +201,7 @@ const updateLocationIcon = (
 ) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.locationIcon)) {
     if (el instanceof SVGElement) {
+      removeInlineDisplay(el)
       setLocationIcon(el)
     }
   }

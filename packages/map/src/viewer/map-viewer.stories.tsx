@@ -6,10 +6,10 @@ import {
 } from "./map-viewer.js"
 import { useCallback, useMemo, useReducer } from "react"
 
-import type { MapConfig } from "../types.js"
-
 import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
 import f2Svg from "../../../viewer/public/example-map-2f.svg"
+import logoSvg from "../../../viewer/public/example-icon.svg"
+import { parseMapConfig, type MapConfigInput } from "../config.js"
 
 const meta: Meta<typeof MapViewer> = {
   component: MapViewer,
@@ -40,7 +40,7 @@ export const Default: StoryObj<typeof MapViewer> = {
       contentHeight: mapCfg.height,
       currentLevelId: "lobby",
       layers: mapCfg.layers,
-      levels: mapCfg.levels,
+      objects: mapCfg.objects,
       locationItemInfo: [
         {
           id: "room-1",
@@ -75,7 +75,7 @@ export const Default: StoryObj<typeof MapViewer> = {
         contentWidth={state.contentWidth}
         contentHeight={state.contentHeight}
         currentLevelId={state.currentLevelId}
-        levels={state.levels}
+        objects={state.objects}
         layers={state.layers}
         isometric={state.isometric}
         hiddenLayers={state.hiddenLayers}
@@ -95,10 +95,11 @@ export const Default: StoryObj<typeof MapViewer> = {
   },
 }
 
-const mapCfg = {
-  levels: [
-    { id: "lobby", title: "Lobby", url: lobbySvg },
-    { id: "2f", title: "2F", url: f2Svg },
+const mapCfgInput = {
+  objects: [
+    { type: "level", id: "lobby", title: "Lobby", url: lobbySvg },
+    { type: "level", id: "2f", title: "2F", url: f2Svg },
+    { type: "logo", url: logoSvg, noIsometricTransform: true },
   ],
   layers: [
     { id: "text", title: "Text" },
@@ -109,13 +110,17 @@ const mapCfg = {
       id: "room-1",
       title: "Room 1",
       description: "Room 1",
+      level: "lobby",
     },
     {
       id: "room-2",
       title: "Room 2",
       description: "Room 2",
+      level: "2f",
     },
   ],
   width: 960,
   height: 960,
-} as const satisfies MapConfig
+} as const satisfies MapConfigInput
+
+const mapCfg = parseMapConfig(mapCfgInput)

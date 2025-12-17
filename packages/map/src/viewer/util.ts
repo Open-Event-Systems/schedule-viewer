@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react"
+import type { MapLevel, MapObject } from "../types.js"
 
 type TransitionState = "off" | "forward" | "backward" | "on"
 
@@ -85,3 +86,6 @@ export const useIsometricTransition = (
 
   return [hasIsoCls, hasTransformCls, hasFinishedCls, mgr.onTransitionEnd]
 }
+
+export const isMapLevel = (obj: MapObject): obj is MapLevel =>
+  obj.type == "level" && "id" in obj && !!obj.id
