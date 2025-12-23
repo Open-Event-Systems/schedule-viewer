@@ -19,10 +19,10 @@ type BookmarksResponse = {
 }
 
 type SessionBookmarksResponse = {
-  selections: {
-    id?: string
+  sessionSelections: {
+    id: string
     date?: string
-    events: string[]
+    url: string
   }
 }
 
@@ -97,15 +97,15 @@ export const setupBookmarkServiceAPI = async (
   scheduleId: string,
   sessionId?: string,
 ): Promise<BookmarkServiceAPI> => {
-  const baseWretch = wretch(baseURL)
+  const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
 
   // setup
-  let req = baseWretch.url("/setup-bookmarks")
+  let req = baseWretch.url("/setup-session")
   if (sessionId) {
     req = req.json({ sessionId })
   }
 
-  const res = await req.put().json<BookmarkSetupResponse>()
+  const res = await req.post().json<BookmarkSetupResponse>()
 
   const localStorageKey = `${SESSION_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
 
@@ -116,7 +116,7 @@ export const setupBookmarkServiceAPI = async (
     sessionId: sessionId,
     async getSelections(selectionsId) {
       const res = await baseWretch
-        .url(`/bookmarks/${selectionsId}`)
+        .url(`/selections/${selectionsId}`)
         .get()
         .notFound(() => null)
         .json<BookmarksResponse | null>()
@@ -134,7 +134,12 @@ export const setupBookmarkServiceAPI = async (
         .get()
         .json<SessionBookmarksResponse>()
 
-      return parseSelections(res.selections)
+      const selectionsRes = await baseWretch
+        .url(res.sessionSelections.url)
+        .get()
+        .json<BookmarksResponse>()
+
+      return parseSelections(selectionsRes.selections)
     },
     async setSessionSelections(selections) {
       const body: BookmarksRequest = {
@@ -150,7 +155,12 @@ export const setupBookmarkServiceAPI = async (
         .put()
         .json<SessionBookmarksResponse>()
 
-      return parseSelections(res.selections)
+      const selectionsRes = await baseWretch
+        .url(res.sessionSelections.url)
+        .get()
+        .json<BookmarksResponse>()
+
+      return parseSelections(selectionsRes.selections)
     },
     async getBookmarkCounts() {
       const resp = await baseWretch
