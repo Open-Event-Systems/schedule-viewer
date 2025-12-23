@@ -294,6 +294,7 @@ const Pill = memo((props: PillProps) => {
         pillClasses.root,
         classNames?.root,
         className,
+        getTagClassNames(item?.tags ?? []),
       )}
       {...other}
     >
@@ -303,6 +304,10 @@ const Pill = memo((props: PillProps) => {
 })
 
 Pill.displayName = "Pill"
+
+const getTagClassNames = (tags: Iterable<string>): string => {
+  return Array.from(tags, (tag) => `Pill-item-tag-${tag}`).join(" ")
+}
 
 _Pills.Root = PillsRoot
 _Pills.Bin = PillBin

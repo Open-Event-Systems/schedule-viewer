@@ -95,6 +95,14 @@ export const MapSVG = memo(
               targetEl.parentElement
             ) {
               targetEl = targetEl.parentElement
+            } else if (
+              targetEl.parentElement &&
+              targetEl.parentElement.classList.contains(
+                mapSVGClassNames.foreignObjectText,
+              ) &&
+              targetEl.parentElement.parentElement
+            ) {
+              targetEl = targetEl.parentElement.parentElement
             }
 
             const clsIds = [...targetEl.classList]
@@ -208,7 +216,7 @@ const updateLocationIcon = (
 
   for (const info of locationInfo) {
     for (const el of svg.getElementsByClassName(
-      mapSVGClassNames.locationTitleId(info.id),
+      mapSVGClassNames.locationIconId(info.id),
     )) {
       if (info.icon && el instanceof SVGElement) {
         setLocationIcon(el, info.icon)
@@ -246,8 +254,11 @@ const setLocationText = (el: SVGElement, text: string) => {
     if (textEls[0]) {
       textEls[0].innerHTML = ""
     }
+
+    const spanNode = document.createElement("span")
     const textNode = document.createTextNode(text)
-    textEls[0]?.appendChild(textNode)
+    spanNode.appendChild(textNode)
+    textEls[0]?.appendChild(spanNode)
   } else if (el instanceof SVGTextElement || el instanceof SVGTSpanElement) {
     el.innerHTML = ""
     const textNode = document.createTextNode(text)
