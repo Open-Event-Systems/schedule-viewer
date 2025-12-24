@@ -67,7 +67,7 @@ export const useFilteredItems = <
   const byBookmarked = useMemo(() => {
     if (filter.onlyBookmarked) {
       return selections
-        ? items.filter(makeBookmarkFilter(selections.events))
+        ? items.filter(makeBookmarkFilter(selections.items))
         : new ScheduleItemStore([])
     } else {
       return items
