@@ -120,7 +120,7 @@ func NewHandlers(dbConn *sql.DB, urlPrefix string, allowedOrigins []string, conf
 		AllowedOrigins: allowedOrigins,
 		MaxAge:         3600,
 		AllowedMethods: []string{"HEAD", "GET", "PUT", "POST"},
-		AllowedHeaders: []string{"Authorization"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}))
 
 	r.Route("/schedules/{scheduleId}", func(r chi.Router) {
