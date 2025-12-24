@@ -26,7 +26,7 @@ export type Day = Readonly<{
 export type Selections = Readonly<{
   id?: string
   date?: Date
-  events: ReadonlySet<string>
+  items: ReadonlySet<string>
 }>
 
 /**

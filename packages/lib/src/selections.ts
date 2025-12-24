@@ -6,7 +6,7 @@ import { opt, strDate, strSetSchema } from "./schema.js"
 const selectionsSchema = z.object({
   id: opt(z.string()).optional(),
   date: strDate.optional(),
-  events: strSetSchema,
+  items: strSetSchema,
 })
 
 /**
@@ -20,12 +20,12 @@ export const parseSelections = (data: unknown): Selections => {
  * Create a {@link Selections} object.
  */
 export const makeSelections = (
-  eventIds?: Iterable<string>,
+  itemIds?: Iterable<string>,
   date?: Date,
   id?: string,
 ): Selections => {
-  const newObj: { events: Set<string>; id?: string; date?: Date } = {
-    events: new Set(eventIds ?? []),
+  const newObj: { items: Set<string>; id?: string; date?: Date } = {
+    items: new Set(itemIds ?? []),
   }
 
   if (date) {
