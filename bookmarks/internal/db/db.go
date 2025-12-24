@@ -52,6 +52,19 @@ func CreateTables(db *sql.Tx) error {
 		return err
 	}
 
+	_, err = db.Exec(
+		"CREATE TABLE IF NOT EXISTS ip_selection (" +
+			"schedule_id TEXT NOT NULL," +
+			"partial_ip TEXT NOT NULL," +
+			"selection_id TEXT NOT NULL," +
+			"PRIMARY KEY (schedule_id, partial_ip)" +
+			");",
+	)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -142,6 +155,20 @@ func (db *DB) SetSessionSelectionId(sessionId string, id string, date time.Time,
 		partialIp,
 	)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = db.conn.ExecContext(
+		db.context,
+		"INSERT INTO ip_selection VALUES (?, ?, ?) "+
+			"ON CONFLICT DO UPDATE SET selection_id = ?",
+		db.scheduleId,
+		partialIp,
+		id,
+		id,
+	)
+
 	return err
 }
 
@@ -168,4 +195,37 @@ func (db *DB) GetSessionSelectionId(sessionId string) (string, time.Time, error)
 	date, _ := time.Parse(time.RFC3339Nano, dateStr)
 
 	return selectionId, date, nil
+}
+
+func (db *DB) GetBookmarkCounts() (map[string]int, error) {
+	res, err := db.conn.QueryContext(
+		db.context,
+		"SELECT si.item_id, COUNT(1) FROM ip_selection ips "+
+			"JOIN selection_item si ON si.schedule_id = ips.schedule_id AND si.id = ips.selection_id "+
+			"WHERE ips.schedule_id = ?"+
+			"GROUP BY si.item_id",
+		db.scheduleId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	counts := make(map[string]int, 0)
+
+	for res.Next() {
+		var itemId string
+		var count int
+		err := res.Scan(&itemId, &count)
+		if err != nil {
+			return nil, err
+		}
+
+		if count > 0 {
+			counts[itemId] = count
+		}
+	}
+
+	return counts, err
 }

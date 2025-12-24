@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,10 +23,12 @@ type Handlers struct {
 	db              *sql.DB
 	secret          string
 	urlPrefix       string
+	proxyCount      int
 	emptySels       *bookmarks.Selections
 	configURLs      map[string]string
 	scheduleService *schedule.ScheduleService
 	cache           *lru.TTLCache[string, map[string]struct{}]
+	countsCache     *lru.TTLCache[string, countsCacheEntry]
 }
 
 type setupSessionRequestBody struct {
@@ -59,22 +63,55 @@ type sessionSelectionsResponseBody struct {
 	SessionSelections sessionSelectionsJSON `json:"sessionSelections"`
 }
 
-const itemsCacheDuration = 2 * time.Minute
+type countsCacheEntry struct {
+	time   time.Time
+	counts map[string]int
+}
 
-func NewHandlers(db *sql.DB, urlPrefix string, allowedOrigins []string, configURLs map[string]string, secret string) http.Handler {
+type countsResponseBody struct {
+	Counts map[string]int `json:"counts"`
+}
+
+const itemsCacheDuration = 2 * time.Minute
+const countsCacheDuration = 5 * time.Minute
+
+func NewHandlers(dbConn *sql.DB, urlPrefix string, allowedOrigins []string, configURLs map[string]string, secret string, proxyCount int) http.Handler {
 	h := &Handlers{
-		db:              db,
+		db:              dbConn,
 		secret:          secret,
 		urlPrefix:       urlPrefix,
+		proxyCount:      proxyCount,
 		emptySels:       bookmarks.NewSelections(nil),
 		scheduleService: schedule.NewScheduleService(),
 		configURLs:      configURLs,
 	}
 
-	h.cache = lru.NewTTLCache(len(h.configURLs), lru.WithLoader[string, map[string]struct{}](func(ctx context.Context, key string) (value map[string]struct{}, ttl time.Duration, err error) {
+	h.cache = lru.NewTTLCache(len(h.configURLs), lru.WithLoader[string, map[string]struct{}](func(ctx context.Context, key string) (map[string]struct{}, time.Duration, error) {
 		configURL := h.configURLs[key]
 		ids, err := h.scheduleService.GetValidIds(ctx, configURL)
 		return ids, itemsCacheDuration, err
+	}))
+
+	h.countsCache = lru.NewTTLCache(len(h.configURLs), lru.WithLoader[string, countsCacheEntry](func(ctx context.Context, key string) (countsCacheEntry, time.Duration, error) {
+		var entry countsCacheEntry
+		_, err := withDB(dbConn, ctx, key, func(dbObj *db.DB) (bool, error) {
+			var err error
+			counts, err := dbObj.GetBookmarkCounts()
+			if err != nil {
+				return false, err
+			}
+
+			entry.counts = counts
+			entry.time = time.Now()
+
+			return true, nil
+		})
+
+		if err == nil {
+			return entry, countsCacheDuration, nil
+		} else {
+			return entry, 0, err
+		}
 	}))
 
 	r := chi.NewRouter()
@@ -92,6 +129,8 @@ func NewHandlers(db *sql.DB, urlPrefix string, allowedOrigins []string, configUR
 		r.Get("/selections/{selectionsId}", h.handleGetSelections)
 		r.Put("/bookmarks", h.handleSetSessionSelections)
 		r.Get("/bookmarks", h.handleGetSessionSelections)
+		r.Get("/counts", h.handleGetCounts)
+		r.Get("/counts.html", h.handleGetCountsHTML)
 	})
 
 	var handler http.Handler
@@ -109,7 +148,6 @@ func NewHandlers(db *sql.DB, urlPrefix string, allowedOrigins []string, configUR
 
 func (h *Handlers) handleSetupSession(w http.ResponseWriter, req *http.Request) {
 	scheduleId := chi.URLParam(req, "scheduleId")
-	// TODO: validate scheduleId
 
 	var body setupSessionRequestBody
 	err := readJSONBody(req, &body)
@@ -228,7 +266,10 @@ func (h *Handlers) handleSetSessionSelections(w http.ResponseWriter, req *http.R
 
 		now := time.Now()
 
-		err = db.SetSessionSelectionId(sess.Subject, id, now, "TODO", "TODO")
+		ip := getIP(h.proxyCount, req)
+		ipStr, partialIPStr := getSessionIPs(ip)
+
+		err = db.SetSessionSelectionId(sess.Subject, id, now, ipStr, partialIPStr)
 		if err != nil {
 			serverError(w, err)
 			return false, err
@@ -280,6 +321,75 @@ func (h *Handlers) handleGetSessionSelections(w http.ResponseWriter, req *http.R
 	if commit {
 		jsonResponse(w, resp)
 	}
+}
+
+func (h *Handlers) handleGetCounts(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	var resp countsResponseBody
+	countsEntry, err, _ := h.countsCache.GetOrLoad(req.Context(), scheduleId, nil)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	now := time.Now()
+	resp.Counts = countsEntry.counts
+	age := int(now.Sub(countsEntry.time).Seconds())
+
+	w.Header().Set("Cache-Control", "public, max-age=300")
+	w.Header().Set("Age", strconv.Itoa(age))
+
+	jsonResponse(w, resp)
+}
+
+func (h *Handlers) handleGetCountsHTML(w http.ResponseWriter, req *http.Request) {
+	scheduleId := chi.URLParam(req, "scheduleId")
+
+	countsEntry, err, _ := h.countsCache.GetOrLoad(req.Context(), scheduleId, nil)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	now := time.Now()
+	age := int(now.Sub(countsEntry.time).Seconds())
+
+	builder := strings.Builder{}
+
+	builder.WriteString("<!DOCTYPE html><html><head><title>Bookmark Counts</title></head><body>")
+	builder.WriteString(
+		"<table><thead><tr><th scope=\"col\">Item ID</th><th scope=\"col\">Count</th></tr></thead><tbody>",
+	)
+
+	type row struct {
+		id    string
+		count int
+	}
+
+	rows := slices.SortedStableFunc(func(yield func(r row) bool) {
+		for id, ct := range countsEntry.counts {
+			if (!yield(row{id, ct})) {
+				return
+			}
+		}
+	}, func(a row, b row) int {
+		return b.count - a.count
+	})
+
+	for _, r := range rows {
+		builder.WriteString(
+			fmt.Sprintf("<tr><td>%s</td><td>%d</td></tr>", r.id, r.count),
+		)
+	}
+
+	builder.WriteString("</tbody></table></body></html>")
+
+	w.Header().Set("Cache-Control", "public, max-age=300")
+	w.Header().Set("Age", strconv.Itoa(age))
+	w.Header().Set("Content-Type", "text/html")
+
+	w.Write([]byte(builder.String()))
 }
 
 func (h *Handlers) scheduleIdValidator(next http.Handler) http.Handler {

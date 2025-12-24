@@ -52,7 +52,7 @@ func main() {
 		}
 	}()
 
-	h := server.NewHandlers(dbConn, configObj.URLPrefix, configObj.AllowedOrigins, configObj.ScheduleURLs, configObj.Secret)
+	h := server.NewHandlers(dbConn, configObj.URLPrefix, configObj.AllowedOrigins, configObj.ScheduleURLs, configObj.Secret, configObj.ProxyCount)
 
 	s := &http.Server{
 		Addr:    net.JoinHostPort("", strconv.Itoa(port)),

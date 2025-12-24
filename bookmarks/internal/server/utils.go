@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"net/netip"
+	"strings"
 
 	json "github.com/goccy/go-json"
 )
@@ -79,4 +81,45 @@ func withDB(sqlDb *sql.DB, ctx context.Context, scheduleId string, f func(db *db
 		dbObj := db.NewDB(ctx, scheduleId, tx)
 		return f(dbObj)
 	})
+}
+
+func getSessionIPs(addr netip.Addr) (string, string) {
+	prefixSize := 32
+
+	if addr.Is6() {
+		prefixSize = 64
+	}
+
+	asStr := addr.String()
+	prefixed, _ := addr.Prefix(prefixSize)
+	masked := prefixed.Masked()
+	return asStr, masked.String()
+}
+
+func getIP(proxyCount int, req *http.Request) netip.Addr {
+	if proxyCount == 0 {
+		addr := netip.MustParseAddrPort(req.RemoteAddr)
+		return addr.Addr()
+	}
+
+	var ips []string
+
+	for _, val := range req.Header.Values("X-Forwarded-For") {
+		parts := strings.Split(val, ",")
+		for _, ipStr := range parts {
+			ips = append(ips, strings.TrimSpace(ipStr))
+		}
+	}
+
+	trustedIdx := len(ips) - proxyCount
+	if trustedIdx < 0 {
+		trustedIdx = 0
+	}
+
+	if trustedIdx >= len(ips) {
+		addr := netip.MustParseAddrPort(req.RemoteAddr)
+		return addr.Addr()
+	}
+
+	return netip.MustParseAddr(ips[trustedIdx])
 }

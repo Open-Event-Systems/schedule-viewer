@@ -13,5 +13,4 @@ require (
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/phuslu/lru v1.0.18
-	gopkg.in/yaml.v3 v3.0.1
 )

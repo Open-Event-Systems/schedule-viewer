@@ -9,8 +9,9 @@ import (
 type Config struct {
 	DB_URL         string            `yaml:"db_url"`
 	AllowedOrigins []string          `yaml:"allowed_origins"`
+	ProxyCount     int               `yaml:"proxy_count"`
 	URLPrefix      string            `yaml:"url_prefix"`
-	ScheduleURLs     map[string]string `yaml:"schedule_urls"`
+	ScheduleURLs   map[string]string `yaml:"schedule_urls"`
 	Secret         string            `yaml:"secret"`
 }
 
