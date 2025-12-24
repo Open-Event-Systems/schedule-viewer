@@ -21,8 +21,10 @@ export const parseSVGData = (svgString: string): SVGData => {
 
   for (const attr of svgEl.getAttributeNames()) {
     const val = svgEl.getAttribute(attr)
+
     if (val != null) {
-      props[attr] = val
+      const fixed = fixNSAttr(attr)
+      props[fixed] = val
     }
   }
 
@@ -30,4 +32,13 @@ export const parseSVGData = (svgString: string): SVGData => {
     innerHTML: svgEl.innerHTML,
     props: props as ComponentPropsWithoutRef<"svg">,
   }
+}
+
+const nsAttrMap = {
+  "xml:space": "xmlSpace",
+  "xmlns:xlink": "xmlnsXlink",
+} as Readonly<Record<string, string | undefined>>
+
+const fixNSAttr = (s: string): string => {
+  return nsAttrMap[s] ?? s
 }

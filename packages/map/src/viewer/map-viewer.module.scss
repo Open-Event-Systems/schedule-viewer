@@ -68,6 +68,8 @@
 
 .objectSvg {
   pointer-events: none;
+  overflow: visible;
+  display: block;
 
   & > * {
     pointer-events: visiblePainted;
