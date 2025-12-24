@@ -374,6 +374,10 @@ func (h *Handlers) handleGetCountsHTML(w http.ResponseWriter, req *http.Request)
 			}
 		}
 	}, func(a row, b row) int {
+		return strings.Compare(a.id, b.id)
+	})
+
+	slices.SortStableFunc(rows, func(a row, b row) int {
 		return b.count - a.count
 	})
 

@@ -26,15 +26,16 @@ func CreateTables(db *sql.Tx) error {
 	_, err := db.Exec(
 		"CREATE TABLE IF NOT EXISTS selection_item (" +
 			"schedule_id TEXT NOT NULL," +
-			"id TEXT NOT NULL," +
+			"selection_id TEXT NOT NULL," +
 			"item_id TEXT NOT NULL," +
-			"PRIMARY KEY (schedule_id, id, item_id)" +
+			"PRIMARY KEY (schedule_id, selection_id, item_id)" +
 			");",
 	)
 
 	if err != nil {
 		return err
 	}
+
 
 	_, err = db.Exec(
 		"CREATE TABLE IF NOT EXISTS session (" +
@@ -44,7 +45,7 @@ func CreateTables(db *sql.Tx) error {
 			"ip TEXT NOT NULL," +
 			"partial_ip TEXT NOT NULL," +
 			"selection_id TEXT NOT NULL," +
-			"PRIMARY KEY (id, schedule_id)" +
+			"PRIMARY KEY (schedule_id, id)" +
 			");",
 	)
 
@@ -53,12 +54,7 @@ func CreateTables(db *sql.Tx) error {
 	}
 
 	_, err = db.Exec(
-		"CREATE TABLE IF NOT EXISTS ip_selection (" +
-			"schedule_id TEXT NOT NULL," +
-			"partial_ip TEXT NOT NULL," +
-			"selection_id TEXT NOT NULL," +
-			"PRIMARY KEY (schedule_id, partial_ip)" +
-			");",
+		"CREATE INDEX IF NOT EXISTS ix_session_date ON session(schedule_id, partial_ip, datetime(date, 'subsec'))",
 	)
 
 	if err != nil {
@@ -69,7 +65,7 @@ func CreateTables(db *sql.Tx) error {
 }
 
 func (db *DB) SetSelections(selections *bookmarks.Selections) error {
-	_, err := db.conn.ExecContext(db.context, "DELETE FROM selection_item WHERE schedule_id = ? AND id = ?", db.scheduleId, selections.Id())
+	_, err := db.conn.ExecContext(db.context, "DELETE FROM selection_item WHERE schedule_id = ? AND selection_id = ?", db.scheduleId, selections.Id())
 	if err != nil {
 		return err
 	}
@@ -94,7 +90,7 @@ func (db *DB) GetSelectionsExist(id string) (bool, error) {
 	res := db.conn.QueryRowContext(
 		db.context,
 		"SELECT EXISTS("+
-			"SELECT 1 FROM selection_item WHERE schedule_id = ? AND id = ? LIMIT 1"+
+			"SELECT 1 FROM selection_item WHERE schedule_id = ? AND selection_id = ? LIMIT 1"+
 			")",
 		db.scheduleId, id,
 	)
@@ -105,7 +101,7 @@ func (db *DB) GetSelectionsExist(id string) (bool, error) {
 }
 
 func (db *DB) GetSelections(id string) (*bookmarks.Selections, error) {
-	res, err := db.conn.QueryContext(db.context, "SELECT item_id FROM selection_item WHERE schedule_id = ? AND id = ?", db.scheduleId, id)
+	res, err := db.conn.QueryContext(db.context, "SELECT item_id FROM selection_item WHERE schedule_id = ? AND selection_id = ?", db.scheduleId, id)
 	if err != nil {
 		return nil, err
 	}
@@ -155,20 +151,6 @@ func (db *DB) SetSessionSelectionId(sessionId string, id string, date time.Time,
 		partialIp,
 	)
 
-	if err != nil {
-		return err
-	}
-
-	_, err = db.conn.ExecContext(
-		db.context,
-		"INSERT INTO ip_selection VALUES (?, ?, ?) "+
-			"ON CONFLICT DO UPDATE SET selection_id = ?",
-		db.scheduleId,
-		partialIp,
-		id,
-		id,
-	)
-
 	return err
 }
 
@@ -200,10 +182,22 @@ func (db *DB) GetSessionSelectionId(sessionId string) (string, time.Time, error)
 func (db *DB) GetBookmarkCounts() (map[string]int, error) {
 	res, err := db.conn.QueryContext(
 		db.context,
-		"SELECT si.item_id, COUNT(1) FROM ip_selection ips "+
-			"JOIN selection_item si ON si.schedule_id = ips.schedule_id AND si.id = ips.selection_id "+
-			"WHERE ips.schedule_id = ?"+
-			"GROUP BY si.item_id",
+		"SELECT it.item_id, COUNT(1) "+
+			"FROM selection_item it "+
+			"JOIN ( "+
+			"SELECT s.selection_id "+
+			"FROM session s "+
+			"JOIN (SELECT partial_ip, MAX(datetime(date, 'subsec')) AS latest "+
+			"FROM session "+
+			"WHERE schedule_id = ? "+
+			"GROUP BY partial_ip "+
+			") AS lt ON lt.partial_ip = s.partial_ip AND datetime(s.date, 'subsec') = lt.latest "+
+			"WHERE s.schedule_id = ? "+
+			") AS sels ON sels.selection_id = it.selection_id "+
+			"WHERE it.schedule_id = ? "+
+			"GROUP BY it.item_id",
+		db.scheduleId,
+		db.scheduleId,
 		db.scheduleId,
 	)
 
