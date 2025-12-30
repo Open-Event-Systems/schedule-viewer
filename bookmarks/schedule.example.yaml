@@ -1,5 +1,5 @@
 ---
-db_url: server.sqlite
+db_url: /data/bookmarks.sqlite
 allowed_origins:
   - http://localhost:8000
 url_prefix:
