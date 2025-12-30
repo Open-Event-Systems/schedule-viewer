@@ -22,6 +22,7 @@ import { useScheduleConfig } from "../../hooks/config.js"
 
 export type ScheduleProps = {
   items: ScheduleItemStore
+  filteredItems: ScheduleItemStore
   type?: "daily-agenda" | "full-agenda" | "catalog" | "tags"
   selectedDayKey?: string
   now?: Date
@@ -35,9 +36,9 @@ export type ScheduleProps = {
 }
 
 export const Schedule = (props: ScheduleProps) => {
-  const { items, type = "daily-agenda" } = props
+  const { filteredItems, type = "daily-agenda" } = props
 
-  if (items.size == 0 && type != "daily-agenda") {
+  if (filteredItems.size == 0 && type != "daily-agenda") {
     return <Schedule.NoItems />
   }
 
@@ -65,6 +66,7 @@ const DailyAgendaView = (props: ScheduleProps) => {
   const {
     now = new Date(),
     items,
+    filteredItems,
     selectedDayKey,
     binTitleComponent,
     BinProps,
@@ -93,11 +95,11 @@ const DailyAgendaView = (props: ScheduleProps) => {
 
   const dayFiltered = useMemo(() => {
     if (!selectedDay) {
-      return items
+      return filteredItems
     }
 
-    return items.filter(makeDateFilter(selectedDay))
-  }, [items, selectedDay])
+    return filteredItems.filter(makeDateFilter(selectedDay))
+  }, [filteredItems, selectedDay])
 
   const bins = useMemo(
     () => binItemsByTime(dayFiltered, binMinutes),
@@ -130,7 +132,7 @@ const DailyAgendaView = (props: ScheduleProps) => {
 
 const FullAgendaView = (props: ScheduleProps) => {
   const {
-    items,
+    filteredItems,
     dayTitleComponent = "h3",
     binTitleComponent = "h4",
     BinProps,
@@ -143,7 +145,7 @@ const FullAgendaView = (props: ScheduleProps) => {
 
   const { dayLabels, binsByDay } = useMemo(() => {
     const days = getDays(
-      items.filter(
+      filteredItems.filter(
         (d): d is ScheduleItem & { readonly start: Date } => !!d.start,
       ),
       dayChangeHour,
@@ -156,7 +158,7 @@ const FullAgendaView = (props: ScheduleProps) => {
     const binsByDay = new Map(
       days
         .map((d) => {
-          const filtered = items.filter(makeDateFilter(d))
+          const filtered = filteredItems.filter(makeDateFilter(d))
           const bins = binItemsByTime(filtered, binMinutes)
           return [d.key, bins] as const
         })
@@ -164,7 +166,7 @@ const FullAgendaView = (props: ScheduleProps) => {
     )
 
     return { dayLabels, binsByDay }
-  }, [items, dayChangeHour, dayFormat, binMinutes])
+  }, [filteredItems, dayChangeHour, dayFormat, binMinutes])
 
   const elements = []
 
@@ -207,12 +209,9 @@ const FullAgendaViewDayTitle = ({
 FullAgendaView.DayTitle = FullAgendaViewDayTitle
 
 const CatalogView = (props: ScheduleProps) => {
-  const { items, BinProps, PillProps, renderBin, renderPill } = useProps(
-    "CatalogView",
-    {},
-    props,
-  )
-  const bins = useMemo(() => binItemsByTitle(items), [items])
+  const { filteredItems, BinProps, PillProps, renderBin, renderPill } =
+    useProps("CatalogView", {}, props)
+  const bins = useMemo(() => binItemsByTitle(filteredItems), [filteredItems])
 
   return (
     <Pills
@@ -226,15 +225,15 @@ const CatalogView = (props: ScheduleProps) => {
 }
 
 const TagsView = (props: ScheduleProps) => {
-  const { items, BinProps, PillProps, renderBin, renderPill } = useProps(
-    "TagsView",
-    {},
-    props,
-  )
+  const { filteredItems, BinProps, PillProps, renderBin, renderPill } =
+    useProps("TagsView", {}, props)
 
   const { tags } = useScheduleConfig()
 
-  const bins = useMemo(() => binItemsByTag(items, tags), [items, tags])
+  const bins = useMemo(
+    () => binItemsByTag(filteredItems, tags),
+    [filteredItems, tags],
+  )
 
   return (
     <Pills

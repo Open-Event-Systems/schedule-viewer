@@ -51,6 +51,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
     return (
       <SchedulePage
         items={parsedEvents}
+        filteredItems={parsedEvents}
         type={type}
         onChangeType={setType}
         selectedDayKey={day?.key}

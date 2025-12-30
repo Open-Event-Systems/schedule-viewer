@@ -7,6 +7,7 @@ import {
   type MouseEvent,
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
 } from "react"
 import type { SVGData } from "./svg.js"
@@ -67,10 +68,8 @@ export const MapSVG = memo(
       }
     }, [hiddenLayers])
 
-    useLayoutEffect(() => {
-      if (svgRef.current) {
-        updateFlags(svgRef.current, flags ?? [])
-      }
+    const flagClassNames = useMemo(() => {
+      return [...(flags ?? [])].map((f) => mapSVGClassNames.flagId(f))
     }, [flags])
 
     useLayoutEffect(() => {
@@ -125,7 +124,12 @@ export const MapSVG = memo(
       <svg
         ref={setRef}
         {...svgData.props}
-        className={clsx("MapSVG-root", svgData?.props.className, className)}
+        className={clsx(
+          "MapSVG-root",
+          svgData?.props.className,
+          flagClassNames,
+          className,
+        )}
         {...other}
         onClick={clickHandler}
       />
@@ -166,15 +170,6 @@ const updateLayers = (svg: SVGSVGElement, hidden: Iterable<string>) => {
       el.classList.remove(mapSVGClassNames.hidden)
     }
   }
-}
-
-const updateFlags = (svg: SVGSVGElement, flags: Iterable<string>) => {
-  const toRemove = [...svg.classList].filter((cls) =>
-    cls.startsWith(mapSVGClassNames.flagId("")),
-  )
-  const toAdd = [...flags].map((f) => mapSVGClassNames.flagId(f))
-  toRemove.forEach((cls) => svg.classList.remove(cls))
-  svg.classList.add(...toAdd)
 }
 
 const updateLocationText = (

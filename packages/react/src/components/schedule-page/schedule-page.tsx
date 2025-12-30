@@ -27,6 +27,7 @@ import classes from "./schedule-page.module.scss"
 
 export type SchedulePageProps = {
   items: ScheduleItemStore
+  filteredItems: ScheduleItemStore
   now?: Date
   type?: ScheduleProps["type"]
   allowTypes?: Iterable<ScheduleProps["type"]>
@@ -34,6 +35,7 @@ export type SchedulePageProps = {
   noPastEventsOption?: boolean
   noShareMenu?: boolean
   onlyBookmarked?: boolean
+  hideBookmarkFilter?: boolean
   selectedDayKey?: string
   enableSync?: boolean
   icalFileName?: string
@@ -54,6 +56,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
   const {
     className,
     items,
+    filteredItems,
     now,
     type = "daily-agenda",
     allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
@@ -61,6 +64,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
     noPastEventsOption,
     noShareMenu,
     onlyBookmarked,
+    hideBookmarkFilter,
     selectedDayKey,
     enableSync,
     icalFileName = "schedule",
@@ -88,15 +92,17 @@ export const SchedulePage = (props: SchedulePageProps) => {
       {...other}
     >
       <Box className={clsx("SchedulePage-topMenu", classes.topMenu)}>
-        <BookmarkFilter
-          className={clsx(
-            "SchedulePage-bookmarkFilter",
-            classes.bookmarkFilter,
-          )}
-          size="sm"
-          value={onlyBookmarked}
-          onChange={onChangeOnlyBookmarked}
-        />
+        {!hideBookmarkFilter && (
+          <BookmarkFilter
+            className={clsx(
+              "SchedulePage-bookmarkFilter",
+              classes.bookmarkFilter,
+            )}
+            size="sm"
+            value={onlyBookmarked}
+            onChange={onChangeOnlyBookmarked}
+          />
+        )}
         <Select
           className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
           size="sm"
@@ -138,7 +144,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
             onSync={onSync}
             onExport={() => {
               const data = createICS(
-                items.filter(isBounded),
+                filteredItems.filter(isBounded),
                 `schedule-${icalPrefix}`,
                 icalDomain || window.location.hostname,
               )
@@ -162,6 +168,7 @@ export const SchedulePage = (props: SchedulePageProps) => {
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>
           <Schedule
             items={items}
+            filteredItems={filteredItems}
             now={now}
             type={type}
             dayTitleComponent={dayTitleComponent}
