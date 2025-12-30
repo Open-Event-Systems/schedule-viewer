@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"slices"
 
 	"github.com/goccy/go-json"
@@ -55,8 +56,13 @@ func (s *ScheduleService) GetValidIds(ctx context.Context, configURL string) (ma
 	return results, nil
 }
 
-func (s *ScheduleService) getConfig(ctx context.Context, url string) ([]scheduleItem, error) {
-	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+func (s *ScheduleService) getConfig(ctx context.Context, configURL string) ([]scheduleItem, error) {
+	parsedURL, err := url.Parse(configURL)
+	if err != nil {
+		return nil, err
+	}
+
+	req, _ := http.NewRequestWithContext(ctx, "GET", configURL, nil)
 	resp, err := s.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrScheduleFetchFailed, err)
@@ -77,7 +83,7 @@ func (s *ScheduleService) getConfig(ctx context.Context, url string) ([]schedule
 		for _, entry := range config.Items {
 			if entry.URL != "" {
 				// TODO
-				subItems, err := s.getItems(ctx, entry.URL)
+				subItems, err := s.getItems(ctx, parsedURL, entry.URL)
 				if err != nil {
 					if !errors.Is(err, context.Canceled) {
 						log.Printf("error fetching %s: %s", entry.URL, err)
@@ -102,8 +108,18 @@ func (s *ScheduleService) getConfig(ctx context.Context, url string) ([]schedule
 	return items, nil
 }
 
-func (s *ScheduleService) getItems(ctx context.Context, url string) ([]scheduleItem, error) {
-	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+func (s *ScheduleService) getItems(ctx context.Context, baseURL *url.URL, configURL string) ([]scheduleItem, error) {
+	parsedURL, err := url.Parse(configURL)
+	if err != nil {
+		return nil, err
+	}
+
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = baseURL.Scheme
+		parsedURL.Host = baseURL.Host
+	}
+
+	req, _ := http.NewRequestWithContext(ctx, "GET", parsedURL.String(), nil)
 	resp, err := s.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrScheduleFetchFailed, err)
