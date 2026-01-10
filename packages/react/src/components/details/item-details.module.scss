@@ -37,6 +37,8 @@
 
 .contacts {
   grid-area: contacts;
+  word-wrap: anywhere;
+  overflow-wrap: anywhere;
 }
 
 .contact {
@@ -45,6 +47,8 @@
 
 .description {
   grid-area: description;
+  word-wrap: anywhere;
+  overflow-wrap: anywhere;
 }
 
 .tags {
