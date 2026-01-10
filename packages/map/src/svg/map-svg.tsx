@@ -231,12 +231,12 @@ const setLocationIcon = (el: SVGElement, icon?: string) => {
     el.classList.remove(mapSVGClassNames.empty)
 
     if (el instanceof SVGImageElement) {
-      el.setAttributeNS("http://www.w3.org/1999/xlink", "href", icon)
+      el.setAttribute("href", icon)
     }
   } else {
     el.classList.add(mapSVGClassNames.empty)
     if (el instanceof SVGImageElement) {
-      el.setAttributeNS("http://www.w3.org/1999/xlink", "href", "data:,")
+      el.setAttribute("href", "data:,")
     }
   }
 }
