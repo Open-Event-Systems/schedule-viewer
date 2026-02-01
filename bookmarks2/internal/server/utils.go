@@ -64,7 +64,19 @@ func (h *handlers) withTx(ctx context.Context, f func(db *models.DB) error) erro
 	return db.WithTx(f)
 }
 
-func getSessionIPs(addr netip.Addr) (ip string, partialIP string) {
+func getSessionIPs(remoteAddr string) (ip string, partialIP string) {
+	var addr netip.Addr
+
+	addrPort, err := netip.ParseAddrPort(remoteAddr)
+	if err != nil {
+		addr, err = netip.ParseAddr(remoteAddr)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		addr = addrPort.Addr()
+	}
+
 	prefixSize := 32
 
 	if addr.Is6() {
@@ -91,10 +103,7 @@ func getIP(proxyCount int, req *http.Request) netip.Addr {
 		}
 	}
 
-	trustedIdx := len(ips) - proxyCount
-	if trustedIdx < 0 {
-		trustedIdx = 0
-	}
+	trustedIdx := max(len(ips)-proxyCount, 0)
 
 	if trustedIdx >= len(ips) {
 		addr := netip.MustParseAddrPort(req.RemoteAddr)
@@ -117,4 +126,31 @@ func getProto(r *http.Request) string {
 		return "https"
 	}
 	return "http"
+}
+
+func realIP(trustedProxyCount int) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		if trustedProxyCount == 0 {
+			return next
+		}
+
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ips := []string{}
+
+			for _, val := range r.Header.Values("X-Forwarded-For") {
+				for ipStr := range strings.SplitSeq(val, ",") {
+					ips = append(ips, strings.TrimSpace(ipStr))
+				}
+			}
+
+			trustedIdx := max(len(ips)-trustedProxyCount, 0)
+			if trustedIdx >= len(ips) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			r.RemoteAddr = ips[trustedIdx]
+			next.ServeHTTP(w, r)
+		})
+	}
 }

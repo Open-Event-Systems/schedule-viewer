@@ -1,7 +1,9 @@
 package server
 
 import (
+	"bookmarks/internal/config"
 	"bookmarks/internal/models"
+	"bookmarks/internal/schedule"
 	"bookmarks/internal/selections"
 	"bookmarks/internal/sessiontoken"
 	"context"
@@ -10,8 +12,11 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/maypok86/otter/v2"
 	"gorm.io/gorm"
+
+	"github.com/go-chi/cors"
 )
 
 type countsEntry struct {
@@ -20,65 +25,88 @@ type countsEntry struct {
 }
 
 type handlers struct {
-	conn            *gorm.DB
-	tokenService    *sessiontoken.SessionTokenService
-	emptySelections selections.Selections
-	countCache      *otter.Cache[string, countsEntry]
+	conn              *gorm.DB
+	tokenService      *sessiontoken.SessionTokenService
+	scheduleService   *schedule.ScheduleService
+	emptySelections   selections.Selections
+	countCache        *otter.Cache[string, countsEntry]
+	trustedProxyCount int
 }
 
 type ContextKey string
 
 const SessionIdKey ContextKey = "sessionId"
 
-const CountsCacheSeconds = 30
+const CountsCacheSeconds = 300
 
-func NewHandler(conn *gorm.DB, tokenSecret string) http.Handler {
+func NewHandler(cfg config.Config, conn *gorm.DB, tokenSecret string) http.Handler {
 	handlers := &handlers{
-		conn:            conn,
-		tokenService:    sessiontoken.NewSessionTokenService(tokenSecret),
-		emptySelections: selections.NewSelections(),
+		conn:              conn,
+		tokenService:      sessiontoken.NewSessionTokenService(tokenSecret),
+		scheduleService:   schedule.NewScheduleService(cfg.Schedules),
+		emptySelections:   selections.NewSelections(),
+		trustedProxyCount: cfg.TrustedProxies,
 	}
 
-	// TODO: get schedule count
 	handlers.countCache = otter.Must(&otter.Options[string, countsEntry]{
-		MaximumSize:      1,
-		InitialCapacity:  1,
+		MaximumSize:      len(cfg.Schedules),
+		InitialCapacity:  len(cfg.Schedules),
 		ExpiryCalculator: otter.ExpiryWriting[string, countsEntry](CountsCacheSeconds * time.Second),
 	})
 
 	r := chi.NewRouter()
 
+	r.Use(realIP(cfg.TrustedProxies))
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   cfg.AllowedOrigins,
+		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           7200,
+	}))
+
 	r.Route("/schedules/{scheduleId}", func(r chi.Router) {
-		r.Use(handlers.validateScheduleId)
+		r.Use(handlers.validateScheduleId(cfg.Schedules))
+
 		r.Post("/setup-session", handlers.setupSession)
 
 		r.Get("/selections/{selectionsId}", handlers.getSelections)
 		r.Get("/counts", handlers.getCounts)
 		r.Get("/counts.html", handlers.getHTMLCounts)
 
-		r.Route("/session-selections/{type}", func(r chi.Router) {
-			r.Use(handlers.validateType)
+		// routes that require a session
+		r.Group(func(r chi.Router) {
 			r.Use(handlers.validateSessionId)
-			r.Get("/", handlers.getSessionSelections)
-			r.Put("/", handlers.setSessionSelections)
+
+			r.Route("/session-selections/{type}", func(r chi.Router) {
+				r.Use(handlers.validateType)
+				r.Get("/", handlers.getSessionSelections)
+				r.Put("/", handlers.setSessionSelections)
+			})
 		})
 	})
 
 	return r
 }
 
-func (h *handlers) validateScheduleId(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		scheduleId := chi.URLParam(r, "scheduleId")
+func (h *handlers) validateScheduleId(scheduleCfg map[string]config.ScheduleConfig) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			scheduleId := chi.URLParam(r, "scheduleId")
+			_, ok := scheduleCfg[scheduleId]
 
-		// TODO: validate
-		if scheduleId == "" {
-			httpError(w, http.StatusNotFound)
-			return
-		}
+			if !ok {
+				httpError(w, http.StatusNotFound)
+				return
+			}
 
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func (h *handlers) validateSessionId(next http.Handler) http.Handler {

@@ -31,9 +31,9 @@ type sessionSelectionsRequest struct {
 }
 
 type sessionSelectionsObject struct {
-	Id   string          `json:"id"`
-	Date *models.ISOTime `json:"date,omitempty"`
-	URL  string          `json:"url,omitempty"`
+	Selections selections.Selections `json:"selections"`
+	Date       *models.ISOTime       `json:"date,omitempty"`
+	URL        string                `json:"url,omitempty"`
 }
 
 type sessionSelectionsResponse struct {
@@ -56,9 +56,7 @@ func (h *handlers) setupSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: configurable proxy count
-	realIP := getIP(0, r)
-	ip, partialIP := getSessionIPs(realIP)
+	ip, partialIP := getSessionIPs(r.RemoteAddr)
 	var scheduleId, sessionId string
 
 	err = h.withTx(r.Context(), func(db *models.DB) error {
@@ -138,9 +136,9 @@ func (h *handlers) getSessionSelections(w http.ResponseWriter, r *http.Request) 
 
 		resp := sessionSelectionsResponse{
 			SessionSelections: sessionSelectionsObject{
-				Id:   sels.Id(),
-				Date: &selDate,
-				URL:  curURL.String(),
+				Selections: sels,
+				Date:       &selDate,
+				URL:        curURL.String(),
 			},
 		}
 
@@ -158,14 +156,27 @@ func (h *handlers) setSessionSelections(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// TODO: validate items
+	add, err := h.validateIds(r.Context(), scheduleId, reqBody.Add)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 
+	if reqBody.Selections != nil {
+		selIds, err := h.validateIds(r.Context(), scheduleId, reqBody.Selections.Slice())
+		if err != nil {
+			serverError(w, err)
+			return
+		}
+
+		validSels := selections.NewSelections(selIds...)
+		reqBody.Selections = &validSels
+	}
+
+	var sels selections.Selections
 	var ssels models.SessionSelections
-	var err error
 
 	err = h.withTx(r.Context(), func(db *models.DB) error {
-		var sels selections.Selections
-
 		if reqBody.Selections != nil {
 			// provided selections
 			sels = *reqBody.Selections
@@ -186,7 +197,7 @@ func (h *handlers) setSessionSelections(w http.ResponseWriter, r *http.Request) 
 		}
 
 		// update selections
-		sels = sels.Add(reqBody.Add...)
+		sels = sels.Add(add...)
 		sels = sels.Remove(reqBody.Remove...)
 
 		if !sels.Equal(h.emptySelections) {
@@ -216,9 +227,9 @@ func (h *handlers) setSessionSelections(w http.ResponseWriter, r *http.Request) 
 
 		resp := sessionSelectionsResponse{
 			SessionSelections: sessionSelectionsObject{
-				Id:   ssels.SelectionsId,
-				Date: &ssels.UpdatedAt,
-				URL:  curURL.String(),
+				Selections: sels,
+				Date:       &ssels.UpdatedAt,
+				URL:        curURL.String(),
 			},
 		}
 
@@ -309,4 +320,27 @@ func (h *handlers) getHTMLCounts(w http.ResponseWriter, r *http.Request) {
 	} else {
 		serverError(w, err)
 	}
+}
+
+func (h *handlers) validateIds(ctx context.Context, scheduleId string, ids []string) ([]string, error) {
+	idsMap := make(map[string]struct{}, len(ids))
+	for _, id := range ids {
+		idsMap[id] = struct{}{}
+	}
+
+	validIds, err := h.scheduleService.GetScheduleItemIds(ctx, scheduleId)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []string
+
+	for id := range idsMap {
+		_, ok := validIds[id]
+		if ok {
+			results = append(results, id)
+		}
+	}
+
+	return results, nil
 }

@@ -1,0 +1,9 @@
+---
+db_path: db.sqlite
+trusted_proxies: 1
+allowed_origins:
+  - http://localhost:5173
+  - http://localhost:4173
+schedules:
+  example-event:
+    url:
