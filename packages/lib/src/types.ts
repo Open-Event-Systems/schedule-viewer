@@ -9,7 +9,8 @@ export type Interval = Readonly<{
 /**
  * An {@link Interval} with start and end.
  */
-export type Bounded<T extends Interval> = T & { start: Date; end: Date }
+export type Bounded<T extends Interval> = T &
+  Readonly<{ start: Date; end: Date }>
 
 /**
  * An interval representing a day, subject to the day change hour.
@@ -83,6 +84,38 @@ export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
 export type ScheduleAPI = Readonly<{
   getItems(): Promise<readonly ScheduleItem[]>
 }>
+
+export type UpdateSelectionsOptions = Readonly<{
+  add?: Iterable<string>
+  remove?: Iterable<string>
+}>
+
+export type SelectionsType = "bookmarks" | "visited"
+
+/**
+ * Saves/loads selections.
+ */
+export type SelectionsAPI = Readonly<{
+  getSelections(selectionsId: string): Promise<Selections | null>
+  getSessionSelections(type: SelectionsType): Promise<Selections>
+  setSessionSelections(
+    type: SelectionsType,
+    selections: Selections,
+  ): Promise<Selections>
+  updateSessionSelections(
+    type: SelectionsType,
+    options: UpdateSelectionsOptions,
+  ): Promise<Selections>
+}>
+
+/**
+ * A {@link SelectionsAPI} via HTTP service.
+ */
+export type SelectionsServiceAPI = SelectionsAPI &
+  Readonly<{
+    get sessionId(): string
+    getBookmarkCounts(): Promise<Readonly<Record<string, number | undefined>>>
+  }>
 
 /**
  * Saves and loads selections.

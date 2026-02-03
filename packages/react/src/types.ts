@@ -20,6 +20,7 @@ export type ScheduleConfig = Readonly<{
   tags: readonly TagEntry[]
   tagIndicators: readonly TagIndicatorEntry[]
   bookmarks?: string
+  selectionsService?: string
   icalPrefix: string
   icalDomain: string
 }>

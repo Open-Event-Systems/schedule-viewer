@@ -5,5 +5,6 @@ import type { ScheduleConfig } from "../types.js"
 export const ScheduleConfigContext = createContext<ScheduleConfig>(
   DEFAULT_SCHEDULE_CONFIG,
 )
+
 export const useScheduleConfig = (): ScheduleConfig =>
   useContext(ScheduleConfigContext)

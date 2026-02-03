@@ -73,6 +73,7 @@ const configSchema = z
     tags: opt(z.array(tagEntrySchema)),
     tagIndicators: opt(z.array(tagIndicatorSchema)),
     bookmarks: opt(z.string()),
+    selectionsService: opt(z.string()),
     icalPrefix: opt(z.string()),
     icalDomain: opt(z.string()),
   })
