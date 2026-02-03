@@ -8,16 +8,16 @@ import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import classes from "./tag-filter.module.scss"
 
 export type TagFilterProps = {
-  disabledTags?: Iterable<string>
+  disabledTags?: ReadonlySet<string>
   tags?: Iterable<TagEntry>
   tagIndicators?: readonly TagIndicatorEntry[]
-  onChangeTags?: (tags: Set<string>) => void
+  onChangeTags?: (tags: ReadonlySet<string>) => void
 } & PillsProps
 
 export const TagFilter = (props: TagFilterProps) => {
   const {
     className,
-    disabledTags = [],
+    disabledTags = new Set<string>(),
     tags = [],
     tagIndicators = [],
     onChangeTags,
@@ -61,12 +61,11 @@ const TagFilterTag = ({
 }: {
   tag: string
   title?: string
-  disabledTags?: Iterable<string>
-  getIndicator?: (tags: Iterable<string>) => ReactNode
-  onChangeTags?: (tags: Set<string>) => void
+  disabledTags?: ReadonlySet<string>
+  getIndicator?: (tags: ReadonlySet<string>) => ReactNode
+  onChangeTags?: (tags: ReadonlySet<string>) => void
 }) => {
-  const disabledTagsSet = new Set(disabledTags)
-  const enabled = !disabledTagsSet.has(tag)
+  const enabled = !disabledTags?.has(tag)
 
   return (
     <Pills.Pill
@@ -83,9 +82,9 @@ const TagFilterTag = ({
         body: clsx("TagFilter-pillBody", classes.pillBody),
       }}
       button
-      indicator={getIndicator && getIndicator([tag])}
+      indicator={getIndicator && getIndicator(new Set([tag]))}
       onClick={() => {
-        const newSet = new Set(disabledTagsSet)
+        const newSet = new Set(disabledTags)
         if (enabled) {
           newSet.add(tag)
         } else {

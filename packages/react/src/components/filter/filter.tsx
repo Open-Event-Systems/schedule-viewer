@@ -19,17 +19,19 @@ export type FilterProps = {
   tagIndicators?: readonly TagIndicatorEntry[]
   noPastEventsOption?: boolean
 
-  disabledTags?: Iterable<string>
+  disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
-  onChangeTags?: (tags: Set<string>) => void
-  onChangeText?: (text: string) => void
-  onChangeShowPastEvents?: (show: boolean) => void
+  onChangeFilter?: (update: {
+    disabledTags?: ReadonlySet<string>
+    text?: string
+    showPastEvents?: boolean
+  }) => void
 } & GridProps
 
 export const Filter = (props: FilterProps) => {
   const config = useScheduleConfig()
-  const ctx = useContext(FilterContext)
+  const [ctx, updateFilter] = useContext(FilterContext)
   const {
     className,
     disabledTags = ctx.disabledTags,
@@ -38,9 +40,7 @@ export const Filter = (props: FilterProps) => {
     noPastEventsOption,
     text = ctx.text,
     showPastEvents = ctx.showPastEvents,
-    onChangeTags = ctx.onChangeTags,
-    onChangeText = ctx.onChangeText,
-    onChangeShowPastEvents = ctx.onChangeShowPastEvents,
+    onChangeFilter = updateFilter,
     ...other
   } = useProps("Filter", {}, props)
 
@@ -52,7 +52,7 @@ export const Filter = (props: FilterProps) => {
           leftSection={<IconSearch />}
           value={text || ""}
           onChange={(e) => {
-            onChangeText && onChangeText(e.target.value)
+            onChangeFilter && onChangeFilter({ text: e.target.value })
           }}
         />
       </Grid.Col>
@@ -62,7 +62,8 @@ export const Filter = (props: FilterProps) => {
             label="Show past events"
             checked={!!showPastEvents}
             onChange={(e) => {
-              onChangeShowPastEvents && onChangeShowPastEvents(e.target.checked)
+              onChangeFilter &&
+                onChangeFilter({ showPastEvents: e.target.checked })
             }}
           />
         </Grid.Col>
@@ -72,10 +73,12 @@ export const Filter = (props: FilterProps) => {
           Filter Tags
         </Text>
         <TagFilter
-          disabledTags={disabledTags ?? []}
+          disabledTags={disabledTags}
           tags={tags}
           tagIndicators={tagIndicators}
-          onChangeTags={onChangeTags}
+          onChangeTags={(tags) => {
+            onChangeFilter && onChangeFilter({ disabledTags: tags })
+          }}
         />
       </Grid.Col>
     </Grid>

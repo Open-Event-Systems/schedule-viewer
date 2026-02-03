@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Filter } from "./filter.js"
-import { FilterContext, useNewFilterContext } from "../../hooks/filter.js"
+import { FilterContext, useFilterState } from "../../hooks/filter.js"
 
 const meta: Meta<typeof Filter> = {
   component: Filter,
@@ -32,7 +32,7 @@ export default meta
 
 export const Default: StoryObj<typeof Filter> = {
   render(args) {
-    const ctx = useNewFilterContext()
+    const ctx = useFilterState()
 
     return (
       <FilterContext value={ctx}>

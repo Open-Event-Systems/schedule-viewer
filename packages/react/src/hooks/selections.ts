@@ -1,130 +1,119 @@
 import {
-  makeLocalStorageBookmarkAPI,
-  type BookmarkAPI,
-  type BookmarkServiceAPI,
+  makeLocalStorageSelectionsAPI,
+  type SelectionsAPI,
+  type SelectionsServiceAPI,
   type Selections,
+  type SelectionsType,
 } from "@open-event-systems/schedule-lib"
-import type { ScheduleConfig } from "../types.js"
 import {
-  type QueryClient,
   useMutation,
   useQueryClient,
   useSuspenseQuery,
-  type UseMutationOptions,
-  type UseSuspenseQueryOptions,
 } from "@tanstack/react-query"
 import { createContext, useContext } from "react"
 import { useScheduleConfig } from "./config.js"
 
-export const BookmarkAPIContext = createContext<
-  readonly [BookmarkAPI, BookmarkServiceAPI | null]
->([makeLocalStorageBookmarkAPI(""), null])
-export const BookmarkAPIProvider = BookmarkAPIContext.Provider
-export const useBookmarkAPI = (): BookmarkAPI =>
-  useContext(BookmarkAPIContext)[0]
-export const useBookmarkServiceAPI = (): BookmarkServiceAPI | null =>
-  useContext(BookmarkAPIContext)[1]
+export const SelectionsAPIContext = createContext<
+  SelectionsAPI | SelectionsServiceAPI
+>(makeLocalStorageSelectionsAPI(""))
+export const useSelectionsAPI = (): SelectionsAPI | SelectionsServiceAPI =>
+  useContext(SelectionsAPIContext)
 
-export const getSelectionsQueryOptions = (
-  config: ScheduleConfig,
-  bookmarkAPI: BookmarkAPI,
-): UseSuspenseQueryOptions<Selections> => ({
-  queryKey: ["schedule", config.id, "bookmarks"],
-  async queryFn() {
-    return await bookmarkAPI.getSessionSelections()
+export const selectionsQueryKeys = {
+  selections: (scheduleId: string, id: string) =>
+    ["schedule", scheduleId, "selections", id] as const,
+  sessionSelections: (scheduleId: string, type: SelectionsType) =>
+    ["schedule", scheduleId, "session-selections", type] as const,
+  bookmarkCounts: (scheduleId: string) =>
+    ["schedule", scheduleId, "counts"] as const,
+} as const
+
+export const selectionsQueryFns = {
+  selections: (selectionsAPI: SelectionsAPI, id: string) => async () => {
+    return await selectionsAPI.getSelections(id)
   },
-  staleTime: 120000,
-})
+  sessionSelections:
+    (selectionsAPI: SelectionsAPI, type: SelectionsType) => async () => {
+      return await selectionsAPI.getSessionSelections(type)
+    },
+  bookmarkCounts:
+    (selectionsAPI: SelectionsAPI | SelectionsServiceAPI) =>
+    async (): Promise<ReadonlyMap<string, number | undefined>> => {
+      if ("getBookmarkCounts" in selectionsAPI) {
+        const res = selectionsAPI.getBookmarkCounts()
+        return new Map(Object.entries(res))
+      } else {
+        return new Map()
+      }
+    },
+} as const
 
-export const useSelections = (): Selections => {
-  const config = useScheduleConfig()
-  const bookmarkAPI = useBookmarkAPI()
-  const res = useSuspenseQuery(getSelectionsQueryOptions(config, bookmarkAPI))
-  return res.data
+export const selectionsMutationFns = {
+  setSessionSelections:
+    (selectionsAPI: SelectionsAPI, type: SelectionsType) =>
+    async (selections: Selections) => {
+      return await selectionsAPI.setSessionSelections(type, selections)
+    },
 }
 
-export const getSetSelectionsMutationOptions = (
-  queryClient: QueryClient,
-  config: ScheduleConfig,
-  api: BookmarkAPI,
-): UseMutationOptions<Selections, Error, Selections> => ({
-  mutationKey: ["schedule", config.id, "bookmarks"],
-  async mutationFn(selections) {
-    return await api.setSessionSelections(selections)
-  },
-  onSuccess(data) {
-    queryClient.setQueryData(
-      getSelectionsQueryOptions(config, api).queryKey,
-      data,
-    )
-  },
-})
+export const useSessionSelections = (type: SelectionsType): Selections => {
+  const config = useScheduleConfig()
+  const api = useSelectionsAPI()
+  const query = useSuspenseQuery({
+    queryKey: selectionsQueryKeys.sessionSelections(config.id, type),
+    queryFn: selectionsQueryFns.sessionSelections(api, type),
+    staleTime: 120000,
+  })
+  return query.data
+}
 
-export const useSetSelections = (): ((
-  selections: Selections,
-) => Promise<Selections>) => {
+export const useSetSelections = (
+  type: SelectionsType,
+): ((selections: Selections) => Promise<Selections>) => {
   const config = useScheduleConfig()
   const queryClient = useQueryClient()
-  const api = useBookmarkAPI()
-  const mutation = useMutation(
-    getSetSelectionsMutationOptions(queryClient, config, api),
-  )
+  const api = useSelectionsAPI()
+  const mutation = useMutation({
+    mutationKey: selectionsQueryKeys.sessionSelections(config.id, type),
+    mutationFn: selectionsMutationFns.setSessionSelections(api, type),
+    onSuccess(selections) {
+      queryClient.setQueryData(
+        selectionsQueryKeys.sessionSelections(config.id, type),
+        selections,
+      )
+    },
+  })
 
   return mutation.mutateAsync
 }
 
-export const getSelectionsByIdQueryOptions = (
-  config: ScheduleConfig,
-  api: BookmarkAPI,
-  id: string,
-): UseSuspenseQueryOptions<Selections | null> => ({
-  queryKey: ["schedule", config.id, "bookmarks", id],
-  async queryFn() {
-    return await api.getSelections(id)
-  },
-  staleTime: Infinity,
-})
-
-export const useSelectionsById = (id: string): Selections | null => {
+export const useSelections = (id: string): Selections | null => {
   const config = useScheduleConfig()
-  const api = useBookmarkAPI()
-  const query = useSuspenseQuery(getSelectionsByIdQueryOptions(config, api, id))
+  const api = useSelectionsAPI()
+  const query = useSuspenseQuery({
+    queryKey: selectionsQueryKeys.selections(config.id, id),
+    queryFn: selectionsQueryFns.selections(api, id),
+    staleTime: Infinity,
+  })
   return query.data
 }
 
-export const getBookmarkCountsQueryOptions = (
-  config: ScheduleConfig,
-  api: BookmarkServiceAPI | null,
-): UseSuspenseQueryOptions<ReadonlyMap<string, number | undefined> | null> => ({
-  queryKey: ["schedule", config.id, "counts"],
-  async queryFn() {
-    if (api) {
-      const res = await api.getBookmarkCounts()
-      const map = new Map<string, number | undefined>()
-
-      for (const key of Object.keys(res)) {
-        map.set(key, res[key])
-      }
-
-      return map
-    } else {
-      return null
-    }
-  },
-  staleTime: 120000,
-})
-
-export const useBookmarkCounts = ():
-  | ReadonlyMap<string, number | undefined>
-  | undefined => {
+export const useBookmarkCounts = (): ReadonlyMap<
+  string,
+  number | undefined
+> => {
   const config = useScheduleConfig()
-  const api = useBookmarkServiceAPI()
+  const api = useSelectionsAPI()
 
-  const res = useSuspenseQuery(getBookmarkCountsQueryOptions(config, api))
-  return res.data ?? undefined
+  const res = useSuspenseQuery({
+    queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
+    queryFn: selectionsQueryFns.bookmarkCounts(api),
+    staleTime: 120000,
+  })
+  return res.data
 }
 
 export const useBookmarkCount = (eventId: string): number | undefined => {
   const counts = useBookmarkCounts()
-  return counts?.get(eventId)
+  return counts.get(eventId)
 }

@@ -32,7 +32,9 @@ export default meta
 
 export const Default: StoryObj<typeof TagFilter> = {
   render(args) {
-    const [disabledTags, setDisabledTags] = useState(() => new Set<string>())
+    const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
+      () => new Set<string>(),
+    )
 
     return (
       <TagFilter

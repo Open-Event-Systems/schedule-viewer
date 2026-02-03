@@ -9,48 +9,30 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { createContext, useContext, useMemo, useReducer } from "react"
 
-export type FilterSettings = Readonly<{
-  disabledTags?: Iterable<string>
+export type FilterStateValue = Readonly<{
+  disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
 }>
 
-export type FilterCallbacks = Readonly<{
-  onChangeTags?: (tags: Set<string>) => void
-  onChangeText?: (text: string) => void
-  onChangeShowPastEvents?: (showPastEvents: boolean) => void
-  onChangeOnlyBookmarked?: (onlyBookmarked?: boolean) => void
-}>
+export type FilterContextValue = readonly [
+  FilterStateValue,
+  (update: Partial<FilterStateValue>) => void,
+]
 
-export const FilterContext = createContext<FilterSettings & FilterCallbacks>({})
+export const FilterContext = createContext<FilterContextValue>([{}, () => {}])
 
-export const useNewFilterContext = (): FilterSettings & FilterCallbacks => {
-  const reducer = (
-    cur: FilterSettings,
-    action: FilterSettings,
-  ): FilterSettings => ({ ...cur, ...action })
-
-  const [state, dispatch] = useReducer(reducer, {})
-
-  const callbacks = useMemo<FilterCallbacks>(() => {
-    return {
-      onChangeShowPastEvents(show) {
-        dispatch({ showPastEvents: show })
-      },
-      onChangeTags(tags) {
-        dispatch({ disabledTags: tags })
-      },
-      onChangeText(text) {
-        dispatch({ text })
-      },
-      onChangeOnlyBookmarked(onlyBookmarked) {
-        dispatch({ onlyBookmarked })
-      },
-    }
-  }, [dispatch])
-
-  return { ...state, ...callbacks }
+export const useFilterState = (): FilterContextValue => {
+  return useReducer(
+    (prevState: FilterStateValue, action: Partial<FilterStateValue>) => {
+      return {
+        ...prevState,
+        ...action,
+      }
+    },
+    {},
+  )
 }
 
 export const useFilteredItems = <
@@ -63,7 +45,7 @@ export const useFilteredItems = <
   now: Date,
   selections?: Selections,
 ): ScheduleItemStore<T> => {
-  const filter = useContext(FilterContext)
+  const [filter] = useContext(FilterContext)
   const byBookmarked = useMemo(() => {
     if (filter.onlyBookmarked) {
       return selections
