@@ -3,3 +3,4 @@ packages:
   - packages/map
   - packages/react
   - packages/viewer
+  - packages/viewer2
