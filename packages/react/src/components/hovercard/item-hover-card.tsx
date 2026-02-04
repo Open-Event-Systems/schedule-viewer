@@ -13,12 +13,24 @@ export type ItemHoverCardProps = HoverCardProps & {
   classNames?: {
     dropdown?: string
   }
+  renderItemDetails?: (props: ItemDetailsProps) => ReactNode
 }
 
 export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
-  const { item, children, ItemDetailsProps, classNames, ...other } = useProps(
+  const defaultRenderItemDetails = (props: ItemDetailsProps) => {
+    return <ItemDetails {...props} />
+  }
+
+  const {
+    item,
+    children,
+    ItemDetailsProps,
+    classNames,
+    renderItemDetails,
+    ...other
+  } = useProps(
     "ItemHoverCard",
-    {},
+    { renderItemDetails: defaultRenderItemDetails },
     props,
   )
 
@@ -38,7 +50,7 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
     >
       <HoverCard.Target>{children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        {item && <ItemDetails {...ItemDetailsProps} item={item} />}
+        {item && renderItemDetails({ ...ItemDetailsProps, item })}
       </HoverCard.Dropdown>
     </HoverCard>
   )

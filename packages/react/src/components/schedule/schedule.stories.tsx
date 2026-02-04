@@ -3,9 +3,9 @@ import { Schedule } from "./schedule.js"
 import { type Day } from "@open-event-systems/schedule-lib"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
 import { useCallback, useState } from "react"
-import type { PillsItemType } from "../pills/bin.js"
+import type { PillsItemType } from "../pill/item-pill-utils.js"
 import type { ItemDetailsProps } from "../details/item-details.js"
-import { Pills, type PillProps } from "../pills/pills.js"
+import { Pills, type PillProps } from "../pill/pill.js"
 
 const meta: Meta<typeof Schedule> = {
   component: Schedule,

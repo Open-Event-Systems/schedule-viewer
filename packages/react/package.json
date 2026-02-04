@@ -31,6 +31,8 @@
     "@types/markdown-it": "^14.1.2",
     "@types/react": "^19.2.2",
     "date-fns": "^4.1.0",
+    "mobx": "^6.15.0",
+    "mobx-react-lite": "^4.1.1",
     "react": "^19.2.0",
     "storybook": "^10.0.0",
     "typescript": "^5.9.3",
@@ -45,6 +47,8 @@
     "@open-event-systems/schedule-lib": "workspace:^0.1.0",
     "@tanstack/react-query": "^5.84.2",
     "date-fns": "^4.1.0",
+    "mobx": "^6.15.0",
+    "mobx-react-lite": "^4.1.1",
     "react": "^19.1.0"
   },
   "dependencies": {

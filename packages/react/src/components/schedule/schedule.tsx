@@ -14,10 +14,10 @@ import {
   binItemsByTag,
   binItemsByTime,
   binItemsByTitle,
-  type PillsItemBin,
+  type ItemBin,
   type PillsItemType,
-} from "../pills/bin.js"
-import { Pills, type PillBinProps, type PillProps } from "../pills/pills.js"
+} from "../pill/item-pill-utils.js"
+import { Pills, type PillBinProps, type PillProps } from "../pill/pill.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 
 export type ScheduleProps = {
@@ -30,7 +30,7 @@ export type ScheduleProps = {
   binTitleComponent?: string
   BinProps?: Partial<PillBinProps>
   PillProps?: Partial<PillProps>
-  renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
+  renderBin?: (props: PillBinProps, bin: ItemBin) => ReactNode
   renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
   onSelectDay?: (day: Day) => void
 }

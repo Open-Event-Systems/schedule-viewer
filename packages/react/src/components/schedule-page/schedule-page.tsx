@@ -20,8 +20,8 @@ import { ShareMenu } from "../share-menu/share-menu.js"
 import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import type { TagEntry } from "../../types.js"
-import type { PillBinProps, PillProps } from "../pills/pills.js"
-import type { PillsItemBin, PillsItemType } from "../pills/bin.js"
+import type { PillBinProps, PillProps } from "../pill/pill.js"
+import type { ItemBin, PillsItemType } from "../pill/item-pill-utils.js"
 
 import classes from "./schedule-page.module.scss"
 
@@ -43,7 +43,7 @@ export type SchedulePageProps = {
   binTitleComponent?: string
   BinProps?: Partial<PillBinProps>
   PillProps?: Partial<PillProps>
-  renderBin?: (props: PillBinProps, bin: PillsItemBin) => ReactNode
+  renderBin?: (props: PillBinProps, bin: ItemBin) => ReactNode
   renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
   onChangeOnlyBookmarked?: (onlyBookmarked: boolean) => void

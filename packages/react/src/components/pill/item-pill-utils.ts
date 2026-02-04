@@ -2,17 +2,30 @@ import { format, formatISO, set } from "date-fns"
 import type { TagEntry } from "../../types.js"
 import type { ItemDetailsItemType } from "../details/item-details.js"
 
-export type PillsItemType = ItemDetailsItemType
+export const getItemPillClassNames = (
+  item: ItemDetailsItemType,
+): readonly string[] => {
+  return [
+    getItemPillIdClassName(item.id),
+    ...Array.from(item.tags ?? [], (t) => getItemPillTagClassName(t)),
+  ]
+}
 
-export type PillsItemBin = Readonly<{
+export const getItemPillTagClassName = (tag: string): string =>
+  `Pill-item-tag-${tag}`
+
+export const getItemPillIdClassName = (itemId: string): string =>
+  `Pill-item-id-${itemId}`
+
+export type ItemBin = Readonly<{
   id: string
   title: string
-  items: Iterable<PillsItemType>
+  items: Iterable<ItemDetailsItemType>
 }>
 
 export const binItemsByTitle = (
-  items: Iterable<PillsItemType>,
-): readonly PillsItemBin[] => {
+  items: Iterable<ItemDetailsItemType>,
+): readonly ItemBin[] => {
   const sorted = [...items].map(
     (it) => [alphaNameSortChar(it.title), it] as const,
   )
@@ -28,7 +41,7 @@ export const binItemsByTitle = (
     }
   })
 
-  const map = new Map<string, PillsItemType[]>()
+  const map = new Map<string, ItemDetailsItemType[]>()
 
   for (const item of sorted) {
     let char = item[0].charAt(0)
@@ -45,7 +58,7 @@ export const binItemsByTitle = (
     bin.push(item[1])
   }
 
-  const bins: PillsItemBin[] = []
+  const bins: ItemBin[] = []
 
   for (const [char, items] of map.entries()) {
     bins.push({
@@ -79,9 +92,9 @@ const alphaNameSortChar = (s: string | undefined): string => {
 }
 
 export const binItemsByTag = (
-  items: Iterable<PillsItemType>,
+  items: Iterable<ItemDetailsItemType>,
   tags: Iterable<TagEntry>,
-): readonly PillsItemBin[] => {
+): readonly ItemBin[] => {
   const sortedItems = [...items]
   sortedItems.sort((a, b) => {
     if (a.title && b.title) {
@@ -100,7 +113,7 @@ export const binItemsByTag = (
     tagTitleMap[tag.tag] = tag.title
   }
 
-  const map = new Map<string, PillsItemType[]>()
+  const map = new Map<string, ItemDetailsItemType[]>()
 
   for (const item of sortedItems) {
     let empty = true
@@ -130,7 +143,7 @@ export const binItemsByTag = (
     }
   }
 
-  const bins: PillsItemBin[] = []
+  const bins: ItemBin[] = []
 
   for (const [title, items] of map.entries()) {
     bins.push({
@@ -154,10 +167,10 @@ export const binItemsByTag = (
 }
 
 export const binItemsByTime = (
-  items: Iterable<PillsItemType>,
+  items: Iterable<ItemDetailsItemType>,
   binMinutes: number,
-): readonly PillsItemBin[] => {
-  const map = new Map<string, [Date, PillsItemType[]]>()
+): readonly ItemBin[] => {
+  const map = new Map<string, [Date, ItemDetailsItemType[]]>()
 
   for (const item of items) {
     if (item.start) {
@@ -173,7 +186,7 @@ export const binItemsByTime = (
     }
   }
 
-  const bins: PillsItemBin[] = []
+  const bins: ItemBin[] = []
 
   for (const [id, [date, items]] of map.entries()) {
     bins.push({

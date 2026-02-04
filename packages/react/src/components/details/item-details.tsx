@@ -59,6 +59,7 @@ export type ItemDetailsProps = {
 } & BoxProps
 
 type ItemDetailsComponentType = NamedExoticComponent<ItemDetailsProps> & {
+  Root: typeof Root
   Time: typeof Time
   Location: typeof Location
   Contacts: typeof Contacts
@@ -72,34 +73,26 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     item,
     bookmarked,
     setBookmarked,
-    large = false,
+    large,
     bookmarkCount,
     showShare,
     url,
     locationHref,
     onClickLocation,
-    tags = [],
-    titleComponent = "h2",
+    tags,
+    titleComponent,
     ...other
-  } = useProps("ItemDetails", {}, props)
+  } = useProps(
+    "ItemDetails",
+    { large: false, tags: [], titleComponent: "h2" },
+    props,
+  )
 
   const scheme = useMantineColorScheme()
   const altTextColor = scheme.colorScheme == "dark" ? "gray.5" : "gray.7"
 
   return (
-    <Box
-      component="article"
-      className={clsx(
-        "ItemDetails-root",
-        {
-          "ItemDetails-large": large,
-          [`${classes.large}`]: large,
-        },
-        classes.root,
-        className,
-      )}
-      {...other}
-    >
+    <ItemDetails.Root className={clsx(className, classes.root)} {...other}>
       <Title
         className={clsx("ItemDetails-title", classes.title)}
         component={titleComponent}
@@ -167,11 +160,34 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
         {item.description}
       </Markdown>
       <ItemDetails.Tags tags={tags} eventTags={item.tags} c={altTextColor} />
-    </Box>
+    </ItemDetails.Root>
   )
 }) as Partial<ItemDetailsComponentType>
 
 _ItemDetails.displayName = "ItemDetails"
+
+export type ItemDetailsRootProps = {
+  large?: boolean
+  children?: ReactNode
+} & BoxProps
+
+const Root = memo((props: ItemDetailsRootProps) => {
+  const { className, large, ...other } = useProps("ItemDetailsRoot", {}, props)
+  return (
+    <Box
+      component="article"
+      className={clsx(
+        "ItemDetails-root",
+        large && ["ItemDetails-large", classes.large],
+        classes.root,
+        className,
+      )}
+      {...other}
+    />
+  )
+})
+
+Root.displayName = "ItemDetails.Root"
 
 const Contacts = memo(
   ({
@@ -207,7 +223,7 @@ const Contacts = memo(
   },
 )
 
-Contacts.displayName = "Contacts"
+Contacts.displayName = "ItemDetails.Contacts"
 
 const Contact = memo(
   ({ name, url }: Readonly<{ name?: string; url?: string }>) => {
@@ -231,7 +247,7 @@ const Contact = memo(
   },
 )
 
-Contact.displayName = "Contact"
+Contact.displayName = "ItemDetails.Contact"
 
 const Time = memo(
   ({ start, end, c }: { start?: Date; end?: Date; c?: string }) => {
@@ -293,7 +309,7 @@ const Time = memo(
   },
 )
 
-Time.displayName = "Time"
+Time.displayName = "ItemDetails.Time"
 
 const Location = memo(
   ({
@@ -337,7 +353,7 @@ const Location = memo(
   },
 )
 
-Location.displayName = "Location"
+Location.displayName = "ItemDetails.Location"
 
 const Tags = memo(
   ({
@@ -378,8 +394,9 @@ const Tags = memo(
   },
 )
 
-Tags.displayName = "Tags"
+Tags.displayName = "ItemDetails.Tags"
 
+_ItemDetails.Root = Root
 _ItemDetails.Time = Time
 _ItemDetails.Location = Location
 _ItemDetails.Contacts = Contacts
