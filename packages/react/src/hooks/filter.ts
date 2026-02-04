@@ -8,9 +8,18 @@ import {
   type Selections,
 } from "@open-event-systems/schedule-lib"
 import { createContext, useContext, useMemo, useReducer } from "react"
+import type { ReadonlyBasicSet } from "../utils/basic-set.js"
 
 export type FilterStateValue = Readonly<{
-  disabledTags?: ReadonlySet<string>
+  disabledTags?: ReadonlyBasicSet<string>
+  text?: string
+  showPastEvents?: boolean
+  onlyBookmarked?: boolean
+}>
+
+export type FilterUpdateValue = Readonly<{
+  enableTag?: string
+  disableTag?: string
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
@@ -18,17 +27,35 @@ export type FilterStateValue = Readonly<{
 
 export type FilterContextValue = readonly [
   FilterStateValue,
-  (update: Partial<FilterStateValue>) => void,
+  (update: FilterUpdateValue) => void,
 ]
 
 export const FilterContext = createContext<FilterContextValue>([{}, () => {}])
 
 export const useFilterState = (): FilterContextValue => {
   return useReducer(
-    (prevState: FilterStateValue, action: Partial<FilterStateValue>) => {
+    (prevState: FilterStateValue, action: Partial<FilterUpdateValue>) => {
+      const { enableTag, disableTag, ...other } = action
+      let disabledTags = prevState.disabledTags
+
+      if (enableTag || disableTag) {
+        const newSet = new Set(prevState.disabledTags)
+
+        if (enableTag) {
+          newSet.delete(enableTag)
+        }
+
+        if (disableTag) {
+          newSet.add(disableTag)
+        }
+
+        disabledTags = newSet
+      }
+
       return {
         ...prevState,
-        ...action,
+        ...other,
+        disabledTags,
       }
     },
     {},

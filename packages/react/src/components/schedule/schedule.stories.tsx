@@ -1,11 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Schedule } from "./schedule.js"
 import { type Day } from "@open-event-systems/schedule-lib"
-import { parsedConfig, parsedEvents } from "../../test-data.js"
-import { useCallback, useState } from "react"
-import type { PillsItemType } from "../pill/item-pill-utils.js"
-import type { ItemDetailsProps } from "../details/item-details.js"
-import { Pills, type PillProps } from "../pill/pill.js"
+import { parsedEvents } from "../../test-data.js"
+import { useState } from "react"
 
 const meta: Meta<typeof Schedule> = {
   component: Schedule,
@@ -20,42 +17,13 @@ export const Default: StoryObj<typeof Schedule> = {
   render(args) {
     const [selectedDay, setSelectedDay] = useState<Day | undefined>(undefined)
 
-    const getDetailsProps = useCallback((): Partial<ItemDetailsProps> => {
-      return {
-        locationHref: "#",
-        onClickLocation(e) {
-          e.preventDefault()
-        },
-        tags: parsedConfig.tags,
-      }
-    }, [parsedConfig.tags])
-
-    const renderPill = useCallback(
-      (props: PillProps, item: PillsItemType) => {
-        return (
-          <Pills.Pill
-            {...props}
-            key={item.id}
-            item={item}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-            }}
-            hasItemDetailsHoverCard
-            ItemDetailsProps={getDetailsProps}
-          />
-        )
-      },
-      [getDetailsProps],
-    )
-
     return (
       <Schedule
         {...args}
         items={parsedEvents}
+        filteredItems={parsedEvents}
         selectedDayKey={selectedDay?.key}
         onSelectDay={setSelectedDay}
-        renderPill={renderPill}
       />
     )
   },

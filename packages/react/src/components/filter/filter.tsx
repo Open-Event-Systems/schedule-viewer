@@ -13,17 +13,19 @@ import { useContext } from "react"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import { FilterContext } from "../../hooks/filter.js"
+import type { ReadonlyBasicSet } from "../../utils/basic-set.js"
 
 export type FilterProps = {
   tags?: Iterable<TagEntry>
-  tagIndicators?: readonly TagIndicatorEntry[]
+  tagIndicators?: Iterable<TagIndicatorEntry>
   noPastEventsOption?: boolean
 
-  disabledTags?: ReadonlySet<string>
+  disabledTags?: ReadonlyBasicSet<string>
   text?: string
   showPastEvents?: boolean
   onChangeFilter?: (update: {
-    disabledTags?: ReadonlySet<string>
+    enableTag?: string
+    disableTag?: string
     text?: string
     showPastEvents?: boolean
   }) => void
@@ -34,15 +36,26 @@ export const Filter = (props: FilterProps) => {
   const [ctx, updateFilter] = useContext(FilterContext)
   const {
     className,
-    disabledTags = ctx.disabledTags,
-    tags = config.tags,
-    tagIndicators = config.tagIndicators,
+    disabledTags,
+    tags,
+    tagIndicators,
     noPastEventsOption,
-    text = ctx.text,
-    showPastEvents = ctx.showPastEvents,
-    onChangeFilter = updateFilter,
+    text,
+    showPastEvents,
+    onChangeFilter,
     ...other
-  } = useProps("Filter", {}, props)
+  } = useProps(
+    "Filter",
+    {
+      disabledTags: ctx.disabledTags,
+      tags: config.tags,
+      tagIndicators: config.tagIndicators,
+      text: ctx.text,
+      showPastEvents: ctx.showPastEvents,
+      onChangeFilter: updateFilter,
+    },
+    props,
+  )
 
   return (
     <Grid className={clsx("Filter-root", className)} {...other}>
@@ -76,8 +89,14 @@ export const Filter = (props: FilterProps) => {
           disabledTags={disabledTags}
           tags={tags}
           tagIndicators={tagIndicators}
-          onChangeTags={(tags) => {
-            onChangeFilter && onChangeFilter({ disabledTags: tags })
+          onSetDisabled={(tag, disabled) => {
+            if (onChangeFilter) {
+              if (disabled) {
+                onChangeFilter({ disableTag: tag })
+              } else {
+                onChangeFilter({ enableTag: tag })
+              }
+            }
           }}
         />
       </Grid.Col>

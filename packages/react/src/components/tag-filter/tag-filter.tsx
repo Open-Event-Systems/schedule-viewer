@@ -18,7 +18,7 @@ export type TagFilterProps = {
   }
   disabledTags?: ReadonlyBasicSet<string>
   tags?: Iterable<TagEntry>
-  tagIndicators?: readonly TagIndicatorEntry[]
+  tagIndicators?: Iterable<TagIndicatorEntry>
   onSetDisabled?: (tag: string, disabled: boolean) => void
   renderTag?: (props: TagFilterTagProps) => ReactNode
 } & TagFilterRootProps

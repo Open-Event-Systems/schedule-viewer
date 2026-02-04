@@ -13,40 +13,41 @@ import {
   type ScheduleItemStore,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
+import {
+  Schedule,
+  type ScheduleProps,
+  type ScheduleType,
+} from "../schedule/schedule.js"
 import { Filter } from "../filter/filter.js"
 import { IconEye, type ReactNode } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import type { TagEntry } from "../../types.js"
-import type { PillBinProps, PillProps } from "../pill/pill.js"
-import type { ItemBin, PillsItemType } from "../pill/item-pill-utils.js"
+
+import type { ItemPillProps } from "../pill/item-pill.js"
 
 import classes from "./schedule-page.module.scss"
+import { useContext } from "react"
+import { FilterContext } from "../../hooks/filter.js"
 
 export type SchedulePageProps = {
   items: ScheduleItemStore
   filteredItems: ScheduleItemStore
   now?: Date
-  type?: ScheduleProps["type"]
-  allowTypes?: Iterable<ScheduleProps["type"]>
+  type?: ScheduleType
+  allowTypes?: Iterable<ScheduleType>
   tags?: Iterable<TagEntry>
   noPastEventsOption?: boolean
   noShareMenu?: boolean
-  onlyBookmarked?: boolean
   hideBookmarkFilter?: boolean
   selectedDayKey?: string
   enableSync?: boolean
   icalFileName?: string
   dayTitleComponent?: string
   binTitleComponent?: string
-  BinProps?: Partial<PillBinProps>
-  PillProps?: Partial<PillProps>
-  renderBin?: (props: PillBinProps, bin: ItemBin) => ReactNode
-  renderPill?: (props: PillProps, item: PillsItemType) => ReactNode
+  renderPill?: (props: ItemPillProps) => ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
-  onChangeOnlyBookmarked?: (onlyBookmarked: boolean) => void
   onSelectDay?: (day: Day) => void
   onShare?: () => void
   onSync?: () => void
@@ -58,33 +59,38 @@ export const SchedulePage = (props: SchedulePageProps) => {
     items,
     filteredItems,
     now,
-    type = "daily-agenda",
-    allowTypes = ["daily-agenda", "full-agenda", "catalog", "tags"],
+    type,
+    allowTypes,
     tags,
     noPastEventsOption,
     noShareMenu,
-    onlyBookmarked,
     hideBookmarkFilter,
     selectedDayKey,
     enableSync,
-    icalFileName = "schedule",
+    icalFileName,
     dayTitleComponent,
     binTitleComponent,
-    BinProps,
-    PillProps,
-    renderBin,
     renderPill,
     onChangeType,
-    onChangeOnlyBookmarked,
     onSelectDay,
     onShare,
     onSync,
     ...other
-  } = useProps("SchedulePage", {}, props)
+  } = useProps(
+    "SchedulePage",
+    {
+      type: "daily-agenda",
+      allowTypes: ["daily-agenda", "full-agenda", "catalog", "tags"],
+      icalFileName: "schedule",
+    },
+    props,
+  )
 
-  const allowTypesArr = [...allowTypes]
+  const allowTypesArr = [...(allowTypes ?? [])]
 
   const { icalPrefix, icalDomain } = useScheduleConfig()
+
+  const [filterState, updateFilter] = useContext(FilterContext)
 
   return (
     <Stack
@@ -99,8 +105,8 @@ export const SchedulePage = (props: SchedulePageProps) => {
               classes.bookmarkFilter,
             )}
             size="sm"
-            value={onlyBookmarked}
-            onChange={onChangeOnlyBookmarked}
+            value={filterState.onlyBookmarked}
+            onChange={(only) => updateFilter({ onlyBookmarked: only })}
           />
         )}
         <Select
@@ -173,9 +179,6 @@ export const SchedulePage = (props: SchedulePageProps) => {
             type={type}
             dayTitleComponent={dayTitleComponent}
             binTitleComponent={binTitleComponent}
-            BinProps={BinProps}
-            PillProps={PillProps}
-            renderBin={renderBin}
             renderPill={renderPill}
             selectedDayKey={selectedDayKey}
             onSelectDay={onSelectDay}
