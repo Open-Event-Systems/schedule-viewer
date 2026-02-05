@@ -1,4 +1,18 @@
 import { createRouter } from "@tanstack/react-router"
+import type { SetupResult } from "./app.js"
+import type { QueryClient } from "@tanstack/react-query"
+import {
+  defaultPageRoute,
+  filterStateRoute,
+  pagesLayoutRoute,
+  rootRoute,
+  setupRoute,
+} from "./routes.js"
+
+export type RouterContext = {
+  setupPromise: Promise<SetupResult>
+  queryClient: QueryClient
+}
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -6,6 +20,15 @@ declare module "@tanstack/react-router" {
     router: ReturnType<typeof makeRouter>
   }
 }
-export const makeRouter = () => {
-  return createRouter({})
+export const makeRouter = (context: RouterContext) => {
+  return createRouter({
+    context,
+    routeTree: rootRoute.addChildren([
+      setupRoute.addChildren([
+        filterStateRoute.addChildren([
+          pagesLayoutRoute.addChildren([defaultPageRoute]),
+        ]),
+      ]),
+    ]),
+  })
 }

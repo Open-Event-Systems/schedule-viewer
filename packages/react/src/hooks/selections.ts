@@ -1,23 +1,23 @@
 import {
-  makeLocalStorageSelectionsAPI,
   type SelectionsAPI,
-  type SelectionsServiceAPI,
   type Selections,
   type SelectionsType,
+  composeSelectionsAPI,
+  makeSessionSelectionsStore,
+  type SessionSelections,
 } from "@open-event-systems/schedule-lib"
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
-import { createContext, useContext } from "react"
+import { createContext, use, useCallback } from "react"
 import { useScheduleConfig } from "./config.js"
 
-export const SelectionsAPIContext = createContext<
-  SelectionsAPI | SelectionsServiceAPI
->(makeLocalStorageSelectionsAPI(""))
-export const useSelectionsAPI = (): SelectionsAPI | SelectionsServiceAPI =>
-  useContext(SelectionsAPIContext)
+export const SelectionsAPIContext = createContext<SelectionsAPI>(
+  composeSelectionsAPI(makeSessionSelectionsStore("")),
+)
+export const useSelectionsAPI = (): SelectionsAPI => use(SelectionsAPIContext)
 
 export const selectionsQueryKeys = {
   selections: (scheduleId: string, id: string) =>
@@ -37,26 +37,29 @@ export const selectionsQueryFns = {
       return await selectionsAPI.getSessionSelections(type)
     },
   bookmarkCounts:
-    (selectionsAPI: SelectionsAPI | SelectionsServiceAPI) =>
+    (selectionsAPI: SelectionsAPI) =>
     async (): Promise<ReadonlyMap<string, number | undefined>> => {
-      if ("getBookmarkCounts" in selectionsAPI) {
-        const res = selectionsAPI.getBookmarkCounts()
-        return new Map(Object.entries(res))
-      } else {
-        return new Map()
-      }
+      return await selectionsAPI.getBookmarkCounts()
     },
 } as const
 
 export const selectionsMutationFns = {
-  setSessionSelections:
-    (selectionsAPI: SelectionsAPI, type: SelectionsType) =>
-    async (selections: Selections) => {
-      return await selectionsAPI.setSessionSelections(type, selections)
+  updateSessionSelections:
+    (selectionsAPI: SelectionsAPI, type: SelectionsType, id: string) =>
+    async (selected: boolean) => {
+      if (selected) {
+        return await selectionsAPI.updateSessionSelections(type, { add: [id] })
+      } else {
+        return await selectionsAPI.updateSessionSelections(type, {
+          delete: [id],
+        })
+      }
     },
 }
 
-export const useSessionSelections = (type: SelectionsType): Selections => {
+export const useSessionSelections = (
+  type: SelectionsType,
+): SessionSelections => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
   const query = useSuspenseQuery({
@@ -67,15 +70,33 @@ export const useSessionSelections = (type: SelectionsType): Selections => {
   return query.data
 }
 
-export const useSetSelections = (
+export const useIsSelected = (type: SelectionsType, id: string): boolean => {
+  const config = useScheduleConfig()
+  const api = useSelectionsAPI()
+  const query = useSuspenseQuery({
+    queryKey: selectionsQueryKeys.sessionSelections(config.id, type),
+    queryFn: selectionsQueryFns.sessionSelections(api, type),
+    staleTime: 120000,
+    select: useCallback(
+      (ssels: SessionSelections) => {
+        return ssels.selections.has(id)
+      },
+      [id],
+    ),
+  })
+
+  return query.data
+}
+
+export const useSetSelected = (
   type: SelectionsType,
-): ((selections: Selections) => Promise<Selections>) => {
+  id: string,
+): ((selected: boolean) => Promise<SessionSelections>) => {
   const config = useScheduleConfig()
   const queryClient = useQueryClient()
   const api = useSelectionsAPI()
   const mutation = useMutation({
-    mutationKey: selectionsQueryKeys.sessionSelections(config.id, type),
-    mutationFn: selectionsMutationFns.setSessionSelections(api, type),
+    mutationFn: selectionsMutationFns.updateSessionSelections(api, type, id),
     onSuccess(selections) {
       queryClient.setQueryData(
         selectionsQueryKeys.sessionSelections(config.id, type),
@@ -83,7 +104,6 @@ export const useSetSelections = (
       )
     },
   })
-
   return mutation.mutateAsync
 }
 
@@ -113,7 +133,19 @@ export const useBookmarkCounts = (): ReadonlyMap<
   return res.data
 }
 
-export const useBookmarkCount = (eventId: string): number | undefined => {
-  const counts = useBookmarkCounts()
-  return counts.get(eventId)
+export const useBookmarkCount = (itemId: string): number | undefined => {
+  const config = useScheduleConfig()
+  const api = useSelectionsAPI()
+  const res = useSuspenseQuery({
+    queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
+    queryFn: selectionsQueryFns.bookmarkCounts(api),
+    staleTime: 120000,
+    select: useCallback(
+      (res: ReadonlyMap<string, number | undefined>) => {
+        return res.get(itemId)
+      },
+      [itemId],
+    ),
+  })
+  return res.data
 }

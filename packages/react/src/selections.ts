@@ -1,10 +1,10 @@
 import {
   composeSelectionsAPI,
-  makeLocalStorageSelectionsAPI,
-  type SelectionsAPI,
-  type SelectionsServiceAPI,
-  setupSelectionsServiceAPI,
+  makeSessionSelectionsStore,
+  setupSelectionsAPI,
   syncSelectionsAPIs,
+  type SelectionsAPI,
+  type SessionSelectionsStore,
 } from "@open-event-systems/schedule-lib"
 import type { ScheduleConfig } from "./types.js"
 
@@ -14,24 +14,24 @@ import type { ScheduleConfig } from "./types.js"
 export const setupSelections = async (
   config: ScheduleConfig,
   sessionId?: string,
-): Promise<SelectionsAPI | SelectionsServiceAPI> => {
-  const local = makeLocalStorageSelectionsAPI(config.id)
+): Promise<[SessionSelectionsStore, SelectionsAPI]> => {
+  const local = makeSessionSelectionsStore(config.id)
   const apiURL = config.selectionsService || config.bookmarks
   if (!apiURL) {
-    return local
+    return [local, composeSelectionsAPI(local)]
   }
 
   try {
-    const remote = await setupSelectionsServiceAPI(apiURL, config.id, sessionId)
+    const remote = await setupSelectionsAPI(apiURL, config.id, sessionId)
 
     await Promise.all([
       syncSelectionsAPIs(local, remote, "bookmarks"),
       syncSelectionsAPIs(local, remote, "visited"),
     ])
 
-    return composeSelectionsAPI(local, remote)
+    return [local, composeSelectionsAPI(local, remote)]
   } catch (e) {
     console.error(`Ignoring remote selections service: ${e}`)
-    return local
+    return [local, composeSelectionsAPI(local)]
   }
 }

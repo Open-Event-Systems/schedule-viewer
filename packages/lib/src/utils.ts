@@ -2,13 +2,6 @@ import { sortIntervalsByStartDate } from "./time.js"
 import type { Bounded, Interval, ScheduleItem } from "./types.js"
 
 /**
- * Set equality comparison.
- */
-export const setEquals = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
-  return a.size == b.size && [...a].every((it) => b.has(it))
-}
-
-/**
  * Return a filter for bookmarked items.
  */
 export const makeBookmarkFilter = (

@@ -1,16 +1,23 @@
-import { formatISO, isAfter } from "date-fns"
-import { makeSelections, parseSelections } from "./selections.js"
+import { formatISO } from "date-fns"
 import type {
   Selections,
   SelectionsAPI,
-  SelectionsServiceAPI,
   SelectionsType,
+  ServerSelections,
+  SessionSelections,
+  SessionSelectionsStore,
 } from "./types.js"
 import wretch from "wretch"
-import { setEquals } from "./utils.js"
+import {
+  makeSelections,
+  makeSessionSelections,
+  parseSelections,
+  parseSessionSelections,
+  sessionSelectionsStorageSchema,
+} from "./selections.js"
 
-const SELECTIONS_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-selections-v1-"
-const SESSION_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-selections-session-v1-"
+const SELECTIONS_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-selections-v2-"
+const SESSION_LOCAL_STORAGE_KEY_PREFIX = "oes-schedule-selections-session-v2-"
 
 type BookmarkCountsResponse = {
   counts: Record<string, number>
@@ -46,78 +53,152 @@ type BookmarkSetupBody = {
   session_id: string
 }
 
-export const makeLocalStorageSelectionsAPI = (
+export const makeSessionSelectionsStore = (
   scheduleId: string,
-): SelectionsAPI => {
+): SessionSelectionsStore => {
   const storageKey = (type: string) =>
     `${SELECTIONS_LOCAL_STORAGE_KEY_PREFIX}${type}-${scheduleId}`
 
+  const selectionsToObj = (selections: Selections | ServerSelections) => {
+    return {
+      items: [...selections],
+      ...("id" in selections && selections.id && { id: selections.id }),
+    }
+  }
+
+  const sessionSelectionsToObj = (ssels: SessionSelections) => {
+    return {
+      selections: selectionsToObj(ssels.selections),
+      ...(ssels.date && { date: formatISO(ssels.date) }),
+    }
+  }
+
   return {
-    async getSelections() {
-      return null
-    },
-    async getSessionSelections(type) {
+    get(type) {
       const key = storageKey(type)
       const asStr = window.localStorage.getItem(key)
-      if (!asStr) {
-        return makeSelections()
+
+      if (asStr) {
+        try {
+          const data = JSON.parse(asStr)
+          const parsed = sessionSelectionsStorageSchema.parse(data)
+          const baseSels = makeSelections(
+            parsed.base.selections.items,
+            parsed.base.selections.id,
+          )
+          const base = makeSessionSelections(baseSels, parsed.base.date)
+
+          const currentSels = makeSelections(
+            parsed.current.selections.items,
+            parsed.current.selections.id,
+          )
+          const current = makeSessionSelections(
+            currentSels,
+            parsed.current.date,
+          )
+
+          return {
+            base,
+            current,
+            added: new Set(parsed.added),
+            deleted: new Set(parsed.deleted),
+          }
+        } catch (_e) {
+          // do nothing
+        }
       }
 
-      try {
-        const data = JSON.parse(asStr)
-        return parseSelections(data)
-      } catch (_e) {
-        return makeSelections()
+      return {
+        base: makeSessionSelections(),
+        added: new Set(),
+        deleted: new Set(),
+        current: makeSessionSelections(),
       }
     },
-    async setSessionSelections(type, selections) {
-      const data: Record<string, unknown> = {
-        items: [...selections.items],
+    save(type, selections) {
+      const key = storageKey(type)
+
+      const sselsObj = sessionSelectionsToObj(selections)
+
+      const asObj = {
+        base: sselsObj,
+        current: sselsObj,
+        added: [],
+        deleted: [],
       }
 
-      if (selections.date) {
-        data.date = formatISO(selections.date)
-      }
-
-      if (selections.id) {
-        data.id = selections.id
-      }
-
-      const asStr = JSON.stringify(data)
-      window.localStorage.setItem(storageKey(type), asStr)
-
-      return selections
+      window.localStorage.setItem(key, JSON.stringify(asObj))
     },
-    async updateSessionSelections(type, options) {
-      const curSelections = await this.getSessionSelections(type)
-      const newItems = new Set(curSelections.items)
-      for (const item of options.add ?? []) {
-        newItems.add(item)
-      }
-      for (const item of options.remove ?? []) {
-        newItems.delete(item)
+    add(type, itemId) {
+      const status = this.get(type)
+      const key = storageKey(type)
+
+      if (status.current.selections.has(itemId)) {
+        return status.current
       }
 
-      const date = new Date()
+      const newAdded = new Set(status.added)
+      const newDeleted = new Set(status.deleted)
 
-      const data: Record<string, unknown> = {
-        items: [...newItems],
-        date: formatISO(date),
+      if (newDeleted.has(itemId)) {
+        newDeleted.delete(itemId)
+      } else {
+        newAdded.add(itemId)
       }
 
-      const asStr = JSON.stringify(data)
-      window.localStorage.setItem(storageKey(type), asStr)
+      const newSels = status.current.selections.add(itemId)
+      const newCurrent = makeSessionSelections(newSels, new Date())
 
-      return makeSelections(newItems, date)
+      const asObj = {
+        base: sessionSelectionsToObj(status.base),
+        added: [...newAdded],
+        deleted: [...status.deleted],
+        current: sessionSelectionsToObj(newCurrent),
+      }
+
+      window.localStorage.setItem(key, JSON.stringify(asObj))
+
+      return newCurrent
+    },
+    delete(type, itemId) {
+      const status = this.get(type)
+      const key = storageKey(type)
+
+      if (!status.current.selections.has(itemId)) {
+        return status.current
+      }
+
+      const newAdded = new Set(status.added)
+      const newDeleted = new Set(status.deleted)
+
+      if (newAdded.has(itemId)) {
+        newAdded.delete(itemId)
+      } else {
+        newDeleted.add(itemId)
+      }
+
+      const newSels = status.current.selections.delete(itemId)
+      const newCurrent = makeSessionSelections(newSels, new Date())
+
+      const asObj = {
+        base: sessionSelectionsToObj(status.base),
+        added: [...newAdded],
+        deleted: [...status.deleted],
+        current: sessionSelectionsToObj(newCurrent),
+      }
+
+      window.localStorage.setItem(key, JSON.stringify(asObj))
+
+      return newCurrent
     },
   }
 }
 
-export const setupSelectionsServiceAPI = async (
+export const setupSelectionsAPI = async (
   baseURL: string,
   scheduleId: string,
   sessionId?: string,
-): Promise<SelectionsServiceAPI> => {
+): Promise<SelectionsAPI> => {
   const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
   const localStorageKey = `${SESSION_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
   const loadSessId = window.localStorage.getItem(localStorageKey)
@@ -156,34 +237,12 @@ export const setupSelectionsServiceAPI = async (
         .get()
         .json<SessionSelectionsResponse>()
 
-      return parseSelections({
-        ...res.session_selections.selections,
-        date: res.session_selections.date,
-      })
-    },
-    async setSessionSelections(type, selections) {
-      const body: UpdateSelectionsRequest = {
-        selections: {
-          items: [...selections.items],
-        },
-      }
-
-      const res = await baseWretch
-        .url(`/session-selections/${type}`)
-        .auth(`Bearer ${sessionId}`)
-        .json(body)
-        .put()
-        .json<SessionSelectionsResponse>()
-
-      return parseSelections({
-        ...res.session_selections.selections,
-        date: res.session_selections.date,
-      })
+      return parseSessionSelections(res.session_selections)
     },
     async updateSessionSelections(type, options) {
       const body: UpdateSelectionsRequest = {
         add: [...(options.add ?? [])],
-        remove: [...(options.remove ?? [])],
+        remove: [...(options.delete ?? [])],
       }
 
       const res = await baseWretch
@@ -193,29 +252,27 @@ export const setupSelectionsServiceAPI = async (
         .put()
         .json<SessionSelectionsResponse>()
 
-      return parseSelections({
-        ...res.session_selections.selections,
-        date: res.session_selections.date,
-      })
+      return parseSessionSelections(res.session_selections)
     },
     async getBookmarkCounts() {
       const resp = await baseWretch
         .url("/counts")
         .get()
         .json<BookmarkCountsResponse>()
-      return resp.counts
+      return new Map(Object.entries(resp.counts))
     },
   }
 }
 
 /**
- * Compose a local and remote {@link SelectionsAPI} object.
+ * Compose a {@link SessionSelectionsStore} and remote {@link SelectionsAPI} object.
  */
 export const composeSelectionsAPI = (
-  local: SelectionsAPI,
-  remote?: SelectionsServiceAPI | null,
-): SelectionsAPI | SelectionsServiceAPI => {
-  const methods: SelectionsAPI = {
+  local: SessionSelectionsStore,
+  remote?: SelectionsAPI | null,
+): SelectionsAPI => {
+  return {
+    sessionId: remote?.sessionId,
     async getSelections(selectionsId) {
       if (remote) {
         return await remote.getSelections(selectionsId)
@@ -224,105 +281,63 @@ export const composeSelectionsAPI = (
       }
     },
     async getSessionSelections(type) {
-      if (!remote) {
-        return await local.getSessionSelections(type)
+      if (remote) {
+        const res = await remote.getSessionSelections(type)
+        local.save(type, res)
+        return res
+      } else {
+        return local.get(type).current
       }
-
-      const [localRes, remoteRes] = await Promise.all([
-        local.getSessionSelections(type).catch(() => undefined),
-        remote.getSessionSelections(type).catch(() => undefined),
-      ])
-
-      return pickMoreRecent(localRes, remoteRes)
-    },
-    async setSessionSelections(type, selections) {
-      if (!remote) {
-        return await local.getSessionSelections(type)
-      }
-
-      const [localRes, remoteRes] = await Promise.all([
-        local.setSessionSelections(type, selections),
-        remote.setSessionSelections(type, selections),
-      ])
-
-      return pickMoreRecent(localRes, remoteRes)
     },
     async updateSessionSelections(type, options) {
-      if (!remote) {
-        return await local.updateSessionSelections(type, options)
+      for (const add of options.add ?? []) {
+        local.add(type, add)
       }
 
-      const remoteRes = await remote
-        .updateSessionSelections(type, options)
-        .catch(() => undefined)
-      let localRes
+      for (const del of options.delete ?? []) {
+        local.delete(type, del)
+      }
 
-      if (remoteRes) {
-        localRes = await local.setSessionSelections(type, remoteRes)
+      if (remote) {
+        const res = await remote.updateSessionSelections(type, {
+          add: [...(options.add ?? [])],
+          delete: [...(options.delete ?? [])],
+        })
+        local.save(type, res)
+        return res
       } else {
-        localRes = await local.updateSessionSelections(type, options)
+        return local.get(type).current
       }
-
-      return pickMoreRecent(localRes, remoteRes)
+    },
+    async getBookmarkCounts() {
+      if (remote) {
+        return await remote.getBookmarkCounts()
+      } else {
+        return new Map()
+      }
     },
   }
-
-  if (remote) {
-    return {
-      ...methods,
-      get sessionId() {
-        return remote.sessionId
-      },
-      async getBookmarkCounts() {
-        return await remote.getBookmarkCounts()
-      },
-    }
-  }
-
-  return methods
 }
 
 /**
  * Sync local/remote selections APIs to have the latest data.
  */
 export const syncSelectionsAPIs = async (
-  local: SelectionsAPI,
+  local: SessionSelectionsStore,
   remote: SelectionsAPI,
   type: SelectionsType,
-): Promise<Selections> => {
-  const [localRes, remoteRes] = await Promise.all([
-    local.getSessionSelections(type),
-    remote.getSessionSelections(type),
-  ])
-
-  if (!setEquals(localRes.items, remoteRes.items)) {
-    const newest = pickMoreRecent(localRes, remoteRes)
-    if (!setEquals(localRes.items, newest.items)) {
-      return await local.setSessionSelections(type, newest)
-    } else {
-      const remoteLatest = await remote.setSessionSelections(type, newest)
-      return await local.setSessionSelections(type, remoteLatest)
-    }
+): Promise<SessionSelections> => {
+  const curLocal = local.get(type)
+  if (curLocal.added.size > 0 || curLocal.deleted.size > 0) {
+    const res = await remote.updateSessionSelections(type, {
+      add: [...curLocal.added],
+      delete: [...curLocal.deleted],
+    })
+    local.save(type, res)
+    return res
   } else {
-    return pickMoreRecent(localRes, remoteRes)
-  }
-}
-
-const pickMoreRecent = (
-  a: Selections | undefined,
-  b: Selections | undefined,
-): Selections => {
-  if (a?.date && b?.date) {
-    if (isAfter(a.date, b.date)) {
-      return a
-    } else {
-      return b
-    }
-  } else if (a?.date && !b?.date) {
-    return a
-  } else if (!a?.date && b?.date) {
-    return b
-  } else {
-    return a ?? makeSelections()
+    const res = await remote.getSessionSelections(type)
+    local.save(type, res)
+    return res
   }
 }

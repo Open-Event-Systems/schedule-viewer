@@ -22,12 +22,32 @@ export type Day = Readonly<{
 }>
 
 /**
- * A collection of selected event IDs.
+ * A set of selected item IDs.
  */
 export type Selections = Readonly<{
-  id?: string
+  has(value: string): boolean
+  [Symbol.iterator](): Iterator<string>
+  readonly size: number
+  add(item: string): Selections
+  delete(item: string): Selections
+  equals(other: Selections): boolean
+}>
+
+/**
+ * A {@link Selections} object with a server assigned ID.
+ */
+export type ServerSelections = Selections &
+  Readonly<{
+    id: string
+    equals(other: Selections | ServerSelections): boolean
+  }>
+
+/**
+ * The current session's selections.
+ */
+export type SessionSelections = Readonly<{
   date?: Date
-  items: ReadonlySet<string>
+  selections: Selections | ServerSelections
 }>
 
 /**
@@ -85,52 +105,38 @@ export type ScheduleAPI = Readonly<{
   getItems(): Promise<readonly ScheduleItem[]>
 }>
 
-export type UpdateSelectionsOptions = Readonly<{
-  add?: Iterable<string>
-  remove?: Iterable<string>
+export type SelectionsType = "bookmarks" | "visited"
+
+export type LocalSessionSelectionsStatus = Readonly<{
+  base: SessionSelections
+  added: ReadonlySet<string>
+  deleted: ReadonlySet<string>
+  current: SessionSelections
 }>
 
-export type SelectionsType = "bookmarks" | "visited"
+export type SessionSelectionsStore = Readonly<{
+  get(type: SelectionsType): LocalSessionSelectionsStatus
+  save(type: SelectionsType, selections: SessionSelections): void
+  add(type: SelectionsType, itemId: string): SessionSelections
+  delete(type: SelectionsType, itemId: string): SessionSelections
+}>
+
+export type UpdateSelectionsOptions = Readonly<{
+  selections?: Iterable<string>
+  add?: Iterable<string>
+  delete?: Iterable<string>
+}>
 
 /**
  * Saves/loads selections.
  */
 export type SelectionsAPI = Readonly<{
+  get sessionId(): string | undefined
   getSelections(selectionsId: string): Promise<Selections | null>
-  getSessionSelections(type: SelectionsType): Promise<Selections>
-  setSessionSelections(
-    type: SelectionsType,
-    selections: Selections,
-  ): Promise<Selections>
+  getSessionSelections(type: SelectionsType): Promise<SessionSelections>
   updateSessionSelections(
     type: SelectionsType,
     options: UpdateSelectionsOptions,
-  ): Promise<Selections>
+  ): Promise<SessionSelections>
+  getBookmarkCounts(): Promise<ReadonlyMap<string, number | undefined>>
 }>
-
-/**
- * A {@link SelectionsAPI} via HTTP service.
- */
-export type SelectionsServiceAPI = SelectionsAPI &
-  Readonly<{
-    get sessionId(): string
-    getBookmarkCounts(): Promise<Readonly<Record<string, number | undefined>>>
-  }>
-
-/**
- * Saves and loads selections.
- */
-export type BookmarkAPI = Readonly<{
-  getSelections(selectionsId: string): Promise<Selections | null>
-  getSessionSelections(): Promise<Selections>
-  setSessionSelections(selections: Selections): Promise<Selections>
-}>
-
-/**
- * A {@link BookmarkAPI} via HTTP service.
- */
-export type BookmarkServiceAPI = BookmarkAPI &
-  Readonly<{
-    get sessionId(): string
-    getBookmarkCounts(): Promise<Readonly<Record<string, number | undefined>>>
-  }>
