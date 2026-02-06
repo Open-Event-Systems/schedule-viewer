@@ -9,23 +9,22 @@ import {
 import { IconSearch } from "@tabler/icons-react"
 import clsx from "clsx"
 import { TagFilter } from "../tag-filter/tag-filter.js"
-import { useContext } from "react"
+import { use } from "react"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import { FilterContext } from "../../hooks/filter.js"
-import type { ReadonlyBasicSet } from "../../utils/basic-set.js"
 
 export type FilterProps = {
   tags?: Iterable<TagEntry>
   tagIndicators?: Iterable<TagIndicatorEntry>
   noPastEventsOption?: boolean
 
-  disabledTags?: ReadonlyBasicSet<string>
+  disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
-  onChangeFilter?: (update: {
-    enableTag?: string
-    disableTag?: string
+
+  onChangeFilter?: (action: {
+    disabledTags?: ReadonlySet<string>
     text?: string
     showPastEvents?: boolean
   }) => void
@@ -33,7 +32,7 @@ export type FilterProps = {
 
 export const Filter = (props: FilterProps) => {
   const config = useScheduleConfig()
-  const [ctx, updateFilter] = useContext(FilterContext)
+  const [ctx, updateFilter] = use(FilterContext)
   const {
     className,
     disabledTags,
@@ -91,11 +90,13 @@ export const Filter = (props: FilterProps) => {
           tagIndicators={tagIndicators}
           onSetDisabled={(tag, disabled) => {
             if (onChangeFilter) {
+              const newSet = new Set(disabledTags)
               if (disabled) {
-                onChangeFilter({ disableTag: tag })
+                newSet.add(tag)
               } else {
-                onChangeFilter({ enableTag: tag })
+                newSet.delete(tag)
               }
+              onChangeFilter({ disabledTags: newSet })
             }
           }}
         />

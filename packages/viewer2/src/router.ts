@@ -2,9 +2,10 @@ import { createRouter } from "@tanstack/react-router"
 import type { SetupResult } from "./app.js"
 import type { QueryClient } from "@tanstack/react-query"
 import {
-  defaultPageRoute,
+  eventDetailsRoute,
   filterStateRoute,
-  pagesLayoutRoute,
+  mainLayoutRoute,
+  pagesRoute,
   rootRoute,
   setupRoute,
 } from "./routes.js"
@@ -25,8 +26,9 @@ export const makeRouter = (context: RouterContext) => {
     context,
     routeTree: rootRoute.addChildren([
       setupRoute.addChildren([
-        filterStateRoute.addChildren([
-          pagesLayoutRoute.addChildren([defaultPageRoute]),
+        mainLayoutRoute.addChildren([
+          filterStateRoute.addChildren([pagesRoute]),
+          eventDetailsRoute,
         ]),
       ]),
     ]),

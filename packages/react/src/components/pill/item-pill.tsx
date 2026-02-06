@@ -1,13 +1,21 @@
 import { useProps } from "@mantine/core"
 import type { ItemDetailsItemType } from "../details/item-details.js"
 import { Pill, type PillBinProps, type PillProps } from "./pill.js"
-import { memo, useMemo, type NamedExoticComponent, type ReactNode } from "react"
+import {
+  memo,
+  useMemo,
+  useState,
+  type NamedExoticComponent,
+  type ReactNode,
+} from "react"
 import {
   ItemHoverCard,
   type ItemHoverCardProps,
 } from "../hovercard/item-hover-card.js"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import { makeTagIndicatorFunc } from "../../config.js"
+import clsx from "clsx"
+import { getItemPillClassNames } from "./item-pill-utils.js"
 
 export type ItemPillProps = Omit<PillProps, "children"> & {
   item: ItemDetailsItemType
@@ -23,6 +31,7 @@ type ItemPillComponentType = NamedExoticComponent<ItemPillProps> & {
 const _ItemPill = memo((props: ItemPillProps) => {
   const defaultRenderHoverCard = (props: ItemHoverCardProps) => {
     const { ItemDetailsProps, ...other } = props
+
     return (
       <ItemHoverCard
         {...other}
@@ -31,16 +40,33 @@ const _ItemPill = memo((props: ItemPillProps) => {
           tags,
           ...ItemDetailsProps,
         }}
+        hideDetails={!detailsEnabled}
         item={item}
       />
     )
   }
 
-  const { item, tags, ItemHoverCardProps, renderHoverCard, ...other } =
-    useProps("ItemPill", { renderHoverCard: defaultRenderHoverCard }, props)
+  const {
+    item,
+    tags,
+    ItemHoverCardProps,
+    renderHoverCard,
+    onMouseEnter,
+    ...other
+  } = useProps("ItemPill", { renderHoverCard: defaultRenderHoverCard }, props)
+
+  const [detailsEnabled, setDetailsEnabled] = useState(false)
 
   return (
-    <Pill renderHoverCard={renderHoverCard} {...other}>
+    <Pill
+      className={clsx("ItemPill-root", ...getItemPillClassNames(item))}
+      onMouseEnter={(e) => {
+        onMouseEnter && onMouseEnter(e)
+        setDetailsEnabled(true)
+      }}
+      renderHoverCard={renderHoverCard}
+      {...other}
+    >
       {item.title}
     </Pill>
   )

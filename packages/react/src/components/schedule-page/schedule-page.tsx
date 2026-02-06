@@ -9,7 +9,6 @@ import {
 import {
   createICS,
   isBounded,
-  type Day,
   type ScheduleItemStore,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
@@ -41,14 +40,12 @@ export type SchedulePageProps = {
   noPastEventsOption?: boolean
   noShareMenu?: boolean
   hideBookmarkFilter?: boolean
-  selectedDayKey?: string
   enableSync?: boolean
   icalFileName?: string
   dayTitleComponent?: string
   binTitleComponent?: string
   renderPill?: (props: ItemPillProps) => ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
-  onSelectDay?: (day: Day) => void
   onShare?: () => void
   onSync?: () => void
 } & StackProps
@@ -65,14 +62,12 @@ export const SchedulePage = (props: SchedulePageProps) => {
     noPastEventsOption,
     noShareMenu,
     hideBookmarkFilter,
-    selectedDayKey,
     enableSync,
     icalFileName,
     dayTitleComponent,
     binTitleComponent,
     renderPill,
     onChangeType,
-    onSelectDay,
     onShare,
     onSync,
     ...other
@@ -109,37 +104,39 @@ export const SchedulePage = (props: SchedulePageProps) => {
             onChange={(only) => updateFilter({ onlyBookmarked: only })}
           />
         )}
-        <Select
-          className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
-          size="sm"
-          title="View"
-          aria-label="view"
-          data={(
-            [
-              {
-                value: "daily-agenda",
-                label: "Daily Agenda",
-              },
-              {
-                value: "full-agenda",
-                label: "Full Agenda",
-              },
-              {
-                value: "catalog",
-                label: "Catalog",
-              },
-              {
-                value: "tags",
-                label: "Tags",
-              },
-            ] as const
-          ).filter((o) => allowTypesArr.includes(o.value))}
-          value={type}
-          allowDeselect={false}
-          variant="default"
-          onChange={onChangeType as (v: string | null) => void}
-          leftSection={<IconEye size={18} />}
-        />
+        {allowTypesArr.length > 1 && (
+          <Select
+            className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
+            size="sm"
+            title="View"
+            aria-label="view"
+            data={(
+              [
+                {
+                  value: "daily-agenda",
+                  label: "Daily Agenda",
+                },
+                {
+                  value: "full-agenda",
+                  label: "Full Agenda",
+                },
+                {
+                  value: "catalog",
+                  label: "Catalog",
+                },
+                {
+                  value: "tags",
+                  label: "Tags",
+                },
+              ] as const
+            ).filter((o) => allowTypesArr.includes(o.value))}
+            value={type}
+            allowDeselect={false}
+            variant="default"
+            onChange={onChangeType as (v: string | null) => void}
+            leftSection={<IconEye size={18} />}
+          />
+        )}
         {!noShareMenu && (
           <ShareMenu
             ButtonProps={{
@@ -180,8 +177,8 @@ export const SchedulePage = (props: SchedulePageProps) => {
             dayTitleComponent={dayTitleComponent}
             binTitleComponent={binTitleComponent}
             renderPill={renderPill}
-            selectedDayKey={selectedDayKey}
-            onSelectDay={onSelectDay}
+            selectedDayKey={filterState.selectedDayKey}
+            onSelectDay={(day) => updateFilter({ selectedDayKey: day.key })}
           />
         </Grid.Col>
       </Grid>

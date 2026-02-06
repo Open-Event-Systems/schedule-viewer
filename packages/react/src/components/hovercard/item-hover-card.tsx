@@ -9,6 +9,7 @@ import classes from "./item-hover-card.module.scss"
 export type ItemHoverCardProps = HoverCardProps & {
   item?: ScheduleItem
   children?: ReactNode
+  hideDetails?: boolean
   ItemDetailsProps?: Partial<ItemDetailsProps>
   classNames?: {
     dropdown?: string
@@ -24,6 +25,7 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
   const {
     item,
     children,
+    hideDetails,
     ItemDetailsProps,
     classNames,
     renderItemDetails,
@@ -50,7 +52,9 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
     >
       <HoverCard.Target>{children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        {item && renderItemDetails({ ...ItemDetailsProps, item })}
+        {item &&
+          !hideDetails &&
+          renderItemDetails({ ...ItemDetailsProps, item })}
       </HoverCard.Dropdown>
     </HoverCard>
   )

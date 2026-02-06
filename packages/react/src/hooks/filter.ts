@@ -7,60 +7,27 @@ import {
   type ScheduleItem,
   type Selections,
 } from "@open-event-systems/schedule-lib"
-import { createContext, useContext, useMemo, useReducer } from "react"
-import type { ReadonlyBasicSet } from "../utils/basic-set.js"
+import { createContext, use, useMemo } from "react"
 
-export type FilterStateValue = Readonly<{
-  disabledTags?: ReadonlyBasicSet<string>
+export type FilterSettings = Readonly<{
+  disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
+  selectedDayKey?: string
 }>
 
-export type FilterUpdateValue = Readonly<{
-  enableTag?: string
-  disableTag?: string
+export type FilterUpdateAction = Readonly<{
+  disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
+  selectedDayKey?: string
 }>
 
-export type FilterContextValue = readonly [
-  FilterStateValue,
-  (update: FilterUpdateValue) => void,
-]
-
-export const FilterContext = createContext<FilterContextValue>([{}, () => {}])
-
-export const useFilterState = (): FilterContextValue => {
-  return useReducer(
-    (prevState: FilterStateValue, action: Partial<FilterUpdateValue>) => {
-      const { enableTag, disableTag, ...other } = action
-      let disabledTags = prevState.disabledTags
-
-      if (enableTag || disableTag) {
-        const newSet = new Set(prevState.disabledTags)
-
-        if (enableTag) {
-          newSet.delete(enableTag)
-        }
-
-        if (disableTag) {
-          newSet.add(disableTag)
-        }
-
-        disabledTags = newSet
-      }
-
-      return {
-        ...prevState,
-        ...other,
-        disabledTags,
-      }
-    },
-    {},
-  )
-}
+export const FilterContext = createContext<
+  readonly [FilterSettings, (action: FilterUpdateAction) => void]
+>([{}, () => {}])
 
 export const useFilteredItems = <
   T extends ScheduleItem & {
@@ -72,7 +39,7 @@ export const useFilteredItems = <
   now: Date,
   selections?: Selections,
 ): ScheduleItemStore<T> => {
-  const [filter] = useContext(FilterContext)
+  const [filter] = use(FilterContext)
   const byBookmarked = useMemo(() => {
     if (filter.onlyBookmarked) {
       return selections

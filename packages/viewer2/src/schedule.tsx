@@ -2,21 +2,30 @@ import {
   parseMapFlag,
   parseScheduleEvent,
   parseVendor,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import {
   ItemDetails,
+  makeTagIndicatorFunc,
   useIsSelected,
   useSetSelected,
   type ItemDetailsProps,
+  type TagIndicatorEntry,
 } from "@open-event-systems/schedule-react"
-import { memo, type ReactNode } from "react"
+import {
+  createContext,
+  memo,
+  use,
+  type MouseEvent,
+  type ReactNode,
+} from "react"
 import {
   ItemPill,
   type ItemPillProps,
 } from "../../react/src/components/pill/item-pill.js"
-import { useRouter } from "@tanstack/react-router"
-import { defaultPageRoute } from "./routes.js"
+import { eventDetailsRoute } from "./routes.js"
 import { useViewerConfig } from "./config.js"
+import type { makeRouter } from "./router.js"
 
 export const parsers = {
   event: parseScheduleEvent,
@@ -24,16 +33,73 @@ export const parsers = {
   "map-flag": parseMapFlag,
 } as const
 
+export type CachedItemProps = {
+  url?: string
+  onClick?: (e: MouseEvent) => void
+  indicator?: string
+}
+
+export const makeCachedItemPropsMap = (
+  router: ReturnType<typeof makeRouter>,
+  items: Iterable<ScheduleItem>,
+  tagIndicators: Iterable<TagIndicatorEntry>,
+): Map<string, CachedItemProps> => {
+  const map = new Map<string, CachedItemProps>()
+  const indicatorFunc = makeTagIndicatorFunc(tagIndicators)
+
+  for (const item of items) {
+    let url
+    let onClick
+
+    if (item.type == "event") {
+      url = new URL(
+        router.buildLocation({
+          to: eventDetailsRoute.to,
+          params: {
+            eventId: item.id,
+          },
+        }).href,
+        window.origin,
+      ).href
+
+      onClick = (e: MouseEvent) => {
+        e.preventDefault()
+        router.navigate({
+          to: eventDetailsRoute.to,
+          params: {
+            eventId: item.id,
+          },
+        })
+      }
+    }
+
+    let indicator
+
+    if ("tags" in item) {
+      indicator = indicatorFunc(item.tags as ReadonlySet<string>)
+    }
+
+    map.set(item.id, {
+      url,
+      onClick,
+      ...(indicator && { indicator }),
+    })
+  }
+
+  return map
+}
+
+export const CachedItemPropsContext = createContext<
+  ReadonlyMap<string, CachedItemProps>
+>(new Map())
+
 const WrappedItemDetails = memo((props: ItemDetailsProps) => {
   const {
     item: { id },
   } = props
-  const router = useRouter()
-  const url = router.buildLocation({
-    to: defaultPageRoute.to,
-  }).url
 
   const config = useViewerConfig()
+  const cachedProps = use(CachedItemPropsContext).get(props.item.id)
 
   const isBookmarked = useIsSelected("bookmarks", id)
   const setBookmarked = useSetSelected("bookmarks", id)
@@ -41,10 +107,11 @@ const WrappedItemDetails = memo((props: ItemDetailsProps) => {
   return (
     <ItemDetails
       {...props}
-      url={url}
+      url={cachedProps?.url}
       tags={config.tags}
       bookmarked={isBookmarked}
       setBookmarked={setBookmarked}
+      showShare
     />
   )
 })
@@ -68,21 +135,14 @@ export const useRenderItemDetailsFunc = (): ((
 }
 
 const WrappedItemPill = memo((props: ItemPillProps) => {
-  const router = useRouter()
-  const url = router.buildLocation({
-    to: defaultPageRoute.to,
-  }).url
+  const cachedProps = use(CachedItemPropsContext).get(props.item.id)
 
   return (
     <ItemPill
       {...props}
-      href={url}
-      onClick={(e) => {
-        e.preventDefault()
-        router.navigate({
-          to: defaultPageRoute.to,
-        })
-      }}
+      href={cachedProps?.url}
+      onClick={cachedProps?.onClick}
+      indicator={cachedProps?.indicator}
     />
   )
 })

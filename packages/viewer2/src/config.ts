@@ -7,9 +7,16 @@ import {
 import z from "zod"
 import wretch from "wretch"
 import { createContext, use } from "react"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type PageConfig = Readonly<{
   id: string
+  title?: string
+  description?: string
+  enabledViews?: readonly string[]
+  onlyType?: string | readonly string[]
+  requireTags?: readonly string[]
+  noPastEventsOption?: boolean
 }>
 
 export type ViewerConfig = ScheduleConfig &
@@ -24,6 +31,12 @@ const opt = <OutT, InT>(
 
 const pageSchema = z.looseObject({
   id: z.string(),
+  title: opt(z.string()).optional(),
+  description: opt(z.string()).optional(),
+  enabledViews: opt(z.array(z.string())).optional(),
+  onlyType: opt(z.union([z.string(), z.array(z.string())])).optional(),
+  requireTags: opt(z.array(z.string())).optional(),
+  noPastEventsOption: opt(z.boolean()).optional(),
 })
 
 const pageConfigSchema = z
@@ -54,5 +67,41 @@ const parseViewerConfig = (configData: ScheduleConfigInput): ViewerConfig => {
     ...DEFAULT_VIEWER_CONFIG,
     ...config,
     ...viewerConfig,
+  }
+}
+
+export const makeTypeFilter = (
+  option?: string | readonly string[],
+): ((item: ScheduleItem) => boolean) => {
+  const reqTypes: string[] = []
+
+  if (typeof option == "string") {
+    reqTypes.push(option)
+  } else if (Array.isArray(option)) {
+    reqTypes.push(...option)
+  }
+
+  if (reqTypes.length == 0) {
+    return () => true
+  }
+
+  return (item) => reqTypes.includes(item.type)
+}
+
+export const makeRequireTagsFilter = (
+  option?: readonly string[],
+): ((
+  item: ScheduleItem & { readonly tags?: ReadonlySet<string> },
+) => boolean) => {
+  const reqTags = option ?? []
+
+  return (item) => {
+    for (const reqTag of reqTags) {
+      if (!item.tags || !item.tags.has(reqTag)) {
+        return false
+      }
+    }
+
+    return true
   }
 }

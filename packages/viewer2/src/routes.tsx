@@ -3,6 +3,7 @@ import {
   createRoute,
   HeadContent,
   lazyRouteComponent,
+  notFound,
   Outlet,
 } from "@tanstack/react-router"
 import type { RouterContext } from "./router.js"
@@ -64,17 +65,17 @@ export const setupRoute = createRoute({
   ),
 })
 
-export const pagesLayoutRoute = createRoute({
+export const mainLayoutRoute = createRoute({
   getParentRoute: () => setupRoute,
-  id: "pagesLayout",
+  id: "mainLayout",
   component: lazyRouteComponent(
-    () => import("./routes/pages-layout.js"),
-    "PagesLayoutRoute",
+    () => import("./routes/main-layout.js"),
+    "MainLayout",
   ),
 })
 
 export const filterStateRoute = createRoute({
-  getParentRoute: () => pagesLayoutRoute,
+  getParentRoute: () => mainLayoutRoute,
   id: "filterState",
   component: lazyRouteComponent(
     () => import("./routes/filter-state.js"),
@@ -82,8 +83,50 @@ export const filterStateRoute = createRoute({
   ),
 })
 
-export const defaultPageRoute = createRoute({
+export const pagesRoute = createRoute({
   getParentRoute: () => filterStateRoute,
-  path: "/",
-  component: lazyRouteComponent(() => import("./routes/page.js"), "PageRoute"),
+  path: "/{-$pageId}",
+  component: lazyRouteComponent(
+    () => import("./routes/pages.js"),
+    "PagesRoute",
+  ),
+  async loader({ context, params }) {
+    const { config } = context
+    const { pageId } = params
+
+    const selectedPageId = pageId || config.pages[0]?.id
+    const page = config.pages.find((p) => p.id == selectedPageId)
+    if (!page) {
+      throw notFound()
+    }
+
+    return { pageConfig: page }
+  },
+})
+
+export const eventDetailsRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/events/$eventId",
+  component: lazyRouteComponent(
+    () => import("./routes/details.js"),
+    "EventDetailsRoute",
+  ),
+  async loader({ params, context }) {
+    const { eventId } = params
+    const { config, queryClient, scheduleAPI } = context
+
+    const { event: events } = await queryClient.fetchQuery({
+      queryKey: itemsQueryKeys.items(config.id, parsers),
+      queryFn: itemsQueryFns.items(scheduleAPI, parsers),
+    })
+
+    const event = events.get(eventId)
+    if (!event) {
+      throw notFound()
+    }
+
+    return {
+      event,
+    }
+  },
 })
