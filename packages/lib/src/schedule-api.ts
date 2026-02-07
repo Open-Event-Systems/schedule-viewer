@@ -38,7 +38,7 @@ export const makeScheduleItemsArrayAPI = (
 /**
  * Make a {@link ScheduleAPI} that returns items from a URL.
  */
-export const makeScheduleFetchAPI = (url: string): ScheduleAPI => {
+export const makeScheduleFetchAPI = (url: string) => {
   return {
     async getItems() {
       const res = await wretch(url).get().json()

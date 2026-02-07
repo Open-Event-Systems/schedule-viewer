@@ -52,15 +52,14 @@ export const makeCachedItemPropsMap = (
     let onClick
 
     if (item.type == "event") {
-      url = new URL(
-        router.buildLocation({
-          to: eventDetailsRoute.to,
-          params: {
-            eventId: item.id,
-          },
-        }).href,
-        window.origin,
-      ).href
+      const routeHref = router.buildLocation({
+        to: eventDetailsRoute.to,
+        params: {
+          eventId: item.id,
+        },
+      }).href
+
+      url = window.origin + router.history.createHref(routeHref)
 
       onClick = (e: MouseEvent) => {
         e.preventDefault()
@@ -68,6 +67,9 @@ export const makeCachedItemPropsMap = (
           to: eventDetailsRoute.to,
           params: {
             eventId: item.id,
+          },
+          state: {
+            backURL: window.location.href,
           },
         })
       }

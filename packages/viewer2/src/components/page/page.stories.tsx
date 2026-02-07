@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Page } from "./page.js"
-import { useState } from "react"
+import { useReducer, useState } from "react"
 import {
   createMemoryHistory,
   createRootRoute,
@@ -8,9 +8,15 @@ import {
   RouterProvider,
 } from "@tanstack/react-router"
 import { ViewerConfigContext } from "../../config.js"
-import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-react"
+import {
+  DEFAULT_SCHEDULE_CONFIG,
+  type ScheduleType,
+  type FilterSettings,
+  FilterContext,
+} from "@open-event-systems/schedule-react"
 import { ScheduleItemStore } from "@open-event-systems/schedule-lib"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ViewTypeContext } from "../../routes/filter-state.js"
 
 const meta: Meta<typeof Page> = {
   component: Page,
@@ -29,6 +35,15 @@ const meta: Meta<typeof Page> = {
         return { router, queryClient }
       })
 
+      const filterCtx = useReducer(
+        (prev: FilterSettings, update: FilterSettings) => ({
+          ...prev,
+          ...update,
+        }),
+        {},
+      )
+      const typeCtx = useState<ScheduleType | undefined>()
+
       return (
         <ViewerConfigContext
           value={{
@@ -43,7 +58,11 @@ const meta: Meta<typeof Page> = {
           }}
         >
           <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
+            <FilterContext value={filterCtx}>
+              <ViewTypeContext value={typeCtx}>
+                <RouterProvider router={router} />
+              </ViewTypeContext>
+            </FilterContext>
           </QueryClientProvider>
         </ViewerConfigContext>
       )

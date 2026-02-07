@@ -1,4 +1,8 @@
-import { createRouter } from "@tanstack/react-router"
+import {
+  createBrowserHistory,
+  createHashHistory,
+  createRouter,
+} from "@tanstack/react-router"
 import type { SetupResult } from "./app.js"
 import type { QueryClient } from "@tanstack/react-query"
 import {
@@ -21,14 +25,26 @@ declare module "@tanstack/react-router" {
     router: ReturnType<typeof makeRouter>
   }
 }
-export const makeRouter = (context: RouterContext) => {
+export const makeRouter = (
+  context: RouterContext,
+  history: "browser" | "hash" = "browser",
+) => {
+  let historyObj
+
+  if (history == "browser") {
+    historyObj = createBrowserHistory({})
+  } else {
+    historyObj = createHashHistory({})
+  }
+
   return createRouter({
     context,
+    scrollRestoration: true,
+    history: historyObj,
     routeTree: rootRoute.addChildren([
       setupRoute.addChildren([
         mainLayoutRoute.addChildren([
-          filterStateRoute.addChildren([pagesRoute]),
-          eventDetailsRoute,
+          filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
         ]),
       ]),
     ]),

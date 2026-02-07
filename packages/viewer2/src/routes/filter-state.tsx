@@ -2,19 +2,16 @@ import {
   FilterContext,
   type FilterSettings,
   type FilterUpdateAction,
+  type ScheduleType,
 } from "@open-event-systems/schedule-react"
-import { Outlet, useLocation, useNavigate } from "@tanstack/react-router"
-import { useCallback, useReducer } from "react"
+import { Outlet } from "@tanstack/react-router"
+import { createContext, useReducer, useState } from "react"
 
-declare module "@tanstack/react-router" {
-  interface HistoryState {
-    selectedDayKey?: string
-    showPastEvents?: boolean
-  }
-}
+export const ViewTypeContext = createContext<
+  [ScheduleType | undefined, (type: ScheduleType | undefined) => void]
+>([undefined, () => {}])
 
 export const FilterStateRoute = () => {
-  // split filter props between location state and a reducer
   const [state, update] = useReducer(
     (prevState: FilterSettings, action: FilterUpdateAction) => {
       return {
@@ -26,44 +23,16 @@ export const FilterStateRoute = () => {
       disabledTags: new Set<string>(),
       text: "",
       onlyBookmarked: false,
+      showPastEvents: false,
     },
   )
-
-  const {
-    state: { selectedDayKey, showPastEvents },
-  } = useLocation()
-
-  const navigate = useNavigate()
-
-  const finalState = {
-    ...state,
-    selectedDayKey,
-    showPastEvents: !!showPastEvents,
-  }
-
-  const finalUpdate = useCallback(
-    (action: FilterUpdateAction) => {
-      const { selectedDayKey, showPastEvents, ...other } = action
-      update(other)
-      if (selectedDayKey || showPastEvents != null) {
-        navigate({
-          state: (cur) => {
-            return {
-              ...cur,
-              ...(selectedDayKey && { selectedDayKey }),
-              ...(showPastEvents != null && { showPastEvents }),
-            }
-          },
-          replace: true,
-        })
-      }
-    },
-    [update, navigate],
-  )
+  const [viewType, setViewType] = useState<ScheduleType | undefined>()
 
   return (
-    <FilterContext value={[finalState, finalUpdate]}>
-      <Outlet />
+    <FilterContext value={[state, update]}>
+      <ViewTypeContext value={[viewType, setViewType]}>
+        <Outlet />
+      </ViewTypeContext>
     </FilterContext>
   )
 }

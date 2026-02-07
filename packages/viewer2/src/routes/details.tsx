@@ -3,10 +3,17 @@ import {
   useIsSelected,
 } from "@open-event-systems/schedule-react"
 import { useRenderItemDetailsFunc } from "../schedule.js"
-import { useLocation } from "@tanstack/react-router"
+import { createLink, useLocation, useRouter } from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
-import { eventDetailsRoute } from "../routes.js"
+import { eventDetailsRoute, pagesRoute } from "../routes.js"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import { Anchor, Stack } from "@mantine/core"
+
+declare module "@tanstack/react-router" {
+  interface HistoryState {
+    backURL?: string
+  }
+}
 
 export const EventDetailsRoute = () => {
   const { event } = eventDetailsRoute.useLoaderData()
@@ -16,6 +23,7 @@ export const EventDetailsRoute = () => {
 export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
   const config = useViewerConfig()
 
+  const router = useRouter()
   const loc = useLocation()
   const url = new URL(loc.href, window.origin).href
 
@@ -33,5 +41,27 @@ export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
     showShare: true,
   })
 
-  return <>{details}</>
+  return (
+    <Stack>
+      {loc.state.backURL ? (
+        <Anchor
+          href={loc.state.backURL}
+          onClick={(e) => {
+            e.preventDefault()
+            router.history.go(-1)
+          }}
+          size="sm"
+        >
+          &laquo; Back to schedule
+        </Anchor>
+      ) : (
+        <ALink to={pagesRoute.to} size="sm">
+          &laquo; View full schedule
+        </ALink>
+      )}
+      {details}
+    </Stack>
+  )
 }
+
+const ALink = createLink(Anchor<"a">)

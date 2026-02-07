@@ -11,6 +11,7 @@ import {
 } from "../../config.js"
 import { useProps, type BoxProps } from "@mantine/core"
 import {
+  FilterContext,
   Markdown,
   SchedulePage,
   selectionsQueryFns,
@@ -20,8 +21,8 @@ import {
   useSelectionsAPI,
   type ScheduleType,
 } from "@open-event-systems/schedule-react"
-import { useEffect, useMemo } from "react"
-import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
+import { use, useEffect, useMemo } from "react"
+import { useRouter } from "@tanstack/react-router"
 import {
   CachedItemPropsContext,
   makeCachedItemPropsMap,
@@ -31,6 +32,7 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 
 import classes from "./page.module.scss"
 import clsx from "clsx"
+import { ViewTypeContext } from "../../routes/filter-state.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -58,25 +60,15 @@ export const Page = (props: PageProps) => {
   }, [items, pageConfig])
 
   const router = useRouter()
-  const navigate = useNavigate()
-  const loc = useLocation()
-  const { scheduleViewType } = loc.state
+
+  const [scheduleViewType, setViewType] = use(ViewTypeContext)
+  const [filterSettings, setFilterSettings] = use(FilterContext)
 
   const navPropsMap = useMemo(
     () =>
       makeCachedItemPropsMap(router, pageFilteredItems, config.tagIndicators),
     [router, pageFilteredItems],
   )
-
-  const setViewType = (type?: ScheduleType) => {
-    navigate({
-      state: {
-        ...loc.state,
-        ...(type && { scheduleViewType: type }),
-      },
-      replace: true,
-    })
-  }
 
   const relevantTags = useRelevantTags(tags, pageFilteredItems)
 
@@ -105,7 +97,7 @@ export const Page = (props: PageProps) => {
 
   // auto set default day
   useEffect(() => {
-    if (loc.state.selectedDayKey) {
+    if (filterSettings.selectedDayKey) {
       return
     }
 
@@ -119,17 +111,15 @@ export const Page = (props: PageProps) => {
     const curDay = getDefaultDay(days, now)
 
     if (curDay?.key) {
-      navigate({
-        state: (cur) => {
-          return {
-            ...cur,
-            selectedDayKey: curDay.key,
-          }
-        },
-        replace: true,
-      })
+      setFilterSettings({ selectedDayKey: days[0]?.key })
     }
-  }, [loc.state.selectedDayKey, now, config.dayChangeHour, items, navigate])
+  }, [
+    filterSettings.selectedDayKey,
+    now,
+    config.dayChangeHour,
+    items,
+    setFilterSettings,
+  ])
 
   return (
     <CachedItemPropsContext value={navPropsMap}>

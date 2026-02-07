@@ -1,7 +1,9 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
+import { VitePWA } from "vite-plugin-pwa"
 
 export default defineConfig({
+  base: "",
   build: {
     target: "es2017",
     rollupOptions: {
@@ -17,6 +19,39 @@ export default defineConfig({
     react({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
+    VitePWA({
+      injectRegister: false,
+      manifest: false,
+      workbox: {
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: (options) => {
+              const url = options.url
+              return (
+                options.request.method == "GET" &&
+                (url.pathname.endsWith("/config.js") ||
+                  url.pathname.endsWith("/config.json") ||
+                  url.pathname.endsWith("/custom.css") ||
+                  /\.(?:json|css|png|svg|jpe?g|webp|woff2)$/i.test(
+                    url.pathname,
+                  ) ||
+                  /\/schedules\/[^/]+\/selections\/[a-z0-9_-]+$/i.test(
+                    url.pathname,
+                  ) ||
+                  url.searchParams.has("_swCache"))
+              )
+            },
+            handler: "NetworkFirst",
+          },
+        ],
+        navigateFallbackDenylist: [
+          /\.(?:html|js|json|css|png|svg|jpe?g|webp|woff2)$/i,
+        ],
+        globPatterns: ["**/*.{html,js,css,png,svg,jpg,jpeg,webp,woff2}"],
+        globIgnores: ["config.js", "config.json", "custom.css"],
       },
     }),
     // Insert custom css tag at end of head

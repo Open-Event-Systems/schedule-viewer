@@ -105,7 +105,7 @@ export const pagesRoute = createRoute({
 })
 
 export const eventDetailsRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
+  getParentRoute: () => filterStateRoute,
   path: "/events/$eventId",
   component: lazyRouteComponent(
     () => import("./routes/details.js"),
