@@ -66,7 +66,12 @@ export const Page = (props: PageProps) => {
 
   const navPropsMap = useMemo(
     () =>
-      makeCachedItemPropsMap(router, pageFilteredItems, config.tagIndicators),
+      makeCachedItemPropsMap(
+        router,
+        pageFilteredItems,
+        config.tagIndicators,
+        config.map?.locations,
+      ),
     [router, pageFilteredItems],
   )
 

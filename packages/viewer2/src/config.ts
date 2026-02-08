@@ -8,6 +8,10 @@ import z from "zod"
 import wretch from "wretch"
 import { createContext, use } from "react"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import {
+  parseMapConfig,
+  type MapConfig,
+} from "@open-event-systems/schedule-map"
 
 export type PageConfig = Readonly<{
   id: string
@@ -22,6 +26,7 @@ export type PageConfig = Readonly<{
 export type ViewerConfig = ScheduleConfig &
   Readonly<{
     pages: readonly PageConfig[]
+    map?: MapConfig
   }>
 
 const opt = <OutT, InT>(
@@ -63,10 +68,14 @@ export const useViewerConfig = (): ViewerConfig => use(ViewerConfigContext)
 const parseViewerConfig = (configData: ScheduleConfigInput): ViewerConfig => {
   const config = parseConfig(configData)
   const viewerConfig = pageConfigSchema.parse(configData)
+  const mapConfig =
+    "map" in configData ? parseMapConfig(configData.map) : undefined
+
   return {
     ...DEFAULT_VIEWER_CONFIG,
     ...config,
     ...viewerConfig,
+    ...(mapConfig && { map: mapConfig }),
   }
 }
 

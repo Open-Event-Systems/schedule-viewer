@@ -2,13 +2,13 @@ import {
   parseMapFlag,
   parseScheduleEvent,
   parseVendor,
-  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import {
   ItemDetails,
   makeTagIndicatorFunc,
   useIsSelected,
   useSetSelected,
+  type ItemDetailsItemType,
   type ItemDetailsProps,
   type TagIndicatorEntry,
 } from "@open-event-systems/schedule-react"
@@ -23,9 +23,13 @@ import {
   ItemPill,
   type ItemPillProps,
 } from "../../react/src/components/pill/item-pill.js"
-import { eventDetailsRoute } from "./routes.js"
+import { eventDetailsRoute, mapRoute } from "./routes.js"
 import { useViewerConfig } from "./config.js"
 import type { makeRouter } from "./router.js"
+import {
+  makeMapLocationMatchFunc,
+  type MapLocation,
+} from "@open-event-systems/schedule-map"
 
 export const parsers = {
   event: parseScheduleEvent,
@@ -37,19 +41,46 @@ export type CachedItemProps = {
   url?: string
   onClick?: (e: MouseEvent) => void
   indicator?: string
+  mapURL?: string
+  onClickLocation?: (e: MouseEvent) => void
 }
 
 export const makeCachedItemPropsMap = (
   router: ReturnType<typeof makeRouter>,
-  items: Iterable<ScheduleItem>,
+  items: Iterable<ItemDetailsItemType>,
   tagIndicators: Iterable<TagIndicatorEntry>,
+  mapLocations?: Iterable<MapLocation>,
 ): Map<string, CachedItemProps> => {
   const map = new Map<string, CachedItemProps>()
   const indicatorFunc = makeTagIndicatorFunc(tagIndicators)
+  const locMatchFunc = makeMapLocationMatchFunc(mapLocations ?? [])
 
   for (const item of items) {
     let url
     let onClick
+    let mapURL
+    let onClickLocation
+
+    const mapLoc = item.location ? locMatchFunc(item.location) : undefined
+
+    if (mapLoc) {
+      mapURL =
+        window.origin +
+        router.history.createHref(
+          router.buildLocation({
+            to: mapRoute.to,
+            hash: `loc=${mapLoc.id}`,
+          }).href,
+        )
+
+      onClickLocation = (e: MouseEvent) => {
+        e.preventDefault()
+        router.navigate({
+          to: mapRoute.to,
+          hash: `loc=${mapLoc.id}`,
+        })
+      }
+    }
 
     if (item.type == "event") {
       const routeHref = router.buildLocation({
@@ -75,16 +106,14 @@ export const makeCachedItemPropsMap = (
       }
     }
 
-    let indicator
-
-    if ("tags" in item) {
-      indicator = indicatorFunc(item.tags as ReadonlySet<string>)
-    }
+    const indicator = indicatorFunc(item.tags ?? [])
 
     map.set(item.id, {
       url,
       onClick,
       ...(indicator && { indicator }),
+      ...(mapURL && { mapURL }),
+      ...(onClickLocation && { onClickLocation }),
     })
   }
 
@@ -109,10 +138,12 @@ const WrappedItemDetails = memo((props: ItemDetailsProps) => {
   return (
     <ItemDetails
       {...props}
-      url={cachedProps?.url}
+      url={cachedProps?.url ?? props.url}
       tags={config.tags}
-      bookmarked={isBookmarked}
-      setBookmarked={setBookmarked}
+      bookmarked={isBookmarked ?? props.bookmarkCount}
+      setBookmarked={setBookmarked ?? props.setBookmarked}
+      locationHref={cachedProps?.mapURL ?? props.locationHref}
+      onClickLocation={cachedProps?.onClickLocation ?? props.onClickLocation}
       showShare
     />
   )

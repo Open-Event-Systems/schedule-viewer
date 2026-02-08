@@ -1,14 +1,16 @@
 import {
   useBookmarkCount,
   useIsSelected,
+  type ItemDetailsItemType,
 } from "@open-event-systems/schedule-react"
 import { useRenderItemDetailsFunc } from "../schedule.js"
 import { createLink, useLocation, useRouter } from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
-import { eventDetailsRoute, pagesRoute } from "../routes.js"
-import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import { eventDetailsRoute, mapRoute, pagesRoute } from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
 import { useState } from "react"
+import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
+import type { MouseEvent } from "react"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -21,7 +23,7 @@ export const EventDetailsRoute = () => {
   return <ItemDetails item={event} />
 }
 
-export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
+export const ItemDetails = ({ item }: { item: ItemDetailsItemType }) => {
   const config = useViewerConfig()
 
   const router = useRouter()
@@ -34,6 +36,25 @@ export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
   const bookmarked = useIsSelected("bookmarks", item.id)
   const bookmarkCount = useBookmarkCount(item.id)
 
+  const mapLocMatchFunc = makeMapLocationMatchFunc(config.map?.locations ?? [])
+  const mapLoc = item.location ? mapLocMatchFunc(item.location) : undefined
+
+  let mapURL
+  const onClickLocation = (e: MouseEvent) => {
+    e.preventDefault()
+  }
+
+  if (mapLoc) {
+    mapURL =
+      window.origin +
+      router.history.createHref(
+        router.buildLocation({
+          to: mapRoute.to,
+          hash: `loc=${mapLoc.id}`,
+        }).href,
+      )
+  }
+
   const renderDetails = useRenderItemDetailsFunc()
   const details = renderDetails({
     item,
@@ -43,6 +64,8 @@ export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
     url,
     tags: config.tags,
     showShare: true,
+    locationHref: mapURL,
+    onClickLocation,
   })
 
   return (

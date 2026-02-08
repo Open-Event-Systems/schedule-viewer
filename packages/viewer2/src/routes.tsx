@@ -162,3 +162,8 @@ export const eventDetailsRoute = createRoute({
     }
   },
 })
+
+export const mapRoute = createRoute({
+  getParentRoute: () => rootRoute, // TODO
+  path: "/map",
+})
