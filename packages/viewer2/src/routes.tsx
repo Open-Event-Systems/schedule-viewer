@@ -7,13 +7,8 @@ import {
   Outlet,
 } from "@tanstack/react-router"
 import type { RouterContext } from "./router.js"
-import {
-  itemsQueryFns,
-  itemsQueryKeys,
-  selectionsQueryFns,
-  selectionsQueryKeys,
-} from "@open-event-systems/schedule-react"
-import { parsers } from "./schedule.js"
+import { MainLayoutRoute } from "./routes/main-layout.js"
+import { Loading } from "./components/loading/loading.js"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component() {
@@ -26,9 +21,15 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   },
 })
 
-export const setupRoute = createRoute({
+export const scheduleLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "setup",
+  id: "scheduleLayout",
+  component: MainLayoutRoute,
+})
+
+export const scheduleSetupRoute = createRoute({
+  getParentRoute: () => scheduleLayoutRoute,
+  id: "scheduleSetup",
   async beforeLoad({ context }) {
     const { setupPromise } = context
     const setup = await setupPromise
@@ -36,46 +37,16 @@ export const setupRoute = createRoute({
       ...setup,
     }
   },
-  async loader({ context }) {
-    const { config, scheduleAPI, selectionsAPI, queryClient } = context
-
-    const items = await queryClient.fetchQuery({
-      queryKey: itemsQueryKeys.items(config.id, parsers),
-      queryFn: itemsQueryFns.items(scheduleAPI, parsers),
-      staleTime: 300000,
-    })
-
-    const bookmarks = await queryClient.fetchQuery({
-      queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
-      queryFn: selectionsQueryFns.sessionSelections(selectionsAPI, "bookmarks"),
-      staleTime: 120000,
-    })
-
-    return {
-      items,
-      events: items.event,
-      vendors: items.vendor,
-      mapFlags: items["map-flag"],
-      bookmarks,
-    }
-  },
   component: lazyRouteComponent(
     () => import("./routes/setup.js"),
-    "SetupRoute",
+    "ScheduleSetupRoute",
   ),
-})
-
-export const mainLayoutRoute = createRoute({
-  getParentRoute: () => setupRoute,
-  id: "mainLayout",
-  component: lazyRouteComponent(
-    () => import("./routes/main-layout.js"),
-    "MainLayout",
-  ),
+  pendingMs: 0,
+  pendingComponent: Loading,
 })
 
 export const filterStateRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
+  getParentRoute: () => scheduleSetupRoute,
   id: "filterState",
   component: lazyRouteComponent(
     () => import("./routes/filter-state.js"),
@@ -91,8 +62,40 @@ export const pagesRoute = createRoute({
     "PagesRoute",
   ),
   async loader({ context, params }) {
-    const { config } = context
+    const { queryClient, config, scheduleAPI, selectionsAPI } = context
     const { pageId } = params
+
+    const {
+      itemsQueryKeys,
+      itemsQueryFns,
+      selectionsQueryKeys,
+      selectionsQueryFns,
+      parsers,
+    } = await import("./route-loaders.js")
+
+    const itemsPromise = queryClient.fetchQuery({
+      queryKey: itemsQueryKeys.items(config.id, parsers),
+      queryFn: itemsQueryFns.items(scheduleAPI, parsers),
+      staleTime: 300000,
+    })
+
+    const selectionsPromise = queryClient.fetchQuery({
+      queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
+      queryFn: selectionsQueryFns.sessionSelections(selectionsAPI, "bookmarks"),
+      staleTime: 120000,
+    })
+
+    const countsPromise = queryClient.fetchQuery({
+      queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
+      queryFn: selectionsQueryFns.bookmarkCounts(selectionsAPI),
+      staleTime: 300000,
+    })
+
+    const [items, selections, counts] = await Promise.all([
+      itemsPromise,
+      selectionsPromise,
+      countsPromise,
+    ])
 
     const selectedPageId = pageId || config.pages[0]?.id
     const page = config.pages.find((p) => p.id == selectedPageId)
@@ -100,7 +103,7 @@ export const pagesRoute = createRoute({
       throw notFound()
     }
 
-    return { pageConfig: page }
+    return { pageConfig: page, items, selections, counts }
   },
 })
 
@@ -113,12 +116,39 @@ export const eventDetailsRoute = createRoute({
   ),
   async loader({ params, context }) {
     const { eventId } = params
-    const { config, queryClient, scheduleAPI } = context
+    const { config, queryClient, scheduleAPI, selectionsAPI } = context
 
-    const { event: events } = await queryClient.fetchQuery({
+    const {
+      itemsQueryKeys,
+      itemsQueryFns,
+      selectionsQueryKeys,
+      selectionsQueryFns,
+      parsers,
+    } = await import("./route-loaders.js")
+
+    const itemsPromise = queryClient.fetchQuery({
       queryKey: itemsQueryKeys.items(config.id, parsers),
       queryFn: itemsQueryFns.items(scheduleAPI, parsers),
+      staleTime: 300000,
     })
+
+    const selectionsPromise = queryClient.fetchQuery({
+      queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
+      queryFn: selectionsQueryFns.sessionSelections(selectionsAPI, "bookmarks"),
+      staleTime: 120000,
+    })
+
+    const countsPromise = queryClient.fetchQuery({
+      queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
+      queryFn: selectionsQueryFns.bookmarkCounts(selectionsAPI),
+      staleTime: 300000,
+    })
+
+    const [{ event: events }, selections, counts] = await Promise.all([
+      itemsPromise,
+      selectionsPromise,
+      countsPromise,
+    ])
 
     const event = events.get(eventId)
     if (!event) {
@@ -127,6 +157,8 @@ export const eventDetailsRoute = createRoute({
 
     return {
       event,
+      selections,
+      counts,
     }
   },
 })

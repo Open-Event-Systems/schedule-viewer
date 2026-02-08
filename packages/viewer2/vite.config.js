@@ -1,6 +1,7 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
+import { analyzer } from "vite-bundle-analyzer"
 
 export default defineConfig({
   base: "",
@@ -54,6 +55,7 @@ export default defineConfig({
         globIgnores: ["config.js", "config.json", "custom.css"],
       },
     }),
+    analyzer({}),
     // Insert custom css tag at end of head
     // https://stackoverflow.com/a/79359524
     {

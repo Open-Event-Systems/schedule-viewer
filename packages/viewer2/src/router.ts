@@ -3,20 +3,18 @@ import {
   createHashHistory,
   createRouter,
 } from "@tanstack/react-router"
-import type { SetupResult } from "./app.js"
-import type { QueryClient } from "@tanstack/react-query"
 import {
   eventDetailsRoute,
   filterStateRoute,
-  mainLayoutRoute,
   pagesRoute,
   rootRoute,
-  setupRoute,
+  scheduleLayoutRoute,
+  scheduleSetupRoute,
 } from "./routes.js"
+import type { SetupResult } from "./setup.js"
 
 export type RouterContext = {
   setupPromise: Promise<SetupResult>
-  queryClient: QueryClient
 }
 
 declare module "@tanstack/react-router" {
@@ -42,8 +40,8 @@ export const makeRouter = (
     scrollRestoration: true,
     history: historyObj,
     routeTree: rootRoute.addChildren([
-      setupRoute.addChildren([
-        mainLayoutRoute.addChildren([
+      scheduleLayoutRoute.addChildren([
+        scheduleSetupRoute.addChildren([
           filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
         ]),
       ]),

@@ -8,6 +8,7 @@ import { useViewerConfig } from "../config.js"
 import { eventDetailsRoute, pagesRoute } from "../routes.js"
 import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 import { Anchor, Stack } from "@mantine/core"
+import { useState } from "react"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -27,6 +28,9 @@ export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
   const loc = useLocation()
   const url = new URL(loc.href, window.origin).href
 
+  // hacky way to hold on to the initial back url
+  const [backURL] = useState(() => loc.state.backURL)
+
   const bookmarked = useIsSelected("bookmarks", item.id)
   const bookmarkCount = useBookmarkCount(item.id)
 
@@ -43,9 +47,9 @@ export const ItemDetails = ({ item }: { item: ScheduleItem }) => {
 
   return (
     <Stack>
-      {loc.state.backURL ? (
+      {backURL ? (
         <Anchor
-          href={loc.state.backURL}
+          href={backURL}
           onClick={(e) => {
             e.preventDefault()
             router.history.go(-1)
