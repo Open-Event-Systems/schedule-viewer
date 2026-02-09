@@ -43,7 +43,6 @@ export const setup = async (
   const scheduleAPI = makeScheduleAPIFromConfig(config)
   const [sessionSelectionsStore, selectionsAPI] = await setupSelections(config)
 
-  await new Promise((r) => window.setTimeout(r, 3000))
   return {
     queryClient,
     swStore,

@@ -4,7 +4,12 @@ import {
   type ItemDetailsItemType,
 } from "@open-event-systems/schedule-react"
 import { useRenderItemDetailsFunc } from "../schedule.js"
-import { createLink, useLocation, useRouter } from "@tanstack/react-router"
+import {
+  createLink,
+  useLocation,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
 import { eventDetailsRoute, mapRoute, pagesRoute } from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
@@ -28,6 +33,7 @@ export const ItemDetails = ({ item }: { item: ItemDetailsItemType }) => {
 
   const router = useRouter()
   const loc = useLocation()
+  const navigate = useNavigate()
   const url = new URL(loc.href, window.origin).href
 
   // hacky way to hold on to the initial back url
@@ -42,6 +48,10 @@ export const ItemDetails = ({ item }: { item: ItemDetailsItemType }) => {
   let mapURL
   const onClickLocation = (e: MouseEvent) => {
     e.preventDefault()
+    navigate({
+      to: mapRoute.to,
+      hash: `loc=${mapLoc?.id}`,
+    })
   }
 
   if (mapLoc) {

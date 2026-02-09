@@ -163,7 +163,26 @@ export const eventDetailsRoute = createRoute({
   },
 })
 
+export const mapSetupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: "mapSetup",
+  async beforeLoad({ context }) {
+    const { setupPromise } = context
+    const setup = await setupPromise
+    return {
+      ...setup,
+    }
+  },
+  component: lazyRouteComponent(
+    () => import("./routes/setup.js"),
+    "MapSetupRoute",
+  ),
+  pendingMs: 0,
+  pendingComponent: Loading,
+})
+
 export const mapRoute = createRoute({
-  getParentRoute: () => rootRoute, // TODO
+  getParentRoute: () => mapSetupRoute, // TODO
   path: "/map",
+  component: lazyRouteComponent(() => import("./routes/map.js"), "MapRoute"),
 })

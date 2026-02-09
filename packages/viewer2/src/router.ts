@@ -7,6 +7,7 @@ import {
   eventDetailsRoute,
   filterStateRoute,
   mapRoute,
+  mapSetupRoute,
   pagesRoute,
   rootRoute,
   scheduleLayoutRoute,
@@ -46,7 +47,7 @@ export const makeRouter = (
           filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
         ]),
       ]),
-      mapRoute,
+      mapSetupRoute.addChildren([mapRoute]),
     ]),
   })
 }

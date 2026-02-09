@@ -9,10 +9,6 @@
   position: relative;
 
   overflow: hidden;
-
-  // TODO: handle this elsewhere?
-  width: 100vw;
-  height: 100vh;
 }
 
 .zoomMenu {
@@ -41,6 +37,9 @@
   justify-self: end;
   align-self: end;
   margin: 4px;
+
+  // fix z-index issue where the map covers this menu
+  position: relative;
 }
 
 .loading {

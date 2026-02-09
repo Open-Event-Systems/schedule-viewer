@@ -4,6 +4,7 @@ import { App } from "./app.js"
 
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-react/schedule-react.css"
+import "./styles.scss"
 
 const makeApp = (containerEl: Element) => {
   const root = createRoot(containerEl)

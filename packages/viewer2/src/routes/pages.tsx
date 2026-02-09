@@ -2,12 +2,15 @@ import { PageMenu } from "../components/page-menu/page-menu.js"
 import { useViewerConfig } from "../config.js"
 import { pagesRoute } from "../routes.js"
 import { Page } from "../components/page/page.js"
-import { useItems } from "@open-event-systems/schedule-react"
+import { Markdown, useItems } from "@open-event-systems/schedule-react"
 import { parsers } from "../schedule.js"
 import { useMemo } from "react"
 import { ScheduleItemStore } from "@open-event-systems/schedule-lib"
 import { useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
+import { Title } from "@mantine/core"
+
+import classes from "./pages.module.scss"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()
@@ -59,19 +62,25 @@ export const PagesRoute = () => {
   const isSmall = useMediaQuery("(max-width: 768px)")
 
   return (
-    <PageMenu
-      variant={!isSmall && config.pages.length > 1 ? "tabs" : "select"}
-      pages={config.pages}
-      selectedPage={pageId || defaultPageId}
-      onSelectPage={onSelectPage}
-      renderPage={() => (
-        <Page
-          key={pageId || defaultPageId}
-          items={combinedItems}
-          pageConfig={pageConfig}
-        />
-      )}
-      getPageURL={getPageURL}
-    />
+    <>
+      <Title className={classes.title} order={1}>
+        {config.title}
+      </Title>
+      <Markdown className={classes.description}>{config.description}</Markdown>
+      <PageMenu
+        variant={!isSmall && config.pages.length > 1 ? "tabs" : "select"}
+        pages={config.pages}
+        selectedPage={pageId || defaultPageId}
+        onSelectPage={onSelectPage}
+        renderPage={() => (
+          <Page
+            key={pageId || defaultPageId}
+            items={combinedItems}
+            pageConfig={pageConfig}
+          />
+        )}
+        getPageURL={getPageURL}
+      />
+    </>
   )
 }

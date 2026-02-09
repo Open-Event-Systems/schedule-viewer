@@ -83,7 +83,9 @@ export type MapViewerCallbacks = {
 
 export type MapViewerProps = MapViewerConfig &
   MapViewerSettings &
-  MapViewerCallbacks
+  MapViewerCallbacks & {
+    className?: string
+  }
 
 type MapViewerType = MemoExoticComponent<ComponentType<MapViewerProps>> & {
   Root: typeof MapViewerRoot
@@ -100,6 +102,7 @@ type MapViewerType = MemoExoticComponent<ComponentType<MapViewerProps>> & {
 
 export const MapViewer = memo((props: MapViewerProps) => {
   const {
+    className,
     objects,
     layers,
     currentLevelId,
@@ -247,7 +250,7 @@ export const MapViewer = memo((props: MapViewerProps) => {
   }, [detailsLocationId, locations])
 
   return (
-    <MapViewer.Root ref={rootRef}>
+    <MapViewer.Root ref={rootRef} className={className}>
       {!loaded && <MapViewer.Loading />}
       {loaded && (
         <MapViewer.Content

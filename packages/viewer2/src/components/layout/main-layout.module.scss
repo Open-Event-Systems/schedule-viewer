@@ -1,6 +1,5 @@
 .root {
-  min-height: 100vh;
-  min-height: 100dvh;
+  flex: auto;
   display: grid;
   grid-template: 1fr / minmax(min-content, 75rem);
   justify-content: center;
