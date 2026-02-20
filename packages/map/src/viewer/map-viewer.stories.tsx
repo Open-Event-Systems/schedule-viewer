@@ -101,6 +101,7 @@ const mapCfgInput = {
     { type: "level", id: "2f", title: "2F", url: f2Svg },
     { type: "logo", url: logoSvg, noIsometricTransform: true },
   ],
+  defaultLevel: "lobby",
   layers: [
     { id: "text", title: "Text" },
     { id: "detail", title: "Detail" },

@@ -1,10 +1,11 @@
 import {
   makeBookmarkFilter,
   makePastItemFilter,
+  makeScheduleItemCollection,
   makeTagFilter,
   makeTitleFilter,
-  ScheduleItemStore,
-  type ScheduleItem,
+  type DetailedScheduleItem,
+  type ScheduleItemCollection,
   type Selections,
 } from "@open-event-systems/schedule-lib"
 import { createContext, use, useMemo } from "react"
@@ -17,34 +18,21 @@ export type FilterSettings = Readonly<{
   selectedDayKey?: string
 }>
 
-export type FilterUpdateAction = Readonly<{
-  disabledTags?: ReadonlySet<string>
-  text?: string
-  showPastEvents?: boolean
-  onlyBookmarked?: boolean
-  selectedDayKey?: string
-}>
-
 export const FilterContext = createContext<
-  readonly [FilterSettings, (action: FilterUpdateAction) => void]
+  readonly [FilterSettings, (action: Partial<FilterSettings>) => void]
 >([{}, () => {}])
 
-export const useFilteredItems = <
-  T extends ScheduleItem & {
-    readonly title?: string
-    readonly tags?: ReadonlySet<string>
-  },
->(
-  items: ScheduleItemStore<T>,
+export const useFilteredItems = <T extends DetailedScheduleItem>(
+  items: ScheduleItemCollection<T>,
   now: Date,
   selections?: Selections,
-): ScheduleItemStore<T> => {
+): ScheduleItemCollection<T> => {
   const [filter] = use(FilterContext)
   const byBookmarked = useMemo(() => {
     if (filter.onlyBookmarked) {
-      return selections
-        ? items.filter(makeBookmarkFilter(selections))
-        : new ScheduleItemStore([])
+      return makeScheduleItemCollection(
+        selections ? items.filter(makeBookmarkFilter(selections)) : [],
+      )
     } else {
       return items
     }
@@ -52,17 +40,26 @@ export const useFilteredItems = <
   const byTag = useMemo(
     () =>
       filter.disabledTags
-        ? byBookmarked.filter(makeTagFilter(filter.disabledTags))
+        ? makeScheduleItemCollection(
+            byBookmarked.filter(makeTagFilter(filter.disabledTags)),
+          )
         : byBookmarked,
     [byBookmarked, filter.disabledTags],
   )
   const byPast = useMemo(
     () =>
-      !filter.showPastEvents ? byTag.filter(makePastItemFilter(now)) : byTag,
+      !filter.showPastEvents
+        ? makeScheduleItemCollection(byTag.filter(makePastItemFilter(now)))
+        : byTag,
     [filter.showPastEvents, byTag, now],
   )
   const byTitle = useMemo(
-    () => (filter.text ? byPast.filter(makeTitleFilter(filter.text)) : byPast),
+    () =>
+      filter.text
+        ? makeScheduleItemCollection(
+            byPast.filter(makeTitleFilter(filter.text)),
+          )
+        : byPast,
     [filter.text, byPast],
   )
 

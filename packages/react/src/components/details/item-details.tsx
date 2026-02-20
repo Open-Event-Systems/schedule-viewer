@@ -27,25 +27,13 @@ import { makeTagFormatter, makeValidTagsFilter } from "../../config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown } from "../markdown/markdown.js"
 import { IconText } from "../icon-text/icon-text.js"
-import type { ScheduleItem } from "@open-event-systems/schedule-lib"
+import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import type { TagEntry } from "../../types.js"
 
 import classes from "./item-details.module.scss"
 
-export type ItemDetailsItemType = ScheduleItem &
-  Readonly<{
-    title?: string
-    description?: string
-    location?: string
-    contacts?: readonly Readonly<{
-      name?: string
-      url?: string
-    }>[]
-    tags?: Iterable<string>
-  }>
-
 export type ItemDetailsProps = {
-  item: ItemDetailsItemType
+  item: DetailedScheduleItem
   large?: boolean
   bookmarked?: boolean
   setBookmarked?: (set: boolean) => void

@@ -10,21 +10,22 @@ const itemsSchema = z.object({
 })
 
 /**
- * Make a {@link ScheduleAPI} that returns items parsed from an array.
+ * Make a {@link ScheduleAPI} that returns items parsed from an iterable.
  */
-export const makeScheduleItemsArrayAPI = (
-  items: readonly unknown[],
+export const makeParsedScheduleItemsAPI = (
+  items: Iterable<unknown>,
 ): ScheduleAPI => {
+  const itemsArr = [...items]
   return {
     async getItems() {
-      return items
+      return itemsArr
         .map(parseScheduleItem)
         .map((parsed) => {
           if (parsed.success) {
             return parsed.value
           } else {
             console.error(
-              `failed to parse schedule item:\n${parsed.error}`,
+              `failed to parse schedule item:\n${parsed.message}`,
               parsed,
             )
             return undefined
@@ -43,7 +44,7 @@ export const makeScheduleFetchAPI = (url: string) => {
     async getItems() {
       const res = await wretch(url).get().json()
       const respBody = itemsSchema.parse(res)
-      const arrAPI = makeScheduleItemsArrayAPI(respBody.items)
+      const arrAPI = makeParsedScheduleItemsAPI(respBody.items)
       return await arrAPI.getItems()
     },
   }

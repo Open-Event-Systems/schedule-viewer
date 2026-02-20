@@ -14,9 +14,9 @@ import {
   type FilterSettings,
   FilterContext,
 } from "@open-event-systems/schedule-react"
-import { ScheduleItemStore } from "@open-event-systems/schedule-lib"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ViewTypeContext } from "../../routes/filter-state.js"
+import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Page> = {
   component: Page,
@@ -74,7 +74,7 @@ export default meta
 
 export const Default: StoryObj<typeof Page> = {
   args: {
-    items: new ScheduleItemStore([
+    items: makeScheduleItemCollection([
       {
         id: "event1",
         type: "event",

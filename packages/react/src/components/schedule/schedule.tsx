@@ -2,9 +2,10 @@ import {
   getDays,
   getDefaultDay,
   makeDateFilter,
-  ScheduleItemStore,
+  makeScheduleItemCollection,
   type Day,
-  type ScheduleItem,
+  type DetailedScheduleItem,
+  type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
 import { Fragment, memo, useMemo, type ReactNode } from "react"
 import {
@@ -30,8 +31,8 @@ import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 export type ScheduleType = "daily-agenda" | "full-agenda" | "catalog" | "tags"
 
 export type ScheduleProps = {
-  items: ScheduleItemStore
-  filteredItems: ScheduleItemStore
+  items: ScheduleItemCollection<DetailedScheduleItem>
+  filteredItems: ScheduleItemCollection<DetailedScheduleItem>
   type?: ScheduleType
   selectedDayKey?: string
   now?: Date
@@ -86,7 +87,7 @@ const DailyAgendaView = (props: ScheduleProps) => {
   const { days, defaultDay } = useMemo(() => {
     const days = getDays(
       items.filter(
-        (t): t is ScheduleItem & { readonly start: Date } => !!t.start,
+        (t): t is DetailedScheduleItem & { readonly start: Date } => !!t.start,
       ),
       dayChangeHour,
     )
@@ -103,7 +104,9 @@ const DailyAgendaView = (props: ScheduleProps) => {
       return filteredItems
     }
 
-    return filteredItems.filter(makeDateFilter(selectedDay))
+    return makeScheduleItemCollection(
+      filteredItems.filter(makeDateFilter(selectedDay)),
+    )
   }, [filteredItems, selectedDay])
 
   const bins = useMemo(
@@ -148,7 +151,7 @@ const FullAgendaView = (props: ScheduleProps) => {
   const { dayLabels, binsByDay } = useMemo(() => {
     const days = getDays(
       filteredItems.filter(
-        (d): d is ScheduleItem & { readonly start: Date } => !!d.start,
+        (d): d is DetailedScheduleItem & { readonly start: Date } => !!d.start,
       ),
       dayChangeHour,
     )

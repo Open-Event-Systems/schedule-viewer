@@ -1,5 +1,4 @@
 import { useProps } from "@mantine/core"
-import type { ItemDetailsItemType } from "../details/item-details.js"
 import { Pill, type PillBinProps, type PillProps } from "./pill.js"
 import {
   memo,
@@ -16,9 +15,10 @@ import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import clsx from "clsx"
 import { getItemPillClassNames } from "./item-pill-utils.js"
+import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemPillProps = Omit<PillProps, "children"> & {
-  item: ItemDetailsItemType
+  item: DetailedScheduleItem
   tags?: Iterable<TagEntry>
   ItemHoverCardProps?: Partial<ItemHoverCardProps>
   renderHoverCard?: (props: ItemHoverCardProps) => ReactNode
@@ -75,7 +75,7 @@ const _ItemPill = memo((props: ItemPillProps) => {
 _ItemPill.displayName = "ItemPill"
 
 export type ItemPillBinProps = Omit<PillBinProps, "children"> & {
-  items: Iterable<ItemDetailsItemType>
+  items: Iterable<DetailedScheduleItem>
   tags?: Iterable<TagEntry>
   tagIndicators?: Iterable<TagIndicatorEntry>
   renderPill?: (props: ItemPillProps) => ReactNode

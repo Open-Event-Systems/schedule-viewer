@@ -27,6 +27,7 @@ export type MapLocation = Readonly<{
 
 export type MapConfig = Readonly<{
   objects: readonly (MapObject | MapLevel)[]
+  defaultLevel: string
   layers: readonly MapLayer[]
   locations: readonly MapLocation[]
   width: number

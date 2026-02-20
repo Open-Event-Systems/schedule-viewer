@@ -2,10 +2,11 @@ import { useMemo } from "react"
 import type { MapLocation } from "./types.js"
 import {
   contains,
-  type ScheduleItemStore,
+  type DetailedScheduleItem,
+  type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
-import type { ItemDetailsItemType } from "@open-event-systems/schedule-react"
 import { add, isAfter, isBefore } from "date-fns"
+import type { MapViewerLocationItemInfo } from "./viewer/map-viewer.js"
 
 export type MapLocationMatchFunc = (locName: string) => MapLocation | undefined
 
@@ -58,9 +59,9 @@ export const useMapLocationMatchFunc = (
  * Get a map of location ids to currently occurring schedule items.
  */
 export const getCurrentMapLocationItems = <
-  T extends ItemDetailsItemType = ItemDetailsItemType,
+  T extends DetailedScheduleItem = DetailedScheduleItem,
 >(
-  items: ScheduleItemStore<T>,
+  items: ScheduleItemCollection<T>,
   matchFunc: MapLocationMatchFunc,
   now: Date,
 ): Map<string, T> => {
@@ -72,7 +73,7 @@ export const getCurrentMapLocationItems = <
     if (item.location) {
       const loc = matchFunc(item.location)
 
-      if (loc) {
+      if (loc && !nowMap.has(loc.id)) {
         nowMap.set(loc.id, item)
       }
     }
@@ -85,9 +86,9 @@ export const getCurrentMapLocationItems = <
  * Get a map of location ids to schedule items that will begin soon.
  */
 export const getLaterMapLocationItems = <
-  T extends ItemDetailsItemType = ItemDetailsItemType,
+  T extends DetailedScheduleItem = DetailedScheduleItem,
 >(
-  items: ScheduleItemStore<T>,
+  items: ScheduleItemCollection<T>,
   matchFunc: MapLocationMatchFunc,
   now: Date,
   maxLaterHours?: number,
@@ -104,11 +105,36 @@ export const getLaterMapLocationItems = <
     if (item.location) {
       const loc = matchFunc(item.location)
 
-      if (loc) {
+      if (loc && !laterMap.has(loc.id)) {
         laterMap.set(loc.id, item)
       }
     }
   }
 
   return laterMap
+}
+
+/**
+ * Get location details for the map.
+ */
+export const getMapLocationInfo = (
+  items: Iterable<DetailedScheduleItem>,
+  matchFunc: MapLocationMatchFunc,
+): readonly MapViewerLocationItemInfo[] => {
+  const info: MapViewerLocationItemInfo[] = []
+
+  for (const item of items) {
+    if (item.location) {
+      const loc = matchFunc(item.location)
+      if (loc) {
+        info.push({
+          id: loc.id,
+          icon: item.icon,
+          title: item.title,
+        })
+      }
+    }
+  }
+
+  return info
 }

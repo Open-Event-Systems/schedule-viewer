@@ -1,7 +1,6 @@
 import {
   useBookmarkCount,
   useIsSelected,
-  type ItemDetailsItemType,
 } from "@open-event-systems/schedule-react"
 import { useRenderItemDetailsFunc } from "../schedule.js"
 import {
@@ -16,6 +15,7 @@ import { Anchor, Stack } from "@mantine/core"
 import { useState } from "react"
 import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import type { MouseEvent } from "react"
+import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -28,7 +28,7 @@ export const EventDetailsRoute = () => {
   return <ItemDetails item={event} />
 }
 
-export const ItemDetails = ({ item }: { item: ItemDetailsItemType }) => {
+export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
   const config = useViewerConfig()
 
   const router = useRouter()

@@ -1,6 +1,6 @@
 {
   "name": "@open-event-systems/schedule-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "type": "module",
   "exports": {
@@ -24,7 +24,7 @@
     "@date-fns/utc": "^2.1.1",
     "@mantine/core": "^8.3.5",
     "@mantine/hooks": "^8.3.5",
-    "@open-event-systems/schedule-lib": "workspace:^0.1.0",
+    "@open-event-systems/schedule-lib": "workspace:^",
     "@storybook/addon-docs": "^10.0.0",
     "@storybook/react-vite": "^10.0.0",
     "@tanstack/react-query": "^5.90.5",
@@ -46,7 +46,7 @@
     "@date-fns/utc": "^2.1.0",
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
-    "@open-event-systems/schedule-lib": "workspace:^0.1.0",
+    "@open-event-systems/schedule-lib": "workspace:^",
     "@tanstack/react-query": "^5.84.2",
     "date-fns": "^4.1.0",
     "mobx": "^6.15.0",

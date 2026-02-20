@@ -1,11 +1,11 @@
 import {
-  makeScheduleItemsArrayAPI,
+  makeParsedScheduleItemsAPI,
   parseItems,
   type ItemParserMap,
   type ItemTypeMap,
   type ParseItemsResult,
   type ScheduleAPI,
-  type ScheduleItem,
+  type ScheduleItemDetails,
 } from "@open-event-systems/schedule-lib"
 import type { TagEntry } from "../types.js"
 import { useSuspenseQuery } from "@tanstack/react-query"
@@ -13,7 +13,7 @@ import { createContext, useContext, useMemo } from "react"
 import { useScheduleConfig } from "./config.js"
 
 export const ScheduleAPIContext = createContext<ScheduleAPI>(
-  makeScheduleItemsArrayAPI([]),
+  makeParsedScheduleItemsAPI([]),
 )
 export const ScheduleAPIProvider = ScheduleAPIContext.Provider
 export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
@@ -53,7 +53,7 @@ export const useItems = <M extends ItemTypeMap>(
 
 export const useRelevantTags = (
   tags: Iterable<TagEntry>,
-  items: Iterable<ScheduleItem & { readonly tags?: Iterable<string> }>,
+  items: Iterable<Pick<ScheduleItemDetails, "tags">>,
 ): readonly TagEntry[] => {
   return useMemo(() => {
     const seen = new Set<string>()

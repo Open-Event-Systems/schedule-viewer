@@ -1,7 +1,7 @@
 import {
   composeScheduleAPIs,
   makeScheduleFetchAPI,
-  makeScheduleItemsArrayAPI,
+  makeParsedScheduleItemsAPI,
   makeSortedScheduleAPI,
   makeTZScheduleAPI,
   type ScheduleAPI,
@@ -107,9 +107,7 @@ export const DEFAULT_SCHEDULE_CONFIG = {
 /**
  * Parse a {@link ScheduleConfig} object.
  */
-export const parseConfig = (
-  configData: ScheduleConfigInput,
-): ScheduleConfig => {
+export const parseConfig = (configData: unknown): ScheduleConfig => {
   const parsed = configSchema.parse(configData)
   const config = {
     ...DEFAULT_SCHEDULE_CONFIG,
@@ -124,7 +122,7 @@ export const makeScheduleAPIFromConfig = (
 ): ScheduleAPI => {
   const urls = config.items.filter((it) => typeof it == "string")
   const objs = config.items.filter((it) => typeof it != "string")
-  const parsedAPI = makeScheduleItemsArrayAPI(objs)
+  const parsedAPI = makeParsedScheduleItemsAPI(objs)
   const urlAPIs = urls.map((url) => makeScheduleFetchAPI(url))
   const allAPIs = [parsedAPI, ...urlAPIs]
 

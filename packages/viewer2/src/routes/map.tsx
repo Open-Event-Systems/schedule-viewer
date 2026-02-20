@@ -1,8 +1,10 @@
 import {
+  getCurrentMapLocationItems,
+  getLaterMapLocationItems,
+  getMapLocationInfo,
   MapViewer,
   useMapLocationMatchFunc,
-  type MapLocationMatchFunc,
-  type MapViewerLocationItemInfo,
+  type MapConfig,
   type MapViewerSettings,
 } from "@open-event-systems/schedule-map"
 import { useViewerConfig } from "../config.js"
@@ -10,34 +12,34 @@ import { useViewerConfig } from "../config.js"
 import "@open-event-systems/schedule-map/schedule-map.css"
 import classes from "./map.module.scss"
 import { useEffect, useMemo, useReducer, useRef } from "react"
-import { isMapLevel } from "../../../map/src/viewer/util.js"
-import {
-  useItems,
-  type ItemDetailsItemType,
-} from "@open-event-systems/schedule-react"
+import { useItems } from "@open-event-systems/schedule-react"
 import {
   CachedItemPropsContext,
   makeCachedItemPropsMap,
   parsers,
   useRenderItemDetailsFunc,
 } from "../schedule.js"
-import { contains, ScheduleItemStore } from "@open-event-systems/schedule-lib"
-import { add, isEqual } from "date-fns"
+import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 import { useNow } from "../utils.js"
-import { useLocation, useRouter } from "@tanstack/react-router"
+import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
+
+declare module "@tanstack/react-router" {
+  interface HistoryState {
+    detailsLocationId?: string
+  }
+}
 
 export const MapRoute = () => {
   const config = useViewerConfig()
   const { map: mapCfg } = config
 
   if (!mapCfg) {
-    return
+    throw new Error("Map not configured")
   }
 
   const router = useRouter()
+  const navigate = useNavigate()
   const loc = useLocation()
-  const hashParams = new URLSearchParams(loc.hash)
-  const mapLocId = hashParams.get("loc")
 
   const now = useNow()
 
@@ -47,48 +49,40 @@ export const MapRoute = () => {
     firstRenderRef.current = false
   }, [])
 
-  const allItems = useItems(parsers)
+  const {
+    byType: { event: events, vendor: vendors },
+  } = useItems(parsers)
 
   const items = useMemo(() => {
     const itemsGen = function* () {
-      for (const item of allItems.event) {
-        if (item.location) {
-          yield item
-        }
-      }
-
-      for (const item of allItems.vendor) {
-        if (item.location) {
-          yield item
+      for (const iter of [events, vendors]) {
+        for (const item of iter) {
+          if (item.location) {
+            yield item
+          }
         }
       }
     }
 
-    return new ScheduleItemStore(itemsGen())
-  }, [now, allItems])
+    return makeScheduleItemCollection(itemsGen())
+  }, [now, events, vendors])
+
+  const locMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
 
   const nowItems = useMemo(() => {
-    return getCurrentItems(items, now)
-  }, [items, now])
+    return getCurrentMapLocationItems(items, locMatchFunc, now)
+  }, [items, locMatchFunc, now])
 
   const laterItems = useMemo(() => {
-    return getLaterItems(items, now)
-  }, [items, now])
-
-  const matchFunc = useMapLocationMatchFunc(mapCfg.locations)
+    return getLaterMapLocationItems(items, locMatchFunc, now, 2)
+  }, [items, locMatchFunc, now])
 
   const locationItemInfo = useMemo(
-    () => getLocationItemInfo(nowItems, matchFunc),
-    [nowItems, matchFunc],
+    () => getMapLocationInfo(nowItems.values(), locMatchFunc),
+    [nowItems, locMatchFunc],
   )
 
-  const selectedLoc = mapLocId
-    ? mapCfg.locations.find((l) => l.id == mapLocId)
-    : undefined
-  const selectedLocLevel = selectedLoc?.level
-
-  const defaultLevelId =
-    selectedLocLevel ?? mapCfg?.objects.find((o) => isMapLevel(o))?.id ?? ""
+  const { defaultLevelId, selectedLoc } = useLocationIds(mapCfg)
 
   const [settings, updateSettings] = useReducer(
     (prev: MapViewerSettings, action: Partial<MapViewerSettings>) => {
@@ -99,23 +93,24 @@ export const MapRoute = () => {
     },
     {
       currentLevelId: defaultLevelId,
-      activeLocationId: selectedLoc?.id,
     },
   )
 
-  const { detailsLocationId } = settings
+  const [nowItem, laterItem] = useMemo(() => {
+    return selectedLoc
+      ? [nowItems.get(selectedLoc.id), laterItems.get(selectedLoc.id)]
+      : []
+  }, [selectedLoc?.id, nowItems, laterItems])
 
-  const [nowItem, laterItem] = useMemo(
+  const detailsPropsCache = useMemo(
     () =>
-      getNowAndLaterItems(detailsLocationId, matchFunc, nowItems, laterItems),
-    [detailsLocationId, matchFunc, nowItems, laterItems],
-  )
-
-  const detailsPropsCache = makeCachedItemPropsMap(
-    router,
-    [nowItem, laterItem].filter((v) => !!v),
-    config.tagIndicators,
-    mapCfg.locations,
+      makeCachedItemPropsMap(
+        router,
+        [nowItem, laterItem].filter((v) => !!v),
+        config.tagIndicators,
+        mapCfg.locations,
+      ),
+    [router, nowItem, laterItem, config.tagIndicators, mapCfg.locations],
   )
 
   const renderItemDetails = useRenderItemDetailsFunc()
@@ -130,22 +125,43 @@ export const MapRoute = () => {
         locations={mapCfg.locations}
         objects={mapCfg.objects}
         {...settings}
+        activeLocationId={selectedLoc?.id}
+        detailsLocationId={loc.state.detailsLocationId}
         zoomLocationId={
-          firstRenderRef.current && settings.activeLocationId
-            ? settings.activeLocationId
-            : undefined
+          firstRenderRef.current && selectedLoc?.id ? selectedLoc.id : undefined
         }
         locationItemInfo={locationItemInfo}
         nowDetails={nowItem ? renderItemDetails({ item: nowItem }) : undefined}
         laterDetails={
           laterItem ? renderItemDetails({ item: laterItem }) : undefined
         }
-        onSetActiveLocationId={(loc) =>
-          updateSettings({ activeLocationId: loc })
-        }
-        onSetDetailsLocationId={(loc) =>
-          updateSettings({ detailsLocationId: loc })
-        }
+        onSetActiveLocationId={(loc) => {
+          // hack to remove current loc from url when deselecting
+          if (
+            !loc &&
+            selectedLoc?.id &&
+            !router.state.location.state.detailsLocationId
+          ) {
+            navigate({
+              replace: true,
+            })
+          }
+        }}
+        onSetDetailsLocationId={(loc) => {
+          if (loc) {
+            navigate({
+              hash: `loc=${loc}`,
+              state: {
+                detailsLocationId: loc,
+              },
+            })
+          } else {
+            // hack to prevent going back multiple times if clicking rapidly
+            if (router.state.location.state.detailsLocationId) {
+              router.history.go(-1)
+            }
+          }
+        }}
         onSetLevelId={(loc) => updateSettings({ currentLevelId: loc })}
         onSetHiddenLayers={(layers) => updateSettings({ hiddenLayers: layers })}
         onSetIsometric={(iso) => updateSettings({ isometric: iso })}
@@ -154,86 +170,19 @@ export const MapRoute = () => {
   )
 }
 
-const getCurrentItems = <T extends ItemDetailsItemType>(
-  items: ScheduleItemStore<T>,
-  now: Date,
-): ScheduleItemStore<T> => {
-  return items.filter((it) => contains(it, now))
-}
+const useLocationIds = (mapCfg: MapConfig) => {
+  const loc = useLocation()
+  const hashParams = new URLSearchParams(loc.hash)
+  const selectedLocId = hashParams.get("loc")
 
-const getLaterItems = <T extends ItemDetailsItemType>(
-  items: ScheduleItemStore<T>,
-  now: Date,
-): ScheduleItemStore<T> => {
-  const later = add(now, { hours: 2 })
-  const laterRange = { start: now, end: later }
-  return items.filter(
-    (it) =>
-      !!it.start &&
-      contains(laterRange, it.start) &&
-      !isEqual(it.start, laterRange.start),
-  )
-}
+  return useMemo(() => {
+    const selectedLoc = selectedLocId
+      ? mapCfg.locations.find((l) => l.id == selectedLocId)
+      : undefined
 
-const getLocationItemInfo = <T extends ItemDetailsItemType>(
-  items: ScheduleItemStore<T>,
-  matchFunc: MapLocationMatchFunc,
-): MapViewerLocationItemInfo[] => {
-  const results: MapViewerLocationItemInfo[] = []
-
-  for (const item of items) {
-    if (item.location) {
-      const loc = matchFunc(item.location)
-      if (loc) {
-        results.push({
-          id: loc.id,
-          title: item.title,
-          icon:
-            "icon" in item && typeof item.icon == "string"
-              ? item.icon
-              : undefined,
-        })
-      }
+    return {
+      selectedLoc,
+      defaultLevelId: selectedLoc?.level ?? mapCfg.defaultLevel,
     }
-  }
-
-  return results
-}
-
-const getNowAndLaterItems = <T extends ItemDetailsItemType>(
-  locId: string | undefined,
-  matchFunc: MapLocationMatchFunc,
-  nowItems: ScheduleItemStore<T>,
-  laterItems: ScheduleItemStore<T>,
-): [T | undefined, T | undefined] => {
-  if (!locId) {
-    return [undefined, undefined]
-  }
-
-  let nowItem
-  let laterItem
-
-  for (const item of nowItems) {
-    if (!item.location) {
-      continue
-    }
-
-    const loc = matchFunc(item.location)
-    if (loc && loc.id == locId) {
-      nowItem = item
-    }
-  }
-
-  for (const item of laterItems) {
-    if (!item.location) {
-      continue
-    }
-
-    const loc = matchFunc(item.location)
-    if (loc && loc.id == locId) {
-      laterItem = item
-    }
-  }
-
-  return [nowItem, laterItem]
+  }, [mapCfg.locations, mapCfg.defaultLevel, selectedLocId])
 }

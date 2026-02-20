@@ -9,7 +9,8 @@ import {
 import {
   createICS,
   isBounded,
-  type ScheduleItemStore,
+  type DetailedScheduleItem,
+  type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import {
@@ -31,8 +32,8 @@ import { useContext } from "react"
 import { FilterContext } from "../../hooks/filter.js"
 
 export type SchedulePageProps = {
-  items: ScheduleItemStore
-  filteredItems: ScheduleItemStore
+  items: ScheduleItemCollection<DetailedScheduleItem>
+  filteredItems: ScheduleItemCollection<DetailedScheduleItem>
   now?: Date
   type?: ScheduleType
   allowTypes?: Iterable<ScheduleType>

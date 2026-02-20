@@ -2,13 +2,13 @@ import {
   parseMapFlag,
   parseScheduleEvent,
   parseVendor,
+  type DetailedScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import {
   ItemDetails,
   makeTagIndicatorFunc,
   useIsSelected,
   useSetSelected,
-  type ItemDetailsItemType,
   type ItemDetailsProps,
   type TagIndicatorEntry,
 } from "@open-event-systems/schedule-react"
@@ -16,6 +16,7 @@ import {
   createContext,
   memo,
   use,
+  useMemo,
   type MouseEvent,
   type ReactNode,
 } from "react"
@@ -47,7 +48,7 @@ export type CachedItemProps = {
 
 export const makeCachedItemPropsMap = (
   router: ReturnType<typeof makeRouter>,
-  items: Iterable<ItemDetailsItemType>,
+  items: Iterable<DetailedScheduleItem>,
   tagIndicators: Iterable<TagIndicatorEntry>,
   mapLocations?: Iterable<MapLocation>,
 ): Map<string, CachedItemProps> => {
@@ -164,7 +165,7 @@ export const makeRenderItemDetailsFunc = (): ((
 export const useRenderItemDetailsFunc = (): ((
   props: ItemDetailsProps,
 ) => ReactNode) => {
-  return makeRenderItemDetailsFunc()
+  return useMemo(() => makeRenderItemDetailsFunc(), [])
 }
 
 const WrappedItemPill = memo((props: ItemPillProps) => {
@@ -203,5 +204,8 @@ export const makeRenderPillFunc = (
 
 export const useRenderPillFunc = (): ((props: ItemPillProps) => ReactNode) => {
   const renderItemDetails = useRenderItemDetailsFunc()
-  return makeRenderPillFunc(renderItemDetails)
+  return useMemo(
+    () => makeRenderPillFunc(renderItemDetails),
+    [renderItemDetails],
+  )
 }

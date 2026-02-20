@@ -68,7 +68,10 @@ export type ScheduleItem = Readonly<{
   end?: Date
 }>
 
-type ItemDetails = Readonly<{
+/**
+ * Standard schedule item details.
+ */
+export type ScheduleItemDetails = Readonly<{
   title?: string
   description?: string
   location?: string
@@ -78,25 +81,47 @@ type ItemDetails = Readonly<{
   image?: string
 }>
 
-export type ScheduleEvent = ScheduleItem &
-  ItemDetails & {
-    readonly type: "event"
-  }
+/**
+ * A {@link ScheduleItem} with standard details.
+ */
+export type DetailedScheduleItem = ScheduleItem & ScheduleItemDetails
 
-export type Vendor = ScheduleItem &
-  ItemDetails & {
-    readonly type: "vendor"
-  }
+export type ScheduleEvent = DetailedScheduleItem & {
+  readonly type: "event"
+}
+
+export type Vendor = DetailedScheduleItem & {
+  readonly type: "vendor"
+}
 
 export type MapFlag = ScheduleItem & {
   readonly type: "map-flag"
 }
 
 export type ParseResult<T> = Readonly<
-  { success: true; value: T } | { success: false; error: string }
+  | { success: true; value: T }
+  | { success: false; message?: string; error?: unknown }
 >
 
 export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
+
+/**
+ * Stores {@link ScheduleItem} objects.
+ */
+export type ScheduleItemCollection<T extends ScheduleItem = ScheduleItem> =
+  Readonly<{
+    get size(): number
+    get items(): readonly T[]
+
+    [Symbol.iterator](): Iterator<T>
+
+    get(id: string): T | undefined
+
+    filter<N extends T>(f: (item: T, index: number) => item is N): Iterable<N>
+    filter(f: (item: T, index: number) => boolean): Iterable<T>
+
+    map<N>(f: (item: T, index: number) => N): Iterable<N>
+  }>
 
 /**
  * Fetches schedule items.

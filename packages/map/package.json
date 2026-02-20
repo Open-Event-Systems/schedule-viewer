@@ -1,6 +1,6 @@
 {
   "name": "@open-event-systems/schedule-map",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "exports": {
     "./schedule-map.css": "./dist/schedule-map.css",
@@ -21,8 +21,8 @@
   "devDependencies": {
     "@mantine/core": "^8.3.5",
     "@mantine/hooks": "^8.3.5",
-    "@open-event-systems/schedule-lib": "workspace:^0.1.0",
-    "@open-event-systems/schedule-react": "workspace:^0.1.0",
+    "@open-event-systems/schedule-lib": "workspace:^",
+    "@open-event-systems/schedule-react": "workspace:^",
     "@storybook/addon-docs": "^10.0.0",
     "@storybook/react-vite": "^10.0.0",
     "@types/react": "^19.2.2",
@@ -38,8 +38,8 @@
   "peerDependencies": {
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
-    "@open-event-systems/schedule-lib": "workspace:^0.1.0",
-    "@open-event-systems/schedule-react": "workspace:^0.1.0",
+    "@open-event-systems/schedule-lib": "workspace:^",
+    "@open-event-systems/schedule-react": "workspace:^",
     "react": "^19.1.0",
     "@date-fns/tz": "^1.2.0",
     "@date-fns/utc": "^2.1.0",

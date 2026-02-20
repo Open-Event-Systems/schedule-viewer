@@ -1,4 +1,4 @@
-import type { Bounded, ScheduleItem } from "./types.js"
+import type { Bounded, ScheduleItem, ScheduleItemDetails } from "./types.js"
 import * as ics from "ics"
 
 /**
@@ -12,11 +12,7 @@ export const createICS = (
   events: Iterable<
     Bounded<
       ScheduleItem &
-        Readonly<{
-          title?: string
-          description?: string
-          location?: string
-        }>
+        Pick<ScheduleItemDetails, "title" | "description" | "location">
     >
   >,
   prefix: string,

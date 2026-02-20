@@ -9,10 +9,10 @@ import type {
   ParseResult,
   Parser,
   MapFlag,
+  ScheduleItemDetails,
 } from "./types.js"
 import { opt, optStr, strDate, strSetSchema } from "./schema.js"
 import z from "zod"
-import { ScheduleItemStore } from "./item-store.js"
 
 const contactObjSchema = z
   .looseObject({
@@ -78,7 +78,11 @@ export const parseScheduleItem = (data: unknown): ParseResult<ScheduleItem> => {
   if (res.success) {
     return { success: true, value: res.data }
   } else {
-    return { success: false, error: z.prettifyError(res.error) }
+    return {
+      success: false,
+      error: res.error,
+      message: z.prettifyError(res.error),
+    }
   }
 }
 
@@ -92,7 +96,11 @@ export const parseScheduleEvent = (
   if (res.success) {
     return { success: true, value: res.data }
   } else {
-    return { success: false, error: z.prettifyError(res.error) }
+    return {
+      success: false,
+      error: res.error,
+      message: z.prettifyError(res.error),
+    }
   }
 }
 
@@ -104,7 +112,11 @@ export const parseVendor = (data: unknown): ParseResult<Vendor> => {
   if (res.success) {
     return { success: true, value: res.data }
   } else {
-    return { success: false, error: z.prettifyError(res.error) }
+    return {
+      success: false,
+      error: res.error,
+      message: z.prettifyError(res.error),
+    }
   }
 }
 
@@ -116,23 +128,39 @@ export const parseMapFlag = (data: unknown): ParseResult<MapFlag> => {
   if (res.success) {
     return { success: true, value: res.data }
   } else {
-    return { success: false, error: z.prettifyError(res.error) }
+    return {
+      success: false,
+      error: res.error,
+      message: z.prettifyError(res.error),
+    }
   }
 }
 
+/**
+ * Maps item `type` values to specific item types.
+ */
 export type ItemTypeMap = {
   readonly [type: string]: ScheduleItem
 }
 
+/**
+ * Maps item `type` values to parsers for that item type.
+ */
 export type ItemParserMap<M extends ItemTypeMap> = {
   readonly [T in keyof M]: Parser<M[T], ScheduleItem>
 }
 
+/**
+ * The result of parsing a schedule item with a given type map.
+ */
 export type ParseItemResult<M extends ItemTypeMap> = ParseResult<M[keyof M]>
 
-export type ParseItemsResult<M extends ItemTypeMap> = {
-  readonly [T in keyof M]: ScheduleItemStore<M[T]>
-}
+export type ParseItemsResult<M extends ItemTypeMap> = Readonly<{
+  byType: {
+    readonly [T in keyof M]: readonly M[T][]
+  }
+  errors: readonly ParseResult<ScheduleItem>[]
+}>
 
 /**
  * Parse a {@link ScheduleItem} using the provided parsers.
@@ -140,10 +168,10 @@ export type ParseItemsResult<M extends ItemTypeMap> = {
 export const parseItemType = <M extends ItemTypeMap>(
   typeParsers: ItemParserMap<M>,
   item: ScheduleItem,
-): ParseItemResult<M> => {
+): ParseResult<M[keyof M]> => {
   const parser = typeParsers[item.type]
   if (!parser) {
-    return { success: false, error: `Unknown item type: ${item.type}` }
+    return { success: false, message: `Unknown item type: ${item.type}` }
   }
 
   return parser(item)
@@ -151,41 +179,34 @@ export const parseItemType = <M extends ItemTypeMap>(
 
 /**
  * Parse an iterable of {@link ScheduleItem} using the provided parsers.
- *
- * The provided iterable should be sorted.
  */
 export const parseItems = <M extends ItemTypeMap>(
   typeParsers: ItemParserMap<M>,
   items: Iterable<ScheduleItem>,
 ): ParseItemsResult<M> => {
-  const results: Record<string, ScheduleItem[]> = {}
+  const results: Record<string, M[keyof M][]> = {}
+  const other: ParseResult<ScheduleItem>[] = []
 
   for (const key of Object.keys(typeParsers)) {
     results[key] = []
   }
 
-  for (const value of items) {
-    const res = parseItemType(typeParsers, value)
-    if (res.success) {
-      const arr = results[res.value.type]
-      if (arr) {
-        arr.push(res.value)
-      }
+  for (const itemInput of items) {
+    const res = parseItemType(typeParsers, itemInput)
+    const arr = results[itemInput.type]
+    if (arr && res.success) {
+      arr.push(res.value)
     } else {
-      console.error(`Failed to parse schedule item:\n${res.error}`, value)
+      other.push(res)
     }
   }
 
-  const stores: Record<string, ScheduleItemStore> = {}
+  const asReadonly = results as Record<keyof M, Readonly<M[keyof M][]>>
 
-  for (const key of Object.keys(results)) {
-    const arr = results[key]
-    if (arr) {
-      stores[key] = new ScheduleItemStore(arr)
-    }
+  return {
+    byType: asReadonly as { readonly [T in keyof M]: readonly M[T][] },
+    errors: other,
   }
-
-  return stores as { [T in keyof M]: ScheduleItemStore<M[T]> }
 }
 
 /**
@@ -193,54 +214,54 @@ export const parseItems = <M extends ItemTypeMap>(
  */
 export const makeTitleFilter = (
   title: string,
-): (<T extends { readonly title?: string }>(
-  event: T,
-) => event is T & { readonly title: string }) => {
+): (<T extends Pick<ScheduleItemDetails, "title">>(
+  item: T,
+) => item is T & Required<Pick<ScheduleItemDetails, "title">>) => {
   const lowerTitle = title.trim().toLowerCase()
-  return <T extends { readonly title?: string }>(
-    event: T,
-  ): event is T & { readonly title: string } =>
-    !!event.title && event.title.toLowerCase().includes(lowerTitle)
+  return <T extends Pick<ScheduleItemDetails, "title">>(
+    item: T,
+  ): item is T & Required<Pick<ScheduleItemDetails, "title">> =>
+    !!item.title && item.title.toLowerCase().includes(lowerTitle)
 }
 
 /**
- * Return a filter for events not containing disabled tags.
+ * Return a filter for items not containing disabled tags.
  */
 export const makeTagFilter = (
-  tags: Iterable<string>,
-): ((event: { readonly tags?: ReadonlySet<string> }) => boolean) => {
-  const tagsArr = [...tags]
-  return (event) => !tagsArr.some((t) => event.tags && event.tags.has(t))
+  excludedTags: Iterable<string>,
+): (<T extends Pick<ScheduleItemDetails, "tags">>(
+  item: T,
+) => item is T & Required<Pick<ScheduleItemDetails, "tags">>) => {
+  const excludedTagsArr = [...excludedTags]
+  return <T extends Pick<ScheduleItemDetails, "tags">>(
+    item: T,
+  ): item is T & Required<Pick<ScheduleItemDetails, "tags">> =>
+    !excludedTagsArr.some((t) => item.tags && item.tags.has(t))
 }
 
 /**
- * Return a filter for events that have not passed.
+ * Return a filter for items that have not passed.
  */
 export const makePastItemFilter = (
   now: Date,
-): (<T extends { readonly end?: Date | undefined }>(
-  event: T,
-) => event is T & { readonly end: Date }) => {
-  return <T extends { readonly end?: Date | undefined }>(
-    event: T,
-  ): event is T & { readonly end: Date } =>
-    !event.end || isBefore(now, event.end)
+): ((item: Pick<ScheduleItem, "end">) => boolean) => {
+  return (item) => !item.end || isBefore(now, item.end)
 }
 
 /**
- * Get a filter function for events beginning in the given {@link Interval}.
+ * Get a filter function for items beginning in the given {@link Interval}.
  */
 export const makeDateFilter = (
   range: Interval,
-): (<T extends { readonly start?: Date | undefined }>(
-  event: T,
-) => event is T & { readonly start: Date }) => {
-  return <T extends { readonly start?: Date | undefined }>(
-    e: T,
-  ): e is T & { readonly start: Date } => {
-    if (!e.start) {
+): (<T extends Pick<ScheduleItem, "start">>(
+  item: T,
+) => item is T & Required<Pick<ScheduleItem, "start">>) => {
+  return <T extends Pick<ScheduleItem, "start">>(
+    item: T,
+  ): item is T & Required<Pick<ScheduleItem, "start">> => {
+    if (!item.start) {
       return false
     }
-    return contains(range, e.start)
+    return contains(range, item.start)
   }
 }

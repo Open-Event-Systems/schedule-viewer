@@ -1,7 +1,9 @@
 import {
   getDays,
   getDefaultDay,
-  type ScheduleItemStore,
+  makeScheduleItemCollection,
+  type DetailedScheduleItem,
+  type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
 import {
   makeRequireTagsFilter,
@@ -33,6 +35,7 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import classes from "./page.module.scss"
 import clsx from "clsx"
 import { ViewTypeContext } from "../../routes/filter-state.js"
+import { useNow } from "../../utils.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -41,7 +44,7 @@ declare module "@tanstack/react-router" {
 }
 
 export type PageProps = {
-  items: ScheduleItemStore
+  items: ScheduleItemCollection<DetailedScheduleItem>
   pageConfig: PageConfig
 } & BoxProps
 
@@ -51,31 +54,11 @@ export const Page = (props: PageProps) => {
   const config = useViewerConfig()
   const { tags } = config
   const api = useSelectionsAPI()
-
-  const pageFilteredItems = useMemo(() => {
-    const typeFilter = makeTypeFilter(pageConfig.onlyType)
-    const reqTagsFilter = makeRequireTagsFilter(pageConfig.requireTags)
-
-    return items.filter(typeFilter).filter(reqTagsFilter)
-  }, [items, pageConfig])
-
   const router = useRouter()
-
   const [scheduleViewType, setViewType] = use(ViewTypeContext)
   const [filterSettings, setFilterSettings] = use(FilterContext)
-
-  const navPropsMap = useMemo(
-    () =>
-      makeCachedItemPropsMap(
-        router,
-        pageFilteredItems,
-        config.tagIndicators,
-        config.map?.locations,
-      ),
-    [router, pageFilteredItems],
-  )
-
-  const relevantTags = useRelevantTags(tags, pageFilteredItems)
+  const renderPill = useRenderPillFunc()
+  const now = useNow()
 
   const query = useSuspenseQuery({
     queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
@@ -83,11 +66,31 @@ export const Page = (props: PageProps) => {
     staleTime: 120000,
     subscribed: false,
   })
+
   const ssels = query.data
 
-  const renderPill = useRenderPillFunc()
+  const pageFilteredItems = useMemo(() => {
+    const typeFilter = makeTypeFilter(pageConfig.onlyType)
+    const reqTagsFilter = makeRequireTagsFilter(pageConfig.requireTags)
 
-  const now = new Date()
+    const byType = makeScheduleItemCollection(items.filter(typeFilter))
+    const byReqTags = makeScheduleItemCollection(byType.filter(reqTagsFilter))
+    return byReqTags
+  }, [items, pageConfig])
+
+  const itemPropsMap = useMemo(
+    () =>
+      makeCachedItemPropsMap(
+        router,
+        pageFilteredItems,
+        config.tagIndicators,
+        config.map?.locations,
+      ),
+    [router, pageFilteredItems, config.tagIndicators, config.map?.locations],
+  )
+
+  const relevantTags = useRelevantTags(tags, pageFilteredItems)
+
   const filteredItems = useFilteredItems(
     pageFilteredItems,
     now,
@@ -127,7 +130,7 @@ export const Page = (props: PageProps) => {
   ])
 
   return (
-    <CachedItemPropsContext value={navPropsMap}>
+    <CachedItemPropsContext value={itemPropsMap}>
       {pageConfig.description && (
         <Markdown className={clsx("Page-description", classes.description)}>
           {pageConfig.description}

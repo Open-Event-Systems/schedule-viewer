@@ -31,6 +31,7 @@ const locationSchema = z.looseObject({
 
 const configSchema = z.looseObject({
   objects: z.array(levelOrObjectSchema),
+  defaultLevel: z.string(),
   layers: z.array(layerSchema),
   locations: z.array(locationSchema),
   width: z.number(),

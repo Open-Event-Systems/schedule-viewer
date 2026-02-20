@@ -1,9 +1,9 @@
 import { format, formatISO, set } from "date-fns"
 import type { TagEntry } from "../../types.js"
-import type { ItemDetailsItemType } from "../details/item-details.js"
+import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 
 export const getItemPillClassNames = (
-  item: ItemDetailsItemType,
+  item: DetailedScheduleItem,
 ): readonly string[] => {
   return [
     getItemPillIdClassName(item.id),
@@ -20,11 +20,11 @@ export const getItemPillIdClassName = (itemId: string): string =>
 export type ItemBin = Readonly<{
   id: string
   title: string
-  items: Iterable<ItemDetailsItemType>
+  items: Iterable<DetailedScheduleItem>
 }>
 
 export const binItemsByTitle = (
-  items: Iterable<ItemDetailsItemType>,
+  items: Iterable<DetailedScheduleItem>,
 ): readonly ItemBin[] => {
   const sorted = [...items].map(
     (it) => [alphaNameSortChar(it.title), it] as const,
@@ -41,7 +41,7 @@ export const binItemsByTitle = (
     }
   })
 
-  const map = new Map<string, ItemDetailsItemType[]>()
+  const map = new Map<string, DetailedScheduleItem[]>()
 
   for (const item of sorted) {
     let char = item[0].charAt(0)
@@ -92,7 +92,7 @@ const alphaNameSortChar = (s: string | undefined): string => {
 }
 
 export const binItemsByTag = (
-  items: Iterable<ItemDetailsItemType>,
+  items: Iterable<DetailedScheduleItem>,
   tags: Iterable<TagEntry>,
 ): readonly ItemBin[] => {
   const sortedItems = [...items]
@@ -113,7 +113,7 @@ export const binItemsByTag = (
     tagTitleMap[tag.tag] = tag.title
   }
 
-  const map = new Map<string, ItemDetailsItemType[]>()
+  const map = new Map<string, DetailedScheduleItem[]>()
 
   for (const item of sortedItems) {
     let empty = true
@@ -167,10 +167,10 @@ export const binItemsByTag = (
 }
 
 export const binItemsByTime = (
-  items: Iterable<ItemDetailsItemType>,
+  items: Iterable<DetailedScheduleItem>,
   binMinutes: number,
 ): readonly ItemBin[] => {
-  const map = new Map<string, [Date, ItemDetailsItemType[]]>()
+  const map = new Map<string, [Date, DetailedScheduleItem[]]>()
 
   for (const item of items) {
     if (item.start) {

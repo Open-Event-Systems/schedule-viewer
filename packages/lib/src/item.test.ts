@@ -6,7 +6,6 @@ import {
   parseScheduleItem,
   parseVendor,
 } from "./item.js"
-import { ScheduleItemStore } from "./item-store.js"
 
 describe("item parsing", () => {
   test("parses an item", () => {
@@ -84,7 +83,7 @@ describe("item parsing", () => {
       .map((r) => r.value)
     expect(parsed.length).toBe(4)
 
-    const asTypes = parseItems(
+    const parseResult = parseItems(
       {
         event: parseScheduleEvent,
         vendor: parseVendor,
@@ -92,16 +91,13 @@ describe("item parsing", () => {
       parsed,
     )
 
-    expect(Object.keys(asTypes)).toContain("event")
-    expect(Object.keys(asTypes)).toContain("vendor")
-    expect(Object.keys(asTypes).length).toBe(2)
+    expect(Object.keys(parseResult.byType)).toContain("event")
+    expect(Object.keys(parseResult.byType)).toContain("vendor")
+    expect(Object.keys(parseResult.byType).length).toBe(2)
 
-    expect(asTypes.event).toBeInstanceOf(ScheduleItemStore)
-    expect(asTypes.event.size).toBe(2)
-
-    expect(asTypes.vendor.size).toBe(1)
-
-    expect(asTypes.event.first?.id).toBe("e1")
-    expect(asTypes.vendor.first?.id).toBe("v1")
+    expect(parseResult.byType.event.length).toBe(2)
+    expect(parseResult.byType.vendor.length).toBe(1)
+    expect(parseResult.errors.length).toBe(1)
+    expect(parseResult.errors[0]?.success).toBe(false)
   })
 })

@@ -5,12 +5,12 @@ import { Page } from "../components/page/page.js"
 import { Markdown, useItems } from "@open-event-systems/schedule-react"
 import { parsers } from "../schedule.js"
 import { useMemo } from "react"
-import { ScheduleItemStore } from "@open-event-systems/schedule-lib"
 import { useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
 import { Title } from "@mantine/core"
 
 import classes from "./pages.module.scss"
+import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()
@@ -20,10 +20,12 @@ export const PagesRoute = () => {
 
   const navigate = pagesRoute.useNavigate()
 
-  const items = useItems(parsers)
+  const {
+    byType: { event: events, vendor: vendors },
+  } = useItems(parsers)
   const combinedItems = useMemo(() => {
     function* combine() {
-      const stores = [items.event, items.vendor]
+      const stores = [events, vendors]
       for (const store of stores) {
         for (const item of store) {
           yield item
@@ -31,8 +33,8 @@ export const PagesRoute = () => {
       }
     }
 
-    return new ScheduleItemStore(combine())
-  }, [items])
+    return makeScheduleItemCollection(combine())
+  }, [events, vendors])
 
   const defaultPageId = config.pages[0]?.id
 
@@ -48,15 +50,17 @@ export const PagesRoute = () => {
   }
 
   const getPageURL = (id: string) => {
-    return new URL(
-      router.buildLocation({
-        to: pagesRoute.to,
-        params: {
-          pageId: id,
-        },
-      }).href,
-      window.origin,
-    ).href
+    return (
+      window.origin +
+      router.history.createHref(
+        router.buildLocation({
+          to: pagesRoute.to,
+          params: {
+            pageId: id,
+          },
+        }).href,
+      )
+    )
   }
 
   const isSmall = useMediaQuery("(max-width: 768px)")

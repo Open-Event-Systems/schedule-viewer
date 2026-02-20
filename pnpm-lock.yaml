@@ -91,10 +91,10 @@ importers:
         specifier: ^8.3.5
         version: 8.3.14(react@19.2.4)
       "@open-event-systems/schedule-lib":
-        specifier: workspace:^0.1.0
+        specifier: workspace:^
         version: link:../lib
       "@open-event-systems/schedule-react":
-        specifier: workspace:^0.1.0
+        specifier: workspace:^
         version: link:../react
       "@storybook/addon-docs":
         specifier: ^10.0.0
@@ -158,7 +158,7 @@ importers:
         specifier: ^8.3.5
         version: 8.3.14(react@19.2.4)
       "@open-event-systems/schedule-lib":
-        specifier: workspace:^0.1.0
+        specifier: workspace:^
         version: link:../lib
       "@storybook/addon-docs":
         specifier: ^10.0.0
