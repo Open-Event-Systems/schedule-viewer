@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { TagFilter } from "./tag-filter.js"
 import { useCallback, useState } from "react"
-import { makeObservableSet, type BasicSet } from "../../utils/basic-set.js"
-import { action } from "mobx"
-import { Observer } from "mobx-react-lite"
 
 const meta: Meta<typeof TagFilter> = {
   component: TagFilter,
@@ -33,19 +30,25 @@ const meta: Meta<typeof TagFilter> = {
 
 export default meta
 
-export const Default: StoryObj<typeof TagFilter> = {
+export const Default: StoryObj<typeof meta> = {
   render(args) {
-    const [disabledTags] = useState<BasicSet<string>>(() => makeObservableSet())
+    const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
+      new Set(),
+    )
 
     const onSetDisabled = useCallback(
-      action((tag: string, disabled: boolean) => {
-        if (disabled) {
-          disabledTags.add(tag)
-        } else {
-          disabledTags.delete(tag)
-        }
-      }),
-      [disabledTags],
+      (tag: string, disabled: boolean) => {
+        setDisabledTags((cur: ReadonlySet<string>) => {
+          const newSet = new Set(cur)
+          if (disabled) {
+            newSet.add(tag)
+          } else {
+            newSet.delete(tag)
+          }
+          return newSet
+        })
+      },
+      [setDisabledTags],
     )
 
     return (
@@ -53,16 +56,6 @@ export const Default: StoryObj<typeof TagFilter> = {
         {...args}
         disabledTags={disabledTags}
         onSetDisabled={onSetDisabled}
-        renderTag={(props) => (
-          <Observer>
-            {() => (
-              <TagFilter.Tag
-                {...props}
-                disabled={disabledTags.has(props.tag)}
-              />
-            )}
-          </Observer>
-        )}
       />
     )
   },

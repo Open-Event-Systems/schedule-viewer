@@ -28,6 +28,7 @@ export default [
         },
       ],
       "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/no-namespace": "off",
     },
   },
   ...storybook.configs["flat/recommended"],

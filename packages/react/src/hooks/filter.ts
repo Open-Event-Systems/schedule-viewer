@@ -8,59 +8,53 @@ import {
   type ScheduleItemCollection,
   type Selections,
 } from "@open-event-systems/schedule-lib"
-import { createContext, use, useMemo } from "react"
+import { useMemo } from "react"
 
-export type FilterSettings = Readonly<{
+export type FilterOptions = Readonly<{
   disabledTags?: ReadonlySet<string>
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
-  selectedDayKey?: string
 }>
-
-export const FilterContext = createContext<
-  readonly [FilterSettings, (action: Partial<FilterSettings>) => void]
->([{}, () => {}])
 
 export const useFilteredItems = <T extends DetailedScheduleItem>(
   items: ScheduleItemCollection<T>,
+  options: FilterOptions,
   now: Date,
   selections?: Selections,
 ): ScheduleItemCollection<T> => {
-  const [filter] = use(FilterContext)
+  const { disabledTags, text, showPastEvents, onlyBookmarked } = options
   const byBookmarked = useMemo(() => {
-    if (filter.onlyBookmarked) {
+    if (onlyBookmarked) {
       return makeScheduleItemCollection(
         selections ? items.filter(makeBookmarkFilter(selections)) : [],
       )
     } else {
       return items
     }
-  }, [filter.onlyBookmarked, items, selections])
+  }, [onlyBookmarked, items, selections])
   const byTag = useMemo(
     () =>
-      filter.disabledTags
+      disabledTags
         ? makeScheduleItemCollection(
-            byBookmarked.filter(makeTagFilter(filter.disabledTags)),
+            byBookmarked.filter(makeTagFilter(disabledTags)),
           )
         : byBookmarked,
-    [byBookmarked, filter.disabledTags],
+    [byBookmarked, disabledTags],
   )
   const byPast = useMemo(
     () =>
-      !filter.showPastEvents
+      !showPastEvents
         ? makeScheduleItemCollection(byTag.filter(makePastItemFilter(now)))
         : byTag,
-    [filter.showPastEvents, byTag, now],
+    [showPastEvents, byTag, now],
   )
   const byTitle = useMemo(
     () =>
-      filter.text
-        ? makeScheduleItemCollection(
-            byPast.filter(makeTitleFilter(filter.text)),
-          )
+      text
+        ? makeScheduleItemCollection(byPast.filter(makeTitleFilter(text)))
         : byPast,
-    [filter.text, byPast],
+    [text, byPast],
   )
 
   return byTitle

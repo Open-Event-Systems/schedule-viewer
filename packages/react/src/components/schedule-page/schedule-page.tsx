@@ -13,61 +13,54 @@ import {
   type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import {
-  Schedule,
-  type ScheduleProps,
-  type ScheduleType,
-} from "../schedule/schedule.js"
-import { Filter } from "../filter/filter.js"
+import { type ScheduleProps, type ScheduleType } from "../schedule/schedule.js"
 import { IconEye, type ReactNode } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
-import { BookmarkFilter } from "../bookmark-filter/bookmark-filter.js"
+import {
+  BookmarkFilter,
+  type BookmarkFilterProps,
+} from "../bookmark-filter/bookmark-filter.js"
 import { useScheduleConfig } from "../../hooks/config.js"
-import type { TagEntry } from "../../types.js"
-
-import type { ItemPillProps } from "../pill/item-pill.js"
 
 import classes from "./schedule-page.module.scss"
-import { useContext } from "react"
-import { FilterContext } from "../../hooks/filter.js"
+import { memo, type NamedExoticComponent } from "react"
 
 export type SchedulePageProps = {
-  items: ScheduleItemCollection<DetailedScheduleItem>
   filteredItems: ScheduleItemCollection<DetailedScheduleItem>
-  now?: Date
   type?: ScheduleType
   allowTypes?: Iterable<ScheduleType>
-  tags?: Iterable<TagEntry>
-  noPastEventsOption?: boolean
   noShareMenu?: boolean
   hideBookmarkFilter?: boolean
   enableSync?: boolean
   icalFileName?: string
-  dayTitleComponent?: string
-  binTitleComponent?: string
-  renderPill?: (props: ItemPillProps) => ReactNode
+  filter?: ReactNode
+  bookmarkFilter?: ReactNode
+  schedule?: ReactNode
   onChangeType?: (type: ScheduleProps["type"]) => void
   onShare?: () => void
   onSync?: () => void
 } & StackProps
 
-export const SchedulePage = (props: SchedulePageProps) => {
+type SchedulePageComponent = NamedExoticComponent<SchedulePageProps> & {
+  BookmarkFilter: typeof SchedulePageBookmarkFilter
+}
+
+/**
+ * Full schedule page component.
+ */
+const _SchedulePage = memo((props: SchedulePageProps) => {
   const {
     className,
-    items,
     filteredItems,
-    now,
     type,
     allowTypes,
-    tags,
-    noPastEventsOption,
     noShareMenu,
     hideBookmarkFilter,
     enableSync,
     icalFileName,
-    dayTitleComponent,
-    binTitleComponent,
-    renderPill,
+    filter,
+    bookmarkFilter,
+    schedule,
     onChangeType,
     onShare,
     onSync,
@@ -86,25 +79,13 @@ export const SchedulePage = (props: SchedulePageProps) => {
 
   const { icalPrefix, icalDomain } = useScheduleConfig()
 
-  const [filterState, updateFilter] = useContext(FilterContext)
-
   return (
     <Stack
       className={clsx("SchedulePage-root", classes.root, className)}
       {...other}
     >
       <Box className={clsx("SchedulePage-topMenu", classes.topMenu)}>
-        {!hideBookmarkFilter && (
-          <BookmarkFilter
-            className={clsx(
-              "SchedulePage-bookmarkFilter",
-              classes.bookmarkFilter,
-            )}
-            size="sm"
-            value={filterState.onlyBookmarked}
-            onChange={(only) => updateFilter({ onlyBookmarked: only })}
-          />
-        )}
+        {!hideBookmarkFilter && bookmarkFilter}
         {allowTypesArr.length > 1 && (
           <Select
             className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
@@ -166,23 +147,35 @@ export const SchedulePage = (props: SchedulePageProps) => {
       <Grid>
         <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
           <Stack gap="xs" align="start">
-            <Filter tags={tags} noPastEventsOption={noPastEventsOption} />
+            {filter}
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>
-          <Schedule
-            items={items}
-            filteredItems={filteredItems}
-            now={now}
-            type={type}
-            dayTitleComponent={dayTitleComponent}
-            binTitleComponent={binTitleComponent}
-            renderPill={renderPill}
-            selectedDayKey={filterState.selectedDayKey}
-            onSelectDay={(day) => updateFilter({ selectedDayKey: day.key })}
-          />
+          {schedule}
         </Grid.Col>
       </Grid>
     </Stack>
   )
-}
+}) as Partial<SchedulePageComponent>
+
+_SchedulePage.displayName = "SchedulePage"
+
+export type SchedulePageBookmarkFilterProps = BookmarkFilterProps
+
+export const SchedulePageBookmarkFilter = memo((props: BookmarkFilterProps) => (
+  <BookmarkFilter
+    size="sm"
+    {...props}
+    className={clsx(
+      "SchedulePage-bookmarkFilter",
+      classes.bookmarkFilter,
+      props.className,
+    )}
+  />
+))
+
+SchedulePageBookmarkFilter.displayName = "SchedulePageBookmarkFilter"
+
+_SchedulePage.BookmarkFilter = SchedulePageBookmarkFilter
+
+export const SchedulePage = _SchedulePage as SchedulePageComponent

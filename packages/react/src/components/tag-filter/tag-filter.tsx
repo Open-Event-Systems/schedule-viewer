@@ -1,14 +1,18 @@
 import { Stack, useProps, type StackProps } from "@mantine/core"
 import clsx from "clsx"
-import { memo, useMemo, type NamedExoticComponent, type ReactNode } from "react"
+import {
+  memo,
+  useCallback,
+  useMemo,
+  type NamedExoticComponent,
+  type ReactNode,
+} from "react"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
-
-import { Pill, type PillBinProps, type PillProps } from "../pill/pill.js"
 import { getItemPillTagClassName } from "../pill/item-pill-utils.js"
 import { makeTagIndicatorFunc } from "../../config.js"
+import { Pills, type PillProps, type PillsProps } from "../pill/pills.js"
 
 import classes from "./tag-filter.module.scss"
-import type { ReadonlyBasicSet } from "../../utils/basic-set.js"
 
 export type TagFilterProps = {
   classNames?: {
@@ -16,19 +20,42 @@ export type TagFilterProps = {
     tags?: string
     tag?: string
   }
-  disabledTags?: ReadonlyBasicSet<string>
+
+  /**
+   * The set of tags that have been disabled.
+   */
+  disabledTags?: Iterable<string>
+
+  /**
+   * A collection of {@link TagEntry} objects representing the displayable tags.
+   */
   tags?: Iterable<TagEntry>
+
+  /**
+   * A collection of {@link TagIndicatorEntry} objects.
+   */
   tagIndicators?: Iterable<TagIndicatorEntry>
+
+  /**
+   * Handler to set a tag disabled/enabled.
+   */
   onSetDisabled?: (tag: string, disabled: boolean) => void
+
+  /**
+   * Function to render a tag.
+   */
   renderTag?: (props: TagFilterTagProps) => ReactNode
 } & TagFilterRootProps
 
-type TagFilterComponentType = NamedExoticComponent<TagFilterProps> & {
-  Root: typeof Root
-  Tags: typeof Tags
-  Tag: typeof Tag
+type TagFilterComponent = NamedExoticComponent<TagFilterProps> & {
+  Root: typeof TagFilterRoot
+  Tags: typeof TagFilterTags
+  Tag: typeof TagFilterTag
 }
 
+/**
+ * Tag filter component.
+ */
 const _TagFilter = memo((props: TagFilterProps) => {
   const {
     className,
@@ -58,39 +85,29 @@ const _TagFilter = memo((props: TagFilterProps) => {
       />
     </TagFilter.Root>
   )
-}) as Partial<TagFilterComponentType>
+}) as Partial<TagFilterComponent>
 
 _TagFilter.displayName = "TagFilter"
 
-export type TagFilterRootProps = {} & StackProps
+export type TagFilterRootProps = StackProps
 
-const Root = memo((props: TagFilterRootProps) => {
+export const TagFilterRoot = memo((props: TagFilterRootProps) => {
   const { className, ...other } = useProps("TagFilterRoot", {}, props)
 
   return <Stack className={clsx("TagFilter-root", className)} {...other} />
 })
 
-Root.displayName = "TagFilter.Root"
+TagFilterRoot.displayName = "TagFilter.Root"
 
 export type TagFilterTagsProps = {
-  disabledTags?: ReadonlyBasicSet<string>
+  disabledTags?: Iterable<string>
   tags?: Iterable<TagEntry>
   getIndicator?: (tags: Iterable<string>) => string | undefined
   onSetDisabled?: (tag: string, enabled: boolean) => void
   renderTag?: (props: TagFilterTagProps) => ReactNode
-} & PillBinProps
+} & PillsProps
 
-const Tags = memo((props: TagFilterTagsProps) => {
-  const defaultRenderTag = (props: TagFilterTagProps) => {
-    return (
-      <TagFilter.Tag
-        key={props.tag}
-        disabled={disabledTags.has(props.tag)}
-        {...props}
-      />
-    )
-  }
-
+export const TagFilterTags = memo((props: TagFilterTagsProps) => {
   const {
     disabledTags,
     tags,
@@ -99,20 +116,35 @@ const Tags = memo((props: TagFilterTagsProps) => {
     className,
     renderTag,
     ...other
-  } = useProps(
-    "TagFilterTags",
-    {
-      disabledTags: new Set<string>(),
-      tags: [],
-      renderTag: defaultRenderTag,
+  } = useProps("TagFilterTags", {}, props)
+
+  const disabledTagsSet = useMemo(() => {
+    if (disabledTags instanceof Set) {
+      return disabledTags
+    } else {
+      return new Set(disabledTags)
+    }
+  }, [disabledTags])
+
+  const defaultRenderTag = useCallback(
+    (props: TagFilterTagProps) => {
+      return (
+        <TagFilter.Tag
+          key={props.tag}
+          disabled={disabledTagsSet.has(props.tag)}
+          {...props}
+        />
+      )
     },
-    props,
+    [disabledTagsSet],
   )
 
+  const renderTagFunc = renderTag ?? defaultRenderTag
+
   return (
-    <Pill.Bin className={clsx("TagFilter-tags", className)} {...other}>
-      {Array.from(tags, (t) =>
-        renderTag({
+    <Pills className={clsx("TagFilter-tags", className)} {...other}>
+      {Array.from(tags ?? [], (t) =>
+        renderTagFunc({
           tag: t.tag,
           title: t.title,
           ...(getIndicator && {
@@ -123,11 +155,11 @@ const Tags = memo((props: TagFilterTagsProps) => {
           }),
         }),
       )}
-    </Pill.Bin>
+    </Pills>
   )
 })
 
-Tags.displayName = "TagFilter.Tags"
+TagFilterTags.displayName = "TagFilter.Tags"
 
 export type TagFilterTagProps = {
   tag: string
@@ -137,7 +169,7 @@ export type TagFilterTagProps = {
   onSetDisabled?: (disabled: boolean) => void
 } & PillProps
 
-const Tag = memo((props: TagFilterTagProps) => {
+export const TagFilterTag = memo((props: TagFilterTagProps) => {
   const {
     tag,
     title,
@@ -149,7 +181,7 @@ const Tag = memo((props: TagFilterTagProps) => {
   } = useProps("TagFilterTag", {}, props)
 
   return (
-    <Pill
+    <Pills.Pill
       button
       className={clsx(
         "TagFilter-tag",
@@ -168,14 +200,14 @@ const Tag = memo((props: TagFilterTagProps) => {
       {...other}
     >
       {title || tag}
-    </Pill>
+    </Pills.Pill>
   )
 })
 
-Tag.displayName = "TagFilter.Tag"
+TagFilterTag.displayName = "TagFilter.Tag"
 
-_TagFilter.Root = Root
-_TagFilter.Tags = Tags
-_TagFilter.Tag = Tag
+_TagFilter.Root = TagFilterRoot
+_TagFilter.Tags = TagFilterTags
+_TagFilter.Tag = TagFilterTag
 
-export const TagFilter = _TagFilter as TagFilterComponentType
+export const TagFilter = _TagFilter as TagFilterComponent

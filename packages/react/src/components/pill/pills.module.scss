@@ -1,0 +1,86 @@
+.root {
+  --pills-margin-top: 0.5 * var(--mantine-spacing-xs);
+  --pills-margin-bottom: 0.5 * var(--mantine-spacing-xs);
+  --pills-title-font-size: 1rem;
+  --pills-divider-margin-top: calc(0.5 * var(--mantine-spacing-xs));
+  --pills-divider-margin-bottom: calc(0.75 * var(--mantine-spacing-xs));
+  --pills-content-margin: var(--mantine-spacing-xs);
+  --pills-font-size: var(--mantine-font-size-sm);
+  --pills-line-height: var(--mantine-line-height-sm);
+  margin-top: var(--pills-margin-top);
+  margin-bottom: var(--pills-margin-bottom);
+}
+
+.title {
+  font-size: var(--mantine-primary-color-filled);
+}
+
+.divider {
+  margin-top: var(--pills-divider-margin-top);
+  margin-bottom: var(--pills-divider-margin-bottom);
+}
+
+.content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  margin-top: calc(-1 * var(--pills-content-margin));
+  margin-left: calc(-1 * var(--pills-content-margin));
+  font-size: var(--pills-font-size);
+  line-height: var(--pills-line-height);
+}
+
+.content > * {
+  margin-left: var(--pills-content-margin);
+  margin-top: var(--pills-content-margin);
+}
+
+.pillRoot {
+  --pill-background: #fff;
+  --pill-border: #000 solid 1px;
+  --pill-box-shadow: #aaa 1px 1px 1px;
+  --pill-color: #000;
+  --pill-indicator-color: var(--mantine-primary-color-filled);
+  --pill-indicator-font-size: 0.8em;
+  --pill-before: "";
+  --pill-after: "";
+  --pill-radius: 4px;
+  --pill-padding: 2px;
+  color: var(--pill-color);
+  list-style: none;
+  display: block;
+}
+
+.button {
+  cursor: pointer;
+}
+
+.body {
+  display: block;
+  background: var(--pill-background);
+  border: var(--pill-border);
+  border-radius: var(--pill-radius);
+  box-shadow: var(--pill-box-shadow);
+  padding: var(--pill-padding);
+  text-decoration: none;
+  color: inherit;
+
+  &::before {
+    content: var(--pill-before);
+  }
+
+  &::after {
+    content: var(--pill-after);
+  }
+}
+
+.indicatorRoot {
+  --indicator-color: var(--pill-indicator-color);
+  margin-right: var(--mantine-spacing-xs);
+}
+
+.indicator {
+  font-size: var(--pill-indicator-font-size);
+}

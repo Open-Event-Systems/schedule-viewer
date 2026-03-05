@@ -7,7 +7,14 @@ import {
   type DetailedScheduleItem,
   type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
-import { Fragment, memo, useMemo, type ReactNode } from "react"
+import {
+  Fragment,
+  memo,
+  useMemo,
+  type ElementType,
+  type NamedExoticComponent,
+  type ReactNode,
+} from "react"
 import {
   Stack,
   Text,
@@ -25,7 +32,7 @@ import {
   type ItemBin,
 } from "../pill/item-pill-utils.js"
 import { useScheduleConfig } from "../../hooks/config.js"
-import { ItemPill, type ItemPillProps } from "../pill/item-pill.js"
+import { ItemPills, type ItemPillProps } from "../pill/item-pills.js"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 
 export type ScheduleType = "daily-agenda" | "full-agenda" | "catalog" | "tags"
@@ -36,13 +43,25 @@ export type ScheduleProps = {
   type?: ScheduleType
   selectedDayKey?: string
   now?: Date
-  dayTitleComponent?: string
-  binTitleComponent?: string
+  dayTitleComponent?: ElementType<{ children: ReactNode }>
+  binTitleComponent?: ElementType<{ children: ReactNode }>
   onSelectDay?: (day: Day) => void
   renderPill?: (props: ItemPillProps) => ReactNode
 }
 
-export const Schedule = (props: ScheduleProps) => {
+type ScheduleComponent = NamedExoticComponent<ScheduleProps> & {
+  DailyAgenda: typeof DailyAgendaView
+  FullAgenda: typeof FullAgendaView
+  Catalog: typeof CatalogView
+  Tags: typeof TagsView
+  ItemBins: typeof ItemBins
+  NoItems: typeof NoItems
+}
+
+/**
+ * A schedule view component.
+ */
+const _Schedule = memo((props: ScheduleProps) => {
   const { filteredItems, type } = props
 
   if (filteredItems.size == 0 && type != "daily-agenda") {
@@ -68,9 +87,11 @@ export const Schedule = (props: ScheduleProps) => {
   }
 
   return <Component {...props} />
-}
+}) as Partial<ScheduleComponent>
 
-const DailyAgendaView = (props: ScheduleProps) => {
+_Schedule.displayName = "Schedule"
+
+export const DailyAgendaView = memo((props: ScheduleProps) => {
   const {
     now,
     items,
@@ -135,9 +156,11 @@ const DailyAgendaView = (props: ScheduleProps) => {
       )}
     </Stack>
   )
-}
+})
 
-const FullAgendaView = (props: ScheduleProps) => {
+DailyAgendaView.displayName = "DailyAgendaView"
+
+export const FullAgendaView = memo((props: ScheduleProps) => {
   const {
     filteredItems,
     dayTitleComponent = "h3",
@@ -179,9 +202,9 @@ const FullAgendaView = (props: ScheduleProps) => {
     const dayLabel = dayLabels.get(key) ?? key
     elements.push(
       <Fragment key={key}>
-        <FullAgendaView.DayTitle component={dayTitleComponent}>
+        <FullAgendaViewDayTitle component={dayTitleComponent}>
           {dayLabel}
-        </FullAgendaView.DayTitle>
+        </FullAgendaViewDayTitle>
         <Schedule.ItemBins
           bins={bins}
           titleComponent={binTitleComponent}
@@ -194,12 +217,14 @@ const FullAgendaView = (props: ScheduleProps) => {
   }
 
   return <Stack>{elements}</Stack>
-}
+})
+
+FullAgendaView.displayName = "FullAgendaView"
 
 const FullAgendaViewDayTitle = ({
   component,
   ...props
-}: TitleProps & { component?: string }) => {
+}: TitleProps & { component?: ElementType<{ children: ReactNode }> }) => {
   return (
     <Title
       className="FullAgendaView-dayTitle"
@@ -210,9 +235,7 @@ const FullAgendaViewDayTitle = ({
   )
 }
 
-FullAgendaView.DayTitle = FullAgendaViewDayTitle
-
-const CatalogView = (props: ScheduleProps) => {
+export const CatalogView = memo((props: ScheduleProps) => {
   const { filteredItems, renderPill, binTitleComponent } = useProps(
     "CatalogView",
     {},
@@ -231,9 +254,11 @@ const CatalogView = (props: ScheduleProps) => {
       renderPill={renderPill}
     />
   )
-}
+})
 
-const TagsView = (props: ScheduleProps) => {
+CatalogView.displayName = "CatalogView"
+
+export const TagsView = memo((props: ScheduleProps) => {
   const { filteredItems, binTitleComponent, renderPill } = useProps(
     "TagsView",
     {},
@@ -256,17 +281,19 @@ const TagsView = (props: ScheduleProps) => {
       renderPill={renderPill}
     />
   )
-}
+})
+
+TagsView.displayName = "TagsView"
 
 export type ScheduleItemBinsProps = {
   bins?: Iterable<ItemBin>
   tags?: Iterable<TagEntry>
   tagIndicators?: Iterable<TagIndicatorEntry>
-  titleComponent?: string
+  titleComponent?: ElementType<{ children: ReactNode }>
   renderPill?: (props: ItemPillProps) => ReactNode
 } & StackProps
 
-const ItemBins = memo((props: ScheduleItemBinsProps) => {
+export const ItemBins = memo((props: ScheduleItemBinsProps) => {
   const { bins, tags, tagIndicators, titleComponent, renderPill, ...other } =
     useProps("ScheduleItemBins", { bins: [] }, props)
 
@@ -274,7 +301,7 @@ const ItemBins = memo((props: ScheduleItemBinsProps) => {
     <Stack {...other}>
       {Array.from(bins, (bin) => {
         return (
-          <ItemPill.Bin
+          <ItemPills
             key={bin.id}
             title={bin.title}
             titleComponent={titleComponent}
@@ -291,15 +318,17 @@ const ItemBins = memo((props: ScheduleItemBinsProps) => {
 
 ItemBins.displayName = "Schedule.ItemBins"
 
-const NoItems = () => (
+export const NoItems = () => (
   <Text c="dimmed" ta="center">
     No items
   </Text>
 )
 
-Schedule.DailyAgenda = DailyAgendaView
-Schedule.FullAgenda = FullAgendaView
-Schedule.Catalog = CatalogView
-Schedule.Tags = TagsView
-Schedule.ItemBins = ItemBins
-Schedule.NoItems = NoItems
+_Schedule.DailyAgenda = DailyAgendaView
+_Schedule.FullAgenda = FullAgendaView
+_Schedule.Catalog = CatalogView
+_Schedule.Tags = TagsView
+_Schedule.ItemBins = ItemBins
+_Schedule.NoItems = NoItems
+
+export const Schedule = _Schedule as ScheduleComponent
