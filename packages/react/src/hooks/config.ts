@@ -8,3 +8,8 @@ export const ScheduleConfigContext = createContext<ScheduleConfig>(
 
 export const useScheduleConfig = (): ScheduleConfig =>
   useContext(ScheduleConfigContext)
+
+export const scheduleQueryOptions = {
+  all: () => ["schedule"] as const,
+  schedule: (id: string) => [...scheduleQueryOptions.all(), id] as const,
+} as const

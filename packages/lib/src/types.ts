@@ -163,5 +163,5 @@ export type SelectionsAPI = Readonly<{
     type: SelectionsType,
     options: UpdateSelectionsOptions,
   ): Promise<SessionSelections>
-  getBookmarkCounts(): Promise<ReadonlyMap<string, number | undefined>>
+  getBookmarkCounts(): Promise<ReadonlyMap<string, number>>
 }>

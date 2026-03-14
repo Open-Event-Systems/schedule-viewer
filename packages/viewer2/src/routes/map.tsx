@@ -13,12 +13,7 @@ import "@open-event-systems/schedule-map/schedule-map.css"
 import classes from "./map.module.scss"
 import { useEffect, useMemo, useReducer, useRef } from "react"
 import { useItems } from "@open-event-systems/schedule-react"
-import {
-  CachedItemPropsContext,
-  makeCachedItemPropsMap,
-  parsers,
-  useRenderItemDetailsFunc,
-} from "../schedule.js"
+import { parsers } from "../schedule.js"
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 import { useNow } from "../utils.js"
 import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
@@ -102,71 +97,56 @@ export const MapRoute = () => {
       : []
   }, [selectedLoc?.id, nowItems, laterItems])
 
-  const detailsPropsCache = useMemo(
-    () =>
-      makeCachedItemPropsMap(
-        router,
-        [nowItem, laterItem].filter((v) => !!v),
-        config.tagIndicators,
-        mapCfg.locations,
-      ),
-    [router, nowItem, laterItem, config.tagIndicators, mapCfg.locations],
-  )
-
-  const renderItemDetails = useRenderItemDetailsFunc()
-
   return (
-    <CachedItemPropsContext value={detailsPropsCache}>
-      <MapViewer
-        className={classes.root}
-        contentWidth={mapCfg.width}
-        contentHeight={mapCfg.height}
-        layers={mapCfg.layers}
-        locations={mapCfg.locations}
-        objects={mapCfg.objects}
-        {...settings}
-        activeLocationId={selectedLoc?.id}
-        detailsLocationId={loc.state.detailsLocationId}
-        zoomLocationId={
-          firstRenderRef.current && selectedLoc?.id ? selectedLoc.id : undefined
+    <MapViewer
+      className={classes.root}
+      contentWidth={mapCfg.width}
+      contentHeight={mapCfg.height}
+      layers={mapCfg.layers}
+      locations={mapCfg.locations}
+      objects={mapCfg.objects}
+      {...settings}
+      activeLocationId={selectedLoc?.id}
+      detailsLocationId={loc.state.detailsLocationId}
+      zoomLocationId={
+        firstRenderRef.current && selectedLoc?.id ? selectedLoc.id : undefined
+      }
+      locationItemInfo={locationItemInfo}
+      // nowDetails={nowItem ? renderItemDetails({ item: nowItem }) : undefined}
+      // laterDetails={
+      //   laterItem ? renderItemDetails({ item: laterItem }) : undefined
+      // }
+      onSetActiveLocationId={(loc) => {
+        // hack to remove current loc from url when deselecting
+        if (
+          !loc &&
+          selectedLoc?.id &&
+          !router.state.location.state.detailsLocationId
+        ) {
+          navigate({
+            replace: true,
+          })
         }
-        locationItemInfo={locationItemInfo}
-        nowDetails={nowItem ? renderItemDetails({ item: nowItem }) : undefined}
-        laterDetails={
-          laterItem ? renderItemDetails({ item: laterItem }) : undefined
+      }}
+      onSetDetailsLocationId={(loc) => {
+        if (loc) {
+          navigate({
+            hash: `loc=${loc}`,
+            state: {
+              detailsLocationId: loc,
+            },
+          })
+        } else {
+          // hack to prevent going back multiple times if clicking rapidly
+          if (router.state.location.state.detailsLocationId) {
+            router.history.go(-1)
+          }
         }
-        onSetActiveLocationId={(loc) => {
-          // hack to remove current loc from url when deselecting
-          if (
-            !loc &&
-            selectedLoc?.id &&
-            !router.state.location.state.detailsLocationId
-          ) {
-            navigate({
-              replace: true,
-            })
-          }
-        }}
-        onSetDetailsLocationId={(loc) => {
-          if (loc) {
-            navigate({
-              hash: `loc=${loc}`,
-              state: {
-                detailsLocationId: loc,
-              },
-            })
-          } else {
-            // hack to prevent going back multiple times if clicking rapidly
-            if (router.state.location.state.detailsLocationId) {
-              router.history.go(-1)
-            }
-          }
-        }}
-        onSetLevelId={(loc) => updateSettings({ currentLevelId: loc })}
-        onSetHiddenLayers={(layers) => updateSettings({ hiddenLayers: layers })}
-        onSetIsometric={(iso) => updateSettings({ isometric: iso })}
-      />
-    </CachedItemPropsContext>
+      }}
+      onSetLevelId={(loc) => updateSettings({ currentLevelId: loc })}
+      onSetHiddenLayers={(layers) => updateSettings({ hiddenLayers: layers })}
+      onSetIsometric={(iso) => updateSettings({ isometric: iso })}
+    />
   )
 }
 

@@ -6,8 +6,7 @@ import type {
   SessionSelectionsStore,
 } from "@open-event-systems/schedule-lib"
 import {
-  itemsQueryFns,
-  itemsQueryKeys,
+  itemQueryOptions,
   makeScheduleAPIFromConfig,
   setupSelections,
 } from "@open-event-systems/schedule-react"
@@ -55,8 +54,7 @@ export const setup = async (
 
 export const cacheData = async (setupResult: SetupResult) => {
   const { config, queryClient, scheduleAPI } = setupResult
-  return queryClient.fetchQuery({
-    queryKey: itemsQueryKeys.items(config.id, parsers),
-    queryFn: itemsQueryFns.items(scheduleAPI, parsers),
-  })
+  return queryClient.fetchQuery(
+    itemQueryOptions.items(scheduleAPI, config.id, parsers),
+  )
 }

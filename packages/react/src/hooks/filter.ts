@@ -6,24 +6,30 @@ import {
   makeTitleFilter,
   type DetailedScheduleItem,
   type ScheduleItemCollection,
-  type Selections,
 } from "@open-event-systems/schedule-lib"
 import { useMemo } from "react"
 
 export type FilterOptions = Readonly<{
-  disabledTags?: ReadonlySet<string>
+  disabledTags?: Iterable<string>
   text?: string
   showPastEvents?: boolean
   onlyBookmarked?: boolean
+  now?: Date
+  selections?: Iterable<string>
 }>
 
 export const useFilteredItems = <T extends DetailedScheduleItem>(
   items: ScheduleItemCollection<T>,
-  options: FilterOptions,
-  now: Date,
-  selections?: Selections,
+  options?: FilterOptions,
 ): ScheduleItemCollection<T> => {
-  const { disabledTags, text, showPastEvents, onlyBookmarked } = options
+  const {
+    disabledTags,
+    text,
+    showPastEvents,
+    onlyBookmarked,
+    now,
+    selections,
+  } = options ?? {}
   const byBookmarked = useMemo(() => {
     if (onlyBookmarked) {
       return makeScheduleItemCollection(
@@ -45,7 +51,9 @@ export const useFilteredItems = <T extends DetailedScheduleItem>(
   const byPast = useMemo(
     () =>
       !showPastEvents
-        ? makeScheduleItemCollection(byTag.filter(makePastItemFilter(now)))
+        ? makeScheduleItemCollection(
+            byTag.filter(makePastItemFilter(now ?? new Date())),
+          )
         : byTag,
     [showPastEvents, byTag, now],
   )

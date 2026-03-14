@@ -2,35 +2,20 @@ import {
   parseMapFlag,
   parseScheduleEvent,
   parseVendor,
-  type DetailedScheduleItem,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
-import {
-  ItemDetails,
-  makeTagIndicatorFunc,
-  useIsSelected,
-  useSetSelected,
-  type ItemDetailsProps,
-  type TagIndicatorEntry,
-} from "@open-event-systems/schedule-react"
-import {
-  createContext,
-  memo,
-  use,
-  useMemo,
-  type MouseEvent,
-  type ReactNode,
-} from "react"
-import {
-  ItemPill,
-  type ItemPillProps,
-} from "../../react/src/components/pill/item-pill.js"
+import type { Register } from "@tanstack/react-router"
 import { eventDetailsRoute, mapRoute } from "./routes.js"
-import { useViewerConfig } from "./config.js"
-import type { makeRouter } from "./router.js"
+import type { MapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import {
-  makeMapLocationMatchFunc,
-  type MapLocation,
-} from "@open-event-systems/schedule-map"
+  type ItemDetailsProps,
+  type ItemPillProps,
+} from "@open-event-systems/schedule-react"
+import type { MouseEvent, ReactNode } from "react"
+import {
+  WrappedItemDetails,
+  WrappedItemPill,
+} from "./components/pill/wrapped-pills.js"
 
 export const parsers = {
   event: parseScheduleEvent,
@@ -38,174 +23,140 @@ export const parsers = {
   "map-flag": parseMapFlag,
 } as const
 
-export type CachedItemProps = {
+export type ItemNavProps = Readonly<{
   url?: string
   onClick?: (e: MouseEvent) => void
-  indicator?: string
-  mapURL?: string
+  locationHref?: string
   onClickLocation?: (e: MouseEvent) => void
-}
+}>
 
-export const makeCachedItemPropsMap = (
-  router: ReturnType<typeof makeRouter>,
-  items: Iterable<DetailedScheduleItem>,
-  tagIndicators: Iterable<TagIndicatorEntry>,
-  mapLocations?: Iterable<MapLocation>,
-): Map<string, CachedItemProps> => {
-  const map = new Map<string, CachedItemProps>()
-  const indicatorFunc = makeTagIndicatorFunc(tagIndicators)
-  const locMatchFunc = makeMapLocationMatchFunc(mapLocations ?? [])
+export const getItemNavProps = (
+  router: Register["router"],
+  item: ScheduleItem,
+  mapLocationMatchFunc: MapLocationMatchFunc | undefined,
+): ItemNavProps => {
+  const history = router.history
+  let url
+  let locationHref
+  let onClick
+  let onClickLocation
 
-  for (const item of items) {
-    let url
-    let onClick
-    let mapURL
-    let onClickLocation
-
-    const mapLoc = item.location ? locMatchFunc(item.location) : undefined
-
-    if (mapLoc) {
-      mapURL =
-        window.origin +
-        router.history.createHref(
-          router.buildLocation({
-            to: mapRoute.to,
-            hash: `loc=${mapLoc.id}`,
-          }).href,
-        )
-
-      onClickLocation = (e: MouseEvent) => {
-        e.preventDefault()
-        router.navigate({
-          to: mapRoute.to,
-          hash: `loc=${mapLoc.id}`,
-        })
-      }
-    }
-
-    if (item.type == "event") {
-      const routeHref = router.buildLocation({
-        to: eventDetailsRoute.to,
-        params: {
-          eventId: item.id,
-        },
-      }).href
-
-      url = window.origin + router.history.createHref(routeHref)
-
-      onClick = (e: MouseEvent) => {
-        e.preventDefault()
-        router.navigate({
+  if (item.type == "event") {
+    url =
+      window.origin +
+      history.createHref(
+        router.buildLocation({
           to: eventDetailsRoute.to,
           params: {
             eventId: item.id,
           },
-          state: {
-            backURL: window.location.href,
-          },
+        }).href,
+      )
+    onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      router.navigate({
+        to: eventDetailsRoute.to,
+        params: {
+          eventId: item.id,
+        },
+        state: {
+          backURL: window.location.href,
+        },
+      })
+    }
+  }
+
+  if (
+    mapLocationMatchFunc &&
+    "location" in item &&
+    typeof item.location == "string" &&
+    item.location
+  ) {
+    const loc = mapLocationMatchFunc(item.location)
+    if (loc) {
+      locationHref =
+        window.origin +
+        history.createHref(
+          router.buildLocation({
+            to: mapRoute.to,
+            hash: `loc=${loc.id}`,
+          }).href,
+        )
+      onClickLocation = (e: MouseEvent) => {
+        e.preventDefault()
+        router.navigate({
+          to: mapRoute.to,
+          hash: `loc=${loc.id}`,
         })
       }
     }
-
-    const indicator = indicatorFunc(item.tags ?? [])
-
-    map.set(item.id, {
-      url,
-      onClick,
-      ...(indicator && { indicator }),
-      ...(mapURL && { mapURL }),
-      ...(onClickLocation && { onClickLocation }),
-    })
   }
 
+  return {
+    url,
+    onClick,
+    locationHref,
+    onClickLocation,
+  }
+}
+
+export const makeItemNavPropsMap = (
+  router: Register["router"],
+  mapLocationMatchFunc: MapLocationMatchFunc | undefined,
+  items: Iterable<ScheduleItem>,
+): ReadonlyMap<string, ItemNavProps> => {
+  const map = new Map<string, ItemNavProps>()
+  for (const item of items) {
+    map.set(item.id, getItemNavProps(router, item, mapLocationMatchFunc))
+  }
   return map
 }
 
-export const CachedItemPropsContext = createContext<
-  ReadonlyMap<string, CachedItemProps>
->(new Map())
+export const makeRenderItemDetailsFunc = (
+  itemNavPropsMap: ReadonlyMap<string, ItemNavProps>,
+) => {
+  // eslint-disable-next-line react/display-name
+  return (props: ItemDetailsProps) => {
+    const { item } = props
 
-const WrappedItemDetails = memo((props: ItemDetailsProps) => {
-  const {
-    item: { id },
-  } = props
+    const navProps = itemNavPropsMap.get(item.id)
 
-  const config = useViewerConfig()
-  const cachedProps = use(CachedItemPropsContext).get(props.item.id)
-
-  const isBookmarked = useIsSelected("bookmarks", id)
-  const setBookmarked = useSetSelected("bookmarks", id)
-
-  return (
-    <ItemDetails
-      {...props}
-      url={cachedProps?.url ?? props.url}
-      tags={config.tags}
-      bookmarked={isBookmarked ?? props.bookmarkCount}
-      setBookmarked={setBookmarked ?? props.setBookmarked}
-      locationHref={cachedProps?.mapURL ?? props.locationHref}
-      onClickLocation={cachedProps?.onClickLocation ?? props.onClickLocation}
-      showShare
-    />
-  )
-})
-
-WrappedItemDetails.displayName = "WrappedItemDetails"
-
-export const makeRenderItemDetailsFunc = (): ((
-  props: ItemDetailsProps,
-) => ReactNode) => {
-  const render = (props: ItemDetailsProps) => {
-    return <WrappedItemDetails key={props.item.id} {...props} />
+    return (
+      <WrappedItemDetails
+        key={item.id}
+        {...props}
+        url={navProps?.url}
+        locationHref={navProps?.locationHref}
+        onClickLocation={navProps?.onClickLocation}
+        showShare
+      />
+    )
   }
-
-  return render
 }
-
-export const useRenderItemDetailsFunc = (): ((
-  props: ItemDetailsProps,
-) => ReactNode) => {
-  return useMemo(() => makeRenderItemDetailsFunc(), [])
-}
-
-const WrappedItemPill = memo((props: ItemPillProps) => {
-  const cachedProps = use(CachedItemPropsContext).get(props.item.id)
-
-  return (
-    <ItemPill
-      {...props}
-      href={cachedProps?.url}
-      onClick={cachedProps?.onClick}
-      indicator={cachedProps?.indicator}
-    />
-  )
-})
-
-WrappedItemPill.displayName = "WrappedItemPill"
 
 export const makeRenderPillFunc = (
   renderItemDetailsFunc: (props: ItemDetailsProps) => ReactNode,
-): ((props: ItemPillProps) => ReactNode) => {
-  const render = (props: ItemPillProps) => {
+  tagIndicatorFunc: (tags: Iterable<string>) => string | undefined,
+  itemNavPropsMap: ReadonlyMap<string, ItemNavProps>,
+) => {
+  // eslint-disable-next-line react/display-name
+  return (props: ItemPillProps) => {
+    const { item } = props
+
+    const navProps = itemNavPropsMap.get(item.id)
+
     return (
       <WrappedItemPill
-        key={props.item.id}
+        key={item.id}
         {...props}
+        tagIndicatorFunc={tagIndicatorFunc}
         ItemHoverCardProps={{
           ...props.ItemHoverCardProps,
           renderItemDetails: renderItemDetailsFunc,
         }}
+        href={navProps?.url}
+        onClickBody={navProps?.onClick}
       />
     )
   }
-
-  return render
-}
-
-export const useRenderPillFunc = (): ((props: ItemPillProps) => ReactNode) => {
-  const renderItemDetails = useRenderItemDetailsFunc()
-  return useMemo(
-    () => makeRenderPillFunc(renderItemDetails),
-    [renderItemDetails],
-  )
 }

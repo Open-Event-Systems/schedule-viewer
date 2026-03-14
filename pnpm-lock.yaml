@@ -238,6 +238,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      jotai:
+        specifier: ^2.18.1
+        version: 2.18.1(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.13)(react@19.2.4)
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -4190,6 +4193,27 @@ packages:
       {
         integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==,
       }
+
+  jotai@2.18.1:
+    resolution:
+      {
+        integrity: sha512-e0NOzK+yRFwHo7DOp0DS0Ycq74KMEAObDWFGmfEL28PD9nLqBTt3/Ug7jf9ca72x0gC9LQZG9zH+0ISICmy3iA==,
+      }
+    engines: { node: ">=12.20.0" }
+    peerDependencies:
+      "@babel/core": ">=7.0.0"
+      "@babel/template": ">=7.0.0"
+      "@types/react": ">=17.0.0"
+      react: ">=17.0.0"
+    peerDependenciesMeta:
+      "@babel/core":
+        optional: true
+      "@babel/template":
+        optional: true
+      "@types/react":
+        optional: true
+      react:
+        optional: true
 
   js-tokens@4.0.0:
     resolution:
@@ -9096,6 +9120,13 @@ snapshots:
       picocolors: 1.1.1
 
   jju@1.4.0: {}
+
+  jotai@2.18.1(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.13)(react@19.2.4):
+    optionalDependencies:
+      "@babel/core": 7.29.0
+      "@babel/template": 7.28.6
+      "@types/react": 19.2.13
+      react: 19.2.4
 
   js-tokens@4.0.0: {}
 

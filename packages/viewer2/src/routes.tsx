@@ -9,6 +9,7 @@ import {
 import type { RouterContext } from "./router.js"
 import { MainLayoutRoute } from "./routes/main-layout.js"
 import { Loading } from "./components/loading/loading.js"
+import type { ScheduleType } from "@open-event-systems/schedule-react"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component() {
@@ -54,9 +55,43 @@ export const filterStateRoute = createRoute({
   ),
 })
 
+export type PagesParams = Readonly<{
+  view?: ScheduleType
+  day?: string
+  past?: boolean
+  bookmarked?: boolean
+}>
+
 export const pagesRoute = createRoute({
   getParentRoute: () => filterStateRoute,
   path: "/{-$pageId}",
+  validateSearch: (search: Record<string, unknown>): PagesParams => {
+    const viewType = search.view
+    const day = search.day
+    const past = !!search.past
+    const bookmarked = !!search.bookmarked
+    return {
+      ...(typeof viewType == "string" && viewType
+        ? { view: viewType as ScheduleType }
+        : {}),
+      ...(typeof day == "string" ? { day } : {}),
+      ...(past ? { past: true } : {}),
+      ...(bookmarked ? { bookmarked: true } : {}),
+    }
+  },
+  search: {
+    middlewares: [
+      ({ search, next }) => {
+        const { past, bookmarked, ...other } = next(search)
+
+        return {
+          ...other,
+          ...(past ? { past: true } : {}),
+          ...(bookmarked ? { bookmarked: true } : {}),
+        }
+      },
+    ],
+  },
   component: lazyRouteComponent(
     () => import("./routes/pages.js"),
     "PagesRoute",
@@ -65,31 +100,25 @@ export const pagesRoute = createRoute({
     const { queryClient, config, scheduleAPI, selectionsAPI } = context
     const { pageId } = params
 
-    const {
-      itemsQueryKeys,
-      itemsQueryFns,
-      selectionsQueryKeys,
-      selectionsQueryFns,
-      parsers,
-    } = await import("./route-loaders.js")
+    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
+      "./route-loaders.js"
+    )
 
-    const itemsPromise = queryClient.fetchQuery({
-      queryKey: itemsQueryKeys.items(config.id, parsers),
-      queryFn: itemsQueryFns.items(scheduleAPI, parsers),
-      staleTime: 300000,
-    })
+    const itemsPromise = queryClient.fetchQuery(
+      itemQueryOptions.items(scheduleAPI, config.id, parsers),
+    )
 
-    const selectionsPromise = queryClient.fetchQuery({
-      queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
-      queryFn: selectionsQueryFns.sessionSelections(selectionsAPI, "bookmarks"),
-      staleTime: 120000,
-    })
+    const selectionsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.sessionSelections(
+        selectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
 
-    const countsPromise = queryClient.fetchQuery({
-      queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
-      queryFn: selectionsQueryFns.bookmarkCounts(selectionsAPI),
-      staleTime: 300000,
-    })
+    const countsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+    )
 
     const [items, selections, counts] = await Promise.all([
       itemsPromise,
@@ -118,39 +147,35 @@ export const eventDetailsRoute = createRoute({
     const { eventId } = params
     const { config, queryClient, scheduleAPI, selectionsAPI } = context
 
-    const {
-      itemsQueryKeys,
-      itemsQueryFns,
-      selectionsQueryKeys,
-      selectionsQueryFns,
-      parsers,
-    } = await import("./route-loaders.js")
+    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
+      "./route-loaders.js"
+    )
 
-    const itemsPromise = queryClient.fetchQuery({
-      queryKey: itemsQueryKeys.items(config.id, parsers),
-      queryFn: itemsQueryFns.items(scheduleAPI, parsers),
-      staleTime: 300000,
-    })
+    const itemsPromise = queryClient.fetchQuery(
+      itemQueryOptions.items(scheduleAPI, config.id, parsers),
+    )
 
-    const selectionsPromise = queryClient.fetchQuery({
-      queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
-      queryFn: selectionsQueryFns.sessionSelections(selectionsAPI, "bookmarks"),
-      staleTime: 120000,
-    })
+    const selectionsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.sessionSelections(
+        selectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
 
-    const countsPromise = queryClient.fetchQuery({
-      queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
-      queryFn: selectionsQueryFns.bookmarkCounts(selectionsAPI),
-      staleTime: 300000,
-    })
+    const countsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+    )
 
-    const [{ event: events }, selections, counts] = await Promise.all([
-      itemsPromise,
-      selectionsPromise,
-      countsPromise,
-    ])
+    const [
+      {
+        byType: { event: events },
+      },
+      selections,
+      counts,
+    ] = await Promise.all([itemsPromise, selectionsPromise, countsPromise])
 
-    const event = events.get(eventId)
+    const event = events.find((e) => e.id == eventId)
     if (!event) {
       throw notFound()
     }

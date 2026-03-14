@@ -8,9 +8,9 @@ import {
   type ScheduleItemDetails,
 } from "@open-event-systems/schedule-lib"
 import type { TagEntry } from "../types.js"
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
-import { useScheduleConfig } from "./config.js"
+import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
 export const ScheduleAPIContext = createContext<ScheduleAPI>(
   makeParsedScheduleItemsAPI([]),
@@ -18,52 +18,69 @@ export const ScheduleAPIContext = createContext<ScheduleAPI>(
 export const ScheduleAPIProvider = ScheduleAPIContext.Provider
 export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
 
-export const itemsQueryKeys = {
-  items: <M extends ItemTypeMap>(
-    scheduleId: string,
-    parsers: ItemParserMap<M>,
-  ) => ["schedule", scheduleId, Object.keys(parsers)] as const,
-} as const
-
-export const itemsQueryFns = {
+/**
+ * Query options factory for schedule items.
+ */
+export const itemQueryOptions = {
   items: <M extends ItemTypeMap>(
     api: ScheduleAPI,
+    scheduleId: string,
     parsers: ItemParserMap<M>,
-  ) => {
-    return async () => {
-      const res = await api.getItems()
-      const parsed = parseItems(parsers, res)
-      return parsed
-    }
-  },
-}
+  ) =>
+    queryOptions({
+      queryKey: [
+        ...scheduleQueryOptions.schedule(scheduleId),
+        "items",
+        Object.keys(parsers).sort(),
+      ] as const,
+      queryFn: async () => {
+        const res = await api.getItems()
+        return parseItems(parsers, res)
+      },
+      staleTime: 300000,
+    }),
+} as const
 
+/**
+ * Hook to use the configured schedule's items.
+ */
 export const useItems = <M extends ItemTypeMap>(
   parsers: ItemParserMap<M>,
 ): Readonly<ParseItemsResult<M>> => {
   const config = useScheduleConfig()
   const api = useScheduleAPI()
-  const res = useSuspenseQuery({
-    queryKey: itemsQueryKeys.items(config.id, parsers),
-    queryFn: itemsQueryFns.items(api, parsers),
-    staleTime: 300000,
-  })
+  const res = useSuspenseQuery(itemQueryOptions.items(api, config.id, parsers))
   return res.data
 }
 
+/**
+ * Filter a collection of {@link TagEntry} to only include those that are
+ * referenced in `items`.
+ */
+export const getRelevantTags = (
+  tags: Iterable<TagEntry>,
+  items: Iterable<Pick<ScheduleItemDetails, "tags">>,
+): TagEntry[] => {
+  const seen = new Set<string>()
+
+  for (const item of items) {
+    for (const tag of item.tags ?? []) {
+      seen.add(tag)
+    }
+  }
+
+  return [...tags].filter((t) => seen.has(t.tag))
+}
+
+/**
+ * Hook that filters a collection of {@link TagEntry} to only include those that
+ * are referenced in `items`.
+ */
 export const useRelevantTags = (
   tags: Iterable<TagEntry>,
   items: Iterable<Pick<ScheduleItemDetails, "tags">>,
-): readonly TagEntry[] => {
+): TagEntry[] => {
   return useMemo(() => {
-    const seen = new Set<string>()
-
-    for (const item of items) {
-      for (const tag of item.tags ?? []) {
-        seen.add(tag)
-      }
-    }
-
-    return [...tags].filter((t) => seen.has(t.tag))
+    return getRelevantTags(tags, items)
   }, [tags, items])
 }

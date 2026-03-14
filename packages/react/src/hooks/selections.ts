@@ -7,87 +7,132 @@ import {
   type SessionSelections,
 } from "@open-event-systems/schedule-lib"
 import {
+  mutationOptions,
+  queryOptions,
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { createContext, use, useCallback } from "react"
-import { useScheduleConfig } from "./config.js"
+import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
 export const SelectionsAPIContext = createContext<SelectionsAPI>(
   composeSelectionsAPI(makeSessionSelectionsStore("")),
 )
 export const useSelectionsAPI = (): SelectionsAPI => use(SelectionsAPIContext)
 
-export const selectionsQueryKeys = {
-  selections: (scheduleId: string, id: string) =>
-    ["schedule", scheduleId, "selections", id] as const,
-  sessionSelections: (scheduleId: string, type: SelectionsType) =>
-    ["schedule", scheduleId, "session-selections", type] as const,
-  bookmarkCounts: (scheduleId: string) =>
-    ["schedule", scheduleId, "counts"] as const,
+/**
+ * Query options factories for schedule items.
+ */
+export const selectionsQueryOptions = {
+  selections: (api: SelectionsAPI, scheduleId: string, id: string) =>
+    queryOptions({
+      queryKey: [
+        ...scheduleQueryOptions.schedule(scheduleId),
+        "selections",
+        id,
+      ] as const,
+      queryFn: async () => {
+        return await api.getSelections(id)
+      },
+      staleTime: Infinity,
+    }),
+  sessionSelections: (
+    api: SelectionsAPI,
+    scheduleId: string,
+    type: SelectionsType,
+  ) =>
+    queryOptions({
+      queryKey: [
+        ...scheduleQueryOptions.schedule(scheduleId),
+        "session-selections",
+        { type },
+      ] as const,
+      queryFn: async () => {
+        return await api.getSessionSelections(type)
+      },
+      staleTime: 120000,
+    }),
+  bookmarkCounts: (api: SelectionsAPI, scheduleId: string) =>
+    queryOptions({
+      queryKey: [
+        ...scheduleQueryOptions.schedule(scheduleId),
+        "counts",
+      ] as const,
+      queryFn: async () => {
+        return await api.getBookmarkCounts()
+      },
+      staleTime: 120000,
+    }),
 } as const
 
-export const selectionsQueryFns = {
-  selections: (selectionsAPI: SelectionsAPI, id: string) => async () => {
-    return await selectionsAPI.getSelections(id)
-  },
-  sessionSelections:
-    (selectionsAPI: SelectionsAPI, type: SelectionsType) => async () => {
-      return await selectionsAPI.getSessionSelections(type)
-    },
-  bookmarkCounts:
-    (selectionsAPI: SelectionsAPI) =>
-    async (): Promise<ReadonlyMap<string, number | undefined>> => {
-      return await selectionsAPI.getBookmarkCounts()
-    },
+/**
+ * Mutation options for updating session selections.
+ */
+export const selectionsMutationOptions = {
+  updateSessionSelections: (
+    api: SelectionsAPI,
+    scheduleId: string,
+    type: SelectionsType,
+    id: string,
+  ) =>
+    mutationOptions({
+      mutationKey: [
+        ...selectionsQueryOptions.sessionSelections(api, scheduleId, type)
+          .queryKey,
+        id,
+      ] as const,
+      mutationFn: async (selected: boolean) => {
+        if (selected) {
+          return await api.updateSessionSelections(type, { add: [id] })
+        } else {
+          return await api.updateSessionSelections(type, {
+            delete: [id],
+          })
+        }
+      },
+    }),
 } as const
 
-export const selectionsMutationFns = {
-  updateSessionSelections:
-    (selectionsAPI: SelectionsAPI, type: SelectionsType, id: string) =>
-    async (selected: boolean) => {
-      if (selected) {
-        return await selectionsAPI.updateSessionSelections(type, { add: [id] })
-      } else {
-        return await selectionsAPI.updateSessionSelections(type, {
-          delete: [id],
-        })
-      }
-    },
-}
-
+/**
+ * Hook to get the current session's selections.
+ */
 export const useSessionSelections = (
   type: SelectionsType,
 ): SessionSelections => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
-  const query = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.sessionSelections(config.id, type),
-    queryFn: selectionsQueryFns.sessionSelections(api, type),
-    staleTime: 120000,
-  })
+  const query = useSuspenseQuery(
+    selectionsQueryOptions.sessionSelections(api, config.id, type),
+  )
   return query.data
 }
 
+/**
+ * Hook to get whether an item is selected.
+ */
 export const useIsSelected = (type: SelectionsType, id: string): boolean => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
+
+  const selectFn = useCallback(
+    (ssels: SessionSelections) => {
+      return ssels.selections.has(id)
+    },
+    [id],
+  )
+
   const query = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.sessionSelections(config.id, type),
-    queryFn: selectionsQueryFns.sessionSelections(api, type),
-    staleTime: 120000,
-    select: useCallback(
-      (ssels: SessionSelections) => {
-        return ssels.selections.has(id)
-      },
-      [id],
-    ),
+    ...selectionsQueryOptions.sessionSelections(api, config.id, type),
+    select: selectFn,
   })
 
   return query.data
 }
 
+/**
+ * Get a function to update the selected status of an item.
+ */
 export const useSetSelected = (
   type: SelectionsType,
   id: string,
@@ -96,10 +141,15 @@ export const useSetSelected = (
   const queryClient = useQueryClient()
   const api = useSelectionsAPI()
   const mutation = useMutation({
-    mutationFn: selectionsMutationFns.updateSessionSelections(api, type, id),
+    ...selectionsMutationOptions.updateSessionSelections(
+      api,
+      config.id,
+      type,
+      id,
+    ),
     onSuccess(selections) {
       queryClient.setQueryData(
-        selectionsQueryKeys.sessionSelections(config.id, type),
+        selectionsQueryOptions.sessionSelections(api, config.id, type).queryKey,
         selections,
       )
     },
@@ -107,45 +157,46 @@ export const useSetSelected = (
   return mutation.mutateAsync
 }
 
+/**
+ * Get selections by ID.
+ */
 export const useSelections = (id: string): Selections | null => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
-  const query = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.selections(config.id, id),
-    queryFn: selectionsQueryFns.selections(api, id),
-    staleTime: Infinity,
-  })
+  const query = useSuspenseQuery(
+    selectionsQueryOptions.selections(api, config.id, id),
+  )
   return query.data
 }
 
-export const useBookmarkCounts = (): ReadonlyMap<
-  string,
-  number | undefined
-> => {
+/**
+ * Get bookmark counts.
+ */
+export const useBookmarkCounts = (): ReadonlyMap<string, number> => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
 
-  const res = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
-    queryFn: selectionsQueryFns.bookmarkCounts(api),
-    staleTime: 120000,
-  })
+  const res = useSuspenseQuery(
+    selectionsQueryOptions.bookmarkCounts(api, config.id),
+  )
   return res.data
 }
 
+/**
+ * Get the bookmark count for a single item.
+ */
 export const useBookmarkCount = (itemId: string): number | undefined => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
+  const selectFn = useCallback(
+    (res: ReadonlyMap<string, number | undefined>) => {
+      return res.get(itemId)
+    },
+    [itemId],
+  )
   const res = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.bookmarkCounts(config.id),
-    queryFn: selectionsQueryFns.bookmarkCounts(api),
-    staleTime: 120000,
-    select: useCallback(
-      (res: ReadonlyMap<string, number | undefined>) => {
-        return res.get(itemId)
-      },
-      [itemId],
-    ),
+    ...selectionsQueryOptions.bookmarkCounts(api, config.id),
+    select: selectFn,
   })
   return res.data
 }

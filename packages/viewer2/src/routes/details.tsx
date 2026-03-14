@@ -1,21 +1,11 @@
-import {
-  useBookmarkCount,
-  useIsSelected,
-} from "@open-event-systems/schedule-react"
-import { useRenderItemDetailsFunc } from "../schedule.js"
-import {
-  createLink,
-  useLocation,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router"
+import { createLink, useLocation, useRouter } from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
-import { eventDetailsRoute, mapRoute, pagesRoute } from "../routes.js"
+import { eventDetailsRoute, pagesRoute } from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
-import { useState } from "react"
-import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
-import type { MouseEvent } from "react"
+import { useMemo, useState } from "react"
 import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
+import { makeItemNavPropsMap, makeRenderItemDetailsFunc } from "../schedule.js"
+import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -33,49 +23,28 @@ export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
 
   const router = useRouter()
   const loc = useLocation()
-  const navigate = useNavigate()
-  const url = new URL(loc.href, window.origin).href
 
   // hacky way to hold on to the initial back url
   const [backURL] = useState(() => loc.state.backURL)
 
-  const bookmarked = useIsSelected("bookmarks", item.id)
-  const bookmarkCount = useBookmarkCount(item.id)
+  const locMatchFunc = useMemo(
+    () => makeMapLocationMatchFunc(config.map?.locations ?? []),
+    [config.map?.locations],
+  )
 
-  const mapLocMatchFunc = makeMapLocationMatchFunc(config.map?.locations ?? [])
-  const mapLoc = item.location ? mapLocMatchFunc(item.location) : undefined
+  const navPropsMap = useMemo(
+    () => makeItemNavPropsMap(router, locMatchFunc, [item]),
+    [router, locMatchFunc, item],
+  )
+  const renderItemDetailsFunc = useMemo(
+    () => makeRenderItemDetailsFunc(navPropsMap),
+    [navPropsMap],
+  )
 
-  let mapURL
-  const onClickLocation = (e: MouseEvent) => {
-    e.preventDefault()
-    navigate({
-      to: mapRoute.to,
-      hash: `loc=${mapLoc?.id}`,
-    })
-  }
-
-  if (mapLoc) {
-    mapURL =
-      window.origin +
-      router.history.createHref(
-        router.buildLocation({
-          to: mapRoute.to,
-          hash: `loc=${mapLoc.id}`,
-        }).href,
-      )
-  }
-
-  const renderDetails = useRenderItemDetailsFunc()
-  const details = renderDetails({
+  const details = renderItemDetailsFunc({
     item,
     large: true,
-    bookmarked,
-    bookmarkCount,
-    url,
-    tags: config.tags,
     showShare: true,
-    locationHref: mapURL,
-    onClickLocation,
   })
 
   return (

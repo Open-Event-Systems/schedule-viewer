@@ -89,12 +89,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
       [selections, setSelections, renderDetails],
     )
 
-    const filtered = useFilteredItems(
-      parsedEvents,
-      { disabledTags, onlyBookmarked, text, showPastEvents },
-      new Date(),
+    const filtered = useFilteredItems(parsedEvents, {
+      disabledTags,
+      onlyBookmarked,
+      text,
+      showPastEvents,
       selections,
-    )
+    })
 
     return (
       <SchedulePage

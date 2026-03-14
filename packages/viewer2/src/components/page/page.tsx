@@ -2,6 +2,7 @@ import {
   getDays,
   getDefaultDay,
   makeScheduleItemCollection,
+  type Day,
   type DetailedScheduleItem,
   type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
@@ -13,29 +14,37 @@ import {
 } from "../../config.js"
 import { useProps, type BoxProps } from "@mantine/core"
 import {
-  FilterContext,
+  BookmarkFilter,
+  Filter,
+  makeTagIndicatorFunc,
   Markdown,
+  Schedule,
   SchedulePage,
-  selectionsQueryFns,
-  selectionsQueryKeys,
+  selectionsQueryOptions,
+  TagFilter,
+  useBookmarkCounts,
   useFilteredItems,
   useRelevantTags,
   useSelectionsAPI,
   type ScheduleType,
+  type TagEntry,
 } from "@open-event-systems/schedule-react"
-import { use, useEffect, useMemo } from "react"
-import { useRouter } from "@tanstack/react-router"
-import {
-  CachedItemPropsContext,
-  makeCachedItemPropsMap,
-  useRenderPillFunc,
-} from "../../schedule.js"
+import { use, useCallback, useEffect, useMemo, type ChangeEvent } from "react"
+import { useNavigate, useRouter } from "@tanstack/react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import classes from "./page.module.scss"
 import clsx from "clsx"
-import { ViewTypeContext } from "../../routes/filter-state.js"
 import { useNow } from "../../utils.js"
+import {
+  makeItemNavPropsMap,
+  makeRenderItemDetailsFunc,
+  makeRenderPillFunc,
+} from "../../schedule.js"
+import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
+import { pagesRoute } from "../../routes.js"
+import { FilterStateAtomContext } from "../../filter.js"
+import { useAtom } from "jotai"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -55,17 +64,26 @@ export const Page = (props: PageProps) => {
   const { tags } = config
   const api = useSelectionsAPI()
   const router = useRouter()
-  const [scheduleViewType, setViewType] = use(ViewTypeContext)
-  const [filterSettings, setFilterSettings] = use(FilterContext)
-  const renderPill = useRenderPillFunc()
+  const navigate = useNavigate()
+  const {
+    day: selectedDayKey,
+    view: scheduleViewType,
+    bookmarked: onlyBookmarked,
+    past: showPastEvents,
+  } = pagesRoute.useSearch()
   const now = useNow()
 
+  const filterStateAtom = use(FilterStateAtomContext)
+  const [filterState] = useAtom(filterStateAtom)
+  const [text] = useAtom(filterState.text)
+  const [disabledTags] = useAtom(filterState.disabledTags)
+
   const query = useSuspenseQuery({
-    queryKey: selectionsQueryKeys.sessionSelections(config.id, "bookmarks"),
-    queryFn: selectionsQueryFns.sessionSelections(api, "bookmarks"),
-    staleTime: 120000,
-    subscribed: false,
+    ...selectionsQueryOptions.sessionSelections(api, config.id, "bookmarks"),
+    // subscribed: false,
   })
+
+  const counts = useBookmarkCounts()
 
   const ssels = query.data
 
@@ -78,24 +96,42 @@ export const Page = (props: PageProps) => {
     return byReqTags
   }, [items, pageConfig])
 
-  const itemPropsMap = useMemo(
-    () =>
-      makeCachedItemPropsMap(
-        router,
-        pageFilteredItems,
-        config.tagIndicators,
-        config.map?.locations,
-      ),
-    [router, pageFilteredItems, config.tagIndicators, config.map?.locations],
-  )
-
   const relevantTags = useRelevantTags(tags, pageFilteredItems)
 
-  const filteredItems = useFilteredItems(
-    pageFilteredItems,
-    now,
-    ssels.selections,
+  const locMatchFunc = useMemo(
+    () => makeMapLocationMatchFunc(config.map?.locations ?? []),
+    [config.map?.locations],
   )
+
+  const navPropsMap = useMemo(
+    () => makeItemNavPropsMap(router, locMatchFunc, pageFilteredItems),
+    [router, locMatchFunc, pageFilteredItems],
+  )
+
+  const renderItemDetailsFunc = useMemo(
+    () => makeRenderItemDetailsFunc(navPropsMap),
+    [ssels.selections, counts, navPropsMap],
+  )
+
+  const tagIndicatorFunc = useMemo(
+    () => makeTagIndicatorFunc(config.tagIndicators),
+    [config.tagIndicators],
+  )
+
+  const renderPillFunc = useMemo(
+    () =>
+      makeRenderPillFunc(renderItemDetailsFunc, tagIndicatorFunc, navPropsMap),
+    [renderItemDetailsFunc, tagIndicatorFunc, navPropsMap],
+  )
+
+  const filteredItems = useFilteredItems(pageFilteredItems, {
+    now,
+    text,
+    disabledTags,
+    selections: ssels.selections,
+    showPastEvents,
+    onlyBookmarked,
+  })
 
   const allowedTypes = [...(pageConfig.enabledViews ?? [])] as ScheduleType[]
   const validatedSelectedType =
@@ -103,9 +139,66 @@ export const Page = (props: PageProps) => {
       ? scheduleViewType
       : allowedTypes[0]
 
+  const setViewType = useCallback(
+    (type?: ScheduleType) => {
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+        search: (prev) => {
+          return {
+            ...prev,
+            view: type,
+          }
+        },
+        replace: true,
+      })
+    },
+    [navigate, pageConfig.id],
+  )
+
+  const setSelectedDay = useCallback(
+    (day: Day) => {
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+        search: (prev) => {
+          return {
+            ...prev,
+            day: day.key,
+          }
+        },
+        replace: true,
+      })
+    },
+    [navigate, pageConfig.id],
+  )
+
+  const setOnlyBookmarked = useCallback(
+    (onlyBookmarked?: boolean) => {
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+        search: (prev) => {
+          return {
+            ...prev,
+            bookmarked: onlyBookmarked,
+          }
+        },
+        replace: true,
+      })
+    },
+    [navigate, pageConfig.id],
+  )
+
   // auto set default day
   useEffect(() => {
-    if (filterSettings.selectedDayKey) {
+    if (selectedDayKey) {
       return
     }
 
@@ -119,33 +212,131 @@ export const Page = (props: PageProps) => {
     const curDay = getDefaultDay(days, now)
 
     if (curDay?.key) {
-      setFilterSettings({ selectedDayKey: days[0]?.key })
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+        search: (prev) => {
+          return {
+            ...prev,
+            day: curDay.key,
+          }
+        },
+        state: (prev) => prev,
+        hash: (prev) => prev ?? "",
+        replace: true,
+      })
     }
   }, [
-    filterSettings.selectedDayKey,
+    selectedDayKey,
     now,
     config.dayChangeHour,
     items,
-    setFilterSettings,
+    navigate,
+    pageConfig.id,
   ])
 
   return (
-    <CachedItemPropsContext value={itemPropsMap}>
+    <>
       {pageConfig.description && (
         <Markdown className={clsx("Page-description", classes.description)}>
           {pageConfig.description}
         </Markdown>
       )}
       <SchedulePage
-        items={pageFilteredItems}
         filteredItems={filteredItems}
-        renderPill={renderPill}
-        tags={relevantTags}
         type={validatedSelectedType}
-        noPastEventsOption={pageConfig.noPastEventsOption}
         allowTypes={pageConfig.enabledViews as ScheduleType[] | undefined}
         onChangeType={setViewType}
+        filter={
+          <WrappedFilter relevantTags={relevantTags} pageConfig={pageConfig} />
+        }
+        bookmarkFilter={
+          <BookmarkFilter value={onlyBookmarked} onChange={setOnlyBookmarked} />
+        }
+        schedule={
+          <Schedule
+            filteredItems={filteredItems}
+            items={items}
+            renderPill={renderPillFunc}
+            type={validatedSelectedType}
+            selectedDayKey={selectedDayKey}
+            onSelectDay={setSelectedDay}
+            binTitleComponent={scheduleViewType == "full-agenda" ? "h3" : "h2"}
+            dayTitleComponent="h2"
+          />
+        }
       />
-    </CachedItemPropsContext>
+    </>
+  )
+}
+
+const WrappedFilter = ({
+  relevantTags,
+  pageConfig,
+}: {
+  relevantTags: Iterable<TagEntry>
+  pageConfig: PageConfig
+}) => {
+  const config = useViewerConfig()
+  const { past: showPastEvents } = pagesRoute.useSearch()
+  const navigate = useNavigate()
+
+  const setShowPastEvents = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+        search: (prev) => {
+          return {
+            ...prev,
+            past: e.target.checked,
+          }
+        },
+        replace: true,
+      })
+    },
+    [navigate, pageConfig.id],
+  )
+
+  const filterAtom = use(FilterStateAtomContext)
+  const [filterState] = useAtom(filterAtom)
+  const [text, setText] = useAtom(filterState.text)
+  const [disabledTags, setDisabledTags] = useAtom(filterState.disabledTags)
+
+  return (
+    <Filter
+      text={
+        <Filter.Text value={text} onChange={(e) => setText(e.target.value)} />
+      }
+      pastEvents={
+        <Filter.PastEvents
+          checked={!!showPastEvents}
+          onChange={setShowPastEvents}
+        />
+      }
+      tagFilter={
+        <TagFilter
+          tags={relevantTags}
+          tagIndicators={config.tagIndicators}
+          disabledTags={disabledTags}
+          onSetDisabled={(tag, disabled) => {
+            setDisabledTags((prev) => {
+              const newSet = new Set(prev)
+              if (disabled) {
+                newSet.add(tag)
+              } else {
+                newSet.delete(tag)
+              }
+
+              return newSet
+            })
+          }}
+        />
+      }
+    />
   )
 }
