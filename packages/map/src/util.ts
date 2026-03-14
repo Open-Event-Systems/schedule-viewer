@@ -47,10 +47,10 @@ export const makeMapLocationMatchFunc = (
  * A hook that provides a function to map location names to {@link MapLocation} objects.
  */
 export const useMapLocationMatchFunc = (
-  locations: Iterable<MapLocation>,
+  locations?: Iterable<MapLocation>,
 ): MapLocationMatchFunc => {
   const matchFunc = useMemo(() => {
-    return makeMapLocationMatchFunc(locations)
+    return makeMapLocationMatchFunc(locations ?? [])
   }, [locations])
   return matchFunc
 }

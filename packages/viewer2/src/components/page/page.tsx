@@ -41,7 +41,7 @@ import {
   makeRenderItemDetailsFunc,
   makeRenderPillFunc,
 } from "../../schedule.js"
-import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
+import { useMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import { pagesRoute } from "../../routes.js"
 import { FilterStateAtomContext } from "../../filter.js"
 import { useAtom } from "jotai"
@@ -80,7 +80,6 @@ export const Page = (props: PageProps) => {
 
   const query = useSuspenseQuery({
     ...selectionsQueryOptions.sessionSelections(api, config.id, "bookmarks"),
-    // subscribed: false,
   })
 
   const counts = useBookmarkCounts()
@@ -97,11 +96,7 @@ export const Page = (props: PageProps) => {
   }, [items, pageConfig])
 
   const relevantTags = useRelevantTags(tags, pageFilteredItems)
-
-  const locMatchFunc = useMemo(
-    () => makeMapLocationMatchFunc(config.map?.locations ?? []),
-    [config.map?.locations],
-  )
+  const locMatchFunc = useMapLocationMatchFunc(config.map?.locations)
 
   const navPropsMap = useMemo(
     () => makeItemNavPropsMap(router, locMatchFunc, pageFilteredItems),

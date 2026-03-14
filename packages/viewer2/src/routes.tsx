@@ -206,8 +206,77 @@ export const mapSetupRoute = createRoute({
   pendingComponent: Loading,
 })
 
+export type MapParams = Readonly<{
+  show?: string
+  loc?: string
+  level?: string
+  iso?: boolean
+}>
+
 export const mapRoute = createRoute({
   getParentRoute: () => mapSetupRoute, // TODO
   path: "/map",
+  validateSearch: (params: Record<string, unknown>): MapParams => {
+    const show = params.show
+    const loc = params.loc
+    const level = params.level
+    const iso = params.iso
+    return {
+      ...(typeof show == "string" && show ? { show } : {}),
+      ...(typeof loc == "string" && loc ? { loc } : {}),
+      ...(typeof level == "string" && level ? { level } : {}),
+      ...(iso ? { iso: true } : {}),
+    }
+  },
+  search: {
+    middlewares: [
+      ({ search, next }) => {
+        const { iso, ...other } = next(search)
+
+        return {
+          ...other,
+          ...(iso ? { iso: true } : {}),
+        }
+      },
+    ],
+  },
+  async loader({ context }) {
+    const { config, queryClient, scheduleAPI, selectionsAPI } = context
+
+    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
+      "./route-loaders.js"
+    )
+
+    const itemsPromise = queryClient.fetchQuery(
+      itemQueryOptions.items(scheduleAPI, config.id, parsers),
+    )
+
+    const selectionsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.sessionSelections(
+        selectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
+
+    const countsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+    )
+
+    const [
+      {
+        byType: { event: events, vendor: vendors },
+      },
+      selections,
+      counts,
+    ] = await Promise.all([itemsPromise, selectionsPromise, countsPromise])
+
+    return {
+      events,
+      vendors,
+      selections,
+      counts,
+    }
+  },
   component: lazyRouteComponent(() => import("./routes/map.js"), "MapRoute"),
 })

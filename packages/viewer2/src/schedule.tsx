@@ -79,14 +79,18 @@ export const getItemNavProps = (
         history.createHref(
           router.buildLocation({
             to: mapRoute.to,
-            hash: `loc=${loc.id}`,
+            search: {
+              show: loc.id,
+            },
           }).href,
         )
       onClickLocation = (e: MouseEvent) => {
         e.preventDefault()
         router.navigate({
           to: mapRoute.to,
-          hash: `loc=${loc.id}`,
+          search: {
+            show: loc.id,
+          },
         })
       }
     }

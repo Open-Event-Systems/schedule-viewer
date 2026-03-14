@@ -5,22 +5,27 @@ import {
   MapViewer,
   useMapLocationMatchFunc,
   type MapConfig,
-  type MapViewerSettings,
 } from "@open-event-systems/schedule-map"
 import { useViewerConfig } from "../config.js"
 
 import "@open-event-systems/schedule-map/schedule-map.css"
 import classes from "./map.module.scss"
-import { useEffect, useMemo, useReducer, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useItems } from "@open-event-systems/schedule-react"
-import { parsers } from "../schedule.js"
+import {
+  makeItemNavPropsMap,
+  makeRenderItemDetailsFunc,
+  parsers,
+} from "../schedule.js"
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 import { useNow } from "../utils.js"
-import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
+import { useNavigate, useRouter } from "@tanstack/react-router"
+import { mapRoute } from "../routes.js"
+import { isMapLevel } from "../../../map/src/viewer/util.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
-    detailsLocationId?: string
+    mapModalBack?: boolean
   }
 }
 
@@ -32,17 +37,16 @@ export const MapRoute = () => {
     throw new Error("Map not configured")
   }
 
+  const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
+    () => new Set<string>(),
+  )
+
   const router = useRouter()
   const navigate = useNavigate()
-  const loc = useLocation()
+
+  const { iso: isometric } = mapRoute.useSearch()
 
   const now = useNow()
-
-  const firstRenderRef = useRef(true)
-
-  useEffect(() => {
-    firstRenderRef.current = false
-  }, [])
 
   const {
     byType: { event: events, vendor: vendors },
@@ -77,25 +81,24 @@ export const MapRoute = () => {
     [nowItems, locMatchFunc],
   )
 
-  const { defaultLevelId, selectedLoc } = useLocationIds(mapCfg)
-
-  const [settings, updateSettings] = useReducer(
-    (prev: MapViewerSettings, action: Partial<MapViewerSettings>) => {
-      return {
-        ...prev,
-        ...action,
-      }
-    },
-    {
-      currentLevelId: defaultLevelId,
-    },
-  )
+  const { selectedLoc, levelId, activeLocationId, zoomLocationId } =
+    useLocationIds(mapCfg)
 
   const [nowItem, laterItem] = useMemo(() => {
     return selectedLoc
       ? [nowItems.get(selectedLoc.id), laterItems.get(selectedLoc.id)]
       : []
   }, [selectedLoc?.id, nowItems, laterItems])
+
+  const mapLocMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
+  const navPropsMap = useMemo(
+    () => makeItemNavPropsMap(router, mapLocMatchFunc, items),
+    [router, mapLocMatchFunc, items],
+  )
+  const renderItemDetailsFunc = useMemo(
+    () => makeRenderItemDetailsFunc(navPropsMap),
+    [navPropsMap],
+  )
 
   return (
     <MapViewer
@@ -105,64 +108,148 @@ export const MapRoute = () => {
       layers={mapCfg.layers}
       locations={mapCfg.locations}
       objects={mapCfg.objects}
-      {...settings}
-      activeLocationId={selectedLoc?.id}
-      detailsLocationId={loc.state.detailsLocationId}
-      zoomLocationId={
-        firstRenderRef.current && selectedLoc?.id ? selectedLoc.id : undefined
-      }
+      currentLevelId={levelId}
+      activeLocationId={activeLocationId}
+      detailsLocationId={selectedLoc?.id}
+      zoomLocationId={zoomLocationId}
       locationItemInfo={locationItemInfo}
-      // nowDetails={nowItem ? renderItemDetails({ item: nowItem }) : undefined}
-      // laterDetails={
-      //   laterItem ? renderItemDetails({ item: laterItem }) : undefined
-      // }
-      onSetActiveLocationId={(loc) => {
-        // hack to remove current loc from url when deselecting
-        if (
-          !loc &&
-          selectedLoc?.id &&
-          !router.state.location.state.detailsLocationId
-        ) {
-          navigate({
-            replace: true,
-          })
-        }
-      }}
+      isometric={isometric}
+      hiddenLayers={hiddenLayers}
+      nowDetails={
+        nowItem ? renderItemDetailsFunc({ item: nowItem }) : undefined
+      }
+      laterDetails={
+        laterItem ? renderItemDetailsFunc({ item: laterItem }) : undefined
+      }
       onSetDetailsLocationId={(loc) => {
         if (loc) {
           navigate({
-            hash: `loc=${loc}`,
+            to: mapRoute.to,
+            search: (prev) => {
+              return {
+                ...prev,
+                loc,
+                level: undefined,
+                show: undefined,
+              }
+            },
             state: {
-              detailsLocationId: loc,
+              mapModalBack: true,
             },
           })
         } else {
-          // hack to prevent going back multiple times if clicking rapidly
-          if (router.state.location.state.detailsLocationId) {
+          if (router.history.location.state.mapModalBack) {
             router.history.go(-1)
+          } else if (selectedLoc) {
+            navigate({
+              to: mapRoute.to,
+              search: (prev) => {
+                return {
+                  ...prev,
+                  loc: undefined,
+                  show: undefined,
+                  level: selectedLoc.level,
+                }
+              },
+            })
+          } else if (activeLocationId) {
+            navigate({
+              to: mapRoute.to,
+              search: (prev) => {
+                return {
+                  ...prev,
+                  loc: undefined,
+                  show: undefined,
+                }
+              },
+              replace: true,
+            })
           }
         }
       }}
-      onSetLevelId={(loc) => updateSettings({ currentLevelId: loc })}
-      onSetHiddenLayers={(layers) => updateSettings({ hiddenLayers: layers })}
-      onSetIsometric={(iso) => updateSettings({ isometric: iso })}
+      onSetLevelId={(id) => {
+        navigate({
+          to: mapRoute.to,
+          search: (prev) => {
+            return {
+              ...prev,
+              level: id,
+              show: undefined,
+            }
+          },
+          replace: true,
+        })
+      }}
+      onSetHiddenLayers={(layers) => setHiddenLayers(new Set(layers))}
+      onSetIsometric={(iso) => {
+        navigate({
+          to: mapRoute.to,
+          search: (prev) => {
+            return {
+              ...prev,
+              iso: iso || undefined,
+            }
+          },
+          replace: true,
+        })
+      }}
     />
   )
 }
 
 const useLocationIds = (mapCfg: MapConfig) => {
-  const loc = useLocation()
-  const hashParams = new URLSearchParams(loc.hash)
-  const selectedLocId = hashParams.get("loc")
+  const firstRenderRef = useRef(true)
+
+  useEffect(() => {
+    firstRenderRef.current = false
+  }, [])
+
+  const {
+    show: searchShowId,
+    loc: searchLocId,
+    level: searchLevelId,
+    iso: isometric,
+  } = mapRoute.useSearch()
 
   return useMemo(() => {
-    const selectedLoc = selectedLocId
-      ? mapCfg.locations.find((l) => l.id == selectedLocId)
+    const showLoc = searchShowId
+      ? mapCfg.locations.find((l) => l.id == searchShowId)
       : undefined
+
+    const selectedLoc = searchLocId
+      ? mapCfg.locations.find((l) => l.id == searchLocId)
+      : undefined
+
+    let activeLocationId
+
+    if (firstRenderRef.current && selectedLoc) {
+      activeLocationId = selectedLoc.id
+    } else if (!selectedLoc) {
+      activeLocationId = showLoc?.id
+    }
+
+    const zoomLocationId = firstRenderRef.current ? activeLocationId : undefined
+
+    const levelLoc = selectedLoc ?? showLoc
+
+    let levelId
+
+    if (levelLoc) {
+      levelId = levelLoc.level
+    } else if (searchLevelId) {
+      const level = mapCfg.objects
+        .filter(isMapLevel)
+        .find((o) => o.id == searchLevelId)
+      levelId = level?.id ?? mapCfg.defaultLevel
+    } else {
+      levelId = mapCfg.defaultLevel
+    }
 
     return {
       selectedLoc,
-      defaultLevelId: selectedLoc?.level ?? mapCfg.defaultLevel,
+      activeLocationId,
+      zoomLocationId,
+      levelId,
     }
-  }, [mapCfg.locations, mapCfg.defaultLevel, selectedLocId])
+  }, [mapCfg.locations, mapCfg.layers, searchLocId, searchLevelId, isometric])
 }
