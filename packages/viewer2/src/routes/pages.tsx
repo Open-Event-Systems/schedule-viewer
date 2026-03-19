@@ -7,14 +7,14 @@ import { parsers } from "../schedule.js"
 import { useMemo } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
-import { Title } from "@mantine/core"
+
+import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 import classes from "./pages.module.scss"
-import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()
-  const { pageConfig } = pagesRoute.useLoaderData()
+  const { pageConfig } = pagesRoute.useRouteContext()
   const config = useViewerConfig()
   const router = useRouter()
 
@@ -67,9 +67,6 @@ export const PagesRoute = () => {
 
   return (
     <>
-      <Title className={classes.title} order={1}>
-        {config.title}
-      </Title>
       <Markdown className={classes.description}>{config.description}</Markdown>
       <PageMenu
         variant={!isSmall && config.pages.length > 1 ? "tabs" : "select"}

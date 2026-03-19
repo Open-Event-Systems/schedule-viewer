@@ -24,3 +24,12 @@ export type ScheduleConfig = Readonly<{
   icalPrefix: string
   icalDomain: string
 }>
+
+export const scheduleViewTypes = {
+  "daily-agenda": "Daily Agenda",
+  "full-agenda": "Full Agenda",
+  catalog: "Catalog",
+  tags: "Tags",
+} as const
+
+export type ScheduleViewType = keyof typeof scheduleViewTypes

@@ -6,9 +6,52 @@
 }
 
 .container {
-  padding: var(--mantine-spacing-xs);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+}
+
+.title {
+  margin: var(--mantine-spacing-xs);
+}
+
+.content {
+  padding: var(--mantine-spacing-xs);
+  flex: auto;
+}
+
+.footer {
+  display: grid;
+  grid-template:
+    "divider" auto
+    "btt" auto
+    "details" auto
+    / 1fr;
+}
+
+.footerDivider {
+  grid-area: divider;
+}
+
+.btt {
+  grid-area: btt;
+  margin-top: var(--mantine-spacing-xs);
+  justify-self: center;
+}
+
+.footerDetails {
+  grid-area: details;
+  padding: var(--mantine-spacing-xs);
+  display: grid;
+  grid-template:
+    "version" auto
+    / auto;
+}
+
+.version {
+  grid-area: version;
+  justify-self: end;
+  font-size: 0.75rem;
+  line-height: 1;
 }

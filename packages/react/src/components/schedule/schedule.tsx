@@ -33,14 +33,16 @@ import {
 } from "../pill/item-pill-utils.js"
 import { useScheduleConfig } from "../../hooks/config.js"
 import { ItemPills, type ItemPillProps } from "../pill/item-pills.js"
-import type { TagEntry, TagIndicatorEntry } from "../../types.js"
-
-export type ScheduleType = "daily-agenda" | "full-agenda" | "catalog" | "tags"
+import type {
+  ScheduleViewType,
+  TagEntry,
+  TagIndicatorEntry,
+} from "../../types.js"
 
 export type ScheduleProps = {
   items: ScheduleItemCollection<DetailedScheduleItem>
   filteredItems: ScheduleItemCollection<DetailedScheduleItem>
-  type?: ScheduleType
+  type?: ScheduleViewType
   selectedDayKey?: string
   now?: Date
   dayTitleComponent?: ElementType<{ children: ReactNode }>

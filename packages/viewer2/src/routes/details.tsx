@@ -48,25 +48,27 @@ export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
   })
 
   return (
-    <Stack>
-      {backURL ? (
-        <Anchor
-          href={backURL}
-          onClick={(e) => {
-            e.preventDefault()
-            router.history.go(-1)
-          }}
-          size="sm"
-        >
-          &laquo; Back to schedule
-        </Anchor>
-      ) : (
-        <ALink to={pagesRoute.to} size="sm">
-          &laquo; View full schedule
-        </ALink>
-      )}
-      {details}
-    </Stack>
+    <>
+      <Stack>
+        {backURL ? (
+          <Anchor
+            href={backURL}
+            onClick={(e) => {
+              e.preventDefault()
+              router.history.go(-1)
+            }}
+            size="sm"
+          >
+            &laquo; Back to schedule
+          </Anchor>
+        ) : (
+          <ALink to={pagesRoute.to} size="sm">
+            &laquo; View full schedule
+          </ALink>
+        )}
+        {details}
+      </Stack>
+    </>
   )
 }
 

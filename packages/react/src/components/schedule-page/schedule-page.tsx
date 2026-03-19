@@ -13,7 +13,7 @@ import {
   type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
-import { type ScheduleProps, type ScheduleType } from "../schedule/schedule.js"
+import { type ScheduleProps } from "../schedule/schedule.js"
 import { IconEye, type ReactNode } from "@tabler/icons-react"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import {
@@ -24,11 +24,12 @@ import { useScheduleConfig } from "../../hooks/config.js"
 
 import classes from "./schedule-page.module.scss"
 import { memo, type NamedExoticComponent } from "react"
+import { scheduleViewTypes, type ScheduleViewType } from "../../types.js"
 
 export type SchedulePageProps = {
   filteredItems: ScheduleItemCollection<DetailedScheduleItem>
-  type?: ScheduleType
-  allowTypes?: Iterable<ScheduleType>
+  type?: ScheduleViewType
+  allowTypes?: Iterable<ScheduleViewType>
   noShareMenu?: boolean
   hideBookmarkFilter?: boolean
   enableSync?: boolean
@@ -69,13 +70,14 @@ const _SchedulePage = memo((props: SchedulePageProps) => {
     "SchedulePage",
     {
       type: "daily-agenda",
-      allowTypes: ["daily-agenda", "full-agenda", "catalog", "tags"],
       icalFileName: "schedule",
     },
     props,
   )
 
-  const allowTypesArr = [...(allowTypes ?? [])]
+  const allowTypesArr = [
+    ...(allowTypes ?? (Object.keys(scheduleViewTypes) as ScheduleViewType[])),
+  ]
 
   const { icalPrefix, icalDomain } = useScheduleConfig()
 
@@ -92,26 +94,10 @@ const _SchedulePage = memo((props: SchedulePageProps) => {
             size="sm"
             title="View"
             aria-label="view"
-            data={(
-              [
-                {
-                  value: "daily-agenda",
-                  label: "Daily Agenda",
-                },
-                {
-                  value: "full-agenda",
-                  label: "Full Agenda",
-                },
-                {
-                  value: "catalog",
-                  label: "Catalog",
-                },
-                {
-                  value: "tags",
-                  label: "Tags",
-                },
-              ] as const
-            ).filter((o) => allowTypesArr.includes(o.value))}
+            data={allowTypesArr.map((t) => ({
+              value: t,
+              label: scheduleViewTypes[t],
+            }))}
             value={type}
             allowDeselect={false}
             variant="default"

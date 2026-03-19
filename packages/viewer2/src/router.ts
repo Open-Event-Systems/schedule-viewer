@@ -25,6 +25,7 @@ declare module "@tanstack/react-router" {
     router: ReturnType<typeof makeRouter>
   }
 }
+
 export const makeRouter = (
   context: RouterContext,
   history: "browser" | "hash" = "browser",

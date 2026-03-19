@@ -9,7 +9,11 @@ import {
 import type { RouterContext } from "./router.js"
 import { MainLayoutRoute } from "./routes/main-layout.js"
 import { Loading } from "./components/loading/loading.js"
-import type { ScheduleType } from "@open-event-systems/schedule-react"
+import {
+  isScheduleViewType,
+  type ScheduleViewType,
+} from "@open-event-systems/schedule-react"
+import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component() {
@@ -56,7 +60,7 @@ export const filterStateRoute = createRoute({
 })
 
 export type PagesParams = Readonly<{
-  view?: ScheduleType
+  view?: ScheduleViewType
   day?: string
   past?: boolean
   bookmarked?: boolean
@@ -71,9 +75,7 @@ export const pagesRoute = createRoute({
     const past = !!search.past
     const bookmarked = !!search.bookmarked
     return {
-      ...(typeof viewType == "string" && viewType
-        ? { view: viewType as ScheduleType }
-        : {}),
+      ...(isScheduleViewType(viewType) ? { view: viewType } : {}),
       ...(typeof day == "string" ? { day } : {}),
       ...(past ? { past: true } : {}),
       ...(bookmarked ? { bookmarked: true } : {}),
@@ -96,10 +98,31 @@ export const pagesRoute = createRoute({
     () => import("./routes/pages.js"),
     "PagesRoute",
   ),
-  async loader({ context, params }) {
-    const { queryClient, config, scheduleAPI, selectionsAPI } = context
-    const { pageId } = params
+  async beforeLoad({ context: { config }, params: { pageId }, buildLocation }) {
+    const pageConfig = pageId
+      ? config.pages.find((p) => p.id == pageId)
+      : config.pages[0]
 
+    if (!pageConfig) {
+      throw notFound()
+    }
+
+    const getCanonicalHref = () =>
+      window.origin +
+      buildLocation({
+        to: pagesRoute.to,
+        params: {
+          pageId: pageConfig.id,
+        },
+      }).href
+
+    return {
+      pageConfig,
+      getCanonicalHref,
+    }
+  },
+  async loader({ context }) {
+    const { queryClient, config, scheduleAPI, selectionsAPI } = context
     const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
       "./route-loaders.js"
     )
@@ -126,13 +149,30 @@ export const pagesRoute = createRoute({
       countsPromise,
     ])
 
-    const selectedPageId = pageId || config.pages[0]?.id
-    const page = config.pages.find((p) => p.id == selectedPageId)
-    if (!page) {
-      throw notFound()
+    return { items, selections, counts }
+  },
+  head: ({
+    match: {
+      context: { config, pageConfig, getCanonicalHref },
+    },
+    params: { pageId },
+  }) => {
+    const scheduleTitle = config.title
+    const pageTitle = pageConfig.title || "Schedule"
+    const links: DetailedHTMLProps<
+      LinkHTMLAttributes<HTMLLinkElement>,
+      HTMLLinkElement
+    >[] = []
+
+    // add canonical rel if accessing the default page (browser routing only)
+    if (!pageId && scheduleConfig?.router == "browser") {
+      links.push({ rel: "canonical", href: getCanonicalHref() })
     }
 
-    return { pageConfig: page, items, selections, counts }
+    return {
+      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
+      links,
+    }
   },
 })
 
@@ -184,6 +224,18 @@ export const eventDetailsRoute = createRoute({
       event,
       selections,
       counts,
+    }
+  },
+  head: ({
+    match: {
+      context: { config },
+    },
+    loaderData,
+  }) => {
+    const eventTitle = loaderData?.event.title || "Event Details"
+    const scheduleTitle = config.title
+    return {
+      meta: [{ title: `${eventTitle} - ${scheduleTitle}` }],
     }
   },
 })
@@ -279,4 +331,14 @@ export const mapRoute = createRoute({
     }
   },
   component: lazyRouteComponent(() => import("./routes/map.js"), "MapRoute"),
+  head: ({
+    match: {
+      context: { config },
+    },
+  }) => {
+    const scheduleTitle = config.title
+    return {
+      meta: [{ title: `Map - ${scheduleTitle}` }],
+    }
+  },
 })
