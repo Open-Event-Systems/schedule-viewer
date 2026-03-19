@@ -19,12 +19,7 @@ export const App = ({ jsConfig }: { jsConfig?: ScheduleJSConfig }) => {
     })
 
     return {
-      router: makeRouter(
-        {
-          setupPromise,
-        },
-        jsConfig?.router,
-      ),
+      router: makeRouter(setupPromise, jsConfig?.router, window.origin),
     }
   })
   return (

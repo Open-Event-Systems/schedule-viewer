@@ -98,7 +98,11 @@ export const pagesRoute = createRoute({
     () => import("./routes/pages.js"),
     "PagesRoute",
   ),
-  async beforeLoad({ context: { config }, params: { pageId }, buildLocation }) {
+  async beforeLoad({
+    context: { config, origin },
+    params: { pageId },
+    buildLocation,
+  }) {
     const pageConfig = pageId
       ? config.pages.find((p) => p.id == pageId)
       : config.pages[0]
@@ -108,7 +112,7 @@ export const pagesRoute = createRoute({
     }
 
     const getCanonicalHref = () =>
-      window.origin +
+      origin +
       buildLocation({
         to: pagesRoute.to,
         params: {
@@ -153,7 +157,7 @@ export const pagesRoute = createRoute({
   },
   head: ({
     match: {
-      context: { config, pageConfig, getCanonicalHref },
+      context: { config, pageConfig, getCanonicalHref, routerType },
     },
     params: { pageId },
   }) => {
@@ -165,7 +169,7 @@ export const pagesRoute = createRoute({
     >[] = []
 
     // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && scheduleConfig?.router == "browser") {
+    if (!pageId && routerType == "browser") {
       links.push({ rel: "canonical", href: getCanonicalHref() })
     }
 

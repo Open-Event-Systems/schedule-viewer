@@ -13,10 +13,12 @@ import {
   scheduleLayoutRoute,
   scheduleSetupRoute,
 } from "./routes.js"
-import type { SetupResult } from "./setup.js"
+import { type SetupResult } from "./setup.js"
 
 export type RouterContext = {
   setupPromise: Promise<SetupResult>
+  routerType: "browser" | "hash"
+  origin: string
 }
 
 declare module "@tanstack/react-router" {
@@ -27,8 +29,9 @@ declare module "@tanstack/react-router" {
 }
 
 export const makeRouter = (
-  context: RouterContext,
+  setupPromise: Promise<SetupResult>,
   history: "browser" | "hash" = "browser",
+  origin?: string,
 ) => {
   let historyObj
 
@@ -39,7 +42,11 @@ export const makeRouter = (
   }
 
   return createRouter({
-    context,
+    context: {
+      routerType: history,
+      origin: origin ?? window.origin,
+      setupPromise,
+    },
     scrollRestoration: true,
     history: historyObj,
     routeTree: rootRoute.addChildren([

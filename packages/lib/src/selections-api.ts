@@ -53,6 +53,29 @@ type BookmarkSetupBody = {
   session_id: string
 }
 
+/**
+ * A {@link SessionSelectionsStore} that stores and returns nothing.
+ */
+export const makeNullSessionSelectionsStore = (): SessionSelectionsStore => {
+  return {
+    add() {
+      return makeSessionSelections()
+    },
+    delete() {
+      return makeSessionSelections()
+    },
+    get() {
+      return {
+        base: makeSessionSelections(),
+        current: makeSessionSelections(),
+        added: new Set(),
+        deleted: new Set(),
+      }
+    },
+    save() {},
+  }
+}
+
 export const makeSessionSelectionsStore = (
   scheduleId: string,
 ): SessionSelectionsStore => {
