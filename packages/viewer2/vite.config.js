@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
 import { analyzer } from "vite-bundle-analyzer"
 
+import packageJSON from "./package.json"
+
 export default defineConfig({
   base: "",
   build: {
@@ -15,6 +17,9 @@ export default defineConfig({
         }
       },
     },
+  },
+  define: {
+    __VIEWER_VERSION__: JSON.stringify(packageJSON.version),
   },
   plugins: [
     react({
@@ -71,6 +76,12 @@ export default defineConfig({
             injectTo: "head",
           },
         ]
+      },
+    },
+    {
+      name: "append-version",
+      transformIndexHtml(html) {
+        return html + `\n<!-- ULE v${packageJSON.version} -->`
       },
     },
   ],

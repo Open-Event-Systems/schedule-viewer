@@ -1,6 +1,6 @@
 {
   "name": "@open-event-systems/schedule-map",
-  "version": "0.2.0",
+  "version": "0.2.0-alpha",
   "type": "module",
   "exports": {
     "./schedule-map.css": "./dist/schedule-map.css",

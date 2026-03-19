@@ -59,8 +59,7 @@ export const MainLayout = (props: MainLayoutProps) => {
             className={clsx("MainLayout-footerDetails", classes.footerDetails)}
           >
             <Box className={clsx("MainLayout-version", classes.version)}>
-              {/* TODO: get version */}
-              ULE 0.2.0
+              ULE v{__VIEWER_VERSION__}
             </Box>
           </Box>
         </Box>

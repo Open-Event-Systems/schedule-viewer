@@ -14,4 +14,5 @@ export type ScheduleJSConfig =
 
 declare global {
   var scheduleConfig: ScheduleJSConfig
+  var __VIEWER_VERSION__: string
 }
