@@ -25,31 +25,14 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   },
 })
 
-export const scheduleSetupRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: "scheduleSetup",
-  async beforeLoad({ context }) {
-    const { setupPromise } = context
-    const setup = await setupPromise
-    return {
-      ...setup,
-    }
-  },
-  component: lazyRouteComponent(
-    () => import("./routes/setup.js"),
-    "ScheduleSetupRoute",
-  ),
-  pendingMs: 0,
-  pendingComponent: Loading,
-})
-
 export const scheduleLayoutRoute = createRoute({
-  getParentRoute: () => scheduleSetupRoute,
+  getParentRoute: () => rootRoute,
   id: "scheduleLayout",
   component: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
     "MainLayoutRoute",
   ),
+  pendingComponent: Loading,
 })
 
 export const filterStateRoute = createRoute({
@@ -156,7 +139,7 @@ export const pagesRoute = createRoute({
   },
   head: ({
     match: {
-      context: { config, pageConfig, getCanonicalHref, routerType },
+      context: { jsConfig, config, pageConfig, getCanonicalHref },
     },
     params: { pageId },
   }) => {
@@ -168,15 +151,12 @@ export const pagesRoute = createRoute({
     >[] = []
 
     // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && routerType == "browser") {
+    if (!pageId && jsConfig.router == "browser") {
       links.push({ rel: "canonical", href: getCanonicalHref() })
     }
 
     return {
-      meta: [
-        { title: `${pageTitle} - ${scheduleTitle}` },
-        { name: "description", content: "TEST" },
-      ],
+      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
       links,
     }
   },
@@ -256,24 +236,6 @@ export const eventDetailsRoute = createRoute({
   },
 })
 
-export const mapSetupRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: "mapSetup",
-  async beforeLoad({ context }) {
-    const { setupPromise } = context
-    const setup = await setupPromise
-    return {
-      ...setup,
-    }
-  },
-  component: lazyRouteComponent(
-    () => import("./routes/setup.js"),
-    "MapSetupRoute",
-  ),
-  pendingMs: 0,
-  pendingComponent: Loading,
-})
-
 export type MapParams = Readonly<{
   show?: string
   loc?: string
@@ -282,7 +244,7 @@ export type MapParams = Readonly<{
 }>
 
 export const mapRoute = createRoute({
-  getParentRoute: () => mapSetupRoute, // TODO
+  getParentRoute: () => rootRoute, // TODO
   path: "/map",
   validateSearch: (params: Record<string, unknown>): MapParams => {
     const show = params.show

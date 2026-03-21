@@ -1,25 +1,15 @@
-import {
-  createBrowserHistory,
-  createHashHistory,
-  createRouter,
-} from "@tanstack/react-router"
+import { createRouter, type RouterHistory } from "@tanstack/react-router"
 import {
   eventDetailsRoute,
   filterStateRoute,
   mapRoute,
-  mapSetupRoute,
   pagesRoute,
   rootRoute,
   scheduleLayoutRoute,
-  scheduleSetupRoute,
 } from "./routes.js"
-import { type SetupResult } from "./setup.js"
+import type { AppContextValue } from "./types.js"
 
-export type RouterContext = {
-  setupPromise: Promise<SetupResult>
-  routerType: "browser" | "hash"
-  getCurrentURL: () => string
-}
+export type RouterContext = AppContextValue
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -29,36 +19,26 @@ declare module "@tanstack/react-router" {
 }
 
 export const makeRouter = (
-  setupPromise: Promise<SetupResult>,
+  appContext: AppContextValue,
   origin: string,
-  history: "browser" | "hash" = "hash",
-  basePath = "",
+  history: RouterHistory,
 ) => {
-  let historyObj
-
-  if (history == "browser") {
-    historyObj = createBrowserHistory({})
-  } else {
-    historyObj = createHashHistory({})
-  }
-
   return createRouter({
     context: {
-      routerType: history,
-      getCurrentURL: () => window.location.href,
-      setupPromise,
+      ...appContext,
     },
     origin,
-    basepath: history == "browser" ? basePath : undefined,
+    basepath:
+      appContext.jsConfig.router == "browser"
+        ? appContext.jsConfig.basePath
+        : undefined,
     scrollRestoration: true,
-    history: historyObj,
+    history,
     routeTree: rootRoute.addChildren([
-      scheduleSetupRoute.addChildren([
-        scheduleLayoutRoute.addChildren([
-          filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
-        ]),
+      scheduleLayoutRoute.addChildren([
+        filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
       ]),
-      mapSetupRoute.addChildren([mapRoute]),
+      mapRoute,
     ]),
   })
 }

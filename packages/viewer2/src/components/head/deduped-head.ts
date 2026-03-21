@@ -65,7 +65,7 @@ export const getRouteMatchesMetaEntries = (
   return res
 }
 
-export const getHeaderElements = (): Element[] => {
+export const getHeadElements = (): Element[] => {
   return [...document.head.children].filter(
     (el) =>
       elementIsTitle(el) ||

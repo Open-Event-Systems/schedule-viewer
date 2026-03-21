@@ -1,23 +1,17 @@
 import { createRoot } from "react-dom/client"
-import { MantineProvider } from "@mantine/core"
 import { App } from "./app.js"
 
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-react/schedule-react.css"
-import "./styles.scss"
+import "../styles.scss"
+
+import { getJSConfig } from "../js-config.js"
 
 const makeApp = (containerEl: Element) => {
   const root = createRoot(containerEl)
-  const jsConfig = window.scheduleConfig
+  const jsConfig = getJSConfig()
 
-  root.render(
-    <MantineProvider
-      theme={jsConfig?.theme}
-      forceColorScheme={jsConfig?.colorScheme}
-    >
-      <App jsConfig={jsConfig} />
-    </MantineProvider>,
-  )
+  root.render(<App jsConfig={jsConfig} />)
 }
 
 const containerEl = document.getElementById("schedule")

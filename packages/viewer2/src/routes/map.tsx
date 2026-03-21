@@ -42,6 +42,7 @@ export const MapRoute = () => {
   )
 
   const router = useRouter()
+  const context = mapRoute.useRouteContext()
   const navigate = useNavigate()
 
   const { iso: isometric } = mapRoute.useSearch()
@@ -92,8 +93,15 @@ export const MapRoute = () => {
 
   const mapLocMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
   const navPropsMap = useMemo(
-    () => makeItemNavPropsMap(router, mapLocMatchFunc, items),
-    [router, mapLocMatchFunc, items],
+    () =>
+      makeItemNavPropsMap(
+        router,
+        router.origin ?? "",
+        context.getCurrentURL(),
+        mapLocMatchFunc,
+        items,
+      ),
+    [router, router.origin, context.getCurrentURL, mapLocMatchFunc, items],
   )
   const renderItemDetailsFunc = useMemo(
     () => makeRenderItemDetailsFunc(navPropsMap),
