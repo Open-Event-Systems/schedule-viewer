@@ -9,14 +9,14 @@ export default defineConfig({
   base: "",
   build: {
     target: "es2017",
-    rollupOptions: {
-      onwarn: (warning, handler) => {
-        // suppress warning about "use client"
-        if (warning.code != "MODULE_LEVEL_DIRECTIVE") {
-          handler(warning)
-        }
-      },
-    },
+    // rolldownOptions: {
+    //   onwarn: (warning, handler) => {
+    //     // suppress warning about "use client"
+    //     if (warning.code != "MODULE_LEVEL_DIRECTIVE") {
+    //       handler(warning)
+    //     }
+    //   },
+    // },
   },
   define: {
     __VIEWER_VERSION__: JSON.stringify(packageJSON.version),

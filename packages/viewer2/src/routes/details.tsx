@@ -1,6 +1,6 @@
 import { createLink, useLocation, useRouter } from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
-import { eventDetailsRoute, pagesRoute } from "../routes.js"
+import { eventDetailsRoute, pagesRoute, rootRoute } from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
 import { useMemo, useState } from "react"
 import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
@@ -22,6 +22,7 @@ export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
   const config = useViewerConfig()
 
   const router = useRouter()
+  const { getCurrentURL } = rootRoute.useRouteContext()
   const loc = useLocation()
 
   // hacky way to hold on to the initial back url
@@ -33,8 +34,15 @@ export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
   )
 
   const navPropsMap = useMemo(
-    () => makeItemNavPropsMap(router, locMatchFunc, [item]),
-    [router, locMatchFunc, item],
+    () =>
+      makeItemNavPropsMap(
+        router,
+        router.origin ?? "",
+        getCurrentURL(),
+        locMatchFunc,
+        [item],
+      ),
+    [router, router.origin, getCurrentURL, locMatchFunc, item],
   )
   const renderItemDetailsFunc = useMemo(
     () => makeRenderItemDetailsFunc(navPropsMap),

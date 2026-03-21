@@ -1,11 +1,13 @@
 .root {
   flex: auto;
-  align-self: center;
   display: grid;
+  justify-self: center;
+  grid-template: 1fr / minmax(min-content, var(--max-page-width));
   justify-content: center;
-  align-content: center;
 }
 
-.loader {
-  align-self: center;
+.container {
+  display: grid;
+  justify-content: center;
+  align-items: center;
 }

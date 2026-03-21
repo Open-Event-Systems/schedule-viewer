@@ -32,6 +32,8 @@ export type ItemNavProps = Readonly<{
 
 export const getItemNavProps = (
   router: Register["router"],
+  origin: string,
+  currentURL: string,
   item: ScheduleItem,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
 ): ItemNavProps => {
@@ -43,7 +45,7 @@ export const getItemNavProps = (
 
   if (item.type == "event") {
     url =
-      window.origin +
+      origin +
       history.createHref(
         router.buildLocation({
           to: eventDetailsRoute.to,
@@ -60,7 +62,7 @@ export const getItemNavProps = (
           eventId: item.id,
         },
         state: {
-          backURL: window.location.href,
+          backURL: currentURL,
         },
       })
     }
@@ -75,7 +77,7 @@ export const getItemNavProps = (
     const loc = mapLocationMatchFunc(item.location)
     if (loc) {
       locationHref =
-        window.origin +
+        origin +
         history.createHref(
           router.buildLocation({
             to: mapRoute.to,
@@ -106,12 +108,17 @@ export const getItemNavProps = (
 
 export const makeItemNavPropsMap = (
   router: Register["router"],
+  origin: string,
+  currentURL: string,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
   items: Iterable<ScheduleItem>,
 ): ReadonlyMap<string, ItemNavProps> => {
   const map = new Map<string, ItemNavProps>()
   for (const item of items) {
-    map.set(item.id, getItemNavProps(router, item, mapLocationMatchFunc))
+    map.set(
+      item.id,
+      getItemNavProps(router, origin, currentURL, item, mapLocationMatchFunc),
+    )
   }
   return map
 }

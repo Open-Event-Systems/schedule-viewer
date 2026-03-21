@@ -16,7 +16,7 @@ export default defineConfig({
       entry: "./src/index.ts",
       formats: ["es"],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external(source) {
         return deps.some((d) => source.startsWith(d))
       },

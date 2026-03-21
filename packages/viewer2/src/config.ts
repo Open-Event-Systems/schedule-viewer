@@ -26,6 +26,7 @@ export type PageConfig = Readonly<{
 
 export type ViewerConfig = ScheduleConfig &
   Readonly<{
+    homeURL?: string
     pages: readonly PageConfig[]
     map?: MapConfig
   }>
@@ -46,7 +47,8 @@ const pageSchema = z.looseObject({
 })
 
 const pageConfigSchema = z
-  .looseObject({
+  .object({
+    homeURL: opt(z.string()),
     pages: opt(z.array(pageSchema)),
   })
   .partial()

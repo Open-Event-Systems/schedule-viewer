@@ -21,9 +21,9 @@
     "@date-fns/utc": "^2.1.1",
     "date-fns": "^4.1.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
+    "vite": "^8.0.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.4"
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "@date-fns/tz": "^1.2.0",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "ics": "^3.8.1",
-    "wretch": "^3.0.6",
-    "zod": "^4.1.12"
+    "wretch": "^3.0.7",
+    "zod": "^4.3.6"
   }
 }

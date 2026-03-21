@@ -18,7 +18,7 @@ import { type SetupResult } from "./setup.js"
 export type RouterContext = {
   setupPromise: Promise<SetupResult>
   routerType: "browser" | "hash"
-  origin: string
+  getCurrentURL: () => string
 }
 
 declare module "@tanstack/react-router" {
@@ -30,8 +30,9 @@ declare module "@tanstack/react-router" {
 
 export const makeRouter = (
   setupPromise: Promise<SetupResult>,
-  history: "browser" | "hash" = "browser",
-  origin?: string,
+  origin: string,
+  history: "browser" | "hash" = "hash",
+  basePath = "",
 ) => {
   let historyObj
 
@@ -44,14 +45,16 @@ export const makeRouter = (
   return createRouter({
     context: {
       routerType: history,
-      origin: origin ?? window.origin,
+      getCurrentURL: () => window.location.href,
       setupPromise,
     },
+    origin,
+    basepath: history == "browser" ? basePath : undefined,
     scrollRestoration: true,
     history: historyObj,
     routeTree: rootRoute.addChildren([
-      scheduleLayoutRoute.addChildren([
-        scheduleSetupRoute.addChildren([
+      scheduleSetupRoute.addChildren([
+        scheduleLayoutRoute.addChildren([
           filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
         ]),
       ]),

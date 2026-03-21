@@ -1,39 +1,32 @@
 import {
   createRootRouteWithContext,
   createRoute,
-  HeadContent,
   lazyRouteComponent,
   notFound,
   Outlet,
 } from "@tanstack/react-router"
 import type { RouterContext } from "./router.js"
-import { MainLayoutRoute } from "./routes/main-layout.js"
 import { Loading } from "./components/loading/loading.js"
 import {
   isScheduleViewType,
   type ScheduleViewType,
 } from "@open-event-systems/schedule-react"
 import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
+import { DedupedHeadContent } from "./components/head/deduped-head-content.js"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component() {
     return (
       <>
-        <HeadContent />
+        <DedupedHeadContent />
         <Outlet />
       </>
     )
   },
 })
 
-export const scheduleLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: "scheduleLayout",
-  component: MainLayoutRoute,
-})
-
 export const scheduleSetupRoute = createRoute({
-  getParentRoute: () => scheduleLayoutRoute,
+  getParentRoute: () => rootRoute,
   id: "scheduleSetup",
   async beforeLoad({ context }) {
     const { setupPromise } = context
@@ -50,8 +43,17 @@ export const scheduleSetupRoute = createRoute({
   pendingComponent: Loading,
 })
 
-export const filterStateRoute = createRoute({
+export const scheduleLayoutRoute = createRoute({
   getParentRoute: () => scheduleSetupRoute,
+  id: "scheduleLayout",
+  component: lazyRouteComponent(
+    () => import("./routes/main-layout.js"),
+    "MainLayoutRoute",
+  ),
+})
+
+export const filterStateRoute = createRoute({
+  getParentRoute: () => scheduleLayoutRoute,
   id: "filterState",
   component: lazyRouteComponent(
     () => import("./routes/filter-state.js"),
@@ -74,6 +76,7 @@ export const pagesRoute = createRoute({
     const day = search.day
     const past = !!search.past
     const bookmarked = !!search.bookmarked
+
     return {
       ...(isScheduleViewType(viewType) ? { view: viewType } : {}),
       ...(typeof day == "string" ? { day } : {}),
@@ -98,11 +101,7 @@ export const pagesRoute = createRoute({
     () => import("./routes/pages.js"),
     "PagesRoute",
   ),
-  async beforeLoad({
-    context: { config, origin },
-    params: { pageId },
-    buildLocation,
-  }) {
+  async beforeLoad({ context: { config }, params: { pageId }, buildLocation }) {
     const pageConfig = pageId
       ? config.pages.find((p) => p.id == pageId)
       : config.pages[0]
@@ -174,7 +173,10 @@ export const pagesRoute = createRoute({
     }
 
     return {
-      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
+      meta: [
+        { title: `${pageTitle} - ${scheduleTitle}` },
+        { name: "description", content: "TEST" },
+      ],
       links,
     }
   },
@@ -239,7 +241,17 @@ export const eventDetailsRoute = createRoute({
     const eventTitle = loaderData?.event.title || "Event Details"
     const scheduleTitle = config.title
     return {
-      meta: [{ title: `${eventTitle} - ${scheduleTitle}` }],
+      meta: [
+        { title: `${eventTitle} - ${scheduleTitle}` },
+        ...(loaderData?.event.description
+          ? [
+              {
+                name: "description",
+                content: loaderData?.event.description,
+              },
+            ]
+          : []),
+      ],
     }
   },
 })

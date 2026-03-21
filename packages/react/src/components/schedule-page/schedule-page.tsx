@@ -7,7 +7,6 @@ import {
   type StackProps,
 } from "@mantine/core"
 import {
-  createICS,
   isBounded,
   type DetailedScheduleItem,
   type ScheduleItemCollection,
@@ -34,6 +33,7 @@ export type SchedulePageProps = {
   hideBookmarkFilter?: boolean
   enableSync?: boolean
   icalFileName?: string
+  defaultIcalDomain?: string
   filter?: ReactNode
   bookmarkFilter?: ReactNode
   schedule?: ReactNode
@@ -59,6 +59,7 @@ const _SchedulePage = memo((props: SchedulePageProps) => {
     hideBookmarkFilter,
     enableSync,
     icalFileName,
+    defaultIcalDomain,
     filter,
     bookmarkFilter,
     schedule,
@@ -113,11 +114,12 @@ const _SchedulePage = memo((props: SchedulePageProps) => {
             enableSync={enableSync}
             onShare={onShare}
             onSync={onSync}
-            onExport={() => {
+            onExport={async () => {
+              const { createICS } = await import("./create-ics.js")
               const data = createICS(
                 filteredItems.filter(isBounded),
                 `schedule-${icalPrefix}`,
-                icalDomain || window.location.hostname,
+                icalDomain || defaultIcalDomain || "localhost",
               )
               const blob = new Blob([data], { type: "text/calendar" })
               const dataURL = URL.createObjectURL(blob)

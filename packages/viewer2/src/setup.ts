@@ -13,6 +13,7 @@ import {
 import { parsers } from "./schedule.js"
 import { SWStore } from "./service-worker.js"
 import type { ScheduleJSConfig } from "./global-config.js"
+import { getDefaultStore } from "jotai"
 
 export type SetupResult = {
   queryClient: QueryClient
@@ -27,7 +28,7 @@ export const setup = async (
   jsConfig?: ScheduleJSConfig,
 ): Promise<SetupResult> => {
   const configURL = `${jsConfig?.basePath}/config.json`
-  const swStore = new SWStore()
+  const swStore = new SWStore(getDefaultStore())
   const queryClient = new QueryClient()
 
   if ("serviceWorker" in window.navigator) {

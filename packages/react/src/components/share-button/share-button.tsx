@@ -14,16 +14,12 @@ export type ShareButtonProps = {
 } & ActionIconProps
 
 export const ShareButton = (props: ShareButtonProps) => {
-  const {
-    className,
-    url = window.location.href,
-    ...other
-  } = useProps("ShareButton", {}, props)
+  const { className, url, ...other } = useProps("ShareButton", {}, props)
 
   const [tooltipOpen, setTooltipOpen] = useState(false)
 
   const canShare = useMemo(() => {
-    if (!("share" in navigator)) {
+    if (typeof navigator == "undefined" || !("share" in navigator)) {
       return false
     }
     return navigator.canShare({ url: url })
@@ -49,8 +45,8 @@ export const ShareButton = (props: ShareButtonProps) => {
           variant="default"
           onClick={() => {
             if (!canShare) {
-              if ("clipboard" in navigator) {
-                navigator.clipboard.writeText(url)
+              if (typeof navigator != "undefined" && "clipboard" in navigator) {
+                navigator.clipboard.writeText(url || window.location.href)
                 setTooltipOpen(true)
               }
             } else {

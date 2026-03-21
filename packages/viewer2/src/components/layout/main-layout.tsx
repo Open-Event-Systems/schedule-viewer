@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Box,
   Divider,
   Title,
@@ -18,11 +19,16 @@ import classes from "./main-layout.module.scss"
 import { PageTitle } from "../title/title.js"
 
 export type MainLayoutProps = BoxProps & {
+  homeURL?: string
   children?: ReactNode
 }
 
 export const MainLayout = (props: MainLayoutProps) => {
-  const { className, children, ...other } = useProps("MainLayout", {}, props)
+  const { className, homeURL, children, ...other } = useProps(
+    "MainLayout",
+    {},
+    props,
+  )
 
   return (
     <Box
@@ -31,7 +37,16 @@ export const MainLayout = (props: MainLayoutProps) => {
     >
       <Box className={clsx("MainLayout-container", classes.container)}>
         <Title className={clsx("MainLayout-title", classes.title)} order={1}>
-          <PageTitle />
+          {homeURL ? (
+            <Anchor
+              className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
+              href={homeURL}
+            >
+              <PageTitle />
+            </Anchor>
+          ) : (
+            <PageTitle />
+          )}
         </Title>
         <Box className={clsx("MainLayout-content", classes.content)}>
           {children}

@@ -4,7 +4,7 @@ import { pagesRoute } from "../routes.js"
 import { Page } from "../components/page/page.js"
 import { Markdown, useItems } from "@open-event-systems/schedule-react"
 import { parsers } from "../schedule.js"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
 
@@ -14,7 +14,7 @@ import classes from "./pages.module.scss"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()
-  const { pageConfig } = pagesRoute.useRouteContext()
+  const { pageConfig, getCurrentURL } = pagesRoute.useRouteContext()
   const config = useViewerConfig()
   const router = useRouter()
 
@@ -38,30 +38,36 @@ export const PagesRoute = () => {
 
   const defaultPageId = config.pages[0]?.id
 
-  const onSelectPage = (id: string) => {
-    navigate({
-      to: pagesRoute.to,
-      params: {
-        pageId: id,
-      },
-      state: (prev) => prev,
-      from: pagesRoute.to,
-    })
-  }
+  const onSelectPage = useCallback(
+    (id: string) => {
+      navigate({
+        to: pagesRoute.to,
+        params: {
+          pageId: id,
+        },
+        state: (prev) => prev,
+        from: pagesRoute.to,
+      })
+    },
+    [navigate],
+  )
 
-  const getPageURL = (id: string) => {
-    return (
-      window.origin +
-      router.history.createHref(
-        router.buildLocation({
-          to: pagesRoute.to,
-          params: {
-            pageId: id,
-          },
-        }).href,
+  const getPageURL = useCallback(
+    (id: string) => {
+      return (
+        router.origin +
+        router.history.createHref(
+          router.buildLocation({
+            to: pagesRoute.to,
+            params: {
+              pageId: id,
+            },
+          }).href,
+        )
       )
-    )
-  }
+    },
+    [router.origin, router],
+  )
 
   const isSmall = useMediaQuery("(max-width: 768px)")
 
@@ -78,6 +84,8 @@ export const PagesRoute = () => {
             key={pageId || defaultPageId}
             items={combinedItems}
             pageConfig={pageConfig}
+            origin={origin}
+            currentURL={getCurrentURL()}
           />
         )}
         getPageURL={getPageURL}

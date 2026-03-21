@@ -1,7 +1,7 @@
 .root {
   flex: auto;
   display: grid;
-  grid-template: 1fr / minmax(min-content, 75rem);
+  grid-template: 1fr / minmax(min-content, var(--max-page-width));
   justify-content: center;
 }
 
@@ -14,6 +14,12 @@
 
 .title {
   margin: var(--mantine-spacing-xs);
+}
+
+.titleAnchor {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .content {

@@ -52,10 +52,12 @@ declare module "@tanstack/react-router" {
 export type PageProps = {
   items: ScheduleItemCollection<DetailedScheduleItem>
   pageConfig: PageConfig
+  origin: string
+  currentURL: string
 } & BoxProps
 
 export const Page = (props: PageProps) => {
-  const { items, pageConfig } = useProps("Page", {}, props)
+  const { items, pageConfig, origin, currentURL } = useProps("Page", {}, props)
 
   const config = useViewerConfig()
   const { tags } = config
@@ -82,7 +84,14 @@ export const Page = (props: PageProps) => {
   const locMatchFunc = useMapLocationMatchFunc(config.map?.locations)
 
   const navPropsMap = useMemo(
-    () => makeItemNavPropsMap(router, locMatchFunc, pageFilteredItems),
+    () =>
+      makeItemNavPropsMap(
+        router,
+        origin,
+        currentURL,
+        locMatchFunc,
+        pageFilteredItems,
+      ),
     [router, locMatchFunc, pageFilteredItems],
   )
 
