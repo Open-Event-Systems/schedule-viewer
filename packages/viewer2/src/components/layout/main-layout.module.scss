@@ -12,14 +12,16 @@
   align-items: stretch;
 }
 
-.title {
+.titleAnchor {
   margin: var(--mantine-spacing-xs);
+
+  .title {
+    margin: 0;
+  }
 }
 
-.titleAnchor {
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
+.title {
+  margin: var(--mantine-spacing-xs);
 }
 
 .content {

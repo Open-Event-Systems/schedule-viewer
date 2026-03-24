@@ -61,6 +61,7 @@ export type MapViewerConfig = {
 
 export type MapViewerSettings = {
   currentLevelId: string
+  homeURL?: string
   isometric?: boolean
   zoomFuncRef?: Ref<ZoomFunc>
   hiddenLayers?: Iterable<string>
@@ -105,6 +106,7 @@ export const MapViewer = memo((props: MapViewerProps) => {
     className,
     objects,
     layers,
+    homeURL,
     currentLevelId,
     contentWidth,
     contentHeight,
@@ -261,7 +263,7 @@ export const MapViewer = memo((props: MapViewerProps) => {
           {objectEls}
         </MapViewer.Content>
       )}
-      <MapViewer.ZoomMenu onZoom={handleZoom} />
+      <MapViewer.ZoomMenu homeURL={homeURL} onZoom={handleZoom} />
       {!isometric && (
         <MapViewer.LevelMenu
           selectedLevel={currentLevelId}

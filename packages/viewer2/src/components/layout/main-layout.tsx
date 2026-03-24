@@ -36,18 +36,23 @@ export const MainLayout = (props: MainLayoutProps) => {
       {...other}
     >
       <Box className={clsx("MainLayout-container", classes.container)}>
-        <Title className={clsx("MainLayout-title", classes.title)} order={1}>
-          {homeURL ? (
-            <Anchor
-              className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
-              href={homeURL}
+        {homeURL ? (
+          <Anchor
+            className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
+            href={homeURL}
+          >
+            <Title
+              className={clsx("MainLayout-title", classes.title)}
+              order={1}
             >
               <PageTitle />
-            </Anchor>
-          ) : (
+            </Title>
+          </Anchor>
+        ) : (
+          <Title className={clsx("MainLayout-title", classes.title)} order={1}>
             <PageTitle />
-          )}
-        </Title>
+          </Title>
+        )}
         <Box className={clsx("MainLayout-content", classes.content)}>
           {children}
         </Box>

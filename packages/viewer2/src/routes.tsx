@@ -59,6 +59,7 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
 export const scheduleProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "scheduleProviders",
+  pendingComponent: Loading,
   async beforeLoad({ context: { contextPromise } }) {
     await contextPromise
   },
@@ -314,6 +315,7 @@ export type MapParams = Readonly<{
 export const mapRoute = createRoute({
   getParentRoute: () => mapProvidersRoute, // TODO
   path: "/map",
+  pendingComponent: Loading,
   validateSearch: (params: Record<string, unknown>): MapParams => {
     const show = params.show
     const loc = params.loc

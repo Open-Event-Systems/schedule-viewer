@@ -101,6 +101,7 @@ export const MapRoute = () => {
   return (
     <MapViewer
       className={classes.root}
+      homeURL={config.homeURL}
       contentWidth={mapCfg.width}
       contentHeight={mapCfg.height}
       layers={mapCfg.layers}
