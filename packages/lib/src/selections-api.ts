@@ -294,6 +294,28 @@ export const composeSelectionsAPI = (
   local: SessionSelectionsStore,
   remote?: SelectionsAPI | null,
 ): SelectionsAPI => {
+  const syncPromises = new Map<SelectionsType, Promise<void>>()
+
+  const sync = async (type: SelectionsType) => {
+    if (!remote) {
+      return
+    }
+
+    let promise = syncPromises.get(type)
+
+    if (!promise) {
+      promise = syncSelectionsAPIs(local, remote, type)
+        .then(() => {})
+        .catch((e) => {
+          syncPromises.delete(type)
+          throw e
+        })
+      syncPromises.set(type, promise)
+    }
+
+    await promise
+  }
+
   return {
     sessionId: remote?.sessionId,
     async getSelections(selectionsId) {
@@ -304,6 +326,8 @@ export const composeSelectionsAPI = (
       }
     },
     async getSessionSelections(type) {
+      await sync(type)
+
       if (remote) {
         const res = await remote.getSessionSelections(type)
         local.save(type, res)
@@ -313,6 +337,8 @@ export const composeSelectionsAPI = (
       }
     },
     async updateSessionSelections(type, options) {
+      await sync(type)
+
       for (const add of options.add ?? []) {
         local.add(type, add)
       }

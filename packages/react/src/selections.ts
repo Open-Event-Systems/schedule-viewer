@@ -2,7 +2,6 @@ import {
   composeSelectionsAPI,
   makeSessionSelectionsStore,
   setupSelectionsAPI,
-  syncSelectionsAPIs,
   type SelectionsAPI,
   type SessionSelectionsStore,
 } from "@open-event-systems/schedule-lib"
@@ -23,11 +22,6 @@ export const setupSelections = async (
 
   try {
     const remote = await setupSelectionsAPI(apiURL, config.id, sessionId)
-
-    await Promise.all([
-      syncSelectionsAPIs(local, remote, "bookmarks"),
-      syncSelectionsAPIs(local, remote, "visited"),
-    ])
 
     return [local, composeSelectionsAPI(local, remote)]
   } catch (e) {
