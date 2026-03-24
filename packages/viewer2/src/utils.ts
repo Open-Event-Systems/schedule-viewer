@@ -6,7 +6,6 @@ import {
 import { useLocation, type ParsedLocation } from "@tanstack/react-router"
 import { parseISO } from "date-fns"
 import { useMemo } from "react"
-
 let overrideDate: Date | undefined
 
 export const getNow = (loc: ParsedLocation): Date => {

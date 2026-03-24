@@ -25,14 +25,27 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   },
 })
 
-export const scheduleLayoutRoute = createRoute({
+export const scheduleProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
+  id: "scheduleProviders",
+  pendingComponent: Loading,
+  pendingMs: 0,
+  async beforeLoad({ context: { contextPromise } }) {
+    await contextPromise
+  },
+  component: lazyRouteComponent(
+    () => import("./routes/providers.js"),
+    "Providers",
+  ),
+})
+
+export const scheduleLayoutRoute = createRoute({
+  getParentRoute: () => scheduleProvidersRoute,
   id: "scheduleLayout",
   component: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
     "MainLayoutRoute",
   ),
-  pendingComponent: Loading,
 })
 
 export const filterStateRoute = createRoute({
@@ -139,7 +152,7 @@ export const pagesRoute = createRoute({
   },
   head: ({
     match: {
-      context: { jsConfig, config, pageConfig, getCanonicalHref },
+      context: { historyType, config, pageConfig, getCanonicalHref },
     },
     params: { pageId },
   }) => {
@@ -151,7 +164,7 @@ export const pagesRoute = createRoute({
     >[] = []
 
     // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && jsConfig.router == "browser") {
+    if (!pageId && historyType == "browser") {
       links.push({ rel: "canonical", href: getCanonicalHref() })
     }
 
@@ -236,6 +249,20 @@ export const eventDetailsRoute = createRoute({
   },
 })
 
+export const mapProvidersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: "mapProviders",
+  pendingComponent: Loading,
+  pendingMs: 0,
+  async beforeLoad({ context: { contextPromise } }) {
+    await contextPromise
+  },
+  component: lazyRouteComponent(
+    () => import("./routes/providers.js"),
+    "Providers",
+  ),
+})
+
 export type MapParams = Readonly<{
   show?: string
   loc?: string
@@ -244,7 +271,7 @@ export type MapParams = Readonly<{
 }>
 
 export const mapRoute = createRoute({
-  getParentRoute: () => rootRoute, // TODO
+  getParentRoute: () => mapProvidersRoute, // TODO
   path: "/map",
   validateSearch: (params: Record<string, unknown>): MapParams => {
     const show = params.show

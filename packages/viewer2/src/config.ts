@@ -1,3 +1,7 @@
+/**
+ * Viewer configuration.
+ */
+
 import {
   DEFAULT_SCHEDULE_CONFIG,
   isScheduleViewType,
@@ -36,20 +40,23 @@ const opt = <OutT, InT>(
 ): z.ZodType<OutT | undefined, InT | null | undefined> =>
   s.nullish().transform((v) => v ?? undefined)
 
-const pageSchema = z.looseObject({
-  id: z.string(),
-  title: opt(z.string()).optional(),
-  description: opt(z.string()).optional(),
-  enabledViews: opt(z.array(z.string())).optional(),
-  onlyType: opt(z.union([z.string(), z.array(z.string())])).optional(),
-  requireTags: opt(z.array(z.string())).optional(),
-  noPastEventsOption: opt(z.boolean()).optional(),
-})
-
 const pageConfigSchema = z
+  .looseObject({
+    id: z.string(),
+    title: opt(z.string()).optional(),
+    description: opt(z.string()).optional(),
+    enabledViews: opt(z.array(z.string())).optional(),
+    onlyType: opt(z.union([z.string(), z.array(z.string())])).optional(),
+    requireTags: opt(z.array(z.string())).optional(),
+    noPastEventsOption: opt(z.boolean()).optional(),
+  })
+  .partial()
+  .required({ id: true })
+
+const viewerConfigSchema = z
   .object({
     homeURL: opt(z.string()),
-    pages: opt(z.array(pageSchema)),
+    pages: opt(z.array(pageConfigSchema)),
   })
   .partial()
 
@@ -68,11 +75,13 @@ export const ViewerConfigContext = createContext<ViewerConfig>(
 )
 export const useViewerConfig = (): ViewerConfig => use(ViewerConfigContext)
 
-const parseViewerConfig = (configData: ScheduleConfigInput): ViewerConfig => {
+export const parseViewerConfig = (configData: unknown): ViewerConfig => {
   const config = parseConfig(configData)
-  const viewerConfig = pageConfigSchema.parse(configData)
+  const viewerConfig = viewerConfigSchema.parse(configData)
   const mapConfig =
-    "map" in configData ? parseMapConfig(configData.map) : undefined
+    typeof configData == "object" && configData && "map" in configData
+      ? parseMapConfig(configData.map)
+      : undefined
 
   return {
     ...DEFAULT_VIEWER_CONFIG,

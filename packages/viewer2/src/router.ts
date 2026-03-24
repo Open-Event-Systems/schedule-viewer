@@ -2,14 +2,19 @@ import { createRouter, type RouterHistory } from "@tanstack/react-router"
 import {
   eventDetailsRoute,
   filterStateRoute,
+  mapProvidersRoute,
   mapRoute,
   pagesRoute,
   rootRoute,
   scheduleLayoutRoute,
+  scheduleProvidersRoute,
 } from "./routes.js"
 import type { AppContextValue } from "./types.js"
 
-export type RouterContext = AppContextValue
+export type RouterContext = AppContextValue &
+  Readonly<{
+    contextPromise: Promise<AppContextValue>
+  }>
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -19,26 +24,43 @@ declare module "@tanstack/react-router" {
 }
 
 export const makeRouter = (
-  appContext: AppContextValue,
+  contextPromise: Promise<AppContextValue>,
   origin: string,
+  basePath: string,
   history: RouterHistory,
+  initialContext?: Partial<AppContextValue>,
 ) => {
-  return createRouter({
-    context: {
-      ...appContext,
-    },
+  const wrappedPromise = contextPromise.then((context) => {
+    router.update({
+      context: {
+        ...partialContext,
+        ...context,
+      },
+    })
+    return context
+  })
+
+  const partialContext = {
+    ...initialContext,
     origin,
-    basepath:
-      appContext.jsConfig.router == "browser"
-        ? appContext.jsConfig.basePath
-        : undefined,
+    contextPromise: wrappedPromise,
+  } satisfies Partial<RouterContext>
+
+  const router = createRouter({
+    context: partialContext as RouterContext,
+    origin,
+    basepath: basePath,
     scrollRestoration: true,
     history,
     routeTree: rootRoute.addChildren([
-      scheduleLayoutRoute.addChildren([
-        filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
+      scheduleProvidersRoute.addChildren([
+        scheduleLayoutRoute.addChildren([
+          filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
+        ]),
       ]),
-      mapRoute,
+      mapProvidersRoute.addChildren([mapRoute]),
     ]),
   })
+
+  return router
 }
