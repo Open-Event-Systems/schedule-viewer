@@ -1,11 +1,30 @@
-import { createLink, useLocation, useRouter } from "@tanstack/react-router"
+import {
+  createLink,
+  notFound,
+  useLocation,
+  useRouter,
+} from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
-import { eventDetailsRoute, pagesRoute, rootRoute } from "../routes.js"
+import {
+  eventDetailsRoute,
+  filterStateRoute,
+  pagesRoute,
+  rootRoute,
+} from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
 import { useMemo, useState } from "react"
 import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
-import { makeItemNavPropsMap, makeRenderItemDetailsFunc } from "../schedule.js"
+import {
+  makeItemNavPropsMap,
+  makeRenderItemDetailsFunc,
+  parsers,
+} from "../schedule.js"
 import { makeMapLocationMatchFunc } from "@open-event-systems/schedule-map"
+import { useSuspenseQuery } from "@tanstack/react-query"
+import {
+  itemQueryOptions,
+  useScheduleAPI,
+} from "@open-event-systems/schedule-react"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -14,8 +33,22 @@ declare module "@tanstack/react-router" {
 }
 
 export const EventDetailsRoute = () => {
-  const { event } = eventDetailsRoute.useLoaderData()
-  return <ItemDetails item={event} />
+  const api = useScheduleAPI()
+
+  const { eventId } = eventDetailsRoute.useParams()
+  const config = useViewerConfig()
+  const event = useSuspenseQuery({
+    ...itemQueryOptions.items(api, config.id, parsers),
+    select(items) {
+      return items.byType.event.find((e) => e.id == eventId)
+    },
+  })
+
+  if (!event.data) {
+    throw notFound({ routeId: filterStateRoute.id })
+  }
+
+  return <ItemDetails item={event.data} />
 }
 
 export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {

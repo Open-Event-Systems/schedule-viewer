@@ -14,6 +14,8 @@ import type { AppContextValue } from "./types.js"
 export type RouterContext = AppContextValue &
   Readonly<{
     contextPromise: Promise<AppContextValue>
+    contextReady: boolean
+    defaultPageCanonicalHref?: string
   }>
 
 declare module "@tanstack/react-router" {
@@ -31,10 +33,27 @@ export const makeRouter = (
   initialContext?: Partial<AppContextValue>,
 ) => {
   const wrappedPromise = contextPromise.then((context) => {
+    const { config, historyType } = context
+    const defaultPage = config.pages[0]
+    let defaultPageCanonicalHref
+
+    if (defaultPage && historyType == "browser") {
+      defaultPageCanonicalHref =
+        origin +
+        router.buildLocation({
+          to: pagesRoute.to,
+          params: {
+            pageId: defaultPage.id,
+          },
+        }).href
+    }
+
     router.update({
       context: {
         ...partialContext,
         ...context,
+        contextReady: true,
+        ...(defaultPageCanonicalHref ? { defaultPageCanonicalHref } : {}),
       },
     })
     return context
@@ -44,6 +63,7 @@ export const makeRouter = (
     ...initialContext,
     origin,
     contextPromise: wrappedPromise,
+    contextReady: false,
   } satisfies Partial<RouterContext>
 
   const router = createRouter({

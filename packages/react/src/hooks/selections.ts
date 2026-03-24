@@ -10,8 +10,10 @@ import {
   mutationOptions,
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
+  type UseQueryResult,
 } from "@tanstack/react-query"
 import { createContext, use, useCallback } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
@@ -99,19 +101,22 @@ export const selectionsMutationOptions = {
  */
 export const useSessionSelections = (
   type: SelectionsType,
-): SessionSelections => {
+): UseQueryResult<SessionSelections> => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
-  const query = useSuspenseQuery(
+  const query = useQuery(
     selectionsQueryOptions.sessionSelections(api, config.id, type),
   )
-  return query.data
+  return query
 }
 
 /**
  * Hook to get whether an item is selected.
  */
-export const useIsSelected = (type: SelectionsType, id: string): boolean => {
+export const useIsSelected = (
+  type: SelectionsType,
+  id: string,
+): UseQueryResult<boolean> => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
 
@@ -122,12 +127,12 @@ export const useIsSelected = (type: SelectionsType, id: string): boolean => {
     [id],
   )
 
-  const query = useSuspenseQuery({
+  const query = useQuery({
     ...selectionsQueryOptions.sessionSelections(api, config.id, type),
     select: selectFn,
   })
 
-  return query.data
+  return query
 }
 
 /**
@@ -172,20 +177,22 @@ export const useSelections = (id: string): Selections | null => {
 /**
  * Get bookmark counts.
  */
-export const useBookmarkCounts = (): ReadonlyMap<string, number> => {
+export const useBookmarkCounts = (): UseQueryResult<
+  ReadonlyMap<string, number>
+> => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
 
-  const res = useSuspenseQuery(
-    selectionsQueryOptions.bookmarkCounts(api, config.id),
-  )
-  return res.data
+  const res = useQuery(selectionsQueryOptions.bookmarkCounts(api, config.id))
+  return res
 }
 
 /**
  * Get the bookmark count for a single item.
  */
-export const useBookmarkCount = (itemId: string): number | undefined => {
+export const useBookmarkCount = (
+  itemId: string,
+): UseQueryResult<number | undefined> => {
   const config = useScheduleConfig()
   const api = useSelectionsAPI()
   const selectFn = useCallback(
@@ -194,9 +201,9 @@ export const useBookmarkCount = (itemId: string): number | undefined => {
     },
     [itemId],
   )
-  const res = useSuspenseQuery({
+  const res = useQuery({
     ...selectionsQueryOptions.bookmarkCounts(api, config.id),
     select: selectFn,
   })
-  return res.data
+  return res
 }

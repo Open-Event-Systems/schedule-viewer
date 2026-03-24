@@ -1,9 +1,6 @@
 .root {
   flex: auto;
   display: grid;
-  justify-self: center;
-  grid-template: 1fr / minmax(min-content, var(--max-page-width));
-  justify-content: center;
 }
 
 .container {

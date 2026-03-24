@@ -11,6 +11,7 @@ import { useMediaQuery } from "@mantine/hooks"
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 import classes from "./pages.module.scss"
+import { combineScheduleItems } from "../utils.js"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()
@@ -24,16 +25,7 @@ export const PagesRoute = () => {
     byType: { event: events, vendor: vendors },
   } = useItems(parsers)
   const combinedItems = useMemo(() => {
-    function* combine() {
-      const stores = [events, vendors]
-      for (const store of stores) {
-        for (const item of store) {
-          yield item
-        }
-      }
-    }
-
-    return makeScheduleItemCollection(combine())
+    return makeScheduleItemCollection(combineScheduleItems(events, vendors))
   }, [events, vendors])
 
   const defaultPageId = config.pages[0]?.id

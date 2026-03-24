@@ -18,7 +18,7 @@ import {
   parsers,
 } from "../schedule.js"
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
-import { useNow } from "../utils.js"
+import { combineScheduleItems, useNow } from "../utils.js"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { mapRoute } from "../routes.js"
 import { isMapLevel } from "../../../map/src/viewer/util.js"
@@ -54,17 +54,7 @@ export const MapRoute = () => {
   } = useItems(parsers)
 
   const items = useMemo(() => {
-    const itemsGen = function* () {
-      for (const iter of [events, vendors]) {
-        for (const item of iter) {
-          if (item.location) {
-            yield item
-          }
-        }
-      }
-    }
-
-    return makeScheduleItemCollection(itemsGen())
+    return makeScheduleItemCollection(combineScheduleItems(events, vendors))
   }, [now, events, vendors])
 
   const locMatchFunc = useMapLocationMatchFunc(mapCfg.locations)

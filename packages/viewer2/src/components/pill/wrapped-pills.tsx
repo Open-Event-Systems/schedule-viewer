@@ -28,8 +28,8 @@ export const WrappedItemDetails = (props: ItemDetailsProps) => {
   const { ...other } = props
 
   const config = useViewerConfig()
-  const bookmarked = useIsSelected("bookmarks", props.item.id)
-  const count = useBookmarkCount(props.item.id)
+  const { data: bookmarked } = useIsSelected("bookmarks", props.item.id)
+  const { data: count } = useBookmarkCount(props.item.id)
   const setBookmarked = useSetSelected("bookmarks", props.item.id)
 
   return (

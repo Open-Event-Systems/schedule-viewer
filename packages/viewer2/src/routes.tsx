@@ -14,22 +14,51 @@ import {
 import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
 import { DedupedHeadContent } from "./components/head/deduped-head-content.js"
 
+const dev = import.meta.env.DEV
+
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
+  pendingComponent: Loading,
+  pendingMs: 0,
   component() {
+    const { queryClient } = rootRoute.useRouteContext()
     return (
       <>
         <DedupedHeadContent />
         <Outlet />
+        {dev && <TanStackRouterDevtools />}
+        {dev && queryClient && <ReactQueryDevtools client={queryClient} />}
       </>
     )
+  },
+  notFoundComponent: lazyRouteComponent(
+    () => import("./routes/main-layout.js"),
+    "MainLayoutNotFound",
+  ),
+  errorComponent: lazyRouteComponent(
+    () => import("./routes/main-layout.js"),
+    "MainLayoutError",
+  ),
+  head({ match }) {
+    if (match.status == "notFound") {
+      return {
+        meta: [{ title: "Not Found" }],
+      }
+    } else if (match.status == "error") {
+      return {
+        meta: [{ title: "Error" }],
+      }
+    }
+
+    return {}
   },
 })
 
 export const scheduleProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "scheduleProviders",
-  pendingComponent: Loading,
-  pendingMs: 0,
   async beforeLoad({ context: { contextPromise } }) {
     await contextPromise
   },
@@ -55,6 +84,19 @@ export const filterStateRoute = createRoute({
     () => import("./routes/filter-state.js"),
     "FilterStateRoute",
   ),
+  notFoundComponent: lazyRouteComponent(
+    () => import("./routes/main-layout.js"),
+    "NotFound",
+  ),
+  head({ match }) {
+    if (match.status == "notFound") {
+      return {
+        meta: [{ title: "Not Found" }],
+      }
+    } else {
+      return {}
+    }
+  },
 })
 
 export type PagesParams = Readonly<{
@@ -97,7 +139,7 @@ export const pagesRoute = createRoute({
     () => import("./routes/pages.js"),
     "PagesRoute",
   ),
-  async beforeLoad({ context: { config }, params: { pageId }, buildLocation }) {
+  async beforeLoad({ context: { config }, params: { pageId } }) {
     const pageConfig = pageId
       ? config.pages.find((p) => p.id == pageId)
       : config.pages[0]
@@ -106,21 +148,12 @@ export const pagesRoute = createRoute({
       throw notFound()
     }
 
-    const getCanonicalHref = () =>
-      origin +
-      buildLocation({
-        to: pagesRoute.to,
-        params: {
-          pageId: pageConfig.id,
-        },
-      }).href
-
     return {
       pageConfig,
-      getCanonicalHref,
     }
   },
-  async loader({ context }) {
+  loaderDeps: ({ search: { bookmarked } }) => ({ bookmarked }),
+  async loader({ context, deps: { bookmarked } }) {
     const { queryClient, config, scheduleAPI, selectionsAPI } = context
     const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
       "./route-loaders.js"
@@ -130,6 +163,7 @@ export const pagesRoute = createRoute({
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
     )
 
+    // only await selections if viewing the bookmarked mode
     const selectionsPromise = queryClient.fetchQuery(
       selectionsQueryOptions.sessionSelections(
         selectionsAPI,
@@ -138,21 +172,20 @@ export const pagesRoute = createRoute({
       ),
     )
 
-    const countsPromise = queryClient.fetchQuery(
+    queryClient.fetchQuery(
       selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
     )
 
-    const [items, selections, counts] = await Promise.all([
+    const [items] = await Promise.all([
       itemsPromise,
-      selectionsPromise,
-      countsPromise,
+      bookmarked ? selectionsPromise : undefined,
     ])
 
-    return { items, selections, counts }
+    return { items }
   },
   head: ({
     match: {
-      context: { historyType, config, pageConfig, getCanonicalHref },
+      context: { config, pageConfig, defaultPageCanonicalHref },
     },
     params: { pageId },
   }) => {
@@ -164,8 +197,8 @@ export const pagesRoute = createRoute({
     >[] = []
 
     // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && historyType == "browser") {
-      links.push({ rel: "canonical", href: getCanonicalHref() })
+    if (!pageId && defaultPageCanonicalHref) {
+      links.push({ rel: "canonical", href: defaultPageCanonicalHref })
     }
 
     return {
@@ -194,7 +227,8 @@ export const eventDetailsRoute = createRoute({
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
     )
 
-    const selectionsPromise = queryClient.fetchQuery(
+    // selections/counts dont need to be awaited now
+    queryClient.fetchQuery(
       selectionsQueryOptions.sessionSelections(
         selectionsAPI,
         config.id,
@@ -202,7 +236,7 @@ export const eventDetailsRoute = createRoute({
       ),
     )
 
-    const countsPromise = queryClient.fetchQuery(
+    queryClient.fetchQuery(
       selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
     )
 
@@ -210,9 +244,7 @@ export const eventDetailsRoute = createRoute({
       {
         byType: { event: events },
       },
-      selections,
-      counts,
-    ] = await Promise.all([itemsPromise, selectionsPromise, countsPromise])
+    ] = await Promise.all([itemsPromise])
 
     const event = events.find((e) => e.id == eventId)
     if (!event) {
@@ -221,8 +253,6 @@ export const eventDetailsRoute = createRoute({
 
     return {
       event,
-      selections,
-      counts,
     }
   },
   head: ({
@@ -252,8 +282,6 @@ export const eventDetailsRoute = createRoute({
 export const mapProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "mapProviders",
-  pendingComponent: Loading,
-  pendingMs: 0,
   async beforeLoad({ context: { contextPromise } }) {
     await contextPromise
   },
@@ -261,6 +289,19 @@ export const mapProvidersRoute = createRoute({
     () => import("./routes/providers.js"),
     "Providers",
   ),
+  notFoundComponent: lazyRouteComponent(
+    () => import("./routes/main-layout.js"),
+    "MainLayoutNotFound",
+  ),
+  head: ({ match }) => {
+    if (match.status == "notFound") {
+      return {
+        meta: [{ title: "Not Found" }],
+      }
+    } else {
+      return {}
+    }
+  },
 })
 
 export type MapParams = Readonly<{
@@ -297,6 +338,11 @@ export const mapRoute = createRoute({
       },
     ],
   },
+  async beforeLoad({ context: { config } }) {
+    if (!config.map) {
+      throw notFound()
+    }
+  },
   async loader({ context }) {
     const { config, queryClient, scheduleAPI, selectionsAPI } = context
 
@@ -308,7 +354,8 @@ export const mapRoute = createRoute({
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
     )
 
-    const selectionsPromise = queryClient.fetchQuery(
+    // dont need to await selections/counts
+    queryClient.fetchQuery(
       selectionsQueryOptions.sessionSelections(
         selectionsAPI,
         config.id,
@@ -316,7 +363,7 @@ export const mapRoute = createRoute({
       ),
     )
 
-    const countsPromise = queryClient.fetchQuery(
+    queryClient.fetchQuery(
       selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
     )
 
@@ -324,15 +371,11 @@ export const mapRoute = createRoute({
       {
         byType: { event: events, vendor: vendors },
       },
-      selections,
-      counts,
-    ] = await Promise.all([itemsPromise, selectionsPromise, countsPromise])
+    ] = await Promise.all([itemsPromise])
 
     return {
       events,
       vendors,
-      selections,
-      counts,
     }
   },
   component: lazyRouteComponent(() => import("./routes/map.js"), "MapRoute"),
