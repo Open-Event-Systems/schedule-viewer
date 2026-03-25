@@ -10,8 +10,8 @@ import { useMediaQuery } from "@mantine/hooks"
 
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
-import classes from "./pages.module.scss"
 import { combineScheduleItems } from "../utils.js"
+import classes from "./pages.module.scss"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()

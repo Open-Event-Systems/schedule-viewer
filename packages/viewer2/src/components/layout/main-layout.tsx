@@ -12,9 +12,6 @@ import clsx from "clsx"
 import type { ReactNode } from "react"
 import { IconArrowUp } from "@tabler/icons-react"
 
-// hack to fix css load order...
-// import "@mantine/core/styles.css"
-
 import classes from "./main-layout.module.scss"
 
 export type MainLayoutProps = BoxProps & {

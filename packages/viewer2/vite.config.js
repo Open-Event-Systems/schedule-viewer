@@ -9,31 +9,19 @@ export default defineConfig({
   base: "",
   build: {
     target: "es2017",
-    // rolldownOptions: {
-    //   onwarn: (warning, handler) => {
-    //     // suppress warning about "use client"
-    //     if (warning.code != "MODULE_LEVEL_DIRECTIVE") {
-    //       handler(warning)
-    //     }
-    //   },
-    // },
     rolldownOptions: {
       plugins: [visualizer()],
       output: {
-        // codeSplitting: {
-        //   maxSize: 500000,
-        //   groups: [
-        //     {
-        //       name: "vendor",
-        //       test: /node_modules/,
-        //       entriesAware: true,
-        //     },
-        //     {
-        //       name: "lib",
-        //       entriesAware: true,
-        //     }
-        //   ],
-        // },
+        strictExecutionOrder: true,
+        codeSplitting: {
+          groups: [
+            {
+              name: "vendor",
+              test: /node_modules/,
+              entriesAware: true,
+            },
+          ],
+        },
       },
     },
   },

@@ -115,7 +115,9 @@ const _SchedulePage = memo((props: SchedulePageProps) => {
             onShare={onShare}
             onSync={onSync}
             onExport={async () => {
-              const { createICS } = await import("./create-ics.js")
+              const createICS = await import(
+                "@open-event-systems/schedule-lib"
+              ).then(({ createICS }) => createICS)
               const data = createICS(
                 filteredItems.filter(isBounded),
                 `schedule-${icalPrefix}`,
