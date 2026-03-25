@@ -5,12 +5,16 @@ export const PageTitle = () => {
     select: (state) => {
       for (let i = state.matches.length - 1; i >= 0; i--) {
         const match = state.matches[i]
-        if (match && "config" in match.context) {
-          return match.context.config.title
+        if (match) {
+          if (match.status == "notFound") {
+            return "Not Found"
+          } else if ("pageTitle" in match.context && match.context.pageTitle) {
+            return match.context.pageTitle
+          }
         }
       }
     },
   })
 
-  return <>{title}</>
+  return <>{title || "Schedule"}</>
 }

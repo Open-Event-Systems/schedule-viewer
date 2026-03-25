@@ -2,12 +2,13 @@
  * Main entry point for the SPA.
  */
 
-import { createRoot } from "react-dom/client"
-import { App } from "./app.js"
-
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-react/schedule-react.css"
+import "@open-event-systems/schedule-map/schedule-map.css"
 import "../styles.scss"
+
+import { createRoot } from "react-dom/client"
+import { App } from "./app.js"
 
 import { getSPAConfig } from "./config.js"
 import { StrictMode } from "react"

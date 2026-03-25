@@ -7,32 +7,32 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router"
-import { ViewerConfigContext } from "../../config.js"
-import { DEFAULT_SCHEDULE_CONFIG } from "@open-event-systems/schedule-react"
+import { DEFAULT_VIEWER_CONFIG, ViewerConfigContext } from "../../config.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
+import { FilterStateStoreContext, makeFilterStateStore } from "../../filter.js"
 
 const meta: Meta<typeof Page> = {
   component: Page,
   decorators: [
     (Story) => {
-      const [{ router, queryClient }] = useState(() => {
-        const router = createRouter({
-          history: createMemoryHistory(),
-          routeTree: createRootRoute({
-            component: Story,
+      const [{ router, queryClient, filterStateStore }] = useState(() => {
+        return {
+          router: createRouter({
+            history: createMemoryHistory(),
+            routeTree: createRootRoute({
+              component: Story,
+            }),
           }),
-        })
-
-        const queryClient = new QueryClient()
-
-        return { router, queryClient }
+          queryClient: new QueryClient(),
+          filterStateStore: makeFilterStateStore(),
+        }
       })
 
       return (
         <ViewerConfigContext
           value={{
-            ...DEFAULT_SCHEDULE_CONFIG,
+            ...DEFAULT_VIEWER_CONFIG,
             id: "example",
             pages: [
               {
@@ -43,7 +43,9 @@ const meta: Meta<typeof Page> = {
           }}
         >
           <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
+            <FilterStateStoreContext value={filterStateStore}>
+              <RouterProvider router={router} />
+            </FilterStateStoreContext>
           </QueryClientProvider>
         </ViewerConfigContext>
       )

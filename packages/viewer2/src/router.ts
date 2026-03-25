@@ -16,6 +16,7 @@ export type RouterContext = AppContextValue &
     contextPromise: Promise<AppContextValue>
     contextReady: boolean
     defaultPageCanonicalHref?: string
+    pageTitle?: string
   }>
 
 declare module "@tanstack/react-router" {

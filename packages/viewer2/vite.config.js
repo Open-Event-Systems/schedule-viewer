@@ -1,7 +1,7 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
-import { analyzer } from "vite-bundle-analyzer"
+import { visualizer } from "rollup-plugin-visualizer"
 
 import packageJSON from "./package.json"
 
@@ -17,6 +17,25 @@ export default defineConfig({
     //     }
     //   },
     // },
+    rolldownOptions: {
+      plugins: [visualizer()],
+      output: {
+        // codeSplitting: {
+        //   maxSize: 500000,
+        //   groups: [
+        //     {
+        //       name: "vendor",
+        //       test: /node_modules/,
+        //       entriesAware: true,
+        //     },
+        //     {
+        //       name: "lib",
+        //       entriesAware: true,
+        //     }
+        //   ],
+        // },
+      },
+    },
   },
   define: {
     __VIEWER_VERSION__: JSON.stringify(packageJSON.version),
@@ -60,7 +79,6 @@ export default defineConfig({
         globIgnores: ["config.js", "config.json", "custom.css"],
       },
     }),
-    analyzer({}),
     // Insert custom css tag at end of head
     // https://stackoverflow.com/a/79359524
     {
@@ -85,4 +103,11 @@ export default defineConfig({
       },
     },
   ],
+  experimental: {
+    renderBuiltUrl: (filename, opts) => {
+      if (opts.hostType == "html") {
+        return `/${filename}`
+      }
+    },
+  },
 })

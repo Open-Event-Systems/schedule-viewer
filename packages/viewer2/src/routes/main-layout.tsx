@@ -1,12 +1,13 @@
 import { Outlet } from "@tanstack/react-router"
 import { MainLayout } from "../components/layout/main-layout.js"
 import { useViewerConfig } from "../config.js"
-import { Text, Title } from "@mantine/core"
+import { Text } from "@mantine/core"
+import { PageTitle } from "../components/title/title.js"
 
 export const MainLayoutRoute = () => {
   const { homeURL } = useViewerConfig()
   return (
-    <MainLayout homeURL={homeURL}>
+    <MainLayout homeURL={homeURL} title={<PageTitle />}>
       <Outlet />
     </MainLayout>
   )
@@ -15,7 +16,7 @@ export const MainLayoutRoute = () => {
 export const MainLayoutNotFound = () => {
   const { homeURL } = useViewerConfig()
   return (
-    <MainLayout homeURL={homeURL}>
+    <MainLayout homeURL={homeURL} title="Not Found">
       <NotFound />
     </MainLayout>
   )
@@ -24,7 +25,6 @@ export const MainLayoutNotFound = () => {
 export const NotFound = () => {
   return (
     <>
-      <Title order={2}>Not Found</Title>
       <Text>The page was not found.</Text>
     </>
   )
@@ -32,8 +32,7 @@ export const NotFound = () => {
 export const MainLayoutError = () => {
   const { homeURL } = useViewerConfig()
   return (
-    <MainLayout homeURL={homeURL}>
-      <Title order={2}>Error</Title>
+    <MainLayout homeURL={homeURL} title="Error">
       <Text>An unexpected error occurred on the page.</Text>
     </MainLayout>
   )

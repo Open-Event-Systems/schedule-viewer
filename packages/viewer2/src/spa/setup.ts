@@ -5,26 +5,25 @@
 import { QueryClient } from "@tanstack/react-query"
 import type { AppContextValue } from "../types.js"
 import type { SPAConfig } from "./config.js"
-import { SWStore } from "../service-worker.js"
-import { getDefaultStore } from "jotai"
 import { loadConfig } from "../config.js"
 import {
   makeScheduleAPIFromConfig,
   setupSelections,
 } from "@open-event-systems/schedule-react"
+import { makeSWStore } from "../sw/service-worker.js"
 
 export const setup = async (spaConfig: SPAConfig): Promise<AppContextValue> => {
   const config = await loadConfig(`${spaConfig.basePath}/config.json`)
   const scheduleAPI = makeScheduleAPIFromConfig(config)
   const [sessionSelectionsStore, selectionsAPI] = await setupSelections(config)
 
-  const swStore = new SWStore(getDefaultStore())
+  const swStore = makeSWStore()
 
   if ("serviceWorker" in window.navigator) {
     if (spaConfig.serviceWorker) {
-      swStore.register(spaConfig.basePath, spaConfig.cacheURLs)
+      swStore.getState().register(spaConfig.basePath, spaConfig.cacheURLs)
     } else {
-      swStore.unregister()
+      swStore.getState().unregister()
     }
   }
 

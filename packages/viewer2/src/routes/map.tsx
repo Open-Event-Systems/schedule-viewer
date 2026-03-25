@@ -8,8 +8,6 @@ import {
 } from "@open-event-systems/schedule-map"
 import { useViewerConfig } from "../config.js"
 
-import "@open-event-systems/schedule-map/schedule-map.css"
-import classes from "./map.module.scss"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useItems } from "@open-event-systems/schedule-react"
 import {
@@ -22,6 +20,8 @@ import { combineScheduleItems, useNow } from "../utils.js"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { mapRoute } from "../routes.js"
 import { isMapLevel } from "../../../map/src/viewer/util.js"
+
+import classes from "./map.module.scss"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {

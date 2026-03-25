@@ -1,11 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query"
-import type { SWStore } from "./service-worker.js"
+import type { SWStore } from "./sw/service-worker.js"
 import type { ViewerConfig } from "./config.js"
 import type {
   ScheduleAPI,
   SelectionsAPI,
   SessionSelectionsStore,
 } from "@open-event-systems/schedule-lib"
+import type { StoreApi } from "zustand"
 
 /**
  * Parts of app context that are known at page load.
@@ -15,7 +16,7 @@ export type StaticAppContextValue = Readonly<{
   origin: string
   getCurrentURL: () => string
   queryClient: QueryClient
-  swStore: SWStore
+  swStore: StoreApi<SWStore>
 }>
 
 /**

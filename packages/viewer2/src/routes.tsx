@@ -61,7 +61,10 @@ export const scheduleProvidersRoute = createRoute({
   id: "scheduleProviders",
   pendingComponent: Loading,
   async beforeLoad({ context: { contextPromise } }) {
-    await contextPromise
+    const { config } = await contextPromise
+    return {
+      pageTitle: config.title,
+    }
   },
   component: lazyRouteComponent(
     () => import("./routes/providers.js"),
@@ -156,9 +159,9 @@ export const pagesRoute = createRoute({
   loaderDeps: ({ search: { bookmarked } }) => ({ bookmarked }),
   async loader({ context, deps: { bookmarked } }) {
     const { queryClient, config, scheduleAPI, selectionsAPI } = context
-    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
-      "./route-loaders.js"
-    )
+
+    const { itemQueryOptions, selectionsQueryOptions, parsers } =
+      await loadQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -220,9 +223,8 @@ export const eventDetailsRoute = createRoute({
     const { eventId } = params
     const { config, queryClient, scheduleAPI, selectionsAPI } = context
 
-    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
-      "./route-loaders.js"
-    )
+    const { itemQueryOptions, selectionsQueryOptions, parsers } =
+      await loadQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -348,9 +350,8 @@ export const mapRoute = createRoute({
   async loader({ context }) {
     const { config, queryClient, scheduleAPI, selectionsAPI } = context
 
-    const { itemQueryOptions, selectionsQueryOptions, parsers } = await import(
-      "./route-loaders.js"
-    )
+    const { itemQueryOptions, selectionsQueryOptions, parsers } =
+      await loadQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -392,3 +393,18 @@ export const mapRoute = createRoute({
     }
   },
 })
+
+const loadQueryOptions = async () => {
+  const [{ itemQueryOptions, selectionsQueryOptions }, { parsers }] =
+    await Promise.all([
+      import("@open-event-systems/schedule-react").then(
+        ({ itemQueryOptions, selectionsQueryOptions }) => ({
+          itemQueryOptions,
+          selectionsQueryOptions,
+        }),
+      ),
+      import("./schedule.js").then(({ parsers }) => ({ parsers })),
+    ])
+
+  return { itemQueryOptions, selectionsQueryOptions, parsers }
+}

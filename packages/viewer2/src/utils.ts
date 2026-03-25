@@ -5,7 +5,7 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { useLocation, type ParsedLocation } from "@tanstack/react-router"
 import { parseISO } from "date-fns"
-import { useMemo } from "react"
+import { use, useMemo, type Context } from "react"
 let overrideDate: Date | undefined
 
 export const getNow = (loc: ParsedLocation): Date => {
@@ -29,6 +29,15 @@ export const getNow = (loc: ParsedLocation): Date => {
 export const useNow = (): Date => {
   const loc = useLocation()
   return useMemo(() => getNow(loc), [loc.hash])
+}
+
+export const useRequiredContext = <T>(ctx: Context<T | undefined>): T => {
+  const val = use(ctx)
+  if (val === undefined) {
+    throw new Error(`Required context not provided`)
+  }
+
+  return val
 }
 
 export const combineScheduleItems = <Ts extends readonly ScheduleItem[]>(

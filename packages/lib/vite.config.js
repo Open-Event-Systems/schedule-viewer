@@ -16,6 +16,10 @@ export default defineConfig({
       formats: ["es"],
     },
     rolldownOptions: {
+      output: {
+        preserveModules: true,
+        entryFileNames: "[name].js",
+      },
       external(source) {
         return deps.some((d) => source.startsWith(d))
       },

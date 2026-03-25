@@ -13,18 +13,19 @@ import type { ReactNode } from "react"
 import { IconArrowUp } from "@tabler/icons-react"
 
 // hack to fix css load order...
-import "@mantine/core/styles.css"
+// import "@mantine/core/styles.css"
 
 import classes from "./main-layout.module.scss"
-import { PageTitle } from "../title/title.js"
 
 export type MainLayoutProps = BoxProps & {
+  title?: ReactNode
   homeURL?: string
+  menu?: ReactNode
   children?: ReactNode
 }
 
 export const MainLayout = (props: MainLayoutProps) => {
-  const { className, homeURL, children, ...other } = useProps(
+  const { className, title, homeURL, menu, children, ...other } = useProps(
     "MainLayout",
     {},
     props,
@@ -36,23 +37,32 @@ export const MainLayout = (props: MainLayoutProps) => {
       {...other}
     >
       <Box className={clsx("MainLayout-container", classes.container)}>
-        {homeURL ? (
-          <Anchor
-            className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
-            href={homeURL}
-          >
+        <Box className={clsx("MainLayout-header", classes.header)}>
+          {homeURL ? (
+            <Anchor
+              className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
+              href={homeURL}
+            >
+              <Title
+                className={clsx("MainLayout-title", classes.title)}
+                order={1}
+              >
+                {title}
+              </Title>
+            </Anchor>
+          ) : (
             <Title
               className={clsx("MainLayout-title", classes.title)}
               order={1}
             >
-              <PageTitle />
+              {title}
             </Title>
-          </Anchor>
-        ) : (
-          <Title className={clsx("MainLayout-title", classes.title)} order={1}>
-            <PageTitle />
-          </Title>
-        )}
+          )}
+
+          <Box className={clsx("MainLayout-titleMenu", classes.titleMenu)}>
+            {menu}
+          </Box>
+        </Box>
         <Box className={clsx("MainLayout-content", classes.content)}>
           {children}
         </Box>

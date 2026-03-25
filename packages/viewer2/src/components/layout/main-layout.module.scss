@@ -12,7 +12,16 @@
   align-items: stretch;
 }
 
+.header {
+  min-height: 6rem;
+  display: grid;
+  grid-template:
+    "header menu" 1fr
+    / 1fr auto;
+}
+
 .titleAnchor {
+  align-self: center;
   margin: var(--mantine-spacing-xs);
 
   .title {
@@ -21,6 +30,7 @@
 }
 
 .title {
+  align-self: center;
   margin: var(--mantine-spacing-xs);
 }
 

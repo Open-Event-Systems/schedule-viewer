@@ -10,51 +10,43 @@ import {
   useSelectionsAPI,
 } from "@open-event-systems/schedule-react"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { atom, type Atom, type PrimitiveAtom, type WritableAtom } from "jotai"
+import { createStore, type StoreApi } from "zustand"
 import { createContext, useCallback, useMemo } from "react"
 import { useViewerConfig, type PageConfig } from "./config.js"
 
-export type FilterStateAtom = Atom<
-  Readonly<{
-    text: PrimitiveAtom<string>
-    disabledTags: WritableAtom<
-      ReadonlySet<string>,
-      [Iterable<string> | ((prev: ReadonlySet<string>) => Iterable<string>)],
-      void
-    >
-  }>
->
+export type FilterState = Readonly<{
+  text: string
+  disabledTags: ReadonlySet<string>
+  setText: (text: string) => void
+  setDisabledTags: (tags: Iterable<string>) => void
+  setTagDisabled: (tag: string, disabled: boolean) => void
+}>
 
-export const makeFilterStateAtom = (): FilterStateAtom => {
-  const baseDisabledTags = atom(new Set<string>())
-
-  return atom({
-    text: atom(""),
-    disabledTags: atom(
-      (get) => get(baseDisabledTags),
-      (
-        get,
-        set,
-        update:
-          | Iterable<string>
-          | ((prev: ReadonlySet<string>) => Iterable<string>),
-      ) => {
-        let newVal
-        if (typeof update == "function") {
-          newVal = update(get(baseDisabledTags))
+export const makeFilterStateStore = (): StoreApi<FilterState> => {
+  return createStore<FilterState>()((set) => ({
+    text: "",
+    disabledTags: new Set<string>(),
+    setText: (text) => set({ text }),
+    setDisabledTags: (tags) => {
+      set({ disabledTags: new Set(tags) })
+    },
+    setTagDisabled: (tag, disabled) => {
+      set(({ disabledTags: curTags }) => {
+        const newSet = new Set(curTags)
+        if (disabled) {
+          newSet.add(tag)
         } else {
-          newVal = update
+          newSet.delete(tag)
         }
-
-        newVal = newVal instanceof Set ? newVal : new Set(newVal)
-
-        set(baseDisabledTags, newVal)
-      },
-    ),
-  })
+        return { disabledTags: newSet }
+      })
+    },
+  }))
 }
 
-export const FilterStateAtomContext = createContext(makeFilterStateAtom())
+export const FilterStateStoreContext = createContext<
+  StoreApi<FilterState> | undefined
+>(undefined)
 
 export const useSessionSelectionsIfEnabled = (
   onlyBookmarked?: boolean,

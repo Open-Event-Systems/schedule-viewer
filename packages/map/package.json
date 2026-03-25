@@ -6,7 +6,7 @@
     "./schedule-map.css": "./dist/schedule-map.css",
     ".": {
       "types": "./dist/src/index.d.ts",
-      "default": "./dist/schedule-map.js"
+      "default": "./dist/index.js"
     }
   },
   "files": [
@@ -25,14 +25,14 @@
     "@mantine/hooks": "^8.3.18",
     "@open-event-systems/schedule-lib": "workspace:^",
     "@open-event-systems/schedule-react": "workspace:^",
-    "@storybook/addon-docs": "^10.3.1",
-    "@storybook/react-vite": "^10.3.1",
+    "@storybook/addon-docs": "^10.3.3",
+    "@storybook/react-vite": "^10.3.3",
     "@types/react": "^19.2.14",
     "date-fns": "^4.1.0",
     "react": "^19.2.4",
-    "storybook": "^10.3.1",
+    "storybook": "^10.3.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1",
+    "vite": "^8.0.2",
     "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {

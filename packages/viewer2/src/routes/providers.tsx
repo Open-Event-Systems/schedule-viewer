@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query"
 import { Outlet, useMatches } from "@tanstack/react-router"
-import { SWStoreContext } from "../service-worker.js"
+import { SWStoreContext } from "../sw/service-worker.js"
 import { ViewerConfigContext } from "../config.js"
 import {
   ScheduleAPIContext,

@@ -9,7 +9,7 @@ import {
   useViewerConfig,
   type PageConfig,
 } from "../../config.js"
-import { usePageFilteredItems } from "../../filter.js"
+import { FilterStateStoreContext, usePageFilteredItems } from "../../filter.js"
 import { useProps, type BoxProps } from "@mantine/core"
 import {
   BookmarkFilter,
@@ -24,12 +24,12 @@ import {
   type ScheduleViewType,
   type TagEntry,
 } from "@open-event-systems/schedule-react"
-import { use, useCallback, useMemo, type ChangeEvent } from "react"
+import { useCallback, useMemo, type ChangeEvent } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 
 import classes from "./page.module.scss"
 import clsx from "clsx"
-import { useNow } from "../../utils.js"
+import { useNow, useRequiredContext } from "../../utils.js"
 import {
   makeItemNavPropsMap,
   makeRenderItemDetailsFunc,
@@ -37,11 +37,8 @@ import {
 } from "../../schedule.js"
 import { useMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import { pagesRoute } from "../../routes.js"
-import {
-  FilterStateAtomContext,
-  useSessionSelectionsIfEnabled,
-} from "../../filter.js"
-import { useAtom } from "jotai"
+import { useSessionSelectionsIfEnabled } from "../../filter.js"
+import { useStore } from "zustand"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -71,10 +68,10 @@ export const Page = (props: PageProps) => {
   } = pagesRoute.useSearch()
   const now = useNow()
 
-  const filterStateAtom = use(FilterStateAtomContext)
-  const [filterState] = useAtom(filterStateAtom)
-  const [text] = useAtom(filterState.text)
-  const [disabledTags] = useAtom(filterState.disabledTags)
+  const filterStateStore = useRequiredContext(FilterStateStoreContext)
+
+  const text = useStore(filterStateStore, (state) => state.text)
+  const disabledTags = useStore(filterStateStore, (state) => state.disabledTags)
 
   const ssels = useSessionSelectionsIfEnabled(onlyBookmarked)
 
@@ -251,10 +248,14 @@ const WrappedFilter = ({
     [navigate, pageConfig.id],
   )
 
-  const filterAtom = use(FilterStateAtomContext)
-  const [filterState] = useAtom(filterAtom)
-  const [text, setText] = useAtom(filterState.text)
-  const [disabledTags, setDisabledTags] = useAtom(filterState.disabledTags)
+  const filterStateStore = useRequiredContext(FilterStateStoreContext)
+  const text = useStore(filterStateStore, (state) => state.text)
+  const disabledTags = useStore(filterStateStore, (state) => state.disabledTags)
+  const setText = useStore(filterStateStore, (state) => state.setText)
+  const setTagDisabled = useStore(
+    filterStateStore,
+    (state) => state.setTagDisabled,
+  )
 
   return (
     <Filter
@@ -272,18 +273,7 @@ const WrappedFilter = ({
           tags={relevantTags}
           tagIndicators={config.tagIndicators}
           disabledTags={disabledTags}
-          onSetDisabled={(tag, disabled) => {
-            setDisabledTags((prev) => {
-              const newSet = new Set(prev)
-              if (disabled) {
-                newSet.add(tag)
-              } else {
-                newSet.delete(tag)
-              }
-
-              return newSet
-            })
-          }}
+          onSetDisabled={setTagDisabled}
         />
       }
     />

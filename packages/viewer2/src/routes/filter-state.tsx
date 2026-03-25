@@ -1,12 +1,12 @@
 import { Outlet } from "@tanstack/react-router"
 import { useState } from "react"
-import { FilterStateAtomContext, makeFilterStateAtom } from "../filter.js"
+import { FilterStateStoreContext, makeFilterStateStore } from "../filter.js"
 
 export const FilterStateRoute = () => {
-  const [atom] = useState(() => makeFilterStateAtom())
+  const [state] = useState(() => makeFilterStateStore())
   return (
-    <FilterStateAtomContext value={atom}>
+    <FilterStateStoreContext value={state}>
       <Outlet />
-    </FilterStateAtomContext>
+    </FilterStateStoreContext>
   )
 }
