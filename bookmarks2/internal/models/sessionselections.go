@@ -65,7 +65,7 @@ func (db *DB) SetSessionSelections(scheduleId string, sessionId string, typ Sess
 	return cur, err
 }
 
-func (db *DB) GetBookmarkCounts(scheduleId string) (map[string]int, error) {
+func (db *DB) GetSelectionCounts(scheduleId string, typ SessionSelectionsType) (map[string]int, error) {
 	maxDatesSq := db.s.Table("sessions").Select("partial_ip", "MAX(unixepoch(updated_at, 'subsec')) AS maxdate")
 	maxDatesSq = maxDatesSq.Where("schedule_id = ?", scheduleId).Group("partial_ip")
 
@@ -79,7 +79,7 @@ func (db *DB) GetBookmarkCounts(scheduleId string) (map[string]int, error) {
 	cq = cq.Joins(
 		"JOIN session_selections ss ON ss.schedule_id = sessions.schedule_id "+
 			"AND ss.session_id = sessions.id AND type = ?",
-		Bookmarks,
+		typ,
 	)
 	cq = cq.Joins(
 		"JOIN selections_items si ON si.schedule_id = ss.schedule_id " +

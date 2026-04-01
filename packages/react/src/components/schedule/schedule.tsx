@@ -11,6 +11,7 @@ import {
   Fragment,
   memo,
   useMemo,
+  type AllHTMLAttributes,
   type ElementType,
   type NamedExoticComponent,
   type ReactNode,
@@ -24,7 +25,7 @@ import {
   type TitleProps,
 } from "@mantine/core"
 import { format } from "date-fns"
-import { DayFilter } from "../day-filter/day-filter.js"
+import { DayFilter } from "../filters/day-filter.js"
 import {
   binItemsByTag,
   binItemsByTime,
@@ -40,13 +41,14 @@ import type {
 } from "../../types.js"
 
 export type ScheduleProps = {
-  items: ScheduleItemCollection<DetailedScheduleItem>
-  filteredItems: ScheduleItemCollection<DetailedScheduleItem>
+  items?: ScheduleItemCollection<DetailedScheduleItem>
+  filteredItems?: ScheduleItemCollection<DetailedScheduleItem>
   type?: ScheduleViewType
   selectedDayKey?: string
   now?: Date
   dayTitleComponent?: ElementType<{ children: ReactNode }>
-  binTitleComponent?: ElementType<{ children: ReactNode }>
+  getDayHref?: (day: Day) => string | undefined
+  renderBinTitle?: (props: AllHTMLAttributes<HTMLElement>) => ReactNode
   onSelectDay?: (day: Day) => void
   renderPill?: (props: ItemPillProps) => ReactNode
 }
@@ -66,7 +68,7 @@ type ScheduleComponent = NamedExoticComponent<ScheduleProps> & {
 const _Schedule = memo((props: ScheduleProps) => {
   const { filteredItems, type } = props
 
-  if (filteredItems.size == 0 && type != "daily-agenda") {
+  if ((!filteredItems || filteredItems.size == 0) && type != "daily-agenda") {
     return <Schedule.NoItems />
   }
 
@@ -99,7 +101,8 @@ export const DailyAgendaView = memo((props: ScheduleProps) => {
     items,
     filteredItems,
     selectedDayKey,
-    binTitleComponent,
+    getDayHref,
+    renderBinTitle,
     renderPill,
     onSelectDay,
   } = useProps("DailyAgendaView", { now: new Date() }, props)
@@ -109,9 +112,12 @@ export const DailyAgendaView = memo((props: ScheduleProps) => {
 
   const { days, defaultDay } = useMemo(() => {
     const days = getDays(
-      items.filter(
-        (t): t is DetailedScheduleItem & { readonly start: Date } => !!t.start,
-      ),
+      items
+        ? items.filter(
+            (t): t is DetailedScheduleItem & { readonly start: Date } =>
+              !!t.start,
+          )
+        : [],
       dayChangeHour,
     )
 
@@ -128,12 +134,12 @@ export const DailyAgendaView = memo((props: ScheduleProps) => {
     }
 
     return makeScheduleItemCollection(
-      filteredItems.filter(makeDateFilter(selectedDay)),
+      filteredItems ? filteredItems.filter(makeDateFilter(selectedDay)) : [],
     )
   }, [filteredItems, selectedDay])
 
   const bins = useMemo(
-    () => binItemsByTime(dayFiltered, binMinutes),
+    () => binItemsByTime(dayFiltered ?? [], binMinutes),
     [dayFiltered, binMinutes],
   )
 
@@ -142,15 +148,16 @@ export const DailyAgendaView = memo((props: ScheduleProps) => {
       <DayFilter
         days={days}
         selectedDay={selectedDay?.key}
+        getHref={getDayHref}
         onSelectDay={onSelectDay}
         dayFormat={dayFormat}
       />
-      {dayFiltered.size > 0 ? (
+      {dayFiltered && dayFiltered.size > 0 ? (
         <Schedule.ItemBins
           bins={bins}
           tags={tags}
           tagIndicators={tagIndicators}
-          titleComponent={binTitleComponent}
+          renderTitle={renderBinTitle}
           renderPill={renderPill}
         />
       ) : (
@@ -163,21 +170,24 @@ export const DailyAgendaView = memo((props: ScheduleProps) => {
 DailyAgendaView.displayName = "DailyAgendaView"
 
 export const FullAgendaView = memo((props: ScheduleProps) => {
-  const {
-    filteredItems,
-    dayTitleComponent = "h3",
-    binTitleComponent = "h4",
-    renderPill,
-  } = useProps("FullAgendaView", {}, props)
+  const { filteredItems, dayTitleComponent, renderBinTitle, renderPill } =
+    useProps(
+      "FullAgendaView",
+      { dayTitleComponent: "h3", renderBinTitle: defaultRenderBinTitle },
+      props,
+    )
 
   const { dayChangeHour, dayFormat, binMinutes, tags, tagIndicators } =
     useScheduleConfig()
 
   const { dayLabels, binsByDay } = useMemo(() => {
     const days = getDays(
-      filteredItems.filter(
-        (d): d is DetailedScheduleItem & { readonly start: Date } => !!d.start,
-      ),
+      filteredItems
+        ? filteredItems.filter(
+            (d): d is DetailedScheduleItem & { readonly start: Date } =>
+              !!d.start,
+          )
+        : [],
       dayChangeHour,
     )
 
@@ -188,7 +198,9 @@ export const FullAgendaView = memo((props: ScheduleProps) => {
     const binsByDay = new Map(
       days
         .map((d) => {
-          const filtered = filteredItems.filter(makeDateFilter(d))
+          const filtered = filteredItems
+            ? filteredItems.filter(makeDateFilter(d))
+            : []
           const bins = binItemsByTime(filtered, binMinutes)
           return [d.key, bins] as const
         })
@@ -209,7 +221,7 @@ export const FullAgendaView = memo((props: ScheduleProps) => {
         </FullAgendaViewDayTitle>
         <Schedule.ItemBins
           bins={bins}
-          titleComponent={binTitleComponent}
+          renderTitle={renderBinTitle}
           tags={tags}
           tagIndicators={tagIndicators}
           renderPill={renderPill}
@@ -220,6 +232,10 @@ export const FullAgendaView = memo((props: ScheduleProps) => {
 
   return <Stack>{elements}</Stack>
 })
+
+const defaultRenderBinTitle = (props: AllHTMLAttributes<HTMLElement>) => (
+  <h4 {...props} />
+)
 
 FullAgendaView.displayName = "FullAgendaView"
 
@@ -238,19 +254,22 @@ const FullAgendaViewDayTitle = ({
 }
 
 export const CatalogView = memo((props: ScheduleProps) => {
-  const { filteredItems, renderPill, binTitleComponent } = useProps(
+  const { filteredItems, renderPill, renderBinTitle } = useProps(
     "CatalogView",
     {},
     props,
   )
   const { tags, tagIndicators } = useScheduleConfig()
 
-  const bins = useMemo(() => binItemsByTitle(filteredItems), [filteredItems])
+  const bins = useMemo(
+    () => binItemsByTitle(filteredItems ?? []),
+    [filteredItems],
+  )
 
   return (
     <Schedule.ItemBins
       bins={bins}
-      titleComponent={binTitleComponent}
+      renderTitle={renderBinTitle}
       tags={tags}
       tagIndicators={tagIndicators}
       renderPill={renderPill}
@@ -261,7 +280,7 @@ export const CatalogView = memo((props: ScheduleProps) => {
 CatalogView.displayName = "CatalogView"
 
 export const TagsView = memo((props: ScheduleProps) => {
-  const { filteredItems, binTitleComponent, renderPill } = useProps(
+  const { filteredItems, renderBinTitle, renderPill } = useProps(
     "TagsView",
     {},
     props,
@@ -270,14 +289,14 @@ export const TagsView = memo((props: ScheduleProps) => {
   const { tags, tagIndicators } = useScheduleConfig()
 
   const bins = useMemo(
-    () => binItemsByTag(filteredItems, tags),
+    () => binItemsByTag(filteredItems ?? [], tags),
     [filteredItems, tags],
   )
 
   return (
     <Schedule.ItemBins
       bins={bins}
-      titleComponent={binTitleComponent}
+      renderTitle={renderBinTitle}
       tags={tags}
       tagIndicators={tagIndicators}
       renderPill={renderPill}
@@ -291,12 +310,12 @@ export type ScheduleItemBinsProps = {
   bins?: Iterable<ItemBin>
   tags?: Iterable<TagEntry>
   tagIndicators?: Iterable<TagIndicatorEntry>
-  titleComponent?: ElementType<{ children: ReactNode }>
+  renderTitle?: (props: AllHTMLAttributes<HTMLElement>) => ReactNode
   renderPill?: (props: ItemPillProps) => ReactNode
 } & StackProps
 
 export const ItemBins = memo((props: ScheduleItemBinsProps) => {
-  const { bins, tags, tagIndicators, titleComponent, renderPill, ...other } =
+  const { bins, tags, tagIndicators, renderTitle, renderPill, ...other } =
     useProps("ScheduleItemBins", { bins: [] }, props)
 
   return (
@@ -305,8 +324,9 @@ export const ItemBins = memo((props: ScheduleItemBinsProps) => {
         return (
           <ItemPills
             key={bin.id}
+            component="section"
             title={bin.title}
-            titleComponent={titleComponent}
+            renderTitle={renderTitle}
             items={bin.items}
             tags={tags}
             tagIndicators={tagIndicators}

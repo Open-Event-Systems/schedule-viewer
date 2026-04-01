@@ -8,19 +8,33 @@ import {
   RouterProvider,
 } from "@tanstack/react-router"
 import { MantineProvider } from "@mantine/core"
-import type { SPAConfig } from "./config.js"
+import { getSPAConfig } from "./config.js"
 import {
   getHeadElements,
   InitialHeadContext,
 } from "../components/head/deduped-head.js"
 import { makeRouter } from "../router.js"
 import { useState } from "react"
+import { cacheData } from "../setup.js"
+import { makePWAStore } from "../sw/pwa.js"
 
-export const App = ({ spaConfig }: { spaConfig: SPAConfig }) => {
+// singleton
+const pwaStore = makePWAStore()
+
+export const App = () => {
+  const spaConfig = getSPAConfig()
+
   const [{ initialHeadElements, router }] = useState(() => {
-    const contextPromise = import("./setup.js").then(({ setup }) =>
-      setup(spaConfig),
-    )
+    const contextPromise = import("./setup.js")
+      .then(({ setup }) => setup(spaConfig, pwaStore))
+      .then((ctx) => {
+        // re-fetch data to populate the runtime cache
+        ctx.swStore.getState().firstInstallPromise.then(() => {
+          cacheData(ctx)
+        })
+
+        return ctx
+      })
     let history
 
     if (spaConfig.router == "browser") {

@@ -1,4 +1,7 @@
 .root {
+  --max-page-width: 75rem;
+  --header-min-height: 8rem;
+  --footer-min-height: 8rem;
   flex: auto;
   display: grid;
   grid-template: 1fr / minmax(min-content, var(--max-page-width));
@@ -13,25 +16,50 @@
 }
 
 .header {
-  min-height: 6rem;
+  min-height: var(--header-min-height);
   display: grid;
   grid-template:
-    "header menu" 1fr
+    "content icons" 1fr
     / 1fr auto;
 }
 
-.titleAnchor {
-  align-self: center;
-  margin: var(--mantine-spacing-xs);
+.headerContent {
+  grid-area: content;
+  padding: var(--mantine-spacing-xs);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+}
 
-  .title {
-    margin: 0;
-  }
+.titleRoot {
+  display: flex;
+  align-items: center;
 }
 
 .title {
-  align-self: center;
-  margin: var(--mantine-spacing-xs);
+  display: block;
+}
+
+.titleAnchor {
+  display: flex;
+  align-items: center;
+}
+
+.titleIcon {
+  display: block;
+  margin-right: var(--mantine-spacing-sm);
+}
+
+.headerIcons {
+  grid-area: icons;
+  padding: var(--mantine-spacing-xs);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: auto;
+  grid-auto-flow: row;
+  align-content: start;
+  gap: var(--mantine-spacing-xs);
 }
 
 .content {
@@ -40,22 +68,36 @@
 }
 
 .footer {
+  min-height: var(--footer-min-height);
   display: grid;
   grid-template:
-    "divider" auto
-    "btt" auto
-    "details" auto
-    / 1fr;
+    "divider divider divider" auto
+    "left btt right" 1fr
+    / auto auto auto;
 }
 
 .footerDivider {
   grid-area: divider;
 }
 
-.btt {
+.footerLeftSection {
+  grid-area: left;
+  padding: var(--mantine-spacing-xs);
+  justify-self: start;
+  align-self: center;
+}
+
+.backToTop {
   grid-area: btt;
-  margin-top: var(--mantine-spacing-xs);
+  margin: var(--mantine-spacing-xs);
   justify-self: center;
+}
+
+.footerRightSection {
+  grid-area: right;
+  padding: var(--mantine-spacing-xs);
+  justify-self: end;
+  align-self: end;
 }
 
 .footerDetails {

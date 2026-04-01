@@ -15,18 +15,11 @@ import { IconArrowUp } from "@tabler/icons-react"
 import classes from "./main-layout.module.scss"
 
 export type MainLayoutProps = BoxProps & {
-  title?: ReactNode
-  homeURL?: string
-  menu?: ReactNode
   children?: ReactNode
 }
 
-export const MainLayout = (props: MainLayoutProps) => {
-  const { className, title, homeURL, menu, children, ...other } = useProps(
-    "MainLayout",
-    {},
-    props,
-  )
+const _MainLayout = (props: MainLayoutProps) => {
+  const { className, children, ...other } = useProps("MainLayout", {}, props)
 
   return (
     <Box
@@ -34,63 +27,172 @@ export const MainLayout = (props: MainLayoutProps) => {
       {...other}
     >
       <Box className={clsx("MainLayout-container", classes.container)}>
-        <Box className={clsx("MainLayout-header", classes.header)}>
-          {homeURL ? (
-            <Anchor
-              className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
-              href={homeURL}
-            >
-              <Title
-                className={clsx("MainLayout-title", classes.title)}
-                order={1}
-              >
-                {title}
-              </Title>
-            </Anchor>
-          ) : (
-            <Title
-              className={clsx("MainLayout-title", classes.title)}
-              order={1}
-            >
-              {title}
-            </Title>
-          )}
-
-          <Box className={clsx("MainLayout-titleMenu", classes.titleMenu)}>
-            {menu}
-          </Box>
-        </Box>
-        <Box className={clsx("MainLayout-content", classes.content)}>
-          {children}
-        </Box>
-        <Box
-          component="footer"
-          className={clsx("MainLayout-footer", classes.footer)}
-        >
-          <Divider
-            className={clsx("MainLayout-footerDivider", classes.footerDivider)}
-          />
-          <ActionIcon
-            className={clsx("mainLayout-btt", classes.btt)}
-            title="Back to top"
-            variant="subtle"
-            size="xl"
-            radius="xl"
-            onClick={() => {
-              window.scrollTo({ top: 0 })
-            }}
-          >
-            <IconArrowUp />
-          </ActionIcon>
-          <Box
-            className={clsx("MainLayout-footerDetails", classes.footerDetails)}
-          >
-            <Box className={clsx("MainLayout-version", classes.version)}>
-              ULE v{__VIEWER_VERSION__}
-            </Box>
-          </Box>
-        </Box>
+        {children}
       </Box>
     </Box>
   )
 }
+
+export type MainLayoutHeaderProps = BoxProps & {
+  children?: ReactNode
+  icons?: ReactNode
+}
+
+export const MainLayoutHeader = (props: MainLayoutHeaderProps) => {
+  const { className, children, icons, ...other } = useProps(
+    "MainLayoutHeader",
+    null,
+    props,
+  )
+
+  return (
+    <Box
+      component="header"
+      className={clsx("MainLayout-header", classes.header, className)}
+      {...other}
+    >
+      <Box className={clsx("MainLayout-headerContent", classes.headerContent)}>
+        {children}
+      </Box>
+      <Box className={clsx("MainLayout-headerIcons", classes.headerIcons)}>
+        {icons}
+      </Box>
+    </Box>
+  )
+}
+
+export type MainLayoutTitleProps = {
+  className?: string
+  homeURL?: string
+  iconURL?: string
+  children?: ReactNode
+}
+
+export const MainLayoutTitle = (props: MainLayoutTitleProps) => {
+  const { className, children, homeURL, iconURL } = useProps(
+    "MainLayoutTitle",
+    null,
+    props,
+  )
+
+  let el = (
+    <Title
+      order={1}
+      className={clsx("MainLayout-title", classes.title, className)}
+    >
+      {children}
+    </Title>
+  )
+
+  if (iconURL) {
+    el = (
+      <>
+        <img
+          className={clsx("MainLayout-titleIcon", classes.titleIcon)}
+          src={iconURL}
+          alt=""
+        />
+        {el}
+      </>
+    )
+  }
+
+  if (homeURL) {
+    el = (
+      <Anchor
+        className={clsx("MainLayout-titleAnchor", classes.titleAnchor)}
+        href={homeURL}
+      >
+        {el}
+      </Anchor>
+    )
+  }
+
+  return (
+    <Box className={clsx("MainLayout-titleRoot", classes.titleRoot, className)}>
+      {el}
+    </Box>
+  )
+}
+
+export type MainLayoutContentProps = BoxProps & {
+  children?: ReactNode
+}
+
+export const MainLayoutContent = (props: MainLayoutContentProps) => {
+  const { className, children, ...other } = useProps(
+    "MainLayoutContent",
+    null,
+    props,
+  )
+
+  return (
+    <Box
+      component="main"
+      className={clsx("MainLayout-content", classes.content, className)}
+      {...other}
+    >
+      {children}
+    </Box>
+  )
+}
+
+export type MainLayoutFooterProps = BoxProps & {
+  children?: ReactNode
+  rightSection?: ReactNode
+}
+
+export const MainLayoutFooter = (props: MainLayoutFooterProps) => {
+  const { className, children, rightSection, ...other } = useProps(
+    "MainLayoutFooter",
+    null,
+    props,
+  )
+
+  return (
+    <Box
+      component="footer"
+      className={clsx("MainLayout-footer", classes.footer, className)}
+      {...other}
+    >
+      <Divider
+        className={clsx("MainLayout-footerDivider", classes.footerDivider)}
+      />
+      <Box
+        className={clsx(
+          "MainLayout-footerLeftSection",
+          classes.footerLeftSection,
+        )}
+      >
+        {children}
+      </Box>
+      <ActionIcon
+        className={clsx("MainLayout-backToTop", classes.backToTop)}
+        title="Back to top"
+        variant="subtle"
+        size="xl"
+        radius="xl"
+        onClick={() => {
+          window.scrollTo({ top: 0 })
+        }}
+      >
+        <IconArrowUp />
+      </ActionIcon>
+      <Box
+        className={clsx(
+          "MainLayout-footerRightSection",
+          classes.footerRightSection,
+        )}
+      >
+        {rightSection}
+      </Box>
+    </Box>
+  )
+}
+
+export const MainLayout = Object.assign(_MainLayout, {
+  Header: MainLayoutHeader,
+  Title: MainLayoutTitle,
+  Content: MainLayoutContent,
+  Footer: MainLayoutFooter,
+})

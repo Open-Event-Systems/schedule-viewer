@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Pills } from "./pills.js"
 import { HoverCard } from "@mantine/core"
 
-const meta: Meta<typeof Pills.Pill> = {
+const meta: Meta<typeof Pills.Pill<"li">> = {
   component: Pills.Pill,
   decorators: [
     (Story) => (
@@ -15,25 +15,23 @@ const meta: Meta<typeof Pills.Pill> = {
 
 export default meta
 
-export const Anchor: StoryObj<typeof meta> = {
-  args: {
-    children: "Anchor Pill",
-    href: "#",
-    onClickBody: (e) => e.preventDefault(),
-  },
-}
-
 export const Button: StoryObj<typeof meta> = {
   args: {
     children: "Button Pill",
-    button: true,
   },
 }
 
-export const WithDropdown: StoryObj<typeof meta> = {
+export const Anchor: StoryObj<typeof meta> = {
   args: {
-    children: "Pill With Dropdown",
-    href: "#",
+    children: "Anchor Pill",
+    onClickBody: (e) => e.preventDefault(),
+    renderBody: (props) => <a {...props} href="/" />,
+  },
+}
+
+export const WithHoverCard: StoryObj<typeof meta> = {
+  args: {
+    children: "Pill With Hover Card",
     onClickBody: (e) => e.preventDefault(),
     renderHoverCard: ({ children }) => (
       <HoverCard>
@@ -41,14 +39,15 @@ export const WithDropdown: StoryObj<typeof meta> = {
         <HoverCard.Dropdown>Dropdown content</HoverCard.Dropdown>
       </HoverCard>
     ),
+    renderBody: (props) => <a {...props} href="/" />,
   },
 }
 
 export const WithIndicator: StoryObj<typeof meta> = {
   args: {
     children: "Pill With Indicator",
-    href: "#",
     onClickBody: (e) => e.preventDefault(),
     indicator: "18+",
+    renderBody: (props) => <a {...props} href="/" />,
   },
 }

@@ -7,12 +7,19 @@ import { useFilteredItems, type FilterOptions } from "../../hooks/filter.js"
 import { ItemPills, type ItemPillProps } from "../pill/item-pills.js"
 import { ItemDetails, type ItemDetailsProps } from "../details/item-details.js"
 import { makeSelections } from "@open-event-systems/schedule-lib"
-import { Filter } from "../filter/filter.js"
-import { TagFilter } from "../tag-filter/tag-filter.js"
+import { TagFilter } from "../filters/tag-filter.js"
 import { makeTagIndicatorFunc } from "../../config.js"
+import { BookmarkFilter } from "../filters/bookmark-filter.js"
+import { ViewSelect } from "../view-select/view-select.js"
+import { TextFilter } from "../filters/text-filter.js"
+import { PastEventsFilter } from "../filters/past-events-filter.js"
+import { ShareMenu } from "../share-menu/share-menu.js"
 
 const meta: Meta<typeof SchedulePage> = {
   component: SchedulePage,
+  parameters: {
+    layout: "fullscreen",
+  },
 }
 
 export default meta
@@ -22,7 +29,12 @@ type Options = FilterOptions & {
 }
 
 export const Default: StoryObj<typeof SchedulePage> = {
-  render() {
+  args: {
+    hideShareMenu: false,
+    hideBookmarkFilter: false,
+    hideShowPastEventsFilter: false,
+  },
+  render(args) {
     const [
       { disabledTags, onlyBookmarked, showPastEvents, text, selectedDayKey },
       dispatch,
@@ -99,50 +111,58 @@ export const Default: StoryObj<typeof SchedulePage> = {
 
     return (
       <SchedulePage
-        filteredItems={filtered}
-        type={type}
-        onChangeType={setType}
-        bookmarkFilter={
-          <SchedulePage.BookmarkFilter
+        w="100dvw"
+        h="100dvh"
+        p="xs"
+        {...args}
+        renderBookmarkFilter={(props) => (
+          <BookmarkFilter
+            {...props}
             value={onlyBookmarked}
             onChange={(onlyBookmarked) => dispatch({ onlyBookmarked })}
           />
-        }
-        filter={
-          <Filter
-            text={
-              <Filter.Text
-                value={text}
-                onChange={(e) => dispatch({ text: e.target.value })}
-              />
-            }
-            pastEvents={
-              <Filter.PastEvents
-                checked={showPastEvents}
-                onChange={(e) => dispatch({ showPastEvents: e.target.checked })}
-              />
-            }
-            tagFilter={
-              <TagFilter
-                tags={parsedConfig.tags}
-                tagIndicators={parsedConfig.tagIndicators}
-                disabledTags={disabledTags}
-                onSetDisabled={(tag, disabled) => {
-                  const newSet = new Set(disabledTags)
-                  if (disabled) {
-                    newSet.add(tag)
-                  } else {
-                    newSet.delete(tag)
-                  }
-
-                  dispatch({ disabledTags: newSet })
-                }}
-              />
-            }
+        )}
+        renderViewSelect={(props) => (
+          <ViewSelect {...props} type={type} onChange={setType} />
+        )}
+        renderTextFilter={(props) => (
+          <TextFilter
+            {...props}
+            value={text}
+            onChange={(e) => dispatch({ text: e.target.value })}
           />
-        }
-        schedule={
+        )}
+        renderPastEventsFilter={(props) => (
+          <PastEventsFilter
+            {...props}
+            checked={showPastEvents}
+            onChange={(e) => dispatch({ showPastEvents: e.target.checked })}
+          />
+        )}
+        renderTagFilter={(props) => (
+          <TagFilter
+            {...props}
+            tags={parsedConfig.tags}
+            tagIndicators={parsedConfig.tagIndicators}
+            disabledTags={disabledTags}
+            onSetDisabled={(tag, disabled) => {
+              const newSet = new Set(disabledTags)
+              if (disabled) {
+                newSet.add(tag)
+              } else {
+                newSet.delete(tag)
+              }
+
+              dispatch({ disabledTags: newSet })
+            }}
+          />
+        )}
+        renderShare={(props) => (
+          <ShareMenu {...props} enabledOptions={["export", "share", "sync"]} />
+        )}
+        renderSchedule={(props) => (
           <Schedule
+            {...props}
             items={parsedEvents}
             filteredItems={filtered}
             type={type}
@@ -150,7 +170,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
             onSelectDay={(d) => dispatch({ selectedDayKey: d.key })}
             renderPill={renderPill}
           />
-        }
+        )}
       />
     )
   },

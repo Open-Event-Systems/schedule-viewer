@@ -3,6 +3,7 @@ import { formatISO, parseISO } from "date-fns"
 import {
   contains,
   getDay,
+  getDays,
   intersects,
   intervalToTimezone,
   sortIntervalsByStartDate,
@@ -274,5 +275,83 @@ describe("time module", () => {
       start: parseISO("2020-01-01T03:00:00-05:00"),
       end: parseISO("2020-01-02T03:00:00-05:00"),
     })
+  })
+
+  test("getDays", () => {
+    expect(
+      getDays(
+        [
+          {
+            start: parseISO("2020-01-01T12:00:00-05:00"),
+          },
+          {
+            start: parseISO("2020-01-01T15:00:00-05:00"),
+          },
+        ],
+        3,
+      ),
+    ).toEqual([
+      {
+        key: "2020-01-01",
+        start: parseISO("2020-01-01T03:00:00-05:00"),
+        end: parseISO("2020-01-02T03:00:00-05:00"),
+      },
+    ])
+
+    expect(
+      getDays(
+        [
+          {
+            start: parseISO("2020-01-01T03:00:00-05:00"),
+          },
+          {
+            start: parseISO("2020-01-02T03:00:00-05:00"),
+          },
+          {
+            start: parseISO("2020-01-03T02:00:00-05:00"),
+          },
+        ],
+        3,
+      ),
+    ).toEqual([
+      {
+        key: "2020-01-01",
+        start: parseISO("2020-01-01T03:00:00-05:00"),
+        end: parseISO("2020-01-02T03:00:00-05:00"),
+      },
+      {
+        key: "2020-01-02",
+        start: parseISO("2020-01-02T03:00:00-05:00"),
+        end: parseISO("2020-01-03T03:00:00-05:00"),
+      },
+    ])
+
+    expect(
+      getDays(
+        [
+          {
+            start: parseISO("2020-01-01T12:00:00-05:00"),
+          },
+          {
+            start: parseISO("2020-01-01T15:00:00-05:00"),
+          },
+          {
+            start: parseISO("2020-01-03T12:00:00-05:00"),
+          },
+        ],
+        3,
+      ),
+    ).toEqual([
+      {
+        key: "2020-01-01",
+        start: parseISO("2020-01-01T03:00:00-05:00"),
+        end: parseISO("2020-01-02T03:00:00-05:00"),
+      },
+      {
+        key: "2020-01-03",
+        start: parseISO("2020-01-03T03:00:00-05:00"),
+        end: parseISO("2020-01-04T03:00:00-05:00"),
+      },
+    ])
   })
 })

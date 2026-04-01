@@ -1,34 +1,57 @@
-.topMenu {
+.root {
   display: grid;
   grid-template:
-    "bookmark . view share" auto
-    / auto 1fr auto auto;
-  justify-items: end;
-  align-items: center;
+    "topMenu topFilter" auto
+    "schedule filter" 1fr
+    / 1fr 18rem;
   gap: var(--mantine-spacing-xs);
 
   @media (max-width: 48rem) {
-    justify-items: stretch;
-    grid-template:
-      "view share" auto
-      "bookmark bookmark" auto
-      / 1fr auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
-.viewSelect {
-  grid-area: view;
+.topMenu {
+  grid-area: topMenu;
 }
 
-.bookmarkFilter {
-  grid-area: bookmark;
-  justify-self: start;
-
-  @media (max-width: 48rem) {
-    justify-self: stretch;
-  }
+.topFilter {
+  grid-area: topFilter;
 }
 
-.shareButton {
-  grid-area: share;
+.toolbar {
+  display: grid;
+  grid-template-columns: auto;
+  grid-auto-columns: min-content;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.leftToolbar {
+  display: grid;
+  grid-auto-columns: auto;
+  grid-auto-flow: column;
+  justify-content: start;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.filter {
+  grid-area: filter;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: auto;
+  align-content: start;
+  gap: var(--mantine-spacing-xs);
+}
+
+.schedule {
+  grid-area: schedule;
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }

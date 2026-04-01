@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest"
 import {
-  chooseNewer,
+  encodeLocalSessionSelections,
   makeSelections,
-  makeSessionSelections,
+  parseLocalSessionSelections,
 } from "./selections.js"
-import { parseISO } from "date-fns"
+import { isEqual, parseISO } from "date-fns"
 
 describe("selections module", () => {
   test("construct/size", () => {
@@ -52,45 +52,34 @@ describe("selections module", () => {
     expect(sel3.equals(sel)).toBe(false)
   })
 
-  test("make with ID", () => {
-    const sel = makeSelections(["a", "b"], "1")
-    expect("id" in sel).toBe(true)
-    expect(sel.id).toBe("1")
-  })
+  test("parse local selections", () => {
+    const data = {
+      base: {
+        date: "2020-01-01T12:00:00.001-05:00",
+        selections: {
+          id: "testsels",
+          items: ["a", "b", "c"],
+        },
+      },
+      added: ["d"],
+      deleted: ["c"],
+      items: ["a", "b", "d"],
+      date: "2020-01-01T13:00:00.001-05:00",
+    }
 
-  test("equal with ID", () => {
-    const sel = makeSelections(["a", "b"], "1")
-    const sel2 = makeSelections(["b", "a"], "1")
-    const sel3 = makeSelections(["b", "a"], "2")
-    expect(sel.equals(sel2)).toBe(true)
-    expect(sel.equals(sel3)).toBe(false)
-  })
+    const parsed = parseLocalSessionSelections(data)
+    expect(parsed.equals(["d", "b", "a"])).toBe(true)
+    expect(parsed.base?.equals(["a", "b", "c"])).toBe(true)
+    expect(
+      parsed.date &&
+        isEqual(parsed.date, parseISO("2020-01-01T13:00:00.001-05:00", {})),
+    ).toBe(true)
 
-  test("chooseNewer", () => {
-    const a = makeSessionSelections(["a"], parseISO("2020-01-01T00:00:00Z"))
-    const b = makeSessionSelections(["b"], parseISO("2020-01-01T00:00:01Z"))
-
-    expect(chooseNewer(a, b)).toEqual(b)
-  })
-
-  test("chooseNewer equal", () => {
-    const a = makeSessionSelections(["a"], parseISO("2020-01-01T00:00:00Z"))
-    const b = makeSessionSelections(["b"], parseISO("2020-01-01T00:00:00Z"))
-
-    expect(chooseNewer(a, b)).toEqual(a)
-  })
-
-  test("chooseNewer undefined date", () => {
-    const a = makeSessionSelections(["a"])
-    const b = makeSessionSelections(["b"], parseISO("2020-01-01T00:00:00Z"))
-
-    expect(chooseNewer(a, b)).toEqual(b)
-  })
-
-  test("chooseNewer both undefined date", () => {
-    const a = makeSessionSelections(["a"])
-    const b = makeSessionSelections(["b"])
-
-    expect(chooseNewer(a, b)).toEqual(a)
+    const unparsed = encodeLocalSessionSelections(parsed)
+    expect(unparsed).toStrictEqual(data)
+    const reparsed = parseLocalSessionSelections(
+      JSON.parse(JSON.stringify(unparsed)),
+    )
+    expect(reparsed.equals(parsed)).toBe(true)
   })
 })

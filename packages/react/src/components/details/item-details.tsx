@@ -16,7 +16,7 @@ import {
   IconUser,
 } from "@tabler/icons-react"
 import clsx from "clsx"
-import { add, differenceInSeconds, format, formatISO } from "date-fns"
+import { add, differenceInSeconds, format } from "date-fns"
 import {
   memo,
   type MouseEvent,
@@ -115,7 +115,9 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
           className={clsx("ItemDetails-bookmark", classes.bookmark)}
         >
           <ActionIcon
-            title={bookmarked ? "Unbookmark" : "Bookmark This Event"}
+            title="Bookmark"
+            role="switch"
+            aria-checked={!!bookmarked}
             size={large ? "md" : "sm"}
             variant={bookmarked ? "filled" : "default"}
             className={clsx(
@@ -253,11 +255,11 @@ const Time = memo(
         : format(end, "h:mm aaa")
       content = (
         <>
-          <time className="start" dateTime={formatISO(start)}>
+          <time className="start" dateTime={noTZFormat(start)}>
             {startStr}
           </time>{" "}
           &ndash;{" "}
-          <time className="end" dateTime={formatISO(end)}>
+          <time className="end" dateTime={noTZFormat(end)}>
             {endStr}
           </time>
         </>
@@ -265,7 +267,7 @@ const Time = memo(
     } else if (start) {
       const startStr = format(start, "EEE MMM d, h:mm aaa")
       content = (
-        <time className="start" dateTime={formatISO(start)}>
+        <time className="start" dateTime={noTZFormat(start)}>
           {startStr}
         </time>
       )
@@ -274,7 +276,7 @@ const Time = memo(
       content = (
         <>
           Ends{" "}
-          <time className="end" dateTime={formatISO(end)}>
+          <time className="end" dateTime={noTZFormat(end)}>
             {endStr}
           </time>
         </>
@@ -296,6 +298,8 @@ const Time = memo(
     }
   },
 )
+
+const noTZFormat = (date: Date): string => format(date, "yyyy-MM-dd'T'HH:mm:ss")
 
 Time.displayName = "ItemDetails.Time"
 

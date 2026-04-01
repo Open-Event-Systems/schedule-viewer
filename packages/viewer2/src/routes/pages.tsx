@@ -1,7 +1,6 @@
 import { PageMenu } from "../components/page-menu/page-menu.js"
 import { useViewerConfig } from "../config.js"
 import { pagesRoute } from "../routes.js"
-import { Page } from "../components/page/page.js"
 import { Markdown, useItems } from "@open-event-systems/schedule-react"
 import { parsers } from "../schedule.js"
 import { useCallback, useMemo } from "react"
@@ -12,6 +11,7 @@ import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
 
 import { combineScheduleItems } from "../utils.js"
 import classes from "./pages.module.scss"
+import { Page } from "../components/page/page.js"
 
 export const PagesRoute = () => {
   const { pageId } = pagesRoute.useParams()

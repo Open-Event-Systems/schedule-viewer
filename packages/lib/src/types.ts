@@ -22,35 +22,6 @@ export type Day = Readonly<{
 }>
 
 /**
- * A set of selected item IDs.
- */
-export type Selections = Readonly<{
-  has(value: string): boolean
-  [Symbol.iterator](): Iterator<string>
-  readonly size: number
-  add(item: string): Selections
-  delete(item: string): Selections
-  equals(other: Selections): boolean
-}>
-
-/**
- * A {@link Selections} object with a server assigned ID.
- */
-export type ServerSelections = Selections &
-  Readonly<{
-    id: string
-    equals(other: Selections | ServerSelections): boolean
-  }>
-
-/**
- * The current session's selections.
- */
-export type SessionSelections = Readonly<{
-  date?: Date
-  selections: Selections | ServerSelections
-}>
-
-/**
  * A contact related to a schedule item.
  */
 export type Contact = Readonly<{
@@ -130,38 +101,172 @@ export type ScheduleAPI = Readonly<{
   getItems(): Promise<readonly ScheduleItem[]>
 }>
 
-export type SelectionsType = "bookmarks" | "visited"
+/**
+ * A set of selected item IDs.
+ */
+export type Selections = Readonly<{
+  /**
+   * Return whether this object contains the given IDs.
+   */
+  has: (itemId: string) => boolean
 
-export type LocalSessionSelectionsStatus = Readonly<{
-  base: SessionSelections
-  added: ReadonlySet<string>
-  deleted: ReadonlySet<string>
-  current: SessionSelections
-}>
+  [Symbol.iterator]: () => Iterator<string>
+  readonly size: number
 
-export type SessionSelectionsStore = Readonly<{
-  get(type: SelectionsType): LocalSessionSelectionsStatus
-  save(type: SelectionsType, selections: SessionSelections): void
-  add(type: SelectionsType, itemId: string): SessionSelections
-  delete(type: SelectionsType, itemId: string): SessionSelections
-}>
+  /**
+   * Return a {@link Selections} object with the given IDs added.
+   */
+  add: (...itemsIds: string[]) => Selections
 
-export type UpdateSelectionsOptions = Readonly<{
-  selections?: Iterable<string>
-  add?: Iterable<string>
-  delete?: Iterable<string>
+  /**
+   * Return a {@link Selections} object with the given IDs removed.
+   */
+  delete: (...itemsIds: string[]) => Selections
+
+  /**
+   * Returns whether this object contains exactly the IDs in the given iterable.
+   */
+  equals: (other: Iterable<string>) => boolean
 }>
 
 /**
- * Saves/loads selections.
+ * A {@link Selections} object with a server assigned ID.
  */
-export type SelectionsAPI = Readonly<{
-  get sessionId(): string | undefined
-  getSelections(selectionsId: string): Promise<Selections | null>
-  getSessionSelections(type: SelectionsType): Promise<SessionSelections>
-  updateSessionSelections(
-    type: SelectionsType,
-    options: UpdateSelectionsOptions,
-  ): Promise<SessionSelections>
-  getBookmarkCounts(): Promise<ReadonlyMap<string, number>>
+export type ServerSelections = Selections &
+  Readonly<{
+    id: string
+  }>
+
+/**
+ * An object describing the session's selections.
+ */
+export type ServerSessionSelections = ServerSelections &
+  Readonly<{
+    /**
+     * The date the selections were updated.
+     */
+    date?: Date
+  }>
+
+export type SelectionsType = "bookmarks" | "visited"
+
+/**
+ * The locally stored session selections information.
+ */
+export type LocalSessionSelections = Omit<Selections, "add" | "delete"> &
+  Readonly<{
+    /**
+     * The {@link ServerSessionSelections} object the current selections are based on.
+     */
+    base?: ServerSessionSelections
+
+    /**
+     * The IDs added to the base.
+     */
+    added: ReadonlySet<string>
+
+    /**
+     * The IDs deleted from the base.
+     */
+    deleted: ReadonlySet<string>
+
+    /**
+     * Return a {@link LocalSessionSelections} object with the given IDs added.
+     */
+    add: (...itemsIds: string[]) => LocalSessionSelections
+
+    /**
+     * Return a {@link LocalSessionSelections} object with the given IDs removed.
+     */
+    delete: (...itemsIds: string[]) => LocalSessionSelections
+
+    /**
+     * The date the selections were last updated.
+     */
+    date?: Date
+  }>
+
+export type LocalSessionSelectionsStore = Readonly<{
+  /**
+   * Get the current selections.
+   */
+  get: () => LocalSessionSelections
+
+  /**
+   * Add the given item IDs to the selections.
+   */
+  add: (...itemIds: string[]) => LocalSessionSelections
+
+  /**
+   * Remove the given item IDs from the selections.
+   */
+  delete: (...itemIds: string[]) => LocalSessionSelections
+
+  /**
+   * Replace the selections with the given item IDs.
+   */
+  save: (newSelections: LocalSessionSelections) => LocalSessionSelections
+
+  /**
+   * Subscribe to changes.
+   */
+  subscribe: (callback: () => void) => () => void
+}>
+
+/**
+ * API to get selections information from a server.
+ */
+export type ServerSelectionsAPI = Readonly<{
+  /**
+   * Get the session token for syncing.
+   */
+  getSessionToken: () => Promise<string>
+
+  /**
+   * Get the selections by ID, or null if not found.
+   */
+  getSelections: (selectionsId: string) => Promise<ServerSelections | null>
+
+  /**
+   * Get item selection counts.
+   */
+  getCounts: (type: SelectionsType) => Promise<ReadonlyMap<string, number>>
+}>
+
+export type ServerSessionSelectionsAPI = Readonly<{
+  /**
+   * Get the current selections.
+   */
+  get: () => Promise<ServerSessionSelections>
+
+  /**
+   * Update the session selections.
+   */
+  update: (opts?: {
+    selections?: Iterable<string> | undefined
+    add?: Iterable<string> | undefined
+    delete?: Iterable<string> | undefined
+  }) => Promise<ServerSessionSelections>
+}>
+
+export type SessionSelectionsAPI = Readonly<{
+  /**
+   * Get the current selections.
+   */
+  get: () => Promise<Selections>
+
+  /**
+   * Add the given item IDs to the selections.
+   */
+  add: (...itemIds: string[]) => Promise<Selections>
+
+  /**
+   * Remove the given item IDs from the selections.
+   */
+  delete: (...itemIds: string[]) => Promise<Selections>
+
+  /**
+   * Replace the selections with the given item IDs.
+   */
+  save: (itemIds: Iterable<string>) => Promise<Selections>
 }>

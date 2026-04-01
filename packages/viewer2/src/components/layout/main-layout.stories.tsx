@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { MainLayout } from "./main-layout.js"
 import { useState } from "react"
 import {
   createMemoryHistory,
@@ -7,17 +6,14 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router"
-import { ActionIcon, Stack } from "@mantine/core"
-import { IconDownload } from "@tabler/icons-react"
+import { MainLayout } from "./main-layout.js"
+import { ActionIcon } from "@mantine/core"
+import { IconInfoCircle } from "@tabler/icons-react"
 
 const meta: Meta<typeof MainLayout> = {
   component: MainLayout,
   parameters: {
     layout: "fullscreen",
-  },
-  args: {
-    title: "Page Title",
-    homeURL: "#",
   },
   decorators: [
     (Story) => {
@@ -43,20 +39,122 @@ export default meta
 export const Default: StoryObj<typeof MainLayout> = {
   render(args) {
     return (
-      <MainLayout
-        {...args}
-        w="100dvw"
-        h="100dvh"
-        style={{ "--max-page-width": "75rem" }}
-        menu={
-          <Stack p="xs">
-            <ActionIcon variant="outline">
-              <IconDownload />
-            </ActionIcon>
-          </Stack>
-        }
-      >
-        Main Layout Content
+      <MainLayout {...args} w="100dvw" h="100dvh">
+        <MainLayout.Header
+          icons={
+            <>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+            </>
+          }
+        >
+          <MainLayout.Title>Page Title</MainLayout.Title>
+        </MainLayout.Header>
+        <MainLayout.Content>Children</MainLayout.Content>
+        <MainLayout.Footer rightSection="Right">
+          Footer Content
+        </MainLayout.Footer>
+      </MainLayout>
+    )
+  },
+}
+
+export const WithAnchor: StoryObj<typeof MainLayout> = {
+  render(args) {
+    return (
+      <MainLayout {...args} w="100dvw" h="100dvh">
+        <MainLayout.Header
+          icons={
+            <>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+            </>
+          }
+        >
+          <MainLayout.Title homeURL="#">Page Title</MainLayout.Title>
+        </MainLayout.Header>
+        <MainLayout.Content>Children</MainLayout.Content>
+        <MainLayout.Footer rightSection="Right">
+          Footer Content
+        </MainLayout.Footer>
+      </MainLayout>
+    )
+  },
+}
+
+export const WithIcon: StoryObj<typeof MainLayout> = {
+  render(args) {
+    return (
+      <MainLayout {...args} w="100dvw" h="100dvh">
+        <MainLayout.Header
+          icons={
+            <>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+            </>
+          }
+        >
+          <MainLayout.Title iconURL="/example-icon-192.png">
+            Page Title
+          </MainLayout.Title>
+        </MainLayout.Header>
+        <MainLayout.Content>Children</MainLayout.Content>
+        <MainLayout.Footer rightSection="Right">
+          Footer Content
+        </MainLayout.Footer>
+      </MainLayout>
+    )
+  },
+}
+
+export const WithIconAndAnchor: StoryObj<typeof MainLayout> = {
+  render(args) {
+    return (
+      <MainLayout {...args} w="100dvw" h="100dvh">
+        <MainLayout.Header
+          icons={
+            <>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+              <ActionIcon variant="subtle" size="md" radius="xl">
+                <IconInfoCircle />
+              </ActionIcon>
+            </>
+          }
+        >
+          <MainLayout.Title homeURL="#" iconURL="/example-icon-192.png">
+            Page Title
+          </MainLayout.Title>
+        </MainLayout.Header>
+        <MainLayout.Content>Children</MainLayout.Content>
+        <MainLayout.Footer rightSection="Right">
+          Footer Content
+        </MainLayout.Footer>
       </MainLayout>
     )
   },

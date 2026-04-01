@@ -40,7 +40,7 @@ type sessionSelectionsResponse struct {
 	SessionSelections sessionSelectionsObject `json:"session_selections"`
 }
 
-type bookmarkCountsResponse struct {
+type selectionsCountsResponse struct {
 	Counts map[string]int `json:"counts"`
 }
 
@@ -237,32 +237,37 @@ func (h *handlers) setSessionSelections(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *handlers) getCountsEntry(ctx context.Context, scheduleId string) (countsEntry, error) {
+func (h *handlers) getCountsEntry(ctx context.Context, scheduleId string, typ models.SessionSelectionsType) (countsEntry, error) {
 	loader := func(ctx context.Context, key string) (countsEntry, error) {
+		scheduleId, typStr, _ := strings.Cut(key, "/")
+		typ := models.SessionSelectionsType(typStr)
 		var results map[string]int
 		var err error
 		err = h.withTx(ctx, func(db *models.DB) error {
-			results, err = db.GetBookmarkCounts(scheduleId)
+			results, err = db.GetSelectionCounts(scheduleId, typ)
 			return err
 		})
 
 		return countsEntry{counts: results, time: time.Now()}, err
 	}
 
-	return h.countCache.Get(ctx, scheduleId, otter.LoaderFunc[string, countsEntry](loader))
+	key := scheduleId + "/" + string(typ)
+
+	return h.countCache.Get(ctx, key, otter.LoaderFunc[string, countsEntry](loader))
 }
 
 func (h *handlers) getCounts(w http.ResponseWriter, r *http.Request) {
 	scheduleId := chi.URLParam(r, "scheduleId")
+	typ := models.SessionSelectionsType(chi.URLParam(r, "type"))
 
-	results, err := h.getCountsEntry(r.Context(), scheduleId)
+	results, err := h.getCountsEntry(r.Context(), scheduleId, typ)
 
 	if err == nil {
 		now := time.Now()
 		age := int(now.Sub(results.time).Seconds())
 		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", CountsCacheSeconds))
 		w.Header().Set("Age", strconv.Itoa(age))
-		jsonResponse(w, bookmarkCountsResponse{
+		jsonResponse(w, selectionsCountsResponse{
 			Counts: results.counts,
 		})
 	} else {
@@ -272,8 +277,9 @@ func (h *handlers) getCounts(w http.ResponseWriter, r *http.Request) {
 
 func (h *handlers) getHTMLCounts(w http.ResponseWriter, r *http.Request) {
 	scheduleId := chi.URLParam(r, "scheduleId")
+	typ := models.SessionSelectionsType(chi.URLParam(r, "type"))
 
-	results, err := h.getCountsEntry(r.Context(), scheduleId)
+	results, err := h.getCountsEntry(r.Context(), scheduleId, typ)
 
 	if err == nil {
 		now := time.Now()

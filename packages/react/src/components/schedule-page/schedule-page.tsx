@@ -1,171 +1,179 @@
-import {
-  Box,
-  Grid,
-  Select,
-  Stack,
-  useProps,
-  type StackProps,
-} from "@mantine/core"
-import {
-  isBounded,
-  type DetailedScheduleItem,
-  type ScheduleItemCollection,
-} from "@open-event-systems/schedule-lib"
+import { Box, useProps, type StackProps } from "@mantine/core"
 import clsx from "clsx"
-import { type ScheduleProps } from "../schedule/schedule.js"
-import { IconEye, type ReactNode } from "@tabler/icons-react"
-import { ShareMenu } from "../share-menu/share-menu.js"
+import { type ReactNode } from "@tabler/icons-react"
+import { ShareMenu, type ShareMenuProps } from "../share-menu/share-menu.js"
 import {
   BookmarkFilter,
   type BookmarkFilterProps,
-} from "../bookmark-filter/bookmark-filter.js"
-import { useScheduleConfig } from "../../hooks/config.js"
+} from "../filters/bookmark-filter.js"
+
+import { memo } from "react"
+import { scheduleViewTypes, type ScheduleViewType } from "../../types.js"
+import { ViewSelect, type ViewSelectProps } from "../view-select/view-select.js"
+import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
 
 import classes from "./schedule-page.module.scss"
-import { memo, type NamedExoticComponent } from "react"
-import { scheduleViewTypes, type ScheduleViewType } from "../../types.js"
+import { TextFilter, type TextFilterProps } from "../filters/text-filter.js"
+import {
+  PastEventsFilter,
+  type PastEventsFilterProps,
+} from "../filters/past-events-filter.js"
+import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
+import { useMediaQuery } from "@mantine/hooks"
 
 export type SchedulePageProps = {
-  filteredItems: ScheduleItemCollection<DetailedScheduleItem>
-  type?: ScheduleViewType
   allowTypes?: Iterable<ScheduleViewType>
-  noShareMenu?: boolean
+  // TODO: combine into features array
+  hideShareMenu?: boolean
   hideBookmarkFilter?: boolean
+  hideShowPastEventsFilter?: boolean
   enableSync?: boolean
-  icalFileName?: string
-  defaultIcalDomain?: string
-  filter?: ReactNode
-  bookmarkFilter?: ReactNode
-  schedule?: ReactNode
-  onChangeType?: (type: ScheduleProps["type"]) => void
+  renderBookmarkFilter?: (props: BookmarkFilterProps) => ReactNode
+  renderViewSelect?: (props: ViewSelectProps) => ReactNode
+  renderTextFilter?: (props: TextFilterProps) => ReactNode
+  renderPastEventsFilter?: (props: PastEventsFilterProps) => ReactNode
+  renderTagFilter?: (props: TagFilterProps) => ReactNode
+  renderShare?: (props: ShareMenuProps) => ReactNode
+  renderSchedule?: (props: ScheduleProps) => ReactNode
   onShare?: () => void
   onSync?: () => void
 } & StackProps
 
-type SchedulePageComponent = NamedExoticComponent<SchedulePageProps> & {
-  BookmarkFilter: typeof SchedulePageBookmarkFilter
-}
-
 /**
  * Full schedule page component.
  */
-const _SchedulePage = memo((props: SchedulePageProps) => {
+export const SchedulePage = memo((props: SchedulePageProps) => {
   const {
     className,
-    filteredItems,
-    type,
     allowTypes,
-    noShareMenu,
+    hideShareMenu,
     hideBookmarkFilter,
-    enableSync,
-    icalFileName,
-    defaultIcalDomain,
-    filter,
-    bookmarkFilter,
-    schedule,
-    onChangeType,
-    onShare,
-    onSync,
+    hideShowPastEventsFilter,
+    renderBookmarkFilter,
+    renderViewSelect,
+    renderTextFilter,
+    renderPastEventsFilter,
+    renderTagFilter,
+    renderShare,
+    renderSchedule,
     ...other
   } = useProps(
     "SchedulePage",
     {
-      type: "daily-agenda",
-      icalFileName: "schedule",
-    },
+      allowTypes: scheduleViewTypes,
+      type:
+        (props.allowTypes && [...props.allowTypes][0]) ?? scheduleViewTypes[0],
+      renderBookmarkFilter: () => <BookmarkFilter />,
+      renderViewSelect: () => <ViewSelect />,
+      renderTextFilter: () => <TextFilter />,
+      renderPastEventsFilter: () => <PastEventsFilter />,
+      renderTagFilter: () => <TagFilter />,
+      renderShare: () => <ShareMenu />,
+      renderSchedule: () => <Schedule />,
+    } as const,
     props,
   )
 
-  const allowTypesArr = [
-    ...(allowTypes ?? (Object.keys(scheduleViewTypes) as ScheduleViewType[])),
-  ]
+  const allowTypesArr = [...allowTypes]
 
-  const { icalPrefix, icalDomain } = useScheduleConfig()
+  const isSmall = useMediaQuery("(max-width: 48rem)")
+  const viewSelect =
+    allowTypesArr.length > 1 &&
+    renderViewSelect({
+      className: clsx("SchedulePage-viewSelect", classes.viewSelect),
+      allowedTypes: allowTypes,
+    })
+  const bookmarkFilter =
+    !hideBookmarkFilter &&
+    renderBookmarkFilter({
+      className: clsx("SchedulePage-bookmarkFilter", classes.bookmarkFilter),
+    })
+  const shareMenu =
+    !hideShareMenu &&
+    renderShare({
+      ButtonProps: {
+        className: clsx("SchedulePage-shareButton", classes.shareButton),
+      },
+    })
+  const textFilter = renderTextFilter({
+    className: clsx("SchedulePage-textFilter", classes.textFilter),
+  })
+  const pastEventsFilter =
+    !hideShowPastEventsFilter &&
+    renderPastEventsFilter({
+      className: clsx("SchedulePage-pastEventsFilter"),
+    })
+  const tagFilter = renderTagFilter({
+    className: clsx("SchedulePage-tagFilter"),
+  })
+  const schedule = renderSchedule({})
+
+  let content
+
+  if (isSmall) {
+    content = (
+      <>
+        <Box className={clsx(classes.toolbar)}>
+          {viewSelect}
+          {shareMenu}
+        </Box>
+        <Box className={clsx(classes.toolbar)}>{bookmarkFilter}</Box>
+        <Box className={clsx(classes.toolbar)}>{textFilter}</Box>
+        <Box className={clsx(classes.toolbar)}>{pastEventsFilter}</Box>
+        <Box className={clsx(classes.toolbar)}>{tagFilter}</Box>
+        <Box className={clsx("SchedulePage-schedule", classes.schedule)}>
+          {schedule}
+        </Box>
+      </>
+    )
+  } else {
+    content = (
+      <>
+        <Box
+          className={clsx(
+            "SchedulePage-topMenu",
+            classes.topMenu,
+            classes.leftToolbar,
+          )}
+        >
+          {viewSelect}
+          {bookmarkFilter}
+        </Box>
+        <Box
+          className={clsx(
+            "SchedulePage-topFilter",
+            classes.topFilter,
+            classes.toolbar,
+          )}
+        >
+          {textFilter}
+          {shareMenu}
+        </Box>
+        <Box className={clsx("SchedulePage-filter", classes.filter)}>
+          {pastEventsFilter}
+          {tagFilter}
+        </Box>
+        <Box
+          component="section"
+          aria-label="schedule items"
+          className={clsx("SchedulePage-schedule", classes.schedule)}
+        >
+          {schedule}
+        </Box>
+      </>
+    )
+  }
 
   return (
-    <Stack
+    <Box
+      component="section"
+      aria-label="schedule and settings"
       className={clsx("SchedulePage-root", classes.root, className)}
       {...other}
     >
-      <Box className={clsx("SchedulePage-topMenu", classes.topMenu)}>
-        {!hideBookmarkFilter && bookmarkFilter}
-        {allowTypesArr.length > 1 && (
-          <Select
-            className={clsx("SchedulePage-viewSelect", classes.viewSelect)}
-            size="sm"
-            title="View"
-            aria-label="view"
-            data={allowTypesArr.map((t) => ({
-              value: t,
-              label: scheduleViewTypes[t],
-            }))}
-            value={type}
-            allowDeselect={false}
-            variant="default"
-            onChange={onChangeType as (v: string | null) => void}
-            leftSection={<IconEye size={18} />}
-          />
-        )}
-        {!noShareMenu && (
-          <ShareMenu
-            ButtonProps={{
-              className: clsx("SchedulePage-shareButton", classes.shareButton),
-            }}
-            enableSync={enableSync}
-            onShare={onShare}
-            onSync={onSync}
-            onExport={async () => {
-              const createICS = await import(
-                "@open-event-systems/schedule-lib"
-              ).then(({ createICS }) => createICS)
-              const data = createICS(
-                filteredItems.filter(isBounded),
-                `schedule-${icalPrefix}`,
-                icalDomain || defaultIcalDomain || "localhost",
-              )
-              const blob = new Blob([data], { type: "text/calendar" })
-              const dataURL = URL.createObjectURL(blob)
-              const el = document.createElement("a")
-              el.setAttribute("href", dataURL)
-              el.setAttribute("download", `${icalFileName}.ics`)
-              el.click()
-              URL.revokeObjectURL(dataURL)
-            }}
-          />
-        )}
-      </Box>
-      <Grid>
-        <Grid.Col span={{ xs: 12, sm: 4, md: 3 }} order={{ base: 0, sm: 1 }}>
-          <Stack gap="xs" align="start">
-            {filter}
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ xs: 12, sm: 8, md: 9 }} order={{ base: 1, sm: 0 }}>
-          {schedule}
-        </Grid.Col>
-      </Grid>
-    </Stack>
+      {content}
+    </Box>
   )
-}) as Partial<SchedulePageComponent>
+})
 
-_SchedulePage.displayName = "SchedulePage"
-
-export type SchedulePageBookmarkFilterProps = BookmarkFilterProps
-
-export const SchedulePageBookmarkFilter = memo((props: BookmarkFilterProps) => (
-  <BookmarkFilter
-    size="sm"
-    {...props}
-    className={clsx(
-      "SchedulePage-bookmarkFilter",
-      classes.bookmarkFilter,
-      props.className,
-    )}
-  />
-))
-
-SchedulePageBookmarkFilter.displayName = "SchedulePageBookmarkFilter"
-
-_SchedulePage.BookmarkFilter = SchedulePageBookmarkFilter
-
-export const SchedulePage = _SchedulePage as SchedulePageComponent
+SchedulePage.displayName = "SchedulePage"

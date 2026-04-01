@@ -5,8 +5,10 @@ import { ViewerConfigContext } from "../config.js"
 import {
   ScheduleAPIContext,
   ScheduleConfigContext,
-  SelectionsAPIContext,
+  ServerSelectionsAPIContext,
+  SessionSelectionsAPIContext,
 } from "@open-event-systems/schedule-react"
+import { PWAStoreContext } from "../sw/pwa.js"
 
 export const Providers = () => {
   const context = useMatches({
@@ -19,21 +21,33 @@ export const Providers = () => {
     throw new Error("No router context")
   }
 
-  const { queryClient, swStore, config, scheduleAPI, selectionsAPI } = context
+  const {
+    queryClient,
+    pwaStore,
+    swStore,
+    config,
+    scheduleAPI,
+    serverSelectionsAPI,
+    sessionSelectionsAPIs,
+  } = context
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SWStoreContext value={swStore}>
-        <ViewerConfigContext value={config}>
-          <ScheduleConfigContext value={config}>
-            <ScheduleAPIContext value={scheduleAPI}>
-              <SelectionsAPIContext value={selectionsAPI}>
-                <Outlet />
-              </SelectionsAPIContext>
-            </ScheduleAPIContext>
-          </ScheduleConfigContext>
-        </ViewerConfigContext>
-      </SWStoreContext>
+      <PWAStoreContext value={pwaStore}>
+        <SWStoreContext value={swStore}>
+          <ViewerConfigContext value={config}>
+            <ScheduleConfigContext value={config}>
+              <ScheduleAPIContext value={scheduleAPI}>
+                <ServerSelectionsAPIContext value={serverSelectionsAPI}>
+                  <SessionSelectionsAPIContext value={sessionSelectionsAPIs}>
+                    <Outlet />
+                  </SessionSelectionsAPIContext>
+                </ServerSelectionsAPIContext>
+              </ScheduleAPIContext>
+            </ScheduleConfigContext>
+          </ViewerConfigContext>
+        </SWStoreContext>
+      </PWAStoreContext>
     </QueryClientProvider>
   )
 }

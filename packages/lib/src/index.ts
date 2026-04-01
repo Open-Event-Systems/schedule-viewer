@@ -5,10 +5,12 @@ export * from "./item.js"
 export * from "./schedule-api.js"
 export {
   makeSelections,
-  makeSessionSelections,
+  makeLocalSessionSelections,
   parseSelections,
-  parseSessionSelections,
-  chooseNewer,
+  parseServerSelections,
+  parseServerSessionSelections,
+  parseLocalSessionSelections,
+  encodeLocalSessionSelections,
 } from "./selections.js"
 export * from "./time.js"
 export * from "./types.js"

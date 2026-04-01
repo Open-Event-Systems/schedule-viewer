@@ -53,10 +53,6 @@
   display: block;
 }
 
-.button {
-  cursor: pointer;
-}
-
 .body {
   display: block;
   background: var(--pill-background);
@@ -66,6 +62,7 @@
   padding: var(--pill-padding);
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
 
   &::before {
     content: var(--pill-before);

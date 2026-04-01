@@ -36,7 +36,7 @@ export const useFilteredItems = <T extends DetailedScheduleItem>(
         selections ? items.filter(makeBookmarkFilter(selections)) : [],
       )
     } else {
-      return items
+      return items ?? makeScheduleItemCollection()
     }
   }, [onlyBookmarked, items, selections])
   const byTag = useMemo(

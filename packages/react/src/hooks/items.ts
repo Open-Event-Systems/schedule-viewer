@@ -78,9 +78,9 @@ export const getRelevantTags = (
  */
 export const useRelevantTags = (
   tags: Iterable<TagEntry>,
-  items: Iterable<Pick<ScheduleItemDetails, "tags">>,
+  items?: Iterable<Pick<ScheduleItemDetails, "tags">>,
 ): TagEntry[] => {
   return useMemo(() => {
-    return getRelevantTags(tags, items)
+    return items ? getRelevantTags(tags, items) : []
   }, [tags, items])
 }

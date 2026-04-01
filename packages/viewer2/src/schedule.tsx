@@ -111,10 +111,10 @@ export const makeItemNavPropsMap = (
   origin: string,
   currentURL: string,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
-  items: Iterable<ScheduleItem>,
+  items?: Iterable<ScheduleItem>,
 ): ReadonlyMap<string, ItemNavProps> => {
   const map = new Map<string, ItemNavProps>()
-  for (const item of items) {
+  for (const item of items ?? []) {
     map.set(
       item.id,
       getItemNavProps(router, origin, currentURL, item, mapLocationMatchFunc),

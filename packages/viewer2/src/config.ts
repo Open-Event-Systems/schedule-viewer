@@ -22,7 +22,7 @@ export type PageConfig = Readonly<{
   id: string
   title?: string
   description?: string
-  enabledViews?: readonly string[]
+  enabledViews?: readonly ScheduleViewType[]
   onlyType?: string | readonly string[]
   requireTags?: readonly string[]
   noPastEventsOption?: boolean
@@ -45,7 +45,9 @@ const pageConfigSchema = z
     id: z.string(),
     title: opt(z.string()).optional(),
     description: opt(z.string()).optional(),
-    enabledViews: opt(z.array(z.string())).optional(),
+    enabledViews: opt(
+      z.array(z.string().transform((v) => v as ScheduleViewType)),
+    ).optional(),
     onlyType: opt(z.union([z.string(), z.array(z.string())])).optional(),
     requireTags: opt(z.array(z.string())).optional(),
     noPastEventsOption: opt(z.boolean()).optional(),

@@ -2,6 +2,7 @@
   "name": "@open-event-systems/schedule-map",
   "version": "0.2.0-alpha",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./schedule-map.css": "./dist/schedule-map.css",
     ".": {
@@ -23,8 +24,8 @@
     "@date-fns/utc": "^2.1.1",
     "@mantine/core": "^8.3.18",
     "@mantine/hooks": "^8.3.18",
-    "@open-event-systems/schedule-lib": "workspace:^",
-    "@open-event-systems/schedule-react": "workspace:^",
+    "@open-event-systems/schedule-lib": "workspace:",
+    "@open-event-systems/schedule-react": "workspace:",
     "@storybook/addon-docs": "^10.3.3",
     "@storybook/react-vite": "^10.3.3",
     "@types/react": "^19.2.14",
@@ -40,8 +41,8 @@
     "@date-fns/utc": "^2.1.0",
     "@mantine/core": "^8.2.4",
     "@mantine/hooks": "^8.2.4",
-    "@open-event-systems/schedule-lib": "workspace:^",
-    "@open-event-systems/schedule-react": "workspace:^",
+    "@open-event-systems/schedule-lib": "workspace:",
+    "@open-event-systems/schedule-react": "workspace:",
     "date-fns": "^4.1.0",
     "react": "^19.1.0"
   },

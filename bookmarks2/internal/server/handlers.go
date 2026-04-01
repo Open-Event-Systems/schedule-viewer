@@ -49,8 +49,8 @@ func NewHandler(cfg config.Config, conn *gorm.DB, tokenSecret string) http.Handl
 	}
 
 	handlers.countCache = otter.Must(&otter.Options[string, countsEntry]{
-		MaximumSize:      len(cfg.Schedules),
-		InitialCapacity:  len(cfg.Schedules),
+		MaximumSize:      len(cfg.Schedules) * 2,
+		InitialCapacity:  len(cfg.Schedules) * 2,
 		ExpiryCalculator: otter.ExpiryWriting[string, countsEntry](CountsCacheSeconds * time.Second),
 	})
 
@@ -75,8 +75,13 @@ func NewHandler(cfg config.Config, conn *gorm.DB, tokenSecret string) http.Handl
 		r.Post("/setup-session", handlers.setupSession)
 
 		r.Get("/selections/{selectionsId}", handlers.getSelections)
-		r.Get("/counts", handlers.getCounts)
-		r.Get("/counts.html", handlers.getHTMLCounts)
+
+		// counts routes
+		r.Group(func(r chi.Router) {
+			r.Use(handlers.validateType)
+			r.Get("/counts/{type}", handlers.getCounts)
+			r.Get("/counts/{type}.html", handlers.getHTMLCounts)
+		})
 
 		// routes that require a session
 		r.Group(func(r chi.Router) {

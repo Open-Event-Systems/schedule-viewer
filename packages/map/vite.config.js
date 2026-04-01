@@ -15,6 +15,7 @@ export default defineConfig({
       entry: "./src/index.ts",
       formats: ["es"],
     },
+    minify: false,
     rolldownOptions: {
       output: {
         preserveModules: true,

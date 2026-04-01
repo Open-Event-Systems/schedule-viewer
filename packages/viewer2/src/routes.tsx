@@ -13,11 +13,11 @@ import {
 } from "@open-event-systems/schedule-react"
 import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
 import { DedupedHeadContent } from "./components/head/deduped-head-content.js"
-
-const dev = import.meta.env.DEV
-
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { getQueryOptions } from "./loaders.js"
+
+const dev = import.meta.env.DEV
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   pendingComponent: Loading,
@@ -35,11 +35,11 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   },
   notFoundComponent: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
-    "MainLayoutNotFound",
+    "MainLayoutRouteNotFound",
   ),
   errorComponent: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
-    "MainLayoutError",
+    "MainLayoutRouteError",
   ),
   head({ match }) {
     if (match.status == "notFound") {
@@ -90,7 +90,7 @@ export const filterStateRoute = createRoute({
   ),
   notFoundComponent: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
-    "NotFound",
+    "MainLayoutRouteNotFoundMessage",
   ),
   head({ match }) {
     if (match.status == "notFound") {
@@ -158,10 +158,20 @@ export const pagesRoute = createRoute({
   },
   loaderDeps: ({ search: { bookmarked } }) => ({ bookmarked }),
   async loader({ context, deps: { bookmarked } }) {
-    const { queryClient, config, scheduleAPI, selectionsAPI } = context
+    const {
+      queryClient,
+      config,
+      scheduleAPI,
+      serverSelectionsAPI,
+      sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
+    } = context
 
-    const { itemQueryOptions, selectionsQueryOptions, parsers } =
-      await loadQueryOptions()
+    const {
+      itemQueryOptions,
+      selectionsQueryOptions,
+      sessionSelectionsQueryOptions,
+      parsers,
+    } = await getQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -169,15 +179,19 @@ export const pagesRoute = createRoute({
 
     // only await selections if viewing the bookmarked mode
     const selectionsPromise = queryClient.fetchQuery(
-      selectionsQueryOptions.sessionSelections(
-        selectionsAPI,
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
         config.id,
         "bookmarks",
       ),
     )
 
     queryClient.fetchQuery(
-      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+      selectionsQueryOptions.counts(
+        serverSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
     )
 
     const [items] = await Promise.all([
@@ -221,10 +235,20 @@ export const eventDetailsRoute = createRoute({
   ),
   async loader({ params, context }) {
     const { eventId } = params
-    const { config, queryClient, scheduleAPI, selectionsAPI } = context
+    const {
+      config,
+      queryClient,
+      scheduleAPI,
+      serverSelectionsAPI,
+      sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
+    } = context
 
-    const { itemQueryOptions, selectionsQueryOptions, parsers } =
-      await loadQueryOptions()
+    const {
+      itemQueryOptions,
+      selectionsQueryOptions,
+      sessionSelectionsQueryOptions,
+      parsers,
+    } = await getQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -232,15 +256,19 @@ export const eventDetailsRoute = createRoute({
 
     // selections/counts dont need to be awaited now
     queryClient.fetchQuery(
-      selectionsQueryOptions.sessionSelections(
-        selectionsAPI,
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
         config.id,
         "bookmarks",
       ),
     )
 
     queryClient.fetchQuery(
-      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+      selectionsQueryOptions.counts(
+        serverSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
     )
 
     const [
@@ -294,7 +322,7 @@ export const mapProvidersRoute = createRoute({
   ),
   notFoundComponent: lazyRouteComponent(
     () => import("./routes/main-layout.js"),
-    "MainLayoutNotFound",
+    "MainLayoutRouteNotFound",
   ),
   head: ({ match }) => {
     if (match.status == "notFound") {
@@ -348,10 +376,20 @@ export const mapRoute = createRoute({
     }
   },
   async loader({ context }) {
-    const { config, queryClient, scheduleAPI, selectionsAPI } = context
+    const {
+      config,
+      queryClient,
+      scheduleAPI,
+      serverSelectionsAPI,
+      sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
+    } = context
 
-    const { itemQueryOptions, selectionsQueryOptions, parsers } =
-      await loadQueryOptions()
+    const {
+      itemQueryOptions,
+      selectionsQueryOptions,
+      sessionSelectionsQueryOptions,
+      parsers,
+    } = await getQueryOptions()
 
     const itemsPromise = queryClient.fetchQuery(
       itemQueryOptions.items(scheduleAPI, config.id, parsers),
@@ -359,15 +397,19 @@ export const mapRoute = createRoute({
 
     // dont need to await selections/counts
     queryClient.fetchQuery(
-      selectionsQueryOptions.sessionSelections(
-        selectionsAPI,
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
         config.id,
         "bookmarks",
       ),
     )
 
     queryClient.fetchQuery(
-      selectionsQueryOptions.bookmarkCounts(selectionsAPI, config.id),
+      selectionsQueryOptions.counts(
+        serverSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
     )
 
     const [
@@ -393,18 +435,3 @@ export const mapRoute = createRoute({
     }
   },
 })
-
-const loadQueryOptions = async () => {
-  const [{ itemQueryOptions, selectionsQueryOptions }, { parsers }] =
-    await Promise.all([
-      import("@open-event-systems/schedule-react").then(
-        ({ itemQueryOptions, selectionsQueryOptions }) => ({
-          itemQueryOptions,
-          selectionsQueryOptions,
-        }),
-      ),
-      import("./schedule.js").then(({ parsers }) => ({ parsers })),
-    ])
-
-  return { itemQueryOptions, selectionsQueryOptions, parsers }
-}

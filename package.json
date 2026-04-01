@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "build": "pnpm run -C packages/viewer build"
+    "build:deps": "pnpm run --filter @open-event-systems/schedule-viewer2^... build",
+    "build:viewer": "pnpm run --filter @open-event-systems/schedule-viewer2 build",
+    "build": "pnpm run --filter @open-event-systems/schedule-viewer2... build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

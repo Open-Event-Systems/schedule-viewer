@@ -34,7 +34,7 @@ export const useNow = (): Date => {
 export const useRequiredContext = <T>(ctx: Context<T | undefined>): T => {
   const val = use(ctx)
   if (val === undefined) {
-    throw new Error(`Required context not provided`)
+    throw new Error("Required context not provided")
   }
 
   return val

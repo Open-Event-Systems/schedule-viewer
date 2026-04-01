@@ -1,183 +1,300 @@
-import { isAfter } from "date-fns"
 import {
   type Selections,
   type ServerSelections,
-  type SessionSelections,
+  type LocalSessionSelections,
+  type ServerSessionSelections,
 } from "./types.js"
 import z from "zod"
-import { opt, strDate } from "./schema.js"
-
-const selectionsSchema = z.looseObject({
-  id: opt(z.string().transform((v) => (v == "" ? undefined : v))).optional(),
-  items: z.array(z.string()),
-})
-
-const sessionSelectionsSchema = z.looseObject({
-  date: strDate.optional(),
-  selections: selectionsSchema,
-})
-
-export const sessionSelectionsStorageSchema = z.looseObject({
-  base: sessionSelectionsSchema,
-  added: z.array(z.string()),
-  deleted: z.array(z.string()),
-  current: sessionSelectionsSchema,
-})
+import { format, isValid, parseISO } from "date-fns"
 
 class SelectionsImpl {
-  public id: string | undefined
-  private set: Set<string>
-  constructor(itemIds?: Iterable<string>, id?: string) {
-    this.set = new Set(itemIds)
-
-    if (id) {
-      this.id = id
+  protected set: ReadonlySet<string>
+  constructor(items?: Iterable<string> | null) {
+    if (items instanceof SelectionsImpl) {
+      this.set = items.set
+    } else if (items instanceof Set) {
+      this.set = items
+    } else {
+      this.set = new Set(items)
     }
-  }
-
-  has(item: string): boolean {
-    return this.set.has(item)
-  }
-
-  [Symbol.iterator](): Iterator<string> {
-    return this.set[Symbol.iterator]()
   }
 
   get size(): number {
     return this.set.size
   }
 
-  add(item: string): SelectionsImpl {
-    if (this.set.has(item)) {
-      return this
-    }
-
-    return new SelectionsImpl([...this.set, item])
+  [Symbol.iterator](): Iterator<string> {
+    return this.set[Symbol.iterator]()
   }
 
-  delete(item: string): SelectionsImpl {
-    if (!this.set.has(item)) {
-      return this
-    }
-
-    return new SelectionsImpl([...this.set].filter((it) => it != item))
+  has(itemId: string): boolean {
+    return this.set.has(itemId)
   }
 
-  equals(other: Selections | ServerSelections): boolean {
-    if ("id" in other && other.id && this.id) {
-      return other.id == this.id
+  add(...itemIds: string[]): SelectionsImpl {
+    const newSet = new Set(this.set)
+    itemIds.forEach((i) => newSet.add(i))
+    return new SelectionsImpl(newSet)
+  }
+
+  delete(...itemIds: string[]): SelectionsImpl {
+    const newSet = new Set(this.set)
+    itemIds.forEach((i) => newSet.delete(i))
+    return new SelectionsImpl(newSet)
+  }
+
+  equals(other: Iterable<string>): boolean {
+    if (other instanceof SelectionsImpl || other instanceof Set) {
+      return other.size == this.size && setHasAll(this.set, other)
+    } else {
+      const otherArr = [...other]
+      return otherArr.length == this.size && setHasAll(this.set, otherArr)
+    }
+  }
+}
+
+type LocalSelectionsConstructorOptions = Readonly<{
+  base?: ServerSessionSelections | undefined
+  added?: Iterable<string> | undefined
+  deleted?: Iterable<string> | undefined
+  date?: Date | undefined
+}>
+
+class LocalSelectionsImpl extends SelectionsImpl {
+  public base?: ServerSessionSelections
+  public added: ReadonlySet<string>
+  public deleted: ReadonlySet<string>
+  public date?: Date
+
+  constructor(
+    current?: Iterable<string> | null,
+    opts?: LocalSelectionsConstructorOptions,
+  ) {
+    super(current)
+    const { base, added, deleted, date } = opts ?? {}
+
+    if (base) {
+      this.base = base
     }
 
-    if (other.size != this.size) {
-      return false
+    this.added = new Set(added)
+    this.deleted = new Set(deleted)
+    if (date) {
+      this.date = date
     }
+  }
 
-    for (const otherItem of other) {
-      if (!this.has(otherItem)) {
-        return false
+  add(...itemIds: string[]): LocalSelectionsImpl {
+    const newSet = new Set(this.set)
+    const newAdded = new Set(this.added)
+    const newDeleted = new Set(this.deleted)
+
+    for (const itemId of itemIds) {
+      if (!newSet.has(itemId)) {
+        newSet.add(itemId)
+        if (newDeleted.has(itemId)) {
+          newDeleted.delete(itemId)
+        } else newAdded.add(itemId)
       }
     }
 
-    return true
+    return new LocalSelectionsImpl(newSet, {
+      added: newAdded,
+      deleted: newDeleted,
+      base: this.base,
+      date: new Date(),
+    })
+  }
+
+  delete(...itemIds: string[]): LocalSelectionsImpl {
+    const newSet = new Set(this.set)
+    const newAdded = new Set(this.added)
+    const newDeleted = new Set(this.deleted)
+
+    for (const itemId of itemIds) {
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+        if (newAdded.has(itemId)) {
+          newAdded.delete(itemId)
+        } else {
+          newDeleted.add(itemId)
+        }
+      }
+    }
+
+    return new LocalSelectionsImpl(newSet, {
+      added: newAdded,
+      deleted: newDeleted,
+      base: this.base,
+      date: new Date(),
+    })
+  }
+}
+
+const setHasAll = (
+  set: ReadonlySet<string>,
+  other: Iterable<string>,
+): boolean => {
+  for (const item of other) {
+    if (!set.has(item)) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * Return a {@link Selections} with the given items.
+ */
+export const makeSelections = (items?: Iterable<string> | null): Selections => {
+  if (items instanceof SelectionsImpl) {
+    return items
+  } else {
+    return new SelectionsImpl(new Set(items))
   }
 }
 
 /**
- * Make a new {@link Selections} object.
+ * Make a {@link LocalSessionSelections} object with the given items and options.
  */
-export function makeSelections(
-  itemIds: Iterable<string> | undefined,
-  id: string,
-): ServerSelections
-export function makeSelections(
-  itemIds?: Iterable<string>,
-  id?: undefined,
-): Selections
-export function makeSelections(
-  itemIds?: Iterable<string>,
-  id?: string,
-): Selections | ServerSelections
-export function makeSelections(
-  itemIds?: Iterable<string>,
-  id?: string,
-): Selections | ServerSelections {
-  if (id) {
-    if (itemIds instanceof SelectionsImpl && itemIds.id == id) {
-      return itemIds
-    } else {
-      return new SelectionsImpl(itemIds, id)
-    }
+export const makeLocalSessionSelections = (
+  items?: Iterable<string> | null,
+  opts?: LocalSelectionsConstructorOptions,
+): LocalSessionSelections => {
+  if (items instanceof SelectionsImpl) {
+    return new LocalSelectionsImpl(items, opts)
   } else {
-    if (itemIds instanceof SelectionsImpl) {
-      return itemIds
-    } else {
-      return new SelectionsImpl(itemIds)
-    }
+    return new LocalSelectionsImpl(new Set(items), opts)
   }
 }
 
-/**
- * Make a new {@link SessionSelections} object.
- */
-export function makeSessionSelections(
-  itemIds?: Iterable<string>,
-  date?: Date,
-): SessionSelections {
-  let ssels: SessionSelections
-  if (itemIds instanceof SelectionsImpl) {
-    ssels = {
-      selections: itemIds,
-    }
-  } else {
-    ssels = {
-      selections: makeSelections(itemIds),
-    }
-  }
+const isoDate = z.codec(
+  z.string(),
+  z.date().refine((v) => isValid(v), { error: "Invalid date" }),
+  {
+    decode: (v) => parseISO(v),
+    encode: (v) => format(v, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+  },
+)
 
-  if (date) {
-    return { ...ssels, date }
-  } else {
-    return ssels
-  }
-}
+const looseSelectionsSchema = z.codec(
+  z.looseObject({
+    items: z.array(z.string()),
+  }),
+  z.tuple([z.custom<Selections>(), z.looseObject({})]).readonly(),
+  {
+    decode: (v) => {
+      const { items, ...other } = v
+      const sels = makeSelections(items)
+      return [sels, other] as const
+    },
+    encode: ([sels, other]) => ({ ...other, items: [...sels] }),
+  },
+)
 
-/**
- * Choose the newer of two {@link SessionSelections}.
- */
-export const chooseNewer = (
-  a: SessionSelections,
-  b: SessionSelections,
-): SessionSelections => {
-  if (a.date && b.date) {
-    if (isAfter(b.date, a.date)) {
-      return b
-    } else {
-      return a
-    }
-  } else if (a.date) {
-    return a
-  } else if (b.date) {
-    return b
-  } else {
-    return a
-  }
-}
+const selectionsSchema = z.codec(
+  looseSelectionsSchema,
+  z.custom<Selections>(),
+  {
+    decode: ([sels]) => sels,
+    encode: (v) => [v, {}] as const,
+  },
+)
+
+const serverSelectionsSchema = z.codec(
+  looseSelectionsSchema.pipe(
+    z.tuple([z.custom<Selections>(), z.object({ id: z.string() })]).readonly(),
+  ),
+  z.custom<ServerSessionSelections>(),
+  {
+    decode: ([sels, { id }]) => Object.assign(sels, { id }),
+    encode: (v) => [v, { id: v.id }] as const,
+  },
+)
+
+const serverSessionSelectionsSchema = z.codec(
+  z.object({
+    selections: serverSelectionsSchema,
+    date: isoDate.optional(),
+  }),
+  z.custom<ServerSessionSelections>(),
+  {
+    decode: (v) =>
+      Object.assign(v.selections, v.date ? { date: v.date } : null),
+    encode: (v) => ({ selections: v, ...(v.date ? { date: v.date } : null) }),
+  },
+)
+
+const stringSetSchema = z.codec(
+  z.array(z.string()),
+  z.custom<ReadonlySet<string>>(),
+  {
+    decode: (v) => new Set(v),
+    encode: (v) => [...v],
+  },
+)
+
+export const localSessionSelectionsSchema = z.codec(
+  looseSelectionsSchema.pipe(
+    z
+      .tuple([
+        z.custom<Selections>(),
+        z.object({
+          base: serverSessionSelectionsSchema.optional(),
+          added: stringSetSchema,
+          deleted: stringSetSchema,
+          date: isoDate.optional(),
+        }),
+      ])
+      .readonly(),
+  ),
+  z.custom<LocalSessionSelections>(),
+  {
+    decode: ([sels, { base, added, deleted, date }]) =>
+      makeLocalSessionSelections(sels, { base, added, deleted, date }),
+    encode: (v) =>
+      [
+        v,
+        {
+          ...(v.base ? { base: v.base } : null),
+          added: v.added,
+          deleted: v.deleted,
+          ...(v.date ? { date: v.date } : null),
+        },
+      ] as const,
+  },
+)
 
 /**
  * Parse a {@link Selections} object.
  */
-export const parseSelections = (
-  data: unknown,
-): Selections | ServerSelections => {
-  const res = selectionsSchema.parse(data)
-  return makeSelections(res.items, res.id)
-}
+export const parseSelections = (data: unknown): Selections =>
+  selectionsSchema.parse(data)
 
 /**
- * Parse a {@link SessionSelections} object
+ * Parse a {@link ServerSelections} object.
  */
-export const parseSessionSelections = (data: unknown): SessionSelections => {
-  const res = sessionSelectionsSchema.parse(data)
-  const sel = makeSelections(res.selections.items, res.selections.id)
-  return makeSessionSelections(sel, res.date)
-}
+export const parseServerSelections = (data: unknown): ServerSelections =>
+  serverSelectionsSchema.parse(data)
+
+/**
+ * Parse a {@link ServerSessionSelections} object.
+ */
+export const parseServerSessionSelections = (
+  data: unknown,
+): ServerSessionSelections => serverSessionSelectionsSchema.parse(data)
+
+/**
+ * Parse a {@link LocalSessionSelections} object.
+ */
+export const parseLocalSessionSelections = (
+  data: unknown,
+): LocalSessionSelections => localSessionSelectionsSchema.parse(data)
+
+/**
+ * Encode a {@link LocalSessionSelections} object to JSON-able data.
+ */
+export const encodeLocalSessionSelections = (
+  localSels: LocalSessionSelections,
+): z.input<typeof localSessionSelectionsSchema> =>
+  localSessionSelectionsSchema.encode(localSels)

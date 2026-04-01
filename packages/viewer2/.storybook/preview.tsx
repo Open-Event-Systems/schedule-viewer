@@ -16,6 +16,7 @@ const preview: Preview = {
       test: "todo",
     },
   },
+  tags: ["autodocs"],
   decorators: [
     (Story) => {
       return (

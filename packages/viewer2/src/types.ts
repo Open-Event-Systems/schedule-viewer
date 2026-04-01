@@ -1,12 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query"
-import type { SWStore } from "./sw/service-worker.js"
+import type { SWState } from "./sw/service-worker.js"
 import type { ViewerConfig } from "./config.js"
 import type {
+  LocalSessionSelectionsStore,
   ScheduleAPI,
-  SelectionsAPI,
-  SessionSelectionsStore,
+  ServerSelectionsAPI,
+  SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import type { StoreApi } from "zustand"
+import type { PWAState } from "./sw/pwa.js"
 
 /**
  * Parts of app context that are known at page load.
@@ -16,7 +18,8 @@ export type StaticAppContextValue = Readonly<{
   origin: string
   getCurrentURL: () => string
   queryClient: QueryClient
-  swStore: StoreApi<SWStore>
+  pwaStore: StoreApi<PWAState>
+  swStore: StoreApi<SWState>
 }>
 
 /**
@@ -25,8 +28,13 @@ export type StaticAppContextValue = Readonly<{
 export type DynamicAppContextValue = Readonly<{
   config: ViewerConfig
   scheduleAPI: ScheduleAPI
-  sessionSelectionsStore: SessionSelectionsStore
-  selectionsAPI: SelectionsAPI
+  serverSelectionsAPI?: ServerSelectionsAPI
+  localSessionSelectionsStores: {
+    bookmarks: LocalSessionSelectionsStore
+  }
+  sessionSelectionsAPIs: Readonly<{
+    bookmarks: SessionSelectionsAPI
+  }>
 }>
 
 export type AppContextValue = StaticAppContextValue & DynamicAppContextValue

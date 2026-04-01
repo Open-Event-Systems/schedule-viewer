@@ -1,6 +1,7 @@
 import { defineConfig } from "vite"
 import dtsPlugin from "vite-plugin-dts"
-import react from "@vitejs/plugin-react"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
 
 import packageJson from "./package.json" with { type: "json" }
 
@@ -27,10 +28,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    react({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
     dtsPlugin({
       exclude: ["**/*.stories.*"],

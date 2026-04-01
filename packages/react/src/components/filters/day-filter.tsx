@@ -1,7 +1,7 @@
 import { ActionIcon, Box, type BoxProps, Select, useProps } from "@mantine/core"
 import clsx from "clsx"
 import { format } from "date-fns"
-import { useMemo } from "react"
+import { useMemo, type MouseEvent } from "react"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import type { Day } from "@open-event-systems/schedule-lib"
 
@@ -11,6 +11,7 @@ export type DayFilterProps = {
   days?: Iterable<Day> | undefined
   dayFormat?: string | undefined
   selectedDay?: string | undefined
+  getHref?: (day: Day) => string | undefined
   onSelectDay?: ((day: Day) => void) | undefined
 } & BoxProps
 
@@ -19,12 +20,13 @@ const defaultDayFormat = "EEEE, MMM d"
 export const DayFilter = (props: DayFilterProps) => {
   const {
     className,
-    days = [],
+    days,
     dayFormat = defaultDayFormat,
     selectedDay,
+    getHref,
     onSelectDay,
     ...other
-  } = useProps("DayFilter", {}, props)
+  } = useProps("DayFilter", { days: [] }, props)
 
   const { daysByKey, dayData } = useMemo(() => {
     const daysByKey = new Map<string, Day>()
@@ -39,10 +41,24 @@ export const DayFilter = (props: DayFilterProps) => {
     return { daysByKey, dayData }
   }, [days, dayFormat])
 
+  const daysArr = [...days]
+
   const selectedIdx = dayData.findIndex((o) => o.value == selectedDay)
 
+  const canPrev = selectedIdx > 0
+  const prevDay = canPrev ? daysArr[selectedIdx - 1] : undefined
+  const prevHref = prevDay && getHref ? getHref(prevDay) : undefined
+  const canNext = selectedIdx < dayData.length - 1
+  const nextDay = canNext ? daysArr[selectedIdx + 1] : undefined
+  const nextHref = nextDay && getHref ? getHref(nextDay) : undefined
+
   return (
-    <Box className={clsx("DayFilter-root", classes.root, className)} {...other}>
+    <Box
+      component="section"
+      aria-label="day filter"
+      className={clsx("DayFilter-root", classes.root, className)}
+      {...other}
+    >
       <ActionIcon
         className={clsx(
           "DayFilter-prev",
@@ -50,10 +66,13 @@ export const DayFilter = (props: DayFilterProps) => {
           classes.prev,
           classes.button,
         )}
+        component={prevHref ? "a" : "button"}
         variant="subtle"
         title="Previous Day"
-        disabled={selectedIdx <= 0}
-        onClick={() => {
+        href={prevHref}
+        disabled={!canPrev}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           const prevDayOpt = dayData[selectedIdx - 1]
           const prevDay = prevDayOpt
             ? daysByKey.get(prevDayOpt.value)
@@ -64,6 +83,7 @@ export const DayFilter = (props: DayFilterProps) => {
         <IconChevronLeft />
       </ActionIcon>
       <Select
+        title="Select Day"
         className={clsx("DayFilter-select", classes.select)}
         classNames={{
           input: clsx("DayFilter-selectInput", classes.selectInput),
@@ -86,10 +106,13 @@ export const DayFilter = (props: DayFilterProps) => {
           classes.next,
           classes.button,
         )}
+        component={nextHref ? "a" : "button"}
         variant="subtle"
         title="Next Day"
-        disabled={selectedIdx >= dayData.length - 1}
-        onClick={() => {
+        href={nextHref}
+        disabled={!canNext}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           const nextDayOpt = dayData[selectedIdx + 1]
           const nextDay = nextDayOpt
             ? daysByKey.get(nextDayOpt.value)

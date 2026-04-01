@@ -1,23 +1,39 @@
 import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
 import { VitePWA } from "vite-plugin-pwa"
-import { visualizer } from "rollup-plugin-visualizer"
 
 import packageJSON from "./package.json"
 
 export default defineConfig({
-  base: "",
   build: {
     target: "es2017",
     rolldownOptions: {
-      plugins: [visualizer()],
+      plugins: [],
+      experimental: {
+        lazyBarrel: true,
+      },
+      treeshake: {
+        moduleSideEffects: [
+          {
+            test: /\.s?css$/,
+            sideEffects: true,
+          },
+        ],
+      },
       output: {
-        strictExecutionOrder: true,
+        // strictExecutionOrder: true,
         codeSplitting: {
+          maxSize: 500000,
           groups: [
             {
               name: "vendor",
               test: /node_modules/,
+              entriesAware: true,
+            },
+            {
+              name: "app",
+              test: /[\\/]packages[\\/](?:react|lib|map)[\\/]/,
               entriesAware: true,
             },
           ],
@@ -29,10 +45,9 @@ export default defineConfig({
     __VIEWER_VERSION__: JSON.stringify(packageJSON.version),
   },
   plugins: [
-    react({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
     VitePWA({
       injectRegister: false,
@@ -91,11 +106,11 @@ export default defineConfig({
       },
     },
   ],
-  experimental: {
-    renderBuiltUrl: (filename, opts) => {
-      if (opts.hostType == "html") {
-        return `/${filename}`
-      }
-    },
-  },
+  // experimental: {
+  //   renderBuiltUrl: (filename, opts) => {
+  //     if (opts.hostType == "html") {
+  //       return `/${filename}`
+  //     }
+  //   },
+  // },
 })

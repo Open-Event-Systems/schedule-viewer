@@ -1,39 +1,46 @@
 import {
-  Button,
-  type ButtonProps,
+  ActionIcon,
+  type ActionIconProps,
   Menu,
   type MenuProps,
   useProps,
 } from "@mantine/core"
-import { IconCalendarDown, IconShare3, IconTransfer } from "@tabler/icons-react"
+import {
+  IconCalendarDown,
+  IconShare,
+  IconShare3,
+  IconTransfer,
+} from "@tabler/icons-react"
 
 export type ShareMenuProps = {
-  enableSync?: boolean
+  enabledOptions?: Iterable<"export" | "share" | "sync">
   onShare?: () => void
   onSync?: () => void
   onExport?: () => void
-  ButtonProps?: Partial<ButtonProps>
+  ButtonProps?: Partial<ActionIconProps>
 } & MenuProps
 
 export const ShareMenu = (props: ShareMenuProps) => {
-  const { enableSync, onShare, onSync, onExport, ButtonProps, ...other } =
-    useProps("ShareMenu", {}, props)
+  const { enabledOptions, onShare, onSync, onExport, ButtonProps, ...other } =
+    useProps("ShareMenu", { enabledOptions: [] }, props)
+
+  const opts = [...enabledOptions]
 
   return (
     <Menu {...other}>
       <Menu.Target>
-        <Button
-          leftSection={<IconShare3 />}
+        <ActionIcon
+          title="Sharing Options"
           variant="subtle"
-          size="sm"
+          size="input-sm"
           {...ButtonProps}
         >
-          Share
-        </Button>
+          <IconShare />
+        </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Import/Export</Menu.Label>
-        {enableSync && (
+        {opts.includes("share") && (
           <Menu.Item
             leftSection={<IconShare3 />}
             onClick={() => onShare && onShare()}
@@ -41,7 +48,7 @@ export const ShareMenu = (props: ShareMenuProps) => {
             Share My Schedule
           </Menu.Item>
         )}
-        {enableSync && (
+        {opts.includes("sync") && (
           <Menu.Item
             leftSection={<IconTransfer />}
             onClick={() => onSync && onSync()}
@@ -49,12 +56,14 @@ export const ShareMenu = (props: ShareMenuProps) => {
             Sync Device
           </Menu.Item>
         )}
-        <Menu.Item
-          leftSection={<IconCalendarDown />}
-          onClick={() => onExport && onExport()}
-        >
-          Export Calendar
-        </Menu.Item>
+        {opts.includes("export") && (
+          <Menu.Item
+            leftSection={<IconCalendarDown />}
+            onClick={() => onExport && onExport()}
+          >
+            Export Calendar
+          </Menu.Item>
+        )}
       </Menu.Dropdown>
     </Menu>
   )

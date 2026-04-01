@@ -107,22 +107,50 @@ export const getDay = (d: Date, dayChangeHour = 0): Day => {
 }
 
 /**
- * Get the days for a collection of items.
+ * Get the days for a collection of items. The items must be sorted by start
+ * date.
  */
 export const getDays = (
   items: Iterable<{ readonly start: Date }>,
   dayChangeHour?: number,
 ): readonly Day[] => {
-  const days = new Map<string, Day>()
+  const startDates = []
 
   for (const item of items) {
-    const day = getDay(item.start, dayChangeHour)
-    days.set(day.key, day)
+    if (item.start) {
+      startDates.push(item.start)
+    }
   }
 
-  const dayArr = [...days.values()]
-  sortIntervalsByStartDate(dayArr)
-  return dayArr
+  const first = startDates[0]
+  const last = startDates[startDates.length - 1]
+
+  if (!first || !last) {
+    return []
+  }
+
+  const firstDay = getDay(first, dayChangeHour)
+
+  const days = []
+
+  let cur = firstDay
+  let curEndTime = firstDay.end.getTime()
+
+  while (startDates.length > 0) {
+    let endIdx = startDates.findIndex((t) => t.getTime() >= curEndTime)
+    if (endIdx == -1) {
+      endIdx = startDates.length
+    }
+
+    if (endIdx > 0) {
+      startDates.splice(0, endIdx)
+      days.push(cur)
+    }
+
+    cur = getDay(add(cur.start, { days: 1 }), dayChangeHour)
+    curEndTime = cur.end.getTime()
+  }
+  return days
 }
 
 /**

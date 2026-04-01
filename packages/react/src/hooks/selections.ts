@@ -1,33 +1,53 @@
 import {
-  type SelectionsAPI,
   type Selections,
   type SelectionsType,
-  composeSelectionsAPI,
-  makeSessionSelectionsStore,
-  type SessionSelections,
+  type ServerSelections,
+  type ServerSelectionsAPI,
+  type SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import {
   mutationOptions,
+  QueryClient,
   queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
-  useSuspenseQuery,
   type UseQueryResult,
 } from "@tanstack/react-query"
 import { createContext, use, useCallback } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
-export const SelectionsAPIContext = createContext<SelectionsAPI>(
-  composeSelectionsAPI(makeSessionSelectionsStore("")),
-)
-export const useSelectionsAPI = (): SelectionsAPI => use(SelectionsAPIContext)
+export const ServerSelectionsAPIContext = createContext<
+  ServerSelectionsAPI | undefined
+>(undefined)
+
+export const useServerSelectionsAPI = (): ServerSelectionsAPI | undefined =>
+  use(ServerSelectionsAPIContext)
+
+export const SessionSelectionsAPIContext = createContext<{
+  readonly [key in SelectionsType]?: SessionSelectionsAPI
+}>({})
+
+export const useSessionSelectionsAPI = (
+  type: SelectionsType,
+): SessionSelectionsAPI => {
+  const ctx = use(SessionSelectionsAPIContext)[type]
+  if (!ctx) {
+    throw new Error(`no context for selections type ${type} provided`)
+  }
+
+  return ctx
+}
 
 /**
- * Query options factories for schedule items.
+ * Query options factories for selections.
  */
 export const selectionsQueryOptions = {
-  selections: (api: SelectionsAPI, scheduleId: string, id: string) =>
+  selections: (
+    api: ServerSelectionsAPI | undefined,
+    scheduleId: string,
+    id: string,
+  ) =>
     queryOptions({
       queryKey: [
         ...scheduleQueryOptions.schedule(scheduleId),
@@ -35,12 +55,35 @@ export const selectionsQueryOptions = {
         id,
       ] as const,
       queryFn: async () => {
-        return await api.getSelections(id)
+        return api ? await api.getSelections(id) : null
       },
       staleTime: Infinity,
     }),
+  counts: (
+    api: ServerSelectionsAPI | undefined,
+    scheduleId: string,
+    type: SelectionsType,
+  ) =>
+    queryOptions({
+      queryKey: [
+        ...scheduleQueryOptions.schedule(scheduleId),
+        "counts",
+        { type },
+      ],
+      queryFn: async () => {
+        try {
+          return api ? await api.getCounts(type) : new Map()
+        } catch (_) {
+          return new Map()
+        }
+      },
+      staleTime: 120000,
+    }),
+} as const
+
+export const sessionSelectionsQueryOptions = {
   sessionSelections: (
-    api: SelectionsAPI,
+    api: SessionSelectionsAPI,
     scheduleId: string,
     type: SelectionsType,
   ) =>
@@ -49,49 +92,46 @@ export const selectionsQueryOptions = {
         ...scheduleQueryOptions.schedule(scheduleId),
         "session-selections",
         { type },
-      ] as const,
+      ],
       queryFn: async () => {
-        return await api.getSessionSelections(type)
+        return await api.get()
       },
       staleTime: 120000,
     }),
-  bookmarkCounts: (api: SelectionsAPI, scheduleId: string) =>
-    queryOptions({
-      queryKey: [
-        ...scheduleQueryOptions.schedule(scheduleId),
-        "counts",
-      ] as const,
-      queryFn: async () => {
-        return await api.getBookmarkCounts()
-      },
-      staleTime: 120000,
-    }),
-} as const
+}
 
 /**
  * Mutation options for updating session selections.
  */
 export const selectionsMutationOptions = {
-  updateSessionSelections: (
-    api: SelectionsAPI,
+  setItemSelected: (
+    api: SessionSelectionsAPI,
+    queryClient: QueryClient,
     scheduleId: string,
     type: SelectionsType,
-    id: string,
   ) =>
     mutationOptions({
       mutationKey: [
-        ...selectionsQueryOptions.sessionSelections(api, scheduleId, type)
-          .queryKey,
-        id,
+        ...sessionSelectionsQueryOptions.sessionSelections(
+          api,
+          scheduleId,
+          type,
+        ).queryKey,
       ] as const,
-      mutationFn: async (selected: boolean) => {
+      mutationFn: async (args: { itemId: string; selected: boolean }) => {
+        const { itemId, selected } = args
         if (selected) {
-          return await api.updateSessionSelections(type, { add: [id] })
+          return await api.add(itemId)
         } else {
-          return await api.updateSessionSelections(type, {
-            delete: [id],
-          })
+          return await api.delete(itemId)
         }
+      },
+      onSuccess: (updated) => {
+        queryClient.setQueryData(
+          sessionSelectionsQueryOptions.sessionSelections(api, scheduleId, type)
+            .queryKey,
+          updated,
+        )
       },
     }),
 } as const
@@ -101,11 +141,11 @@ export const selectionsMutationOptions = {
  */
 export const useSessionSelections = (
   type: SelectionsType,
-): UseQueryResult<SessionSelections> => {
+): UseQueryResult<Selections> => {
   const config = useScheduleConfig()
-  const api = useSelectionsAPI()
+  const api = useSessionSelectionsAPI(type)
   const query = useQuery(
-    selectionsQueryOptions.sessionSelections(api, config.id, type),
+    sessionSelectionsQueryOptions.sessionSelections(api, config.id, type),
   )
   return query
 }
@@ -118,17 +158,17 @@ export const useIsSelected = (
   id: string,
 ): UseQueryResult<boolean> => {
   const config = useScheduleConfig()
-  const api = useSelectionsAPI()
+  const api = useSessionSelectionsAPI(type)
 
   const selectFn = useCallback(
-    (ssels: SessionSelections) => {
-      return ssels.selections.has(id)
+    (ssels: Selections) => {
+      return ssels.has(id)
     },
     [id],
   )
 
   const query = useQuery({
-    ...selectionsQueryOptions.sessionSelections(api, config.id, type),
+    ...sessionSelectionsQueryOptions.sessionSelections(api, config.id, type),
     select: selectFn,
   })
 
@@ -136,73 +176,70 @@ export const useIsSelected = (
 }
 
 /**
- * Get a function to update the selected status of an item.
+ * Get a function to update the selected status of items.
  */
 export const useSetSelected = (
   type: SelectionsType,
-  id: string,
-): ((selected: boolean) => Promise<SessionSelections>) => {
+): ((itemId: string, selected: boolean) => Promise<Selections>) => {
   const config = useScheduleConfig()
   const queryClient = useQueryClient()
-  const api = useSelectionsAPI()
-  const mutation = useMutation({
-    ...selectionsMutationOptions.updateSessionSelections(
+  const api = useSessionSelectionsAPI(type)
+  const mutation = useMutation(
+    selectionsMutationOptions.setItemSelected(
       api,
+      queryClient,
       config.id,
       type,
-      id,
     ),
-    onSuccess(selections) {
-      queryClient.setQueryData(
-        selectionsQueryOptions.sessionSelections(api, config.id, type).queryKey,
-        selections,
-      )
+  )
+  const mutateFunc = useCallback(
+    (itemId: string, selected: boolean) => {
+      return mutation.mutateAsync({ itemId, selected })
     },
-  })
-  return mutation.mutateAsync
+    [mutation.mutateAsync],
+  )
+  return mutateFunc
 }
 
 /**
  * Get selections by ID.
  */
-export const useSelections = (id: string): Selections | null => {
+export const useSelections = (
+  id: string,
+): UseQueryResult<ServerSelections | null> => {
   const config = useScheduleConfig()
-  const api = useSelectionsAPI()
-  const query = useSuspenseQuery(
-    selectionsQueryOptions.selections(api, config.id, id),
-  )
-  return query.data
+  const api = useServerSelectionsAPI()
+  return useQuery(selectionsQueryOptions.selections(api, config.id, id))
 }
 
 /**
- * Get bookmark counts.
+ * Get selection counts.
  */
-export const useBookmarkCounts = (): UseQueryResult<
-  ReadonlyMap<string, number>
-> => {
+export const useSelectionCounts = (
+  type: SelectionsType,
+): UseQueryResult<ReadonlyMap<string, number>> => {
   const config = useScheduleConfig()
-  const api = useSelectionsAPI()
-
-  const res = useQuery(selectionsQueryOptions.bookmarkCounts(api, config.id))
-  return res
+  const api = useServerSelectionsAPI()
+  return useQuery(selectionsQueryOptions.counts(api, config.id, type))
 }
 
 /**
- * Get the bookmark count for a single item.
+ * Get the selection count for a single item.
  */
-export const useBookmarkCount = (
+export const useSelectionCount = (
+  type: SelectionsType,
   itemId: string,
 ): UseQueryResult<number | undefined> => {
   const config = useScheduleConfig()
-  const api = useSelectionsAPI()
+  const api = useServerSelectionsAPI()
   const selectFn = useCallback(
-    (res: ReadonlyMap<string, number | undefined>) => {
+    (res: ReadonlyMap<string, number>) => {
       return res.get(itemId)
     },
     [itemId],
   )
   const res = useQuery({
-    ...selectionsQueryOptions.bookmarkCounts(api, config.id),
+    ...selectionsQueryOptions.counts(api, config.id, type),
     select: selectFn,
   })
   return res
