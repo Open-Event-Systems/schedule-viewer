@@ -1,12 +1,25 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { SchedulePage } from "./schedule-page.js"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
-import { useCallback, useMemo, useReducer, useState } from "react"
-import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
+import {
+  useCallback,
+  useMemo,
+  useReducer,
+  useState,
+  type ComponentPropsWithoutRef,
+} from "react"
 import { useFilteredItems, type FilterOptions } from "../../hooks/filter.js"
-import { ItemPills, type ItemPillProps } from "../pill/item-pills.js"
+import {
+  ItemPills,
+  type ItemPillProps,
+  type ItemPillsProps,
+} from "../pill/item-pills.js"
 import { ItemDetails, type ItemDetailsProps } from "../details/item-details.js"
-import { makeSelections } from "@open-event-systems/schedule-lib"
+import {
+  getDays,
+  getDefaultDay,
+  makeSelections,
+} from "@open-event-systems/schedule-lib"
 import { TagFilter } from "../filters/tag-filter.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import { BookmarkFilter } from "../filters/bookmark-filter.js"
@@ -14,6 +27,7 @@ import { ViewSelect } from "../view-select/view-select.js"
 import { TextFilter } from "../filters/text-filter.js"
 import { PastEventsFilter } from "../filters/past-events-filter.js"
 import { ShareMenu } from "../share-menu/share-menu.js"
+import { ScheduleComponent } from "../schedule/schedule-component.stories.js"
 
 const meta: Meta<typeof SchedulePage> = {
   component: SchedulePage,
@@ -53,8 +67,23 @@ export const Default: StoryObj<typeof SchedulePage> = {
       },
     )
 
-    const [type, setType] = useState<ScheduleProps["type"]>("daily-agenda")
+    const [type, setType] =
+      useState<ComponentPropsWithoutRef<typeof ScheduleComponent>["type"]>(
+        "daily-agenda",
+      )
     const [selections, setSelections] = useState(makeSelections())
+
+    const days = useMemo(
+      () =>
+        getDays(
+          [...parsedEvents].filter(
+            (e): e is typeof e & { readonly start: Date } => !!e.start,
+          ),
+        ),
+      [],
+    )
+    const selectedDay = days.find((d) => d.key == selectedDayKey)
+    const defaultDay = getDefaultDay(days, new Date())
 
     const renderDetails = useCallback(
       (props: ItemDetailsProps) => {
@@ -64,6 +93,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
             bookmarked={selections.has(props.item.id)}
             url={`#${props.item.id}`}
             locationHref={`#${props.item.location}`}
+            tags={parsedConfig.tags}
             onClickLocation={(e) => {
               e.preventDefault()
             }}
@@ -99,6 +129,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
         )
       },
       [selections, setSelections, renderDetails],
+    )
+
+    const renderItemPills = useCallback(
+      (props: ItemPillsProps) => {
+        return <ItemPills {...props} renderPill={renderPill} />
+      },
+      [renderPill],
     )
 
     const filtered = useFilteredItems(parsedEvents, {
@@ -161,14 +198,15 @@ export const Default: StoryObj<typeof SchedulePage> = {
           <ShareMenu {...props} enabledOptions={["export", "share", "sync"]} />
         )}
         renderSchedule={(props) => (
-          <Schedule
+          <ScheduleComponent
             {...props}
-            items={parsedEvents}
-            filteredItems={filtered}
+            items={filtered}
             type={type}
-            selectedDayKey={selectedDayKey}
+            days={days}
+            tags={parsedConfig.tags}
+            selectedDay={selectedDay ?? defaultDay}
             onSelectDay={(d) => dispatch({ selectedDayKey: d.key })}
-            renderPill={renderPill}
+            renderItemPills={renderItemPills}
           />
         )}
       />

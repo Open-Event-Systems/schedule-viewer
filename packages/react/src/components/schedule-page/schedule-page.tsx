@@ -10,7 +10,6 @@ import {
 import { memo } from "react"
 import { scheduleViewTypes, type ScheduleViewType } from "../../types.js"
 import { ViewSelect, type ViewSelectProps } from "../view-select/view-select.js"
-import { Schedule, type ScheduleProps } from "../schedule/schedule.js"
 
 import classes from "./schedule-page.module.scss"
 import { TextFilter, type TextFilterProps } from "../filters/text-filter.js"
@@ -20,6 +19,7 @@ import {
 } from "../filters/past-events-filter.js"
 import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
+import type { BaseScheduleComponentProps } from "../schedule/schedule-component.js"
 
 export type SchedulePageProps = {
   allowTypes?: Iterable<ScheduleViewType>
@@ -34,7 +34,7 @@ export type SchedulePageProps = {
   renderPastEventsFilter?: (props: PastEventsFilterProps) => ReactNode
   renderTagFilter?: (props: TagFilterProps) => ReactNode
   renderShare?: (props: ShareMenuProps) => ReactNode
-  renderSchedule?: (props: ScheduleProps) => ReactNode
+  renderSchedule?: (props: BaseScheduleComponentProps) => ReactNode
   onShare?: () => void
   onSync?: () => void
 } & StackProps
@@ -69,7 +69,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
       renderPastEventsFilter: () => <PastEventsFilter />,
       renderTagFilter: () => <TagFilter />,
       renderShare: () => <ShareMenu />,
-      renderSchedule: () => <Schedule />,
+      renderSchedule: () => null,
     } as const,
     props,
   )
