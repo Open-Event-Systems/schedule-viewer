@@ -39,6 +39,15 @@ export type DynamicAppContextValue = Readonly<{
 
 export type AppContextValue = StaticAppContextValue & DynamicAppContextValue
 
+export const scheduleViewComponentTypes = [
+  "daily-agenda",
+  "full-agenda",
+  "catalog",
+  "tags",
+] as const
+export type ScheduleViewComponentType =
+  (typeof scheduleViewComponentTypes)[number]
+
 declare global {
   var __VIEWER_VERSION__: string
 }

@@ -7,10 +7,6 @@ import {
 } from "@tanstack/react-router"
 import type { RouterContext } from "./router.js"
 import { Loading } from "./components/loading/loading.js"
-import {
-  isScheduleViewType,
-  type ScheduleViewType,
-} from "@open-event-systems/schedule-react"
 import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
 import { DedupedHeadContent } from "./components/head/deduped-head-content.js"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
@@ -104,7 +100,7 @@ export const filterStateRoute = createRoute({
 })
 
 export type PagesParams = Readonly<{
-  view?: ScheduleViewType
+  view?: string
   day?: string
   past?: boolean
   bookmarked?: boolean
@@ -120,7 +116,7 @@ export const pagesRoute = createRoute({
     const bookmarked = !!search.bookmarked
 
     return {
-      ...(isScheduleViewType(viewType) ? { view: viewType } : {}),
+      ...(typeof viewType == "string" && viewType ? { view: viewType } : {}),
       ...(typeof day == "string" ? { day } : {}),
       ...(past ? { past: true } : {}),
       ...(bookmarked ? { bookmarked: true } : {}),

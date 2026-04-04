@@ -1,31 +1,37 @@
 import {
   getDays,
   getDefaultDay,
-  makeScheduleItemCollection,
   type Day,
   type DetailedScheduleItem,
   type ScheduleItemCollection,
 } from "@open-event-systems/schedule-lib"
-import { useViewerConfig, type PageConfig } from "../../config.js"
+import {
+  useViewerConfig,
+  type PageConfig,
+  type ViewConfig,
+} from "../../config.js"
 import { FilterStateStoreContext, usePageFilteredItems } from "../../filter.js"
 import { Box, useProps } from "@mantine/core"
 import {
+  ItemPills,
   makeTagIndicatorFunc,
   Markdown,
   Schedule,
   SchedulePage,
-  scheduleViewTypes,
   ShareMenu,
   useFilteredItems,
   useRelevantTags,
+  type CatalogViewProps,
+  type DailyAgendaViewProps,
+  type FullAgendaViewProps,
+  type ItemPillsProps,
   type SchedulePageProps,
-  type ScheduleProps,
-  type ScheduleViewType,
+  type TagsViewProps,
 } from "@open-event-systems/schedule-react"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useRouter, useSearch } from "@tanstack/react-router"
 
-import { useNow, useRequiredContext } from "../../utils.js"
+import { iterToArr, useNow, useRequiredContext } from "../../utils.js"
 import {
   makeItemNavPropsMap,
   makeRenderItemDetailsFunc,
@@ -45,10 +51,11 @@ import {
   ViewSelectContainer,
 } from "../filters/filters.js"
 import { useShallow } from "zustand/react/shallow"
+import { type ScheduleViewComponentType } from "../../types.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
-    scheduleViewType?: ScheduleViewType
+    scheduleViewType?: ScheduleViewComponentType
   }
 }
 
@@ -75,14 +82,40 @@ export const Page = (props: PageProps) => {
     filterStore,
     useShallow((state) => [state.text, state.disabledTags]),
   )
-  const [showPastEvents, onlyBookmarked] = useSearch({
+
+  const [viewId, showPastEvents, onlyBookmarked] = useSearch({
     strict: false,
-    select: (state) => [state.past, state.bookmarked],
+    select: (state) => [state.view, state.past, state.bookmarked] as const,
+    structuralSharing: true,
   })
 
-  const pageFilteredItems = usePageFilteredItems(pageConfig, items)
+  const selectedView = pageConfig.views
+    ? pageConfig.views.find((c) => c.id == viewId)
+    : undefined
+  const defaultView = pageConfig.views ? pageConfig.views[0] : undefined
+  // const viewConfig = selectedView ?? defaultView
+
+  const viewOptions = useMemo(() => {
+    return iterToArr(pageConfig.views).map((c) => ({
+      value: c.id,
+      label: c.title,
+    }))
+  }, [pageConfig.views])
+
+  const pageFilteredItems = usePageFilteredItems(pageConfig, items ?? [])
 
   const relevantTags = useRelevantTags(config.tags, pageFilteredItems)
+
+  const days = useMemo(
+    () =>
+      getDays(
+        [...pageFilteredItems].filter(
+          (d): d is typeof d & { readonly start: Date } => !!d.start,
+        ),
+        config.dayChangeHour,
+      ),
+    [pageFilteredItems, config.dayChangeHour],
+  )
 
   const ssels = useSessionSelectionsIfEnabled(onlyBookmarked)
 
@@ -92,7 +125,7 @@ export const Page = (props: PageProps) => {
     onlyBookmarked,
     showPastEvents,
     text,
-    selections: ssels?.selections,
+    selections: ssels,
   })
 
   return (
@@ -102,11 +135,14 @@ export const Page = (props: PageProps) => {
       </Markdown>
       <SchedulePage
         {...other}
-        allowTypes={pageConfig.enabledViews}
+        viewOptions={viewOptions}
         hideShowPastEventsFilter={pageConfig.noPastEventsOption}
         renderBookmarkFilter={(props) => <BookmarkFilterContainer {...props} />}
         renderViewSelect={(props) => (
-          <ViewSelectContainer {...props} pageConfig={pageConfig} />
+          <ViewSelectContainer
+            value={selectedView?.id ?? defaultView?.id}
+            {...props}
+          />
         )}
         renderTextFilter={(props) => <TextFilterContainer {...props} />}
         renderPastEventsFilter={(props) => (
@@ -120,11 +156,12 @@ export const Page = (props: PageProps) => {
         renderSchedule={(props) => (
           <ScheduleContainer
             {...props}
+            items={filteredItems}
+            days={days}
             pageConfig={pageConfig}
+            viewConfig={selectedView}
             origin={origin}
             currentURL={currentURL}
-            items={pageFilteredItems}
-            filteredItems={filteredItems}
           />
         )}
       />
@@ -132,20 +169,20 @@ export const Page = (props: PageProps) => {
   )
 }
 
-const ScheduleContainer = (
-  props: ScheduleProps & {
-    pageConfig: PageConfig
-    origin: string
-    currentURL: string
-  },
-) => {
-  const {
-    pageConfig,
-    currentURL,
-    origin,
-    items = makeScheduleItemCollection(),
-    ...other
-  } = props
+type ViewConfigProps = DailyAgendaViewProps &
+  FullAgendaViewProps &
+  CatalogViewProps &
+  TagsViewProps
+
+const ScheduleContainer = (props: {
+  items: Iterable<DetailedScheduleItem>
+  days?: Iterable<Day>
+  viewConfig?: ViewConfig
+  pageConfig: PageConfig
+  origin: string
+  currentURL: string
+}) => {
+  const { viewConfig, currentURL, origin, items, days = [] } = props
 
   const now = useNow()
   const config = useViewerConfig()
@@ -153,35 +190,13 @@ const ScheduleContainer = (
   const navigate = useNavigate()
 
   // TODO: reuse this logic?
-  const viewType = useSearch({ strict: false, select: (state) => state.view })
-  const allowedTypes = pageConfig.enabledViews ?? scheduleViewTypes
-  const selectedType =
-    viewType && allowedTypes.includes(viewType)
-      ? viewType
-      : (allowedTypes[0] ?? scheduleViewTypes[0])
-
-  // TODO: reuse this logic?
   const selectedDayKey = useSearch({
     strict: false,
     select: (state) => state.day,
   })
 
-  const days = useMemo(
-    () =>
-      getDays(
-        items
-          ? items.filter((d): d is typeof d & { start: Date } => !!d.start)
-          : [],
-        config.dayChangeHour,
-      ),
-    [items, config.dayChangeHour],
-  )
-
   const defaultDay = useMemo(() => getDefaultDay(days, now), [days, now])
-  const validSelectedDay =
-    selectedDayKey && days.some((d) => d.key == selectedDayKey)
-      ? selectedDayKey
-      : defaultDay?.key
+  const selectedDay = [...days].find((d) => d.key == selectedDayKey)
 
   const onSelectDay = useCallback(
     (day: Day) => {
@@ -213,7 +228,7 @@ const ScheduleContainer = (
 
   const ssels = useSessionSelectionsIfEnabled(onlyBookmarked)
 
-  const filteredItems = useFilteredItems(items, {
+  const filteredItems = useFilteredItems(items ?? [], {
     now,
     disabledTags,
     selections: ssels,
@@ -245,6 +260,13 @@ const ScheduleContainer = (
     [renderItemDetailsFunc, tagIndicatorFunc, navPropsMap],
   )
 
+  const renderItemPills = useCallback(
+    (props: ItemPillsProps) => (
+      <ItemPills {...props} renderPill={renderPillFunc} />
+    ),
+    [renderPillFunc],
+  )
+
   const getDayHref = useCallback(
     (day: Day) => {
       return (
@@ -266,21 +288,38 @@ const ScheduleContainer = (
     [router],
   )
 
-  return (
-    <Schedule
-      {...other}
-      items={items}
-      dayTitleComponent="h2"
-      renderBinTitle={(props) =>
-        selectedType == "full-agenda" ? <h3 {...props} /> : <h2 {...props} />
-      }
-      filteredItems={filteredItems}
-      now={now}
-      type={selectedType}
-      selectedDayKey={validSelectedDay}
-      getDayHref={getDayHref}
-      onSelectDay={onSelectDay}
-      renderPill={renderPillFunc}
-    />
-  )
+  const componentType = viewConfig?.type ?? "daily-agenda"
+
+  const viewConfigProps: ViewConfigProps & Record<string, unknown> = {
+    ...viewConfig,
+    items: filteredItems,
+    dayChangeHour: config.dayChangeHour,
+    dayFormat: config.dayFormat,
+    days,
+    selectedDay: selectedDay ?? defaultDay,
+    onSelectDay,
+    getDayHref,
+    now,
+    tagIndicators: config.tagIndicators,
+    tags: config.tags,
+    renderItemPills,
+  }
+
+  return <Schedule {...viewConfigProps} type={componentType} />
+
+  // return (
+  //   <Schedule
+  //     type={viewConfig?.type ?? "daily-agenda"}
+  //     items={filteredItems}
+  //     now={now}
+  //     tags={config.tags}
+  //     days={days}
+  //     selectedDay={selectedDay ?? defaultDay}
+  //     dayChangeHour={config.dayChangeHour}
+  //     getDayHref={getDayHref}
+  //     onSelectDay={onSelectDay}
+  //     dayFormat={config.dayFormat}
+  //     renderItemPills={renderItemPills}
+  //   />
+  // )
 }

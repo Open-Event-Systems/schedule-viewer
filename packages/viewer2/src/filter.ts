@@ -1,8 +1,6 @@
 import {
-  makeScheduleItemCollection,
   type DetailedScheduleItem,
   type ScheduleItem,
-  type ScheduleItemCollection,
   type Selections,
 } from "@open-event-systems/schedule-lib"
 import {
@@ -75,14 +73,14 @@ export const useSessionSelectionsIfEnabled = (
 
 export const usePageFilteredItems = <T extends DetailedScheduleItem>(
   pageConfig: PageConfig,
-  items?: ScheduleItemCollection<T>,
-): ScheduleItemCollection<T> => {
+  items: Iterable<T>,
+): Iterable<T> => {
   return useMemo(() => {
     const typeFilter = makeTypeFilter(pageConfig.onlyType)
     const reqTagsFilter = makeRequireTagsFilter(pageConfig.requireTags)
 
-    const byType = makeScheduleItemCollection(items?.filter(typeFilter))
-    const byReqTags = makeScheduleItemCollection(byType.filter(reqTagsFilter))
+    const byType = items ? [...items].filter(typeFilter) : []
+    const byReqTags = byType.filter(reqTagsFilter)
     return byReqTags
   }, [items, pageConfig])
 }

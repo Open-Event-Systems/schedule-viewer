@@ -8,7 +8,6 @@ import {
 } from "../filters/bookmark-filter.js"
 
 import { memo } from "react"
-import { scheduleViewTypes, type ScheduleViewType } from "../../types.js"
 import { ViewSelect, type ViewSelectProps } from "../view-select/view-select.js"
 
 import classes from "./schedule-page.module.scss"
@@ -19,10 +18,10 @@ import {
 } from "../filters/past-events-filter.js"
 import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
-import type { BaseScheduleComponentProps } from "../schedule/schedule-component.js"
+import { iterToArr } from "../../utils.js"
 
 export type SchedulePageProps = {
-  allowTypes?: Iterable<ScheduleViewType>
+  viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
   // TODO: combine into features array
   hideShareMenu?: boolean
   hideBookmarkFilter?: boolean
@@ -34,7 +33,7 @@ export type SchedulePageProps = {
   renderPastEventsFilter?: (props: PastEventsFilterProps) => ReactNode
   renderTagFilter?: (props: TagFilterProps) => ReactNode
   renderShare?: (props: ShareMenuProps) => ReactNode
-  renderSchedule?: (props: BaseScheduleComponentProps) => ReactNode
+  renderSchedule?: (props: object) => ReactNode
   onShare?: () => void
   onSync?: () => void
 } & StackProps
@@ -45,7 +44,7 @@ export type SchedulePageProps = {
 export const SchedulePage = memo((props: SchedulePageProps) => {
   const {
     className,
-    allowTypes,
+    viewOptions,
     hideShareMenu,
     hideBookmarkFilter,
     hideShowPastEventsFilter,
@@ -60,9 +59,6 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
   } = useProps(
     "SchedulePage",
     {
-      allowTypes: scheduleViewTypes,
-      type:
-        (props.allowTypes && [...props.allowTypes][0]) ?? scheduleViewTypes[0],
       renderBookmarkFilter: () => <BookmarkFilter />,
       renderViewSelect: () => <ViewSelect />,
       renderTextFilter: () => <TextFilter />,
@@ -74,14 +70,14 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     props,
   )
 
-  const allowTypesArr = [...allowTypes]
+  const viewOptsArr = iterToArr(viewOptions)
 
   const isSmall = useMediaQuery("(max-width: 48rem)")
   const viewSelect =
-    allowTypesArr.length > 1 &&
+    viewOptsArr.length > 1 &&
     renderViewSelect({
       className: clsx("SchedulePage-viewSelect", classes.viewSelect),
-      allowedTypes: allowTypes,
+      data: viewOptsArr,
     })
   const bookmarkFilter =
     !hideBookmarkFilter &&

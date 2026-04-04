@@ -1,7 +1,6 @@
 import {
   BookmarkFilter,
   PastEventsFilter,
-  scheduleViewTypes,
   TagFilter,
   TextFilter,
   ViewSelect,
@@ -16,27 +15,15 @@ import { useRequiredContext } from "../../utils.js"
 import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { useCallback, type ChangeEvent } from "react"
-import { useViewerConfig, type PageConfig } from "../../config.js"
+import { useViewerConfig } from "../../config.js"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 
-export const ViewSelectContainer = (
-  props: ViewSelectProps & { pageConfig: PageConfig },
-) => {
-  const { pageConfig, ...other } = props
-
-  const viewType = useSearch({ strict: false, select: (state) => state.view })
+export const ViewSelectContainer = (props: ViewSelectProps) => {
   const navigate = useNavigate()
-
-  const allowedTypes = pageConfig.enabledViews ?? scheduleViewTypes
-  const selectedType =
-    viewType && allowedTypes.includes(viewType)
-      ? viewType
-      : (allowedTypes[0] ?? scheduleViewTypes[0])
 
   return (
     <ViewSelect
-      {...other}
-      type={selectedType}
+      {...props}
       onChange={(t) => {
         navigate({
           to: ".",
@@ -45,7 +32,7 @@ export const ViewSelectContainer = (
           hash: true,
           search: (cur) => ({
             ...cur,
-            view: t,
+            ...(t ? { view: t } : {}),
           }),
           replace: true,
         })

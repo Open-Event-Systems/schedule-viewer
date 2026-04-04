@@ -24,12 +24,3 @@ export type ScheduleConfig = Readonly<{
   icalPrefix: string
   icalDomain: string
 }>
-
-export const scheduleViewTypes = [
-  "daily-agenda",
-  "full-agenda",
-  "catalog",
-  "tags",
-] as const
-
-export type ScheduleViewType = (typeof scheduleViewTypes)[number]

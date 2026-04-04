@@ -4,11 +4,9 @@
 
 import {
   DEFAULT_SCHEDULE_CONFIG,
-  isScheduleViewType,
   parseConfig,
   type ScheduleConfig,
   type ScheduleConfigInput,
-  type ScheduleViewType,
 } from "@open-event-systems/schedule-react"
 import z from "zod"
 import wretch from "wretch"
@@ -17,13 +15,21 @@ import {
   parseMapConfig,
   type MapConfig,
 } from "@open-event-systems/schedule-map"
+import type { ScheduleViewComponentType } from "./types.js"
+
+export type ViewConfig = Readonly<{
+  id: string
+  type: ScheduleViewComponentType
+  title: string
+}> &
+  Readonly<Record<string, unknown>>
 
 export type PageConfig = Readonly<{
   id: string
   title?: string
   description?: string
-  enabledViews?: readonly ScheduleViewType[]
-  onlyType?: string | readonly string[]
+  views?: readonly ViewConfig[]
+  onlyType?: readonly string[]
   requireTags?: readonly string[]
   noPastEventsOption?: boolean
 }>
@@ -40,15 +46,30 @@ const opt = <OutT, InT>(
 ): z.ZodType<OutT | undefined, InT | null | undefined> =>
   s.nullish().transform((v) => v ?? undefined)
 
+const viewConfigSchema = z
+  .looseObject({
+    id: z.string(),
+    title: opt(z.string()).optional(),
+    type: z.string().transform((s) => s as ScheduleViewComponentType),
+  })
+  .transform((v) => {
+    const { title, id, ...other } = v
+    return {
+      id,
+      title: title ?? id,
+      ...other,
+    }
+  })
+
 const pageConfigSchema = z
   .looseObject({
     id: z.string(),
     title: opt(z.string()).optional(),
     description: opt(z.string()).optional(),
-    enabledViews: opt(
-      z.array(z.string().transform((v) => v as ScheduleViewType)),
+    views: opt(z.array(viewConfigSchema)).optional(),
+    onlyType: opt(
+      z.union([z.string().transform((s) => [s]), z.array(z.string())]),
     ).optional(),
-    onlyType: opt(z.union([z.string(), z.array(z.string())])).optional(),
     requireTags: opt(z.array(z.string())).optional(),
     noPastEventsOption: opt(z.boolean()).optional(),
   })
@@ -90,31 +111,5 @@ export const parseViewerConfig = (configData: unknown): ViewerConfig => {
     ...config,
     ...viewerConfig,
     ...(mapConfig && { map: mapConfig }),
-  }
-}
-
-const defaultEnabled = [
-  "daily-agenda",
-  "full-agenda",
-  "catalog",
-  "tags",
-] as const satisfies readonly ScheduleViewType[]
-
-export const getEnabledScheduleViewTypes = (
-  enabled?: Iterable<string>,
-): ScheduleViewType[] => {
-  const items = [...(enabled ?? defaultEnabled)]
-  return items.filter(isScheduleViewType)
-}
-
-export const getValidScheduleViewType = (
-  enabled: Iterable<string> | undefined,
-  input: string | undefined,
-) => {
-  const enabledItems = getEnabledScheduleViewTypes(enabled)
-  if (isScheduleViewType(input) && enabledItems.includes(input)) {
-    return input
-  } else {
-    return enabledItems[0] ?? "daily-agenda"
   }
 }

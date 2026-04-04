@@ -8,6 +8,25 @@ import { parseISO } from "date-fns"
 import { use, useMemo, type Context } from "react"
 let overrideDate: Date | undefined
 
+/**
+ * Return an iterable as an array.
+ */
+export function iterToArr(iterable?: null): readonly never[]
+export function iterToArr<A extends readonly unknown[]>(array?: A | null): A
+export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[]
+export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[] {
+  if (iterable == null) {
+    return iterToArr.empty
+  } else if (Array.isArray(iterable)) {
+    return iterable
+  } else {
+    return [...iterable]
+  }
+}
+
+// a singleton empty array is used for referential stability
+iterToArr.empty = [] as const
+
 export const getNow = (loc: ParsedLocation): Date => {
   const hashParams = new URLSearchParams(loc.hash)
   const dateParam = hashParams.get("date")
