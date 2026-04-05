@@ -11,9 +11,13 @@ import {
   IconShare3,
   IconTransfer,
 } from "@tabler/icons-react"
+import { iterToArr } from "../../utils.js"
+
+export const shareMenuOptions = ["export", "share", "sync"] as const
+export type ShareMenuOption = (typeof shareMenuOptions)[number]
 
 export type ShareMenuProps = {
-  enabledOptions?: Iterable<"export" | "share" | "sync">
+  enabledOptions?: Iterable<ShareMenuOption>
   onShare?: () => void
   onSync?: () => void
   onExport?: () => void
@@ -24,7 +28,7 @@ export const ShareMenu = (props: ShareMenuProps) => {
   const { enabledOptions, onShare, onSync, onExport, ButtonProps, ...other } =
     useProps("ShareMenu", { enabledOptions: [] }, props)
 
-  const opts = [...enabledOptions]
+  const opts = iterToArr(enabledOptions)
 
   return (
     <Menu {...other}>

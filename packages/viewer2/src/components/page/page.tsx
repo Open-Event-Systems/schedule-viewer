@@ -93,7 +93,7 @@ export const Page = (props: PageProps) => {
     ? pageConfig.views.find((c) => c.id == viewId)
     : undefined
   const defaultView = pageConfig.views ? pageConfig.views[0] : undefined
-  // const viewConfig = selectedView ?? defaultView
+  const viewConfig = selectedView ?? defaultView
 
   const viewOptions = useMemo(() => {
     return iterToArr(pageConfig.views).map((c) => ({
@@ -136,7 +136,7 @@ export const Page = (props: PageProps) => {
       <SchedulePage
         {...other}
         viewOptions={viewOptions}
-        hideShowPastEventsFilter={pageConfig.noPastEventsOption}
+        enableFeatures={viewConfig?.enableFeatures}
         renderBookmarkFilter={(props) => <BookmarkFilterContainer {...props} />}
         renderViewSelect={(props) => (
           <ViewSelectContainer
@@ -306,20 +306,4 @@ const ScheduleContainer = (props: {
   }
 
   return <Schedule {...viewConfigProps} type={componentType} />
-
-  // return (
-  //   <Schedule
-  //     type={viewConfig?.type ?? "daily-agenda"}
-  //     items={filteredItems}
-  //     now={now}
-  //     tags={config.tags}
-  //     days={days}
-  //     selectedDay={selectedDay ?? defaultDay}
-  //     dayChangeHour={config.dayChangeHour}
-  //     getDayHref={getDayHref}
-  //     onSelectDay={onSelectDay}
-  //     dayFormat={config.dayFormat}
-  //     renderItemPills={renderItemPills}
-  //   />
-  // )
 }

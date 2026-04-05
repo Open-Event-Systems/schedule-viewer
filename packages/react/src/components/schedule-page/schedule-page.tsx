@@ -1,7 +1,12 @@
 import { Box, useProps, type StackProps } from "@mantine/core"
 import clsx from "clsx"
 import { type ReactNode } from "@tabler/icons-react"
-import { ShareMenu, type ShareMenuProps } from "../share-menu/share-menu.js"
+import {
+  ShareMenu,
+  shareMenuOptions,
+  type ShareMenuOption,
+  type ShareMenuProps,
+} from "../share-menu/share-menu.js"
 import {
   BookmarkFilter,
   type BookmarkFilterProps,
@@ -20,13 +25,17 @@ import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
 import { iterToArr } from "../../utils.js"
 
+export const schedulePageFeatures = [
+  ...shareMenuOptions,
+  "bookmark-filter",
+  "past-events-filter",
+] as const
+
+export type SchedulePageFeature = (typeof schedulePageFeatures)[number]
+
 export type SchedulePageProps = {
   viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
-  // TODO: combine into features array
-  hideShareMenu?: boolean
-  hideBookmarkFilter?: boolean
-  hideShowPastEventsFilter?: boolean
-  enableSync?: boolean
+  enableFeatures?: Iterable<SchedulePageFeature>
   renderBookmarkFilter?: (props: BookmarkFilterProps) => ReactNode
   renderViewSelect?: (props: ViewSelectProps) => ReactNode
   renderTextFilter?: (props: TextFilterProps) => ReactNode
@@ -45,9 +54,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
   const {
     className,
     viewOptions,
-    hideShareMenu,
-    hideBookmarkFilter,
-    hideShowPastEventsFilter,
+    enableFeatures,
     renderBookmarkFilter,
     renderViewSelect,
     renderTextFilter,
@@ -59,6 +66,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
   } = useProps(
     "SchedulePage",
     {
+      enableFeatures: schedulePageFeatures,
       renderBookmarkFilter: () => <BookmarkFilter />,
       renderViewSelect: () => <ViewSelect />,
       renderTextFilter: () => <TextFilter />,
@@ -71,6 +79,18 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
   )
 
   const viewOptsArr = iterToArr(viewOptions)
+  const enableFeaturesArr = iterToArr(enableFeatures)
+  const shareOptsArr: ShareMenuOption[] = []
+
+  if (enableFeaturesArr.includes("share")) {
+    shareOptsArr.push("share")
+  }
+  if (enableFeaturesArr.includes("sync")) {
+    shareOptsArr.push("sync")
+  }
+  if (enableFeaturesArr.includes("export")) {
+    shareOptsArr.push("export")
+  }
 
   const isSmall = useMediaQuery("(max-width: 48rem)")
   const viewSelect =
@@ -80,22 +100,23 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
       data: viewOptsArr,
     })
   const bookmarkFilter =
-    !hideBookmarkFilter &&
+    enableFeaturesArr.includes("bookmark-filter") &&
     renderBookmarkFilter({
       className: clsx("SchedulePage-bookmarkFilter", classes.bookmarkFilter),
     })
   const shareMenu =
-    !hideShareMenu &&
+    enableFeaturesArr.includes("share") &&
     renderShare({
       ButtonProps: {
         className: clsx("SchedulePage-shareButton", classes.shareButton),
       },
+      enabledOptions: shareOptsArr,
     })
   const textFilter = renderTextFilter({
     className: clsx("SchedulePage-textFilter", classes.textFilter),
   })
   const pastEventsFilter =
-    !hideShowPastEventsFilter &&
+    enableFeaturesArr.includes("past-events-filter") &&
     renderPastEventsFilter({
       className: clsx("SchedulePage-pastEventsFilter"),
     })

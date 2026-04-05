@@ -7,6 +7,7 @@ import {
   parseConfig,
   type ScheduleConfig,
   type ScheduleConfigInput,
+  type SchedulePageFeature,
 } from "@open-event-systems/schedule-react"
 import z from "zod"
 import wretch from "wretch"
@@ -21,6 +22,7 @@ export type ViewConfig = Readonly<{
   id: string
   type: ScheduleViewComponentType
   title: string
+  enableFeatures?: readonly SchedulePageFeature[]
 }> &
   Readonly<Record<string, unknown>>
 
@@ -51,6 +53,9 @@ const viewConfigSchema = z
     id: z.string(),
     title: opt(z.string()).optional(),
     type: z.string().transform((s) => s as ScheduleViewComponentType),
+    enableFeatures: opt(
+      z.array(z.string().transform((s) => s as SchedulePageFeature)),
+    ).optional(),
   })
   .transform((v) => {
     const { title, id, ...other } = v
