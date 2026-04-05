@@ -5,6 +5,7 @@
 import { add, format, set } from "date-fns"
 import { isBounded } from "./utils.js"
 import { contains } from "./time.js"
+import { iterUniqueIds } from "./item.js"
 
 type Bin<T> = Readonly<{
   key: string
@@ -19,9 +20,9 @@ type BinFunc<B = unknown, O = B> = <T extends B>(
 /**
  * Return a function to bin items by title.
  */
-export function* binByTitle<T extends { readonly title?: string }>(
-  items: Iterable<T>,
-): Generator<Bin<T>, void, void> {
+export function* binByTitle<
+  T extends { readonly id?: string; readonly title?: string },
+>(items: Iterable<T>): Generator<Bin<T>, void, void> {
   const getBin = (normTitle: string) => {
     const c = normTitle.charAt(0)
     if (c == "") {
@@ -56,7 +57,7 @@ export function* binByTitle<T extends { readonly title?: string }>(
   // first sort by title
 
   const mapped = []
-  for (const item of items) {
+  for (const item of iterUniqueIds(items)) {
     const normTitle = toAlphaSortable(item.title)
     const binKey = getBin(normTitle)
     mapped.push({
@@ -99,7 +100,7 @@ export function* binByTitle<T extends { readonly title?: string }>(
  */
 export const makeTagBinFunc = (
   tagEntries: Iterable<Readonly<{ tag: string; title: string }>>,
-): BinFunc<{ readonly tags?: Iterable<string> }> => {
+): BinFunc<{ readonly id?: string; readonly tags?: Iterable<string> }> => {
   const titleByTag = new Map<string, [string, string]>()
   for (const entry of tagEntries) {
     const sortKey = toAlphaSortable(entry.title)
@@ -118,12 +119,12 @@ export const makeTagBinFunc = (
     }
   }
 
-  return function* <T extends { readonly tags?: Iterable<string> }>(
-    items: Iterable<T>,
-  ) {
+  return function* <
+    T extends { readonly id?: string; readonly tags?: Iterable<string> },
+  >(items: Iterable<T>) {
     const allItems = []
 
-    for (const item of items ?? []) {
+    for (const item of iterUniqueIds(items)) {
       const validTags = Array.from(
         item.tags ?? [],
         (t) => [t, titleByTag.get(t)] as const,

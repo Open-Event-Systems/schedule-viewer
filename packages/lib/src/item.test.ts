@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest"
 import {
+  iterUniqueIds,
   parseItems,
   parseItemType,
   parseScheduleEvent,
@@ -99,5 +100,33 @@ describe("item parsing", () => {
     expect(parseResult.byType.vendor.length).toBe(1)
     expect(parseResult.errors.length).toBe(1)
     expect(parseResult.errors[0]?.success).toBe(false)
+  })
+})
+
+describe("iterUniqueIds", () => {
+  test("returns unique ids", () => {
+    const items = [
+      {
+        id: "1",
+      },
+      {
+        id: "2",
+      },
+      {
+        test: true,
+      },
+      {
+        id: "1",
+      },
+      { test: true },
+    ]
+
+    const res = [...iterUniqueIds(items)]
+    expect(res).toStrictEqual([
+      { id: "1" },
+      { id: "2" },
+      { test: true },
+      { test: true },
+    ])
   })
 })

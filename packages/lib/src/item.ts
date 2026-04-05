@@ -265,3 +265,22 @@ export const makeDateFilter = (
     return contains(range, item.start)
   }
 }
+
+/**
+ * Return a generator from an iterable of items where each item ID only appears once.
+ */
+export function* iterUniqueIds<T extends { readonly id?: string }>(
+  items?: Iterable<T>,
+): Generator<T, void, void> {
+  const seenSet = new Set<string>()
+  for (const item of items ?? []) {
+    if (item.id != null && seenSet.has(item.id)) {
+      continue
+    }
+
+    if (item.id != null) {
+      seenSet.add(item.id)
+    }
+    yield item
+  }
+}

@@ -12,6 +12,7 @@ describe("bin by title", () => {
   test("basic sorting", () => {
     const items = [
       {
+        id: "B",
         title: "B",
       },
       {
@@ -19,6 +20,10 @@ describe("bin by title", () => {
       },
       {
         title: "aa",
+      },
+      {
+        id: "B",
+        title: "B",
       },
     ]
 
@@ -40,6 +45,7 @@ describe("bin by title", () => {
         title: "B",
         items: [
           {
+            id: "B",
             title: "B",
           },
         ],
@@ -104,10 +110,15 @@ describe("bin by tag", () => {
         tags: ["a"],
       },
       {
+        id: "b",
         tags: ["b"],
       },
       {
         tags: ["a"],
+      },
+      {
+        id: "b",
+        tags: ["b"],
       },
     ]
 
@@ -122,7 +133,7 @@ describe("bin by tag", () => {
       {
         key: "tag-b",
         title: "Tag B",
-        items: [{ tags: ["b"] }],
+        items: [{ id: "b", tags: ["b"] }],
       },
     ])
   })
