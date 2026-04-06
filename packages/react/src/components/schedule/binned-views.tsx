@@ -190,6 +190,72 @@ const FullAgendaViewDayBin = (
   )
 }
 
+export type DailyCatalogViewProps = {
+  className?: string
+  items?: Iterable<DetailedScheduleItem>
+  tags?: Iterable<TagEntry>
+  tagIndicators?: Iterable<TagIndicatorEntry>
+  now?: Date
+  days?: Iterable<Day>
+  selectedDay?: Day
+  getDayHref?: (day: Day) => string | undefined
+  onSelectDay?: (day: Day) => void
+  dayFormat?: string
+  renderItemPills?: RenderItemPills
+  renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+}
+
+export const DailyCatalogView = (props: DailyCatalogViewProps) => {
+  const {
+    className,
+    items,
+    tags,
+    tagIndicators,
+    now = new Date(),
+    days,
+    selectedDay,
+    getDayHref,
+    onSelectDay,
+    dayFormat,
+    renderItemPills,
+    renderItemPillsTitle,
+  } = useProps("DailyCatalogView", null, props)
+
+  const defaultDay = getDefaultDay(days ?? [], now)
+
+  const dayFiltered = useMemo(() => {
+    const day = selectedDay ?? defaultDay
+    if (day) {
+      const filter = makeDateFilter(day)
+      return iterToArr(items).filter(filter)
+    } else {
+      return []
+    }
+  }, [items, selectedDay ?? defaultDay, days])
+
+  return (
+    <Stack className={clsx("DailyCatalogView-root", className)}>
+      <DayFilter
+        className="DailyCatalogView-dayFilter"
+        days={days}
+        selectedDay={selectedDay?.key ?? defaultDay?.key}
+        getHref={getDayHref}
+        onSelectDay={onSelectDay}
+        dayFormat={dayFormat}
+      />
+      <ItemBins
+        className="DailyCatalogView-bins"
+        items={dayFiltered}
+        binFunc={binByTitle}
+        tags={tags}
+        tagIndicators={tagIndicators}
+        renderItemPills={renderItemPills}
+        renderItemPillsTitle={renderItemPillsTitle}
+      />
+    </Stack>
+  )
+}
+
 export type CatalogViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>

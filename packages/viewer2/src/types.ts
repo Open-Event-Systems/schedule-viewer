@@ -42,6 +42,7 @@ export type AppContextValue = StaticAppContextValue & DynamicAppContextValue
 export const scheduleViewComponentTypes = [
   "daily-agenda",
   "full-agenda",
+  "daily-catalog",
   "catalog",
   "tags",
 ] as const

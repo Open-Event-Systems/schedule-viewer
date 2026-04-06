@@ -3,6 +3,7 @@ import { Text, type TextProps } from "@mantine/core"
 import {
   CatalogView,
   DailyAgendaView,
+  DailyCatalogView,
   FullAgendaView,
   TagsView,
 } from "./binned-views.js"
@@ -55,6 +56,7 @@ export const NoItemsMessage = (props: TextProps) => (
 export const Schedule = makeScheduleComponent({
   "daily-agenda": DailyAgendaView,
   "full-agenda": FullAgendaView,
+  "daily-catalog": DailyCatalogView,
   catalog: CatalogView,
   tags: TagsView,
 })
