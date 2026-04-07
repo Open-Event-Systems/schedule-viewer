@@ -108,10 +108,7 @@ export const Page = (props: PageProps) => {
         enableFeatures={viewConfig?.enableFeatures}
         renderBookmarkFilter={(props) => <BookmarkFilterContainer {...props} />}
         renderViewSelect={(props) => (
-          <ViewSelectContainer
-            value={selectedView?.id ?? defaultView?.id}
-            {...props}
-          />
+          <ViewSelectContainer value={viewConfig?.id} {...props} />
         )}
         renderTextFilter={(props) => <TextFilterContainer {...props} />}
         renderPastEventsFilter={(props) => (
@@ -127,7 +124,7 @@ export const Page = (props: PageProps) => {
             {...props}
             items={pageFilteredItems}
             pageConfig={pageConfig}
-            viewConfig={selectedView}
+            viewConfig={viewConfig}
             origin={origin}
             currentURL={currentURL}
           />

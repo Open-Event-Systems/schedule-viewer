@@ -106,11 +106,11 @@ export default defineConfig({
       },
     },
   ],
-  // experimental: {
-  //   renderBuiltUrl: (filename, opts) => {
-  //     if (opts.hostType == "html") {
-  //       return `/${filename}`
-  //     }
-  //   },
-  // },
+  experimental: {
+    renderBuiltUrl: (filename, opts) => {
+      if (opts.hostType == "js" || opts.hostType == "css") {
+        return { relative: true }
+      }
+    },
+  },
 })
