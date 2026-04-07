@@ -75,18 +75,9 @@ export const Page = (props: PageProps) => {
 
   const config = useViewerConfig()
 
-  const filterStore = useRequiredContext(FilterStateStoreContext)
-
-  const now = useNow()
-  const [text, disabledTags] = useStore(
-    filterStore,
-    useShallow((state) => [state.text, state.disabledTags]),
-  )
-
-  const [viewId, showPastEvents, onlyBookmarked] = useSearch({
+  const viewId = useSearch({
     strict: false,
-    select: (state) => [state.view, state.past, state.bookmarked] as const,
-    structuralSharing: true,
+    select: (state) => state.view,
   })
 
   const selectedView = pageConfig.views
@@ -105,28 +96,6 @@ export const Page = (props: PageProps) => {
   const pageFilteredItems = usePageFilteredItems(pageConfig, items ?? [])
 
   const relevantTags = useRelevantTags(config.tags, pageFilteredItems)
-
-  const days = useMemo(
-    () =>
-      getDays(
-        [...pageFilteredItems].filter(
-          (d): d is typeof d & { readonly start: Date } => !!d.start,
-        ),
-        config.dayChangeHour,
-      ),
-    [pageFilteredItems, config.dayChangeHour],
-  )
-
-  const ssels = useSessionSelectionsIfEnabled(onlyBookmarked)
-
-  const filteredItems = useFilteredItems(pageFilteredItems, {
-    now,
-    disabledTags,
-    onlyBookmarked,
-    showPastEvents,
-    text,
-    selections: ssels,
-  })
 
   return (
     <Box className={clsx("Page-root", classes.root)}>
@@ -156,8 +125,7 @@ export const Page = (props: PageProps) => {
         renderSchedule={(props) => (
           <ScheduleContainer
             {...props}
-            items={filteredItems}
-            days={days}
+            items={pageFilteredItems}
             pageConfig={pageConfig}
             viewConfig={selectedView}
             origin={origin}
@@ -176,27 +144,42 @@ type ViewConfigProps = DailyAgendaViewProps &
 
 const ScheduleContainer = (props: {
   items: Iterable<DetailedScheduleItem>
-  days?: Iterable<Day>
   viewConfig?: ViewConfig
   pageConfig: PageConfig
   origin: string
   currentURL: string
 }) => {
-  const { viewConfig, currentURL, origin, items, days = [] } = props
+  const { viewConfig, currentURL, origin, items = [] } = props
 
   const now = useNow()
   const config = useViewerConfig()
   const router = useRouter()
   const navigate = useNavigate()
+  const itemsArr = iterToArr(items)
+
+  const days = useMemo(
+    () =>
+      getDays(
+        itemsArr.filter(
+          (d): d is typeof d & { readonly start: Date } => !!d.start,
+        ),
+        config.dayChangeHour,
+      ),
+    [items, config.dayChangeHour],
+  )
 
   // TODO: reuse this logic?
-  const selectedDayKey = useSearch({
+  const [selectedDayKey, optShowPastEvents, optOnlyBookmarked] = useSearch({
     strict: false,
-    select: (state) => state.day,
+    select: (state) => [state.day, state.past, state.bookmarked] as const,
+    structuralSharing: true,
   })
 
   const defaultDay = useMemo(() => getDefaultDay(days, now), [days, now])
   const selectedDay = [...days].find((d) => d.key == selectedDayKey)
+
+  const showPastEvents = viewConfig?.showPastEvents ?? optShowPastEvents
+  const onlyBookmarked = viewConfig?.onlyBookmarked ?? optOnlyBookmarked
 
   const onSelectDay = useCallback(
     (day: Day) => {
@@ -221,14 +204,10 @@ const ScheduleContainer = (props: {
     filterStore,
     useShallow((state) => [state.text, state.disabledTags]),
   )
-  const [showPastEvents, onlyBookmarked] = useSearch({
-    strict: false,
-    select: (state) => [state.past, state.bookmarked],
-  })
 
   const ssels = useSessionSelectionsIfEnabled(onlyBookmarked)
 
-  const filteredItems = useFilteredItems(items ?? [], {
+  const filteredItems = useFilteredItems(itemsArr, {
     now,
     disabledTags,
     selections: ssels,

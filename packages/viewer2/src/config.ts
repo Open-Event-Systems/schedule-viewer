@@ -23,6 +23,8 @@ export type ViewConfig = Readonly<{
   type: ScheduleViewComponentType
   title: string
   enableFeatures?: readonly SchedulePageFeature[]
+  showPastEvents?: boolean
+  onlyBookmarked?: boolean
 }> &
   Readonly<Record<string, unknown>>
 
@@ -56,6 +58,8 @@ const viewConfigSchema = z
     enableFeatures: opt(
       z.array(z.string().transform((s) => s as SchedulePageFeature)),
     ).optional(),
+    showPastEvents: opt(z.boolean()).optional(),
+    onlyBookmarked: opt(z.boolean()).optional(),
   })
   .transform((v) => {
     const { title, id, ...other } = v
