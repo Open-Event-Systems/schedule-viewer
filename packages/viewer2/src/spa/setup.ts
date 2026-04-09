@@ -6,10 +6,13 @@ import { QueryClient } from "@tanstack/react-query"
 import type { AppContextValue } from "../types.js"
 import type { SPAConfig } from "./config.js"
 import { loadConfig } from "../config.js"
-import { makeScheduleAPIFromConfig } from "@open-event-systems/schedule-react"
+import {
+  makeScheduleAPIFromConfig,
+  sessionSelectionsQueryOptions,
+} from "@open-event-systems/schedule-react"
 import {
   makeLocalStorageSessionSelectionsStore,
-  makeServerAPI,
+  makeSelectionsServiceAPI,
   makeSyncedSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 
@@ -23,27 +26,40 @@ export const setup = async (
   spaConfig: SPAConfig,
   pwaStore: StoreApi<PWAState>,
 ): Promise<AppContextValue> => {
+  const queryClient = new QueryClient()
+
   const config = await loadConfig(`${spaConfig.basePath}/config.json`)
   const scheduleAPI = makeScheduleAPIFromConfig(config)
 
-  const [serverAPI, serverSessionSelectionsAPIFactory] = config.bookmarks
-    ? makeServerAPI(config.bookmarks, config.id)
-    : [undefined, undefined]
+  const selectionsServiceAPI = config.bookmarks
+    ? makeSelectionsServiceAPI(config.bookmarks, config.id)
+    : null
 
-  const serverSessionSelectionsAPIs = serverSessionSelectionsAPIFactory
-    ? {
-        bookmarks: serverSessionSelectionsAPIFactory("bookmarks"),
-      }
-    : {}
+  if (selectionsServiceAPI) {
+    window.addEventListener("storage", selectionsServiceAPI.handleStorageEvent)
+  }
 
   const localSessionSelectionsStores = {
     bookmarks: makeLocalStorageSessionSelectionsStore("bookmarks", config.id),
   }
 
+  window.addEventListener("storage", (e) => {
+    localSessionSelectionsStores.bookmarks.handleStorageEvent(e)
+    queryClient.setQueryData(
+      sessionSelectionsQueryOptions.sessionSelections(
+        sessionSelectionsAPIs.bookmarks,
+        config.id,
+        "bookmarks",
+      ).queryKey,
+      localSessionSelectionsStores.bookmarks.get(),
+    )
+  })
+
   const sessionSelectionsAPIs = {
     bookmarks: makeSyncedSelectionsAPI(
+      "bookmarks",
       localSessionSelectionsStores.bookmarks,
-      serverSessionSelectionsAPIs?.bookmarks,
+      selectionsServiceAPI,
     ),
   }
 
@@ -59,14 +75,13 @@ export const setup = async (
     historyType: spaConfig.router,
     origin: window.origin,
     getCurrentURL: () => window.location.href,
-    queryClient: new QueryClient(),
+    queryClient,
     pwaStore,
     swStore,
     config,
     scheduleAPI,
-    sessionSelectionsAPIs,
     localSessionSelectionsStores,
-    serverSessionSelectionsAPIs,
-    serverSelectionsAPI: serverAPI,
+    selectionsServiceAPI,
+    sessionSelectionsAPIs,
   }
 }

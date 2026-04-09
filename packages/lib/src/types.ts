@@ -111,6 +111,7 @@ export type Selections = Readonly<{
   has: (itemId: string) => boolean
 
   [Symbol.iterator]: () => Iterator<string>
+
   readonly size: number
 
   /**
@@ -138,7 +139,7 @@ export type ServerSelections = Selections &
   }>
 
 /**
- * An object describing the session's selections.
+ * An object describing the session's selections according to the server.
  */
 export type ServerSessionSelections = ServerSelections &
   Readonly<{
@@ -158,7 +159,7 @@ export type LocalSessionSelections = Omit<Selections, "add" | "delete"> &
     /**
      * The {@link ServerSessionSelections} object the current selections are based on.
      */
-    base?: ServerSessionSelections
+    base: ServerSessionSelections | null
 
     /**
      * The IDs added to the base.
@@ -183,9 +184,12 @@ export type LocalSessionSelections = Omit<Selections, "add" | "delete"> &
     /**
      * The date the selections were last updated.
      */
-    date?: Date
+    date: Date | null
   }>
 
+/**
+ * Stores and maintains a current {@link LocalSessionSelections} object.
+ */
 export type LocalSessionSelectionsStore = Readonly<{
   /**
    * Get the current selections.
@@ -214,13 +218,18 @@ export type LocalSessionSelectionsStore = Readonly<{
 }>
 
 /**
- * API to get selections information from a server.
+ * API to get/sync selections from a server.
  */
-export type ServerSelectionsAPI = Readonly<{
+export type SelectionsServiceAPI = Readonly<{
   /**
-   * Get the session token for syncing.
+   * The current session token.
    */
-  getSessionToken: () => Promise<string>
+  sessionToken: string | null
+
+  /**
+   * Subscribe to changes in the available state/session token.
+   */
+  subscribe: (callback: () => void) => () => void
 
   /**
    * Get the selections by ID, or null if not found.
@@ -231,22 +240,25 @@ export type ServerSelectionsAPI = Readonly<{
    * Get item selection counts.
    */
   getCounts: (type: SelectionsType) => Promise<ReadonlyMap<string, number>>
-}>
-
-export type ServerSessionSelectionsAPI = Readonly<{
-  /**
-   * Get the current selections.
-   */
-  get: () => Promise<ServerSessionSelections>
 
   /**
-   * Update the session selections.
+   * Get the current session's selections.
    */
-  update: (opts?: {
-    selections?: Iterable<string> | undefined
-    add?: Iterable<string> | undefined
-    delete?: Iterable<string> | undefined
-  }) => Promise<ServerSessionSelections>
+  getSessionSelections: (
+    type: SelectionsType,
+  ) => Promise<ServerSessionSelections>
+
+  /**
+   * Update the current session's selections.
+   */
+  updateSessionSelections: (
+    type: SelectionsType,
+    update?: {
+      add?: Iterable<string> | null | undefined
+      selections?: Iterable<string> | null | undefined
+      delete?: Iterable<string> | null | undefined
+    },
+  ) => Promise<ServerSessionSelections>
 }>
 
 export type SessionSelectionsAPI = Readonly<{

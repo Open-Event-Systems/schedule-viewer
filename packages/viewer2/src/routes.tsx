@@ -165,7 +165,7 @@ export const pagesRoute = createRoute({
       queryClient,
       config,
       scheduleAPI,
-      serverSelectionsAPI,
+      selectionsServiceAPI,
       sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
     } = context
 
@@ -191,7 +191,7 @@ export const pagesRoute = createRoute({
 
     queryClient.fetchQuery(
       selectionsQueryOptions.counts(
-        serverSelectionsAPI,
+        selectionsServiceAPI,
         config.id,
         "bookmarks",
       ),
@@ -250,7 +250,7 @@ export const sharedPagesRoute = createRoute({
       queryClient,
       config,
       scheduleAPI,
-      serverSelectionsAPI,
+      selectionsServiceAPI,
       sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
     } = context
 
@@ -276,7 +276,7 @@ export const sharedPagesRoute = createRoute({
 
     queryClient.fetchQuery(
       selectionsQueryOptions.counts(
-        serverSelectionsAPI,
+        selectionsServiceAPI,
         config.id,
         "bookmarks",
       ),
@@ -285,7 +285,7 @@ export const sharedPagesRoute = createRoute({
     // load shared selections
     const sharedSelectionsPromise = queryClient.fetchQuery(
       selectionsQueryOptions.selections(
-        serverSelectionsAPI,
+        selectionsServiceAPI,
         config.id,
         shareId,
       ),
@@ -354,7 +354,7 @@ export const eventDetailsRoute = createRoute({
       config,
       queryClient,
       scheduleAPI,
-      serverSelectionsAPI,
+      selectionsServiceAPI,
       sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
     } = context
 
@@ -380,7 +380,7 @@ export const eventDetailsRoute = createRoute({
 
     queryClient.fetchQuery(
       selectionsQueryOptions.counts(
-        serverSelectionsAPI,
+        selectionsServiceAPI,
         config.id,
         "bookmarks",
       ),
@@ -495,7 +495,7 @@ export const mapRoute = createRoute({
       config,
       queryClient,
       scheduleAPI,
-      serverSelectionsAPI,
+      selectionsServiceAPI,
       sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
     } = context
 
@@ -521,7 +521,7 @@ export const mapRoute = createRoute({
 
     queryClient.fetchQuery(
       selectionsQueryOptions.counts(
-        serverSelectionsAPI,
+        selectionsServiceAPI,
         config.id,
         "bookmarks",
       ),

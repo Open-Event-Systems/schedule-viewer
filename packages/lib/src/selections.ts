@@ -9,13 +9,27 @@ import { format, isValid, parseISO } from "date-fns"
 
 class SelectionsImpl {
   protected set: ReadonlySet<string>
-  constructor(items?: Iterable<string> | null) {
+  public id?: string
+  public date?: Date | null
+
+  constructor(
+    items?: Iterable<string> | null,
+    options?: { id?: string; date?: Date | null },
+  ) {
     if (items instanceof SelectionsImpl) {
       this.set = items.set
     } else if (items instanceof Set) {
       this.set = items
     } else {
       this.set = new Set(items)
+    }
+
+    if (options?.id != null) {
+      this.id = options.id
+    }
+
+    if (options?.date) {
+      this.date = options.date
     }
   }
 
@@ -54,17 +68,16 @@ class SelectionsImpl {
 }
 
 type LocalSelectionsConstructorOptions = Readonly<{
-  base?: ServerSessionSelections | undefined
-  added?: Iterable<string> | undefined
-  deleted?: Iterable<string> | undefined
-  date?: Date | undefined
+  base?: ServerSessionSelections | null | undefined
+  added?: Iterable<string> | null | undefined
+  deleted?: Iterable<string> | null | undefined
+  date?: Date | null | undefined
 }>
 
 class LocalSelectionsImpl extends SelectionsImpl {
-  public base?: ServerSessionSelections
+  public base: ServerSessionSelections | null = null
   public added: ReadonlySet<string>
   public deleted: ReadonlySet<string>
-  public date?: Date
 
   constructor(
     current?: Iterable<string> | null,
@@ -79,6 +92,8 @@ class LocalSelectionsImpl extends SelectionsImpl {
 
     this.added = new Set(added)
     this.deleted = new Set(deleted)
+    this.date = null
+
     if (date) {
       this.date = date
     }
@@ -162,9 +177,12 @@ export const makeLocalSessionSelections = (
   opts?: LocalSelectionsConstructorOptions,
 ): LocalSessionSelections => {
   if (items instanceof SelectionsImpl) {
-    return new LocalSelectionsImpl(items, opts)
+    return new LocalSelectionsImpl(items, opts) as LocalSessionSelections
   } else {
-    return new LocalSelectionsImpl(new Set(items), opts)
+    return new LocalSelectionsImpl(
+      new Set(items),
+      opts,
+    ) as LocalSessionSelections
   }
 }
 
@@ -177,91 +195,70 @@ const isoDate = z.codec(
   },
 )
 
-const looseSelectionsSchema = z.codec(
-  z.looseObject({
+const selectionsSchema = z.codec(
+  z.object({
     items: z.array(z.string()),
   }),
-  z.tuple([z.custom<Selections>(), z.looseObject({})]).readonly(),
-  {
-    decode: (v) => {
-      const { items, ...other } = v
-      const sels = makeSelections(items)
-      return [sels, other] as const
-    },
-    encode: ([sels, other]) => ({ ...other, items: [...sels] }),
-  },
-)
-
-const selectionsSchema = z.codec(
-  looseSelectionsSchema,
   z.custom<Selections>(),
   {
-    decode: ([sels]) => sels,
-    encode: (v) => [v, {}] as const,
+    decode: (v) => new SelectionsImpl(v.items),
+    encode: (v) => ({ items: [...v] }),
   },
 )
 
 const serverSelectionsSchema = z.codec(
-  looseSelectionsSchema.pipe(
-    z.tuple([z.custom<Selections>(), z.object({ id: z.string() })]).readonly(),
-  ),
-  z.custom<ServerSessionSelections>(),
+  z.object({
+    ...selectionsSchema.in.shape,
+    id: z.string(),
+  }),
+  z.custom<ServerSelections>(),
   {
-    decode: ([sels, { id }]) => Object.assign(sels, { id }),
-    encode: (v) => [v, { id: v.id }] as const,
+    decode: (v) =>
+      new SelectionsImpl(v.items, { id: v.id }) as ServerSelections,
+    encode: (v) => ({ items: [...v], id: v.id }),
   },
 )
 
 const serverSessionSelectionsSchema = z.codec(
   z.object({
     selections: serverSelectionsSchema,
-    date: isoDate.optional(),
+    date: isoDate.nullish(),
   }),
   z.custom<ServerSessionSelections>(),
   {
     decode: (v) =>
-      Object.assign(v.selections, v.date ? { date: v.date } : null),
-    encode: (v) => ({ selections: v, ...(v.date ? { date: v.date } : null) }),
+      new SelectionsImpl(v.selections, {
+        id: v.selections.id,
+        date: v.date,
+      }) as ServerSessionSelections,
+    encode: (v) => ({ selections: v, date: v.date }),
   },
 )
 
-const stringSetSchema = z.codec(
-  z.array(z.string()),
-  z.custom<ReadonlySet<string>>(),
-  {
-    decode: (v) => new Set(v),
-    encode: (v) => [...v],
-  },
-)
-
-export const localSessionSelectionsSchema = z.codec(
-  looseSelectionsSchema.pipe(
-    z
-      .tuple([
-        z.custom<Selections>(),
-        z.object({
-          base: serverSessionSelectionsSchema.optional(),
-          added: stringSetSchema,
-          deleted: stringSetSchema,
-          date: isoDate.optional(),
-        }),
-      ])
-      .readonly(),
-  ),
+const localSessionSelectionsSchema = z.codec(
+  z.object({
+    ...selectionsSchema.in.shape,
+    base: serverSessionSelectionsSchema.nullish(),
+    added: z.array(z.string()).nullish(),
+    deleted: z.array(z.string()).nullish(),
+    date: isoDate.nullish(),
+  }),
   z.custom<LocalSessionSelections>(),
   {
-    decode: ([sels, { base, added, deleted, date }]) =>
-      makeLocalSessionSelections(sels, { base, added, deleted, date }),
-    encode: (v) =>
-      [
-        v,
-        {
-          ...(v.base ? { base: v.base } : null),
-          added: v.added,
-          deleted: v.deleted,
-          ...(v.date ? { date: v.date } : null),
-        },
-      ] as const,
+    decode: (v) =>
+      new LocalSelectionsImpl(v.items, {
+        base: v.base,
+        added: v.added,
+        deleted: v.deleted,
+        date: v.date,
+      }) as LocalSessionSelections,
+    encode: (v) => ({
+      items: [...v],
+      added: [...v.added],
+      deleted: [...v.deleted],
+      base: v.base,
+      date: v.date,
+    }),
   },
 )
 

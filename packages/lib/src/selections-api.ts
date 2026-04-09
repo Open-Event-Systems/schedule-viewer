@@ -3,10 +3,9 @@ import type {
   LocalSessionSelections,
   LocalSessionSelectionsStore,
   SessionSelectionsAPI,
-  ServerSelectionsAPI,
-  ServerSessionSelectionsAPI,
+  SelectionsServiceAPI,
 } from "./types.js"
-import wretch from "wretch"
+import wretch, { type FetchLike, type Wretch } from "wretch"
 import {
   encodeLocalSessionSelections,
   makeLocalSessionSelections,
@@ -58,7 +57,7 @@ type BookmarkSetupBody = {
 export const makeMemoryLocalSelectionsStore =
   (): LocalSessionSelectionsStore => {
     let cur = makeLocalSessionSelections()
-    const observers: (() => void)[] = []
+    const observers = new Set<() => void>()
 
     const notify = () => {
       observers.forEach((o) => o())
@@ -83,12 +82,9 @@ export const makeMemoryLocalSelectionsStore =
       },
       subscribe: (cb) => {
         const unsub = () => {
-          const idx = observers.findIndex((o) => o == cb)
-          if (idx != -1) {
-            observers.splice(idx, 1)
-          }
+          observers.delete(cb)
         }
-        observers.push(cb)
+        observers.add(cb)
         return unsub
       },
     }
@@ -96,7 +92,7 @@ export const makeMemoryLocalSelectionsStore =
 
 export type LocalStorageSelectionsStore = LocalSessionSelectionsStore &
   Readonly<{
-    handleEvent: (e: StorageEvent) => void
+    handleStorageEvent: (e: StorageEvent) => void
   }>
 
 export const makeLocalStorageSessionSelectionsStore = (
@@ -106,20 +102,20 @@ export const makeLocalStorageSessionSelectionsStore = (
 ): LocalStorageSelectionsStore => {
   storage = storage ?? window.localStorage
   const storageKey = `${SELECTIONS_LOCAL_STORAGE_KEY_PREFIX}${type}-${scheduleId}`
-  const observers: (() => void)[] = []
+  const observers = new Set<() => void>()
 
-  const getFromStorage = (): LocalSessionSelections | undefined => {
+  const getFromStorage = (): LocalSessionSelections | null => {
     try {
       const dataStr = storage.getItem(storageKey)
       if (!dataStr) {
-        return
+        return null
       }
 
       const data = JSON.parse(dataStr)
       return parseLocalSessionSelections(data)
     } catch (e) {
       console.warn(`failed to load selections from storage: ${e}`)
-      return
+      return null
     }
   }
 
@@ -171,7 +167,7 @@ export const makeLocalStorageSessionSelectionsStore = (
       notify()
       return lsels
     },
-    handleEvent: (e) => {
+    handleStorageEvent: (e) => {
       if (e.storageArea == storage && e.key == storageKey) {
         const newCur = getFromStorage()
         if (newCur) {
@@ -182,26 +178,72 @@ export const makeLocalStorageSessionSelectionsStore = (
     },
     subscribe: (cb) => {
       const unsub = () => {
-        const idx = observers.findIndex((o) => o == cb)
-        if (idx != -1) {
-          observers.splice(idx, 1)
-        }
+        observers.delete(cb)
       }
-      observers.push(cb)
+      observers.add(cb)
       return unsub
     },
   }
 }
 
-const makeServerSelectionsAPI = (
+export const makeSelectionsServiceAPI = (
   baseURL: string,
   scheduleId: string,
-  getSessionToken: () => Promise<string>,
-): ServerSelectionsAPI => {
+  sessionToken?: string | null,
+  opts?: {
+    storage?: Storage
+  },
+): SelectionsServiceAPI & { handleStorageEvent: (e: StorageEvent) => void } => {
+  const storage = opts?.storage ?? window.localStorage
+  const localStorageKey = `${SESSION_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+
+  const loadSessId = storage.getItem(localStorageKey)
+  const setupSessId = sessionToken || loadSessId
+
+  const observers = new Set<() => void>()
+
+  const notify = () => {
+    observers.forEach((cb) => cb())
+  }
+
+  const updateToken = (s: string | null) => {
+    if (s) {
+      storage.setItem(localStorageKey, s)
+    } else {
+      storage.removeItem(localStorageKey)
+    }
+    api.sessionToken = s
+    notify()
+  }
+
   const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
 
-  return {
-    getSessionToken: () => getSessionToken(),
+  const authWretch = baseWretch.middlewares([
+    makeSessionSetupMiddleware(
+      baseWretch,
+      () => api.sessionToken,
+      updateToken,
+      setupSessId,
+    ),
+  ])
+
+  const api: {
+    -readonly [K in keyof SelectionsServiceAPI]: SelectionsServiceAPI[K]
+  } & { handleStorageEvent: (e: StorageEvent) => void } = {
+    sessionToken: null,
+    subscribe: (cb) => {
+      const unsub = () => {
+        observers.delete(cb)
+      }
+      observers.add(cb)
+      return unsub
+    },
+    handleStorageEvent: (e) => {
+      if (e.storageArea == storage && e.key == localStorageKey) {
+        api.sessionToken = e.newValue
+        notify()
+      }
+    },
     getSelections: async (selectionsId) => {
       const res = await baseWretch
         .url(`/selections/${selectionsId}`)
@@ -222,40 +264,24 @@ const makeServerSelectionsAPI = (
         .json<BookmarkCountsResponse>()
       return new Map(Object.entries(resp.counts))
     },
-  }
-}
-
-const makeServerSessionSelectionsAPI = (
-  type: SelectionsType,
-  baseURL: string,
-  scheduleId: string,
-  getSessionToken: () => Promise<string>,
-): ServerSessionSelectionsAPI => {
-  const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
-
-  return {
-    get: async () => {
-      const sessionToken = await getSessionToken()
-      const res = await baseWretch
+    getSessionSelections: async (type) => {
+      const res = await authWretch
         .url(`/session-selections/${type}`)
-        .auth(`Bearer ${sessionToken}`)
         .get()
         .json<SessionSelectionsResponse>()
       return parseServerSessionSelections(res.session_selections)
     },
-    update: async (opts) => {
-      const sessionToken = await getSessionToken()
+    updateSessionSelections: async (type, update) => {
       const body: UpdateSelectionsRequest = {
-        ...(opts?.selections
-          ? { selections: { items: [...opts.selections] } }
+        ...(update?.selections
+          ? { selections: { items: [...update.selections] } }
           : null),
-        add: [...(opts?.add ?? [])],
-        remove: [...(opts?.delete ?? [])],
+        add: [...(update?.add ?? [])],
+        remove: [...(update?.delete ?? [])],
       }
 
-      const res = await baseWretch
+      const res = await authWretch
         .url(`/session-selections/${type}`)
-        .auth(`Bearer ${sessionToken}`)
         .json(body)
         .put()
         .json<SessionSelectionsResponse>()
@@ -263,180 +289,138 @@ const makeServerSessionSelectionsAPI = (
       return parseServerSessionSelections(res.session_selections)
     },
   }
+
+  return api
 }
 
-/**
- * Make a {@link ServerSelectionsAPI} and a factory for {@link ServerSessionSelectionsAPI}.
- */
-export const makeServerAPI = (
-  baseURL: string,
-  scheduleId: string,
-  sessionToken?: string | null,
-  opts?: {
-    storage?: Storage
-  },
-): [
-  ServerSelectionsAPI,
-  (type: SelectionsType) => ServerSessionSelectionsAPI,
-] => {
-  const storage = opts?.storage ?? window.localStorage
-  const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
-  const localStorageKey = `${SESSION_LOCAL_STORAGE_KEY_PREFIX}${scheduleId}`
+const makeSessionSetupMiddleware = (
+  baseWretch: Wretch,
+  get: () => string | null,
+  set: (sessionToken: string | null) => void,
+  initialSessionToken?: string | null,
+) => {
+  let setupPromise: Promise<string> | null = null
 
-  const loadSessId = storage.getItem(localStorageKey)
-  const setupSessId = sessionToken || loadSessId
-  let curSessIdPromise: Promise<string> | null = null
-
-  const setupSession = async () => {
+  const setup = async () => {
     let req = baseWretch.url("/setup-session")
-    if (setupSessId) {
-      req = req.json({ session_id: setupSessId })
+    if (initialSessionToken) {
+      req = req.json({ session_id: initialSessionToken })
     }
 
     const res = await req.post().json<BookmarkSetupBody>()
-    storage.setItem(localStorageKey, res.session_id)
+    set(res.session_id)
     return res.session_id
   }
 
-  const getSessionToken = () => {
-    if (!curSessIdPromise) {
-      curSessIdPromise = setupSession().catch((e) => {
-        curSessIdPromise = null
-        throw e
-      })
-    }
-    return curSessIdPromise
-  }
+  return (next: FetchLike): FetchLike => {
+    return async (url, opts) => {
+      let curToken = get()
+      if (curToken == null) {
+        if (setupPromise == null) {
+          setupPromise = setup().catch((e) => {
+            setupPromise = null
+            throw e
+          })
+        }
+        curToken = await setupPromise
+      }
 
-  return [
-    makeServerSelectionsAPI(baseURL, scheduleId, getSessionToken),
-    (type) =>
-      makeServerSessionSelectionsAPI(
-        type,
-        baseURL,
-        scheduleId,
-        getSessionToken,
-      ),
-  ]
+      const newHeaders = new Headers(opts.headers)
+      newHeaders.set("Authorization", `Bearer ${curToken}`)
+      const newOpts = { ...opts, headers: newHeaders }
+
+      const resp = await next(url, newOpts)
+      if (resp.status == 401) {
+        const newCurToken = get()
+        if (newCurToken == curToken) {
+          set(null)
+        }
+      }
+
+      return resp
+    }
+  }
 }
+
+const getIsOnline = () =>
+  !("onLine" in window.navigator && window.navigator.onLine === false)
 
 /**
  * Return a {@link SessionSelectionsAPI} that updates both the local and remote
  * selections.
  */
 export const makeSyncedSelectionsAPI = (
+  type: SelectionsType,
   local: LocalSessionSelectionsStore,
-  remote?: ServerSessionSelectionsAPI | null,
+  remote?: SelectionsServiceAPI | null,
 ): SessionSelectionsAPI => {
   let syncPromise: Promise<LocalSessionSelections> | null = null
-  let lastError: Date | undefined
+  let lastError: number | null = null
 
-  const getIsOnline = () => {
-    if (
-      lastError != null &&
-      new Date().getTime() - lastError.getTime() < 60000
-    ) {
-      return false
-    }
-    return window.navigator.onLine !== false
+  const getHasError = () => {
+    return lastError != null && new Date().getTime() - lastError < 60000
   }
 
   const doInitialSync = async () => {
-    let first = false
-    try {
-      if (remote && !syncPromise) {
-        syncPromise = syncSessionSelections(local, remote)
-        first = true
+    if (!remote || getHasError() || !getIsOnline()) {
+      return
+    }
+
+    if (!syncPromise) {
+      syncPromise = syncSessionSelections(type, local, remote).catch((e) => {
+        console.warn(`initial ${type} selections sync failed: ${e}`)
+        syncPromise = null
+        lastError = new Date().getTime()
+        throw e
+      })
+    }
+
+    await syncPromise.catch(() => {})
+  }
+
+  const sync = async (loc: LocalSessionSelections) => {
+    if (remote && getIsOnline() && !getHasError()) {
+      try {
+        const res = await remote.updateSessionSelections(type, {
+          add: loc.added,
+          delete: loc.deleted,
+        })
+        const newLoc = makeLocalSessionSelections(res, {
+          base: res,
+          date: res.date,
+        })
+        local.save(newLoc)
+        return newLoc
+      } catch (e) {
+        console.warn(`sync failed: ${e}`)
+        lastError = new Date().getTime()
+        return loc
       }
-      await syncPromise
-    } catch (e) {
-      if (first) {
-        console.warn(`initial selections sync failed: ${e}`)
-      }
-      lastError = new Date()
+    } else {
+      return loc
     }
   }
 
   return {
     get: async () => {
-      if (remote && getIsOnline()) {
-        await doInitialSync()
-      }
+      await doInitialSync()
       return local.get()
     },
     add: async (...itemIds: string[]) => {
-      const loc = local.add(...itemIds)
       await doInitialSync()
-
-      if (remote && getIsOnline()) {
-        try {
-          const res = await remote.update({
-            add: loc.added,
-            delete: loc.deleted,
-          })
-          const newLoc = makeLocalSessionSelections(res, {
-            base: res,
-            date: res.date,
-          })
-          local.save(newLoc)
-          return newLoc
-        } catch (e) {
-          console.warn(`sync failed: ${e}`)
-          lastError = new Date()
-          return loc
-        }
-      } else {
-        return loc
-      }
+      const loc = local.add(...itemIds)
+      return await sync(loc)
     },
     delete: async (...itemIds) => {
-      const loc = local.delete(...itemIds)
       await doInitialSync()
-
-      if (remote && getIsOnline()) {
-        try {
-          const res = await remote.update({
-            add: loc.added,
-            delete: loc.deleted,
-          })
-          const newLoc = makeLocalSessionSelections(res, {
-            base: res,
-            date: res.date,
-          })
-          local.save(newLoc)
-          return newLoc
-        } catch (e) {
-          console.warn(`sync failed: ${e}`)
-          lastError = new Date()
-          return loc
-        }
-      } else {
-        return loc
-      }
+      const loc = local.delete(...itemIds)
+      return await sync(loc)
     },
     save: async (itemIds) => {
+      await doInitialSync()
       const loc = makeLocalSessionSelections(itemIds, { date: new Date() })
       local.save(loc)
-      await doInitialSync()
-
-      if (remote && getIsOnline()) {
-        try {
-          const res = await remote.update({ selections: itemIds })
-          const resLoc = makeLocalSessionSelections(res, {
-            base: res,
-            date: res.date,
-          })
-          local.save(resLoc)
-          return resLoc
-        } catch (e) {
-          console.warn(`sync failed: ${e}`)
-
-          lastError = new Date()
-          return loc
-        }
-      } else {
-        return loc
-      }
+      return await sync(loc)
     },
   }
 }
@@ -445,23 +429,24 @@ export const makeSyncedSelectionsAPI = (
  * Sync remote and local selections.
  */
 export const syncSessionSelections = async (
+  type: SelectionsType,
   local: LocalSessionSelectionsStore,
-  remote: ServerSessionSelectionsAPI,
+  remote: SelectionsServiceAPI,
 ): Promise<LocalSessionSelections> => {
   const curLocal = local.get()
-  const curRemote = await remote.get()
+  const curRemote = await remote.getSessionSelections(type)
 
   if (!curLocal.equals(curRemote)) {
-    const updated = await remote.update({
+    const updated = await remote.updateSessionSelections(type, {
       add: curLocal.added,
       delete: curLocal.deleted,
     })
-    const loc = makeLocalSessionSelections(updated, {
+    const newLocal = makeLocalSessionSelections(updated, {
       base: updated,
       date: updated.date,
     })
-    local.save(loc)
-    return loc
+    local.save(newLocal)
+    return newLocal
   } else {
     return curLocal
   }

@@ -4,8 +4,7 @@ import { Box, useProps } from "@mantine/core"
 import {
   Markdown,
   ShareDialog,
-  useServerSelectionsAPI,
-  useServerSessionSelectionsAPI,
+  useSelectionsServiceAPI,
 } from "@open-event-systems/schedule-react"
 import { SchedulePageContainer } from "../schedule/schedule-page.js"
 import clsx from "clsx"
@@ -34,8 +33,7 @@ export type PageProps = {
 export const Page = (props: PageProps) => {
   const { pageConfig, items, sharedSelections } = useProps("Page", {}, props)
   const navigate = useNavigate()
-  const ssAPI = useServerSessionSelectionsAPI("bookmarks")
-  const serverAPI = useServerSelectionsAPI()
+  const selectionsServiceAPI = useSelectionsServiceAPI()
 
   return (
     <Box className={clsx("Page-root", classes.root)}>
@@ -48,25 +46,31 @@ export const Page = (props: PageProps) => {
         sharedSelections={sharedSelections}
         onSelectShareOption={(option) => {
           if (option == "share") {
-            ssAPI?.get().then((ssel) => {
-              navigate({
-                to: ".",
-                state: (prev) => ({ ...prev, shareDialogId: ssel.id }),
-                params: true,
-                search: true,
-                hash: true,
+            selectionsServiceAPI
+              ?.getSessionSelections("bookmarks")
+              .then((ssel) => {
+                navigate({
+                  to: ".",
+                  state: (prev) => ({ ...prev, shareDialogId: ssel.id }),
+                  params: true,
+                  search: true,
+                  hash: true,
+                })
               })
-            })
           } else if (option == "sync") {
-            serverAPI?.getSessionToken().then((token) => {
+            const token = selectionsServiceAPI?.sessionToken
+            if (token) {
               navigate({
                 to: ".",
-                state: (prev) => ({ ...prev, syncDialogId: token }),
+                state: (prev) => ({
+                  ...prev,
+                  syncDialogId: token,
+                }),
                 params: true,
                 search: true,
                 hash: true,
               })
-            })
+            }
           }
         }}
       />

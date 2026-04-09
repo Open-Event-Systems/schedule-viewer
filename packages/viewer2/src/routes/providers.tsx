@@ -5,8 +5,7 @@ import { ViewerConfigContext } from "../config.js"
 import {
   ScheduleAPIContext,
   ScheduleConfigContext,
-  ServerSelectionsAPIContext,
-  ServerSessionSelectionsAPIContext,
+  SelectionsServiceAPIContext,
   SessionSelectionsAPIContext,
 } from "@open-event-systems/schedule-react"
 import { PWAStoreContext } from "../sw/pwa.js"
@@ -28,8 +27,7 @@ export const Providers = () => {
     swStore,
     config,
     scheduleAPI,
-    serverSelectionsAPI,
-    serverSessionSelectionsAPIs,
+    selectionsServiceAPI,
     sessionSelectionsAPIs,
   } = context
 
@@ -40,15 +38,11 @@ export const Providers = () => {
           <ViewerConfigContext value={config}>
             <ScheduleConfigContext value={config}>
               <ScheduleAPIContext value={scheduleAPI}>
-                <ServerSelectionsAPIContext value={serverSelectionsAPI}>
-                  <ServerSessionSelectionsAPIContext
-                    value={serverSessionSelectionsAPIs}
-                  >
-                    <SessionSelectionsAPIContext value={sessionSelectionsAPIs}>
-                      <Outlet />
-                    </SessionSelectionsAPIContext>
-                  </ServerSessionSelectionsAPIContext>
-                </ServerSelectionsAPIContext>
+                <SelectionsServiceAPIContext value={selectionsServiceAPI}>
+                  <SessionSelectionsAPIContext value={sessionSelectionsAPIs}>
+                    <Outlet />
+                  </SessionSelectionsAPIContext>
+                </SelectionsServiceAPIContext>
               </ScheduleAPIContext>
             </ScheduleConfigContext>
           </ViewerConfigContext>

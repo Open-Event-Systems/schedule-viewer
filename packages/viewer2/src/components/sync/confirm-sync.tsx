@@ -6,11 +6,11 @@ import {
   useProps,
   type StackProps,
 } from "@mantine/core"
-import { makeServerAPI } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import { useViewerConfig } from "../../config.js"
 import { useNavigate } from "@tanstack/react-router"
 import { pagesRoute } from "../../routes.js"
+import { makeSelectionsServiceAPI } from "@open-event-systems/schedule-lib"
 
 export type ConfirmSyncPageProps = { sessionToken?: string | null } & StackProps
 
@@ -28,18 +28,18 @@ export const ConfirmSyncPage = (props: ConfirmSyncPageProps) => {
     <Stack className={clsx("ConfirmSyncPage-root", className)} {...other}>
       <Text>
         Sync your schedule to this device? This will replace all current
-        selections on this device. {config.bookmarks}
+        selections on this device.
       </Text>
       <Group>
         <Button
           onClick={() => {
             if (config.bookmarks) {
-              const [api] = makeServerAPI(
+              const api = makeSelectionsServiceAPI(
                 config.bookmarks,
                 config.id,
                 sessionToken,
               )
-              api.getSessionToken().then(() => {
+              api.getSessionSelections("bookmarks").then(() => {
                 navigate({
                   to: pagesRoute.to,
                   reloadDocument: true,

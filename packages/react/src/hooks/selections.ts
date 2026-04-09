@@ -1,9 +1,8 @@
 import {
   type Selections,
+  type SelectionsServiceAPI,
   type SelectionsType,
   type ServerSelections,
-  type ServerSelectionsAPI,
-  type ServerSessionSelectionsAPI,
   type SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import {
@@ -18,21 +17,11 @@ import {
 import { createContext, use, useCallback } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
-export const ServerSelectionsAPIContext = createContext<
-  ServerSelectionsAPI | undefined
->(undefined)
+export const SelectionsServiceAPIContext =
+  createContext<SelectionsServiceAPI | null>(null)
 
-export const useServerSelectionsAPI = (): ServerSelectionsAPI | undefined =>
-  use(ServerSelectionsAPIContext)
-
-export const ServerSessionSelectionsAPIContext = createContext<{
-  readonly [key in SelectionsType]?: ServerSessionSelectionsAPI
-}>({})
-
-export const useServerSessionSelectionsAPI = (
-  type: SelectionsType,
-): ServerSessionSelectionsAPI | undefined =>
-  use(ServerSessionSelectionsAPIContext)[type]
+export const useSelectionsServiceAPI = (): SelectionsServiceAPI | null =>
+  use(SelectionsServiceAPIContext)
 
 export const SessionSelectionsAPIContext = createContext<{
   readonly [key in SelectionsType]?: SessionSelectionsAPI
@@ -54,7 +43,7 @@ export const useSessionSelectionsAPI = (
  */
 export const selectionsQueryOptions = {
   selections: (
-    api: ServerSelectionsAPI | undefined,
+    api: SelectionsServiceAPI | undefined | null,
     scheduleId: string,
     id: string,
   ) =>
@@ -70,7 +59,7 @@ export const selectionsQueryOptions = {
       staleTime: Infinity,
     }),
   counts: (
-    api: ServerSelectionsAPI | undefined,
+    api: SelectionsServiceAPI | undefined | null,
     scheduleId: string,
     type: SelectionsType,
   ) =>
@@ -218,7 +207,7 @@ export const useSelections = (
   id: string,
 ): UseQueryResult<ServerSelections | null> => {
   const config = useScheduleConfig()
-  const api = useServerSelectionsAPI()
+  const api = useSelectionsServiceAPI()
   return useQuery(selectionsQueryOptions.selections(api, config.id, id))
 }
 
@@ -229,7 +218,7 @@ export const useSelectionCounts = (
   type: SelectionsType,
 ): UseQueryResult<ReadonlyMap<string, number>> => {
   const config = useScheduleConfig()
-  const api = useServerSelectionsAPI()
+  const api = useSelectionsServiceAPI()
   return useQuery(selectionsQueryOptions.counts(api, config.id, type))
 }
 
@@ -241,7 +230,7 @@ export const useSelectionCount = (
   itemId: string,
 ): UseQueryResult<number | undefined> => {
   const config = useScheduleConfig()
-  const api = useServerSelectionsAPI()
+  const api = useSelectionsServiceAPI()
   const selectFn = useCallback(
     (res: ReadonlyMap<string, number>) => {
       return res.get(itemId)

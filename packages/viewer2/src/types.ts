@@ -4,8 +4,7 @@ import type { ViewerConfig } from "./config.js"
 import type {
   LocalSessionSelectionsStore,
   ScheduleAPI,
-  ServerSelectionsAPI,
-  ServerSessionSelectionsAPI,
+  SelectionsServiceAPI,
   SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import type { StoreApi } from "zustand"
@@ -29,13 +28,10 @@ export type StaticAppContextValue = Readonly<{
 export type DynamicAppContextValue = Readonly<{
   config: ViewerConfig
   scheduleAPI: ScheduleAPI
-  serverSelectionsAPI?: ServerSelectionsAPI
   localSessionSelectionsStores: {
     bookmarks: LocalSessionSelectionsStore
   }
-  serverSessionSelectionsAPIs: Readonly<{
-    bookmarks?: ServerSessionSelectionsAPI
-  }>
+  selectionsServiceAPI: SelectionsServiceAPI | null
   sessionSelectionsAPIs: Readonly<{
     bookmarks: SessionSelectionsAPI
   }>
