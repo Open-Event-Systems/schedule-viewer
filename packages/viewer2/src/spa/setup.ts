@@ -34,7 +34,7 @@ export const setup = async (
     ? {
         bookmarks: serverSessionSelectionsAPIFactory("bookmarks"),
       }
-    : undefined
+    : {}
 
   const localSessionSelectionsStores = {
     bookmarks: makeLocalStorageSessionSelectionsStore("bookmarks", config.id),
@@ -66,6 +66,7 @@ export const setup = async (
     scheduleAPI,
     sessionSelectionsAPIs,
     localSessionSelectionsStores,
+    serverSessionSelectionsAPIs,
     serverSelectionsAPI: serverAPI,
   }
 }

@@ -1,10 +1,14 @@
 import { PageMenu } from "../components/page-menu/page-menu.js"
 import { useViewerConfig } from "../config.js"
-import { pagesRoute } from "../routes.js"
-import { Markdown, useItems } from "@open-event-systems/schedule-react"
+import { sharedPagesRoute } from "../routes.js"
+import {
+  Markdown,
+  useItems,
+  useSelections,
+} from "@open-event-systems/schedule-react"
 import { parsers } from "../schedule.js"
 import { useCallback, useMemo } from "react"
-import { useNavigate, useParams, useRouter } from "@tanstack/react-router"
+import { useNavigate, useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
 
 import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
@@ -13,10 +17,8 @@ import { combineScheduleItems } from "../utils.js"
 import classes from "./pages.module.scss"
 import { Page } from "../components/page/page.js"
 
-export const PagesRoute = () => {
-  const { pageId } = useParams({
-    strict: false,
-  })
+const SharedPagesRoute = () => {
+  const { shareId, pageId } = sharedPagesRoute.useParams()
 
   const config = useViewerConfig()
   const router = useRouter()
@@ -26,6 +28,7 @@ export const PagesRoute = () => {
   const {
     byType: { event: events, vendor: vendors },
   } = useItems(parsers)
+
   const combinedItems = useMemo(() => {
     return makeScheduleItemCollection(combineScheduleItems(events, vendors))
   }, [events, vendors])
@@ -33,12 +36,13 @@ export const PagesRoute = () => {
   const onSelectPage = useCallback(
     (id: string) => {
       navigate({
-        to: pagesRoute.to,
+        to: sharedPagesRoute.to,
         params: {
+          shareId,
           pageId: id,
         },
-        state: (prev) => prev,
-        from: pagesRoute.to,
+        state: true,
+        from: sharedPagesRoute.to,
       })
     },
     [navigate],
@@ -50,8 +54,9 @@ export const PagesRoute = () => {
         router.origin +
         router.history.createHref(
           router.buildLocation({
-            to: pagesRoute.to,
+            to: sharedPagesRoute.to,
             params: {
+              shareId,
               pageId: id,
             },
           }).href,
@@ -60,6 +65,8 @@ export const PagesRoute = () => {
     },
     [router],
   )
+
+  const sharedSelectionsQuery = useSelections(shareId)
 
   const isSmall = useMediaQuery("(max-width: 768px)")
 
@@ -72,10 +79,16 @@ export const PagesRoute = () => {
         selectedPage={pageId}
         onSelectPage={onSelectPage}
         renderPage={(pageConfig) => (
-          <Page items={combinedItems} pageConfig={pageConfig} />
+          <Page
+            items={combinedItems}
+            pageConfig={pageConfig}
+            sharedSelections={sharedSelectionsQuery.data ?? undefined}
+          />
         )}
         getPageURL={getPageURL}
       />
     </>
   )
 }
+
+export default SharedPagesRoute

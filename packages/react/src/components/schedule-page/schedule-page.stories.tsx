@@ -27,12 +27,24 @@ import { ViewSelect } from "../view-select/view-select.js"
 import { TextFilter } from "../filters/text-filter.js"
 import { PastEventsFilter } from "../filters/past-events-filter.js"
 import { ShareMenu } from "../share-menu/share-menu.js"
-import { ScheduleComponent } from "../schedule/schedule-component.stories.js"
+import { Schedule } from "../schedule/schedule-component.js"
 
 const meta: Meta<typeof SchedulePage> = {
   component: SchedulePage,
   parameters: {
     layout: "fullscreen",
+  },
+  argTypes: {
+    enableFeatures: {
+      control: "check",
+      options: [
+        "bookmark-filter",
+        "past-events-filter",
+        "share",
+        "sync",
+        "export",
+      ],
+    },
   },
 }
 
@@ -44,9 +56,13 @@ type Options = FilterOptions & {
 
 export const Default: StoryObj<typeof SchedulePage> = {
   args: {
-    hideShareMenu: false,
-    hideBookmarkFilter: false,
-    hideShowPastEventsFilter: false,
+    enableFeatures: [
+      "bookmark-filter",
+      "past-events-filter",
+      "share",
+      "sync",
+      "export",
+    ],
   },
   render(args) {
     const [
@@ -68,7 +84,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
     )
 
     const [type, setType] =
-      useState<ComponentPropsWithoutRef<typeof ScheduleComponent>["type"]>(
+      useState<ComponentPropsWithoutRef<typeof Schedule>["type"]>(
         "daily-agenda",
       )
     const [selections, setSelections] = useState(makeSelections())
@@ -152,6 +168,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
         h="100dvh"
         p="xs"
         {...args}
+        tags={parsedConfig.tags}
         renderBookmarkFilter={(props) => (
           <BookmarkFilter
             {...props}
@@ -160,7 +177,14 @@ export const Default: StoryObj<typeof SchedulePage> = {
           />
         )}
         renderViewSelect={(props) => (
-          <ViewSelect {...props} type={type} onChange={setType} />
+          <ViewSelect
+            {...props}
+            type={type}
+            onChange={(t) =>
+              t != null &&
+              setType(t as ComponentPropsWithoutRef<typeof Schedule>["type"])
+            }
+          />
         )}
         renderTextFilter={(props) => (
           <TextFilter
@@ -179,7 +203,6 @@ export const Default: StoryObj<typeof SchedulePage> = {
         renderTagFilter={(props) => (
           <TagFilter
             {...props}
-            tags={parsedConfig.tags}
             tagIndicators={parsedConfig.tagIndicators}
             disabledTags={disabledTags}
             onSetDisabled={(tag, disabled) => {
@@ -198,7 +221,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
           <ShareMenu {...props} enabledOptions={["export", "share", "sync"]} />
         )}
         renderSchedule={(props) => (
-          <ScheduleComponent
+          <Schedule
             {...props}
             items={filtered}
             type={type}

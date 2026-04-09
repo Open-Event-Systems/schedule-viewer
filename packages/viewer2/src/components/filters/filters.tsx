@@ -42,7 +42,6 @@ export const ViewSelectContainer = (props: ViewSelectProps) => {
 }
 
 export const BookmarkFilterContainer = (props: BookmarkFilterProps) => {
-  // TODO: allow configurable default/fixed value from page config
   const onlyBookmarked = useSearch({
     strict: false,
     select: (state) => !!state.bookmarked,

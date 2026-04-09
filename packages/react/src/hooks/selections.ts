@@ -3,6 +3,7 @@ import {
   type SelectionsType,
   type ServerSelections,
   type ServerSelectionsAPI,
+  type ServerSessionSelectionsAPI,
   type SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import {
@@ -23,6 +24,15 @@ export const ServerSelectionsAPIContext = createContext<
 
 export const useServerSelectionsAPI = (): ServerSelectionsAPI | undefined =>
   use(ServerSelectionsAPIContext)
+
+export const ServerSessionSelectionsAPIContext = createContext<{
+  readonly [key in SelectionsType]?: ServerSessionSelectionsAPI
+}>({})
+
+export const useServerSessionSelectionsAPI = (
+  type: SelectionsType,
+): ServerSessionSelectionsAPI | undefined =>
+  use(ServerSessionSelectionsAPIContext)[type]
 
 export const SessionSelectionsAPIContext = createContext<{
   readonly [key in SelectionsType]?: SessionSelectionsAPI

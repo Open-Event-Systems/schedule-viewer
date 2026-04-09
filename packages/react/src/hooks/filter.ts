@@ -6,6 +6,7 @@ import {
   type DetailedScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import { useMemo } from "react"
+import { iterToArr } from "../utils.js"
 
 export type FilterOptions = Readonly<{
   disabledTags?: Iterable<string>
@@ -17,7 +18,7 @@ export type FilterOptions = Readonly<{
 }>
 
 export const useFilteredItems = <T extends DetailedScheduleItem>(
-  items: Iterable<T>,
+  items?: Iterable<T>,
   options?: FilterOptions,
 ): Iterable<T> => {
   const {
@@ -30,29 +31,29 @@ export const useFilteredItems = <T extends DetailedScheduleItem>(
   } = options ?? {}
   const byBookmarked = useMemo(() => {
     if (onlyBookmarked) {
-      return selections ? [...items].filter(makeBookmarkFilter(selections)) : []
+      return iterToArr(items).filter(makeBookmarkFilter(selections))
     } else {
-      return items ?? []
+      return items
     }
   }, [onlyBookmarked, items, selections])
   const byTag = useMemo(
     () =>
       disabledTags
-        ? [...byBookmarked].filter(makeTagFilter(disabledTags))
+        ? iterToArr(byBookmarked).filter(makeTagFilter(disabledTags))
         : byBookmarked,
     [byBookmarked, disabledTags],
   )
   const byPast = useMemo(
     () =>
       !showPastEvents
-        ? [...byTag].filter(makePastItemFilter(now ?? new Date()))
+        ? iterToArr(byTag).filter(makePastItemFilter(now ?? new Date()))
         : byTag,
     [showPastEvents, byTag, now],
   )
   const byTitle = useMemo(
-    () => (text ? [...byPast].filter(makeTitleFilter(text)) : byPast),
+    () => (text ? iterToArr(byPast).filter(makeTitleFilter(text)) : byPast),
     [text, byPast],
   )
 
-  return byTitle
+  return iterToArr(byTitle)
 }

@@ -63,9 +63,10 @@ func (h *handlers) setupSession(w http.ResponseWriter, r *http.Request) {
 		sessionValid := false
 
 		if reqBody.SessionId != "" {
-			scheduleId, sessionId, err = h.tokenService.ValidateToken(reqBody.SessionId)
-			if err != nil {
-				log.Printf("invalid session: %s", err)
+			var validateErr error
+			scheduleId, sessionId, validateErr = h.tokenService.ValidateToken(reqBody.SessionId)
+			if validateErr != nil {
+				log.Printf("invalid session: %s", validateErr)
 			} else {
 				n, err := db.UpdateSession(scheduleId, sessionId, ip, partialIP)
 				if err != nil {

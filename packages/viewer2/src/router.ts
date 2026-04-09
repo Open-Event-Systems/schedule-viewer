@@ -8,6 +8,8 @@ import {
   rootRoute,
   scheduleLayoutRoute,
   scheduleProvidersRoute,
+  sharedPagesRoute,
+  syncRoute,
 } from "./routes.js"
 import type { AppContextValue } from "./types.js"
 
@@ -76,9 +78,14 @@ export const makeRouter = (
     routeTree: rootRoute.addChildren([
       scheduleProvidersRoute.addChildren([
         scheduleLayoutRoute.addChildren([
-          filterStateRoute.addChildren([pagesRoute, eventDetailsRoute]),
+          filterStateRoute.addChildren([
+            pagesRoute,
+            sharedPagesRoute,
+            eventDetailsRoute,
+          ]),
         ]),
       ]),
+      syncRoute,
       mapProvidersRoute.addChildren([mapRoute]),
     ]),
   })

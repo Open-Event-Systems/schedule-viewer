@@ -52,10 +52,50 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   },
 })
 
+export type PagesParams = Readonly<{
+  view?: string
+  day?: string
+  past?: boolean
+  bookmarked?: boolean
+}>
+
 export const scheduleProvidersRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "scheduleProviders",
   pendingComponent: Loading,
+  validateSearch: (search): PagesParams => {
+    const {
+      view: viewVal,
+      day: dayVal,
+      past: pastVal,
+      bookmarked: bookmarkedVal,
+    } = search
+
+    const view = typeof viewVal == "string" && viewVal ? viewVal : ""
+    const day = typeof dayVal == "string" && dayVal ? dayVal : ""
+    const past = pastVal == "true"
+    const bookmarked = bookmarkedVal == "true"
+
+    return {
+      ...(view ? { view } : {}),
+      ...(day ? { day } : {}),
+      ...(past ? { past } : {}),
+      ...(bookmarked ? { bookmarked } : {}),
+    }
+  },
+  search: {
+    middlewares: [
+      ({ search, next }) => {
+        const { past, bookmarked, ...other } = next(search)
+
+        return {
+          ...other,
+          ...(past ? { past: true } : {}),
+          ...(bookmarked ? { bookmarked: true } : {}),
+        }
+      },
+    ],
+  },
   async beforeLoad({ context: { contextPromise } }) {
     const { config } = await contextPromise
     return {
@@ -99,42 +139,9 @@ export const filterStateRoute = createRoute({
   },
 })
 
-export type PagesParams = Readonly<{
-  view?: string
-  day?: string
-  past?: boolean
-  bookmarked?: boolean
-}>
-
 export const pagesRoute = createRoute({
   getParentRoute: () => filterStateRoute,
   path: "/{-$pageId}",
-  validateSearch: (search: Record<string, unknown>): PagesParams => {
-    const viewType = search.view
-    const day = search.day
-    const past = !!search.past
-    const bookmarked = !!search.bookmarked
-
-    return {
-      ...(typeof viewType == "string" && viewType ? { view: viewType } : {}),
-      ...(typeof day == "string" ? { day } : {}),
-      ...(past ? { past: true } : {}),
-      ...(bookmarked ? { bookmarked: true } : {}),
-    }
-  },
-  search: {
-    middlewares: [
-      ({ search, next }) => {
-        const { past, bookmarked, ...other } = next(search)
-
-        return {
-          ...other,
-          ...(past ? { past: true } : {}),
-          ...(bookmarked ? { bookmarked: true } : {}),
-        }
-      },
-    ],
-  },
   component: lazyRouteComponent(
     () => import("./routes/pages.js"),
     "PagesRoute",
@@ -190,12 +197,10 @@ export const pagesRoute = createRoute({
       ),
     )
 
-    const [items] = await Promise.all([
+    await Promise.all([
       itemsPromise,
       bookmarked ? selectionsPromise : undefined,
     ])
-
-    return { items }
   },
   head: ({
     match: {
@@ -218,6 +223,120 @@ export const pagesRoute = createRoute({
     return {
       meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
       links,
+    }
+  },
+})
+
+export const sharedPagesRoute = createRoute({
+  getParentRoute: () => filterStateRoute,
+  path: "/shared/$shareId/{-$pageId}",
+  component: lazyRouteComponent(() => import("./routes/shared-pages.js")),
+  async beforeLoad({ context: { config }, params: { pageId } }) {
+    const pageConfig = pageId
+      ? config.pages.find((p) => p.id == pageId)
+      : config.pages[0]
+
+    if (!pageConfig) {
+      throw notFound()
+    }
+
+    return {
+      pageConfig,
+    }
+  },
+  loaderDeps: ({ search: { bookmarked } }) => ({ bookmarked }),
+  async loader({ context, params: { shareId }, deps: { bookmarked } }) {
+    const {
+      queryClient,
+      config,
+      scheduleAPI,
+      serverSelectionsAPI,
+      sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
+    } = context
+
+    const {
+      itemQueryOptions,
+      selectionsQueryOptions,
+      sessionSelectionsQueryOptions,
+      parsers,
+    } = await getQueryOptions()
+
+    const itemsPromise = queryClient.fetchQuery(
+      itemQueryOptions.items(scheduleAPI, config.id, parsers),
+    )
+
+    // only await selections if viewing the bookmarked mode
+    const selectionsPromise = queryClient.fetchQuery(
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
+
+    queryClient.fetchQuery(
+      selectionsQueryOptions.counts(
+        serverSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
+
+    // load shared selections
+    const sharedSelectionsPromise = queryClient.fetchQuery(
+      selectionsQueryOptions.selections(
+        serverSelectionsAPI,
+        config.id,
+        shareId,
+      ),
+    )
+
+    const [sharedSelections] = await Promise.all([
+      sharedSelectionsPromise,
+      itemsPromise,
+      bookmarked ? selectionsPromise : undefined,
+    ])
+
+    if (!sharedSelections) {
+      throw notFound()
+    }
+  },
+  head: ({
+    match: {
+      context: { config, pageConfig, defaultPageCanonicalHref },
+    },
+    params: { pageId },
+  }) => {
+    const scheduleTitle = config.title
+    const pageTitle = pageConfig.title || "Schedule"
+    const links: DetailedHTMLProps<
+      LinkHTMLAttributes<HTMLLinkElement>,
+      HTMLLinkElement
+    >[] = []
+
+    // add canonical rel if accessing the default page (browser routing only)
+    if (!pageId && defaultPageCanonicalHref) {
+      links.push({ rel: "canonical", href: defaultPageCanonicalHref })
+    }
+
+    return {
+      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
+      links,
+    }
+  },
+})
+
+export const syncRoute = createRoute({
+  path: "/sync",
+  getParentRoute: () => rootRoute,
+  beforeLoad: async ({ context: { contextPromise } }) => {
+    await contextPromise
+    return { pageTitle: "Sync Schedule" }
+  },
+  component: lazyRouteComponent(() => import("./routes/sync.js")),
+  head: () => {
+    return {
+      meta: [{ title: "Sync Schedule" }],
     }
   },
 })

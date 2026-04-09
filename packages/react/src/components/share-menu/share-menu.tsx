@@ -18,15 +18,16 @@ export type ShareMenuOption = (typeof shareMenuOptions)[number]
 
 export type ShareMenuProps = {
   enabledOptions?: Iterable<ShareMenuOption>
-  onShare?: () => void
-  onSync?: () => void
-  onExport?: () => void
+  onSelect?: (option: ShareMenuOption) => void
   ButtonProps?: Partial<ActionIconProps>
 } & MenuProps
 
 export const ShareMenu = (props: ShareMenuProps) => {
-  const { enabledOptions, onShare, onSync, onExport, ButtonProps, ...other } =
-    useProps("ShareMenu", { enabledOptions: [] }, props)
+  const { enabledOptions, onSelect, ButtonProps, ...other } = useProps(
+    "ShareMenu",
+    { enabledOptions: [] },
+    props,
+  )
 
   const opts = iterToArr(enabledOptions)
 
@@ -47,7 +48,7 @@ export const ShareMenu = (props: ShareMenuProps) => {
         {opts.includes("share") && (
           <Menu.Item
             leftSection={<IconShare3 />}
-            onClick={() => onShare && onShare()}
+            onClick={() => onSelect && onSelect("share")}
           >
             Share My Schedule
           </Menu.Item>
@@ -55,7 +56,7 @@ export const ShareMenu = (props: ShareMenuProps) => {
         {opts.includes("sync") && (
           <Menu.Item
             leftSection={<IconTransfer />}
-            onClick={() => onSync && onSync()}
+            onClick={() => onSelect && onSelect("sync")}
           >
             Sync Device
           </Menu.Item>
@@ -63,7 +64,7 @@ export const ShareMenu = (props: ShareMenuProps) => {
         {opts.includes("export") && (
           <Menu.Item
             leftSection={<IconCalendarDown />}
-            onClick={() => onExport && onExport()}
+            onClick={() => onSelect && onSelect("export")}
           >
             Export Calendar
           </Menu.Item>

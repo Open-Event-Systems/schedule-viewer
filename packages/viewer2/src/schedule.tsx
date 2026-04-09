@@ -33,7 +33,7 @@ export type ItemNavProps = Readonly<{
 export const getItemNavProps = (
   router: Register["router"],
   origin: string,
-  currentURL: string,
+  getCurrentURL: () => string,
   item: ScheduleItem,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
 ): ItemNavProps => {
@@ -62,7 +62,7 @@ export const getItemNavProps = (
           eventId: item.id,
         },
         state: {
-          backURL: currentURL,
+          backURL: getCurrentURL(),
         },
       })
     }
@@ -109,7 +109,7 @@ export const getItemNavProps = (
 export const makeItemNavPropsMap = (
   router: Register["router"],
   origin: string,
-  currentURL: string,
+  getCurrentURL: () => string,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
   items?: Iterable<ScheduleItem>,
 ): ReadonlyMap<string, ItemNavProps> => {
@@ -117,7 +117,13 @@ export const makeItemNavPropsMap = (
   for (const item of items ?? []) {
     map.set(
       item.id,
-      getItemNavProps(router, origin, currentURL, item, mapLocationMatchFunc),
+      getItemNavProps(
+        router,
+        origin,
+        getCurrentURL,
+        item,
+        mapLocationMatchFunc,
+      ),
     )
   }
   return map

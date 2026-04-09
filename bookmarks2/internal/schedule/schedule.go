@@ -98,10 +98,11 @@ func (s *ScheduleService) fetchConfig(ctx context.Context, url string) ([]string
 		return nil, err
 	}
 
+
 	for _, item := range items {
 		if item.Item.Id != "" {
 			res = append(res, item.Item.Id)
-		} else {
+		} else if item.URL != "" {
 			urls = append(urls, item.URL)
 		}
 	}
@@ -115,12 +116,10 @@ func (s *ScheduleService) fetchConfig(ctx context.Context, url string) ([]string
 
 	wg := sync.WaitGroup{}
 	for _, url := range urls {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			ids, err := s.fetchIds(ctx, url)
 			urlResults <- &idsOrErr{ids: ids, err: err}
-		}()
+		})
 	}
 
 	wg.Wait()

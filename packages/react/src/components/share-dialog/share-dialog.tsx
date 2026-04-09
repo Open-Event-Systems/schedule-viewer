@@ -51,7 +51,7 @@ export const ShareDialog = (props: ShareDialogProps) => {
 
   return (
     <Modal title={type == "share" ? "Share" : "Sync"} {...other}>
-      <Stack gap="xs">
+      <Stack className={className} gap="xs">
         {type == "share" ? (
           <Text>Use this link to share your current selections.</Text>
         ) : (

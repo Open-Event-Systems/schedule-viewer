@@ -7,10 +7,11 @@ import {
   sessionSelectionsQueryOptions,
   useSessionSelectionsAPI,
 } from "@open-event-systems/schedule-react"
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createStore, type StoreApi } from "zustand"
-import { createContext, useCallback, useMemo } from "react"
+import { createContext, useMemo } from "react"
 import { useViewerConfig, type PageConfig } from "./config.js"
+import { iterToArr } from "./utils.js"
 
 export type FilterState = Readonly<{
   text: string
@@ -52,20 +53,14 @@ export const useSessionSelectionsIfEnabled = (
   const api = useSessionSelectionsAPI("bookmarks")
   const config = useViewerConfig()
 
-  const select = useCallback(
-    (value: Selections) => {
-      return onlyBookmarked ? value : undefined
-    },
-    [onlyBookmarked],
-  )
-
-  const query = useSuspenseQuery({
+  const query = useQuery({
     ...sessionSelectionsQueryOptions.sessionSelections(
       api,
       config.id,
       "bookmarks",
     ),
-    select,
+    subscribed: !!onlyBookmarked,
+    enabled: !!onlyBookmarked,
   })
 
   return query.data
@@ -73,13 +68,13 @@ export const useSessionSelectionsIfEnabled = (
 
 export const usePageFilteredItems = <T extends DetailedScheduleItem>(
   pageConfig: PageConfig,
-  items: Iterable<T>,
+  items?: Iterable<T>,
 ): Iterable<T> => {
   return useMemo(() => {
     const typeFilter = makeTypeFilter(pageConfig.onlyType)
     const reqTagsFilter = makeRequireTagsFilter(pageConfig.requireTags)
 
-    const byType = items ? [...items].filter(typeFilter) : []
+    const byType = iterToArr(items).filter(typeFilter)
     const byReqTags = byType.filter(reqTagsFilter)
     return byReqTags
   }, [items, pageConfig])

@@ -5,6 +5,7 @@ import type {
   LocalSessionSelectionsStore,
   ScheduleAPI,
   ServerSelectionsAPI,
+  ServerSessionSelectionsAPI,
   SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import type { StoreApi } from "zustand"
@@ -32,6 +33,9 @@ export type DynamicAppContextValue = Readonly<{
   localSessionSelectionsStores: {
     bookmarks: LocalSessionSelectionsStore
   }
+  serverSessionSelectionsAPIs: Readonly<{
+    bookmarks?: ServerSessionSelectionsAPI
+  }>
   sessionSelectionsAPIs: Readonly<{
     bookmarks: SessionSelectionsAPI
   }>

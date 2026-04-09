@@ -6,6 +6,7 @@ import {
   ScheduleAPIContext,
   ScheduleConfigContext,
   ServerSelectionsAPIContext,
+  ServerSessionSelectionsAPIContext,
   SessionSelectionsAPIContext,
 } from "@open-event-systems/schedule-react"
 import { PWAStoreContext } from "../sw/pwa.js"
@@ -28,6 +29,7 @@ export const Providers = () => {
     config,
     scheduleAPI,
     serverSelectionsAPI,
+    serverSessionSelectionsAPIs,
     sessionSelectionsAPIs,
   } = context
 
@@ -39,9 +41,13 @@ export const Providers = () => {
             <ScheduleConfigContext value={config}>
               <ScheduleAPIContext value={scheduleAPI}>
                 <ServerSelectionsAPIContext value={serverSelectionsAPI}>
-                  <SessionSelectionsAPIContext value={sessionSelectionsAPIs}>
-                    <Outlet />
-                  </SessionSelectionsAPIContext>
+                  <ServerSessionSelectionsAPIContext
+                    value={serverSessionSelectionsAPIs}
+                  >
+                    <SessionSelectionsAPIContext value={sessionSelectionsAPIs}>
+                      <Outlet />
+                    </SessionSelectionsAPIContext>
+                  </ServerSessionSelectionsAPIContext>
                 </ServerSelectionsAPIContext>
               </ScheduleAPIContext>
             </ScheduleConfigContext>
