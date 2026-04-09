@@ -1,8 +1,0 @@
----
-db_url: /data/bookmarks.sqlite
-allowed_origins:
-  - http://localhost:8000
-url_prefix:
-schedule_urls:
-  example-event: http://localhost:8080/events.json
-secret: changeit
