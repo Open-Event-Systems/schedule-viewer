@@ -101,11 +101,13 @@ export const DEFAULT_SCHEDULE_CONFIG = {
  * Parse a {@link ScheduleConfig} object.
  */
 export const parseConfig = (configData: unknown): ScheduleConfig => {
-  const parsed = configSchema.parse(configData)
+  const { bookmarks, selectionsService, ...parsed } =
+    configSchema.parse(configData)
   const config: ScheduleConfig = {
     ...DEFAULT_SCHEDULE_CONFIG,
     icalPrefix: parsed.id,
     ...omitUndef(parsed),
+    selectionsService: selectionsService ?? bookmarks,
   }
 
   return config
