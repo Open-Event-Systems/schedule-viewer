@@ -77,24 +77,6 @@ export type ParseResult<T> = Readonly<
 export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
 
 /**
- * Stores {@link ScheduleItem} objects.
- */
-export type ScheduleItemCollection<T extends ScheduleItem = ScheduleItem> =
-  Readonly<{
-    get size(): number
-    get items(): readonly T[]
-
-    [Symbol.iterator](): Iterator<T>
-
-    get(id: string): T | undefined
-
-    filter<N extends T>(f: (item: T, index: number) => item is N): Iterable<N>
-    filter(f: (item: T, index: number) => boolean): Iterable<T>
-
-    map<N>(f: (item: T, index: number) => N): Iterable<N>
-  }>
-
-/**
  * Fetches schedule items.
  */
 export type ScheduleAPI = Readonly<{

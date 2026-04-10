@@ -9,9 +9,9 @@ import {
 } from "@mantine/core"
 import clsx from "clsx"
 import { useMemo, type ComponentPropsWithoutRef, type ReactNode } from "react"
-import { iterToArr } from "../../utils.js"
 
 import classes from "./bins.module.scss"
+import { iterToArr } from "@open-event-systems/schedule-lib"
 
 type Bin<T> = Readonly<{
   key: string

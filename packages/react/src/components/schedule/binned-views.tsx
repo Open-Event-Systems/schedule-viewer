@@ -9,6 +9,7 @@ import {
 import {
   binByTitle,
   getDefaultDay,
+  iterToArr,
   makeDateFilter,
   makeDayBinFunc,
   makeTagBinFunc,
@@ -20,7 +21,6 @@ import clsx from "clsx"
 import { ItemPills, type ItemPillsProps } from "../pill/item-pills.js"
 import type { TagEntry, TagIndicatorEntry } from "../../types.js"
 import { Bins, type BinsProps } from "../bins/bins.js"
-import { iterToArr } from "../../utils.js"
 
 type RenderItemPills = (props: ItemPillsProps) => ReactNode
 

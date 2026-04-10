@@ -10,6 +10,7 @@ import {
   scheduleProvidersRoute,
   sharedPagesRoute,
   syncRoute,
+  vendorDetailsRoute,
 } from "./routes.js"
 import type { AppContextValue } from "./types.js"
 
@@ -82,6 +83,7 @@ export const makeRouter = (
             pagesRoute,
             sharedPagesRoute,
             eventDetailsRoute,
+            vendorDetailsRoute,
           ]),
         ]),
       ]),

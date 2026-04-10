@@ -23,8 +23,8 @@ import {
 } from "../filters/past-events-filter.js"
 import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
-import { iterToArr } from "../../utils.js"
 import type { TagEntry } from "../../types.js"
+import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export const schedulePageFeatures = [
   ...shareMenuOptions,

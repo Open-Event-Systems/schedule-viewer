@@ -15,13 +15,12 @@ import {
   makeRenderItemDetailsFunc,
   parsers,
 } from "../schedule.js"
-import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
-import { combineScheduleItems, useNow } from "../utils.js"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { mapRoute } from "../routes.js"
 import { isMapLevel } from "../../../map/src/viewer/util.js"
 
 import classes from "./map.module.scss"
+import { useNow } from "../utils.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -49,13 +48,11 @@ export const MapRoute = () => {
 
   const now = useNow()
 
-  const {
-    byType: { event: events, vendor: vendors },
-  } = useItems(parsers)
-
-  const items = useMemo(() => {
-    return makeScheduleItemCollection(combineScheduleItems(events, vendors))
-  }, [now, events, vendors])
+  const { items } = useItems(parsers)
+  const eventsAndVendors = useMemo(
+    () => items.filter((t) => t.type == "event" || t.type == "vendor"),
+    [items],
+  )
 
   const locMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
 
@@ -68,7 +65,7 @@ export const MapRoute = () => {
   }, [items, locMatchFunc, now])
 
   const locationItemInfo = useMemo(
-    () => getMapLocationInfo(nowItems.values(), locMatchFunc),
+    () => getMapLocationInfo(eventsAndVendors, locMatchFunc),
     [nowItems, locMatchFunc],
   )
 
@@ -87,7 +84,7 @@ export const MapRoute = () => {
       makeItemNavPropsMap(
         router,
         router.origin ?? "",
-        context.getCurrentURL(),
+        context.getCurrentURL,
         mapLocMatchFunc,
         items,
       ),

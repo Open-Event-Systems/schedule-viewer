@@ -1,13 +1,15 @@
 import z from "zod"
 import type { MapConfig } from "./types.js"
+import { omitUndef, optional } from "@open-event-systems/schedule-lib"
 
 const objectSchema = z.looseObject({
   url: z.string(),
-  type: z.string().optional(),
-  noIsometricTransform: z.boolean().optional(),
+  type: optional(z.string()),
+  noIsometricTransform: optional(z.boolean()),
 })
 
-const levelSchema = objectSchema.extend({
+const levelSchema = z.looseObject({
+  ...objectSchema.shape,
   id: z.string(),
   type: z.literal("level"),
   title: z.string(),
@@ -23,24 +25,20 @@ const layerSchema = z.looseObject({
 const locationSchema = z.looseObject({
   id: z.string(),
   level: z.string(),
-  title: z.string().optional(),
-  description: z.string().optional(),
-  aliases: z.array(z.string()).optional(),
-  zoomScale: z.number().optional(),
+  title: optional(z.string()),
+  description: optional(z.string()),
+  aliases: optional(z.array(z.string())),
+  zoomScale: optional(z.number()),
 })
 
 const configSchema = z.looseObject({
   objects: z.array(levelOrObjectSchema),
   defaultLevel: z.string(),
-  layers: z.array(layerSchema),
-  locations: z.array(locationSchema),
+  layers: optional(z.array(layerSchema)),
+  locations: optional(z.array(locationSchema)),
   width: z.number(),
   height: z.number(),
-  homeURL: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? undefined)
-    .optional(),
+  homeURL: optional(z.string()),
 })
 
 export type MapConfigInput = z.input<typeof configSchema>
@@ -49,5 +47,10 @@ export type MapConfigInput = z.input<typeof configSchema>
  * Parse a {@link MapConfig}.
  */
 export const parseMapConfig = (data: unknown): MapConfig => {
-  return configSchema.parse(data)
+  const parsed = configSchema.parse(data)
+  return {
+    layers: [],
+    locations: [],
+    ...omitUndef(parsed),
+  }
 }

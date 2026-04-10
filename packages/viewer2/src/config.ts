@@ -5,92 +5,81 @@
 import {
   DEFAULT_SCHEDULE_CONFIG,
   parseConfig,
-  type ScheduleConfig,
   type ScheduleConfigInput,
   type SchedulePageFeature,
 } from "@open-event-systems/schedule-react"
 import z from "zod"
 import wretch from "wretch"
 import { createContext, use } from "react"
+import { parseMapConfig } from "@open-event-systems/schedule-map"
 import {
-  parseMapConfig,
-  type MapConfig,
-} from "@open-event-systems/schedule-map"
-import type { ScheduleViewComponentType } from "./types.js"
+  type PageConfig,
+  type ScheduleViewComponentType,
+  type ViewConfig,
+  type ViewerConfig,
+} from "./types.js"
+import { optional } from "@open-event-systems/schedule-lib"
 
-export type ViewConfig = Readonly<{
-  id: string
-  type: ScheduleViewComponentType
-  title: string
-  enableFeatures?: readonly SchedulePageFeature[]
-  showPastEvents?: boolean
-  onlyBookmarked?: boolean
-}> &
-  Readonly<Record<string, unknown>>
-
-export type PageConfig = Readonly<{
-  id: string
-  title?: string
-  description?: string
-  views?: readonly ViewConfig[]
-  onlyType?: readonly string[]
-  requireTags?: readonly string[]
-  noPastEventsOption?: boolean
-}>
-
-export type ViewerConfig = ScheduleConfig &
-  Readonly<{
-    homeURL?: string
-    pages: readonly PageConfig[]
-    map?: MapConfig
-  }>
-
-const opt = <OutT, InT>(
-  s: z.ZodType<OutT, InT>,
-): z.ZodType<OutT | undefined, InT | null | undefined> =>
-  s.nullish().transform((v) => v ?? undefined)
-
-const viewConfigSchema = z
-  .looseObject({
+const viewConfigSchema = z.codec(
+  z.looseObject({
     id: z.string(),
-    title: opt(z.string()).optional(),
-    type: z.string().transform((s) => s as ScheduleViewComponentType),
-    enableFeatures: opt(
-      z.array(z.string().transform((s) => s as SchedulePageFeature)),
-    ).optional(),
-    showPastEvents: opt(z.boolean()).optional(),
-    onlyBookmarked: opt(z.boolean()).optional(),
-  })
-  .transform((v) => {
-    const { title, id, ...other } = v
-    return {
-      id,
-      title: title ?? id,
-      ...other,
-    }
-  })
+    type: z.string().refine((_s): _s is ScheduleViewComponentType => true),
+    title: z.string(),
+    enableFeatures: optional(
+      z.array(z.string().refine((_s): _s is SchedulePageFeature => true)),
+    ),
+    showPastEvents: optional(z.boolean()),
+    onlyBookmarked: optional(z.boolean()),
+  }),
+  z.custom<ViewConfig>(),
+  {
+    decode: (v) => ({
+      ...v,
+    }),
+    encode: ({ enableFeatures, ...v }) => ({
+      ...v,
+      ...(enableFeatures ? { enableFeatures: [...enableFeatures] } : null),
+    }),
+  },
+)
 
-const pageConfigSchema = z
-  .looseObject({
+const pageConfigSchema = z.codec(
+  z.looseObject({
     id: z.string(),
-    title: opt(z.string()).optional(),
-    description: opt(z.string()).optional(),
-    views: opt(z.array(viewConfigSchema)).optional(),
-    onlyType: opt(
-      z.union([z.string().transform((s) => [s]), z.array(z.string())]),
-    ).optional(),
-    requireTags: opt(z.array(z.string())).optional(),
-    noPastEventsOption: opt(z.boolean()).optional(),
-  })
-  .partial()
-  .required({ id: true })
+    title: optional(z.string()),
+    description: optional(z.string()),
+    views: optional(z.array(viewConfigSchema)),
+    onlyType: optional(
+      z.codec(z.union([z.string(), z.array(z.string())]), z.array(z.string()), {
+        decode: (v) => {
+          if (Array.isArray(v)) {
+            return v
+          } else {
+            return [v]
+          }
+        },
+        encode: (v) => (v.length == 1 ? v[0]! : v),
+      }),
+    ),
+    requireTags: optional(z.array(z.string())),
+  }),
+  z.custom<PageConfig>(),
+  {
+    decode: ({ views, ...v }) => ({ ...v, views: views ?? [] }),
+    encode: ({ views, onlyType, requireTags, ...v }) => ({
+      ...v,
+      views: [...views],
+      ...(onlyType ? { onlyType: [...onlyType] } : null),
+      ...(requireTags ? { requireTags: [...requireTags] } : null),
+    }),
+  },
+)
 
-const viewerConfigSchema = z
-  .object({
-    homeURL: opt(z.string()),
-    pages: opt(z.array(pageConfigSchema)),
-  })
-  .partial()
+const viewerConfigSchema = z.looseObject({
+  homeURL: optional(z.string()),
+  pages: optional(z.array(pageConfigSchema)),
+  map: optional(z.looseObject({})),
+})
 
 export const DEFAULT_VIEWER_CONFIG = {
   ...DEFAULT_SCHEDULE_CONFIG,
@@ -109,11 +98,9 @@ export const useViewerConfig = (): ViewerConfig => use(ViewerConfigContext)
 
 export const parseViewerConfig = (configData: unknown): ViewerConfig => {
   const config = parseConfig(configData)
-  const viewerConfig = viewerConfigSchema.parse(configData)
-  const mapConfig =
-    typeof configData == "object" && configData && "map" in configData
-      ? parseMapConfig(configData.map)
-      : undefined
+  const { map: mapConfigData, ...viewerConfig } =
+    viewerConfigSchema.parse(configData)
+  const mapConfig = mapConfigData ? parseMapConfig(mapConfigData) : undefined
 
   return {
     ...DEFAULT_VIEWER_CONFIG,

@@ -5,7 +5,7 @@ import {
   type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import type { Register } from "@tanstack/react-router"
-import { eventDetailsRoute, mapRoute } from "./routes.js"
+import { eventDetailsRoute, mapRoute, vendorDetailsRoute } from "./routes.js"
 import type { MapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import {
   type ItemDetailsProps,
@@ -60,6 +60,29 @@ export const getItemNavProps = (
         to: eventDetailsRoute.to,
         params: {
           eventId: item.id,
+        },
+        state: {
+          backURL: getCurrentURL(),
+        },
+      })
+    }
+  } else if (item.type == "vendor") {
+    url =
+      origin +
+      history.createHref(
+        router.buildLocation({
+          to: vendorDetailsRoute.to,
+          params: {
+            vendorId: item.id,
+          },
+        }).href,
+      )
+    onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      router.navigate({
+        to: vendorDetailsRoute.to,
+        params: {
+          vendorId: item.id,
         },
         state: {
           backURL: getCurrentURL(),

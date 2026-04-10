@@ -5,13 +5,13 @@ import {
   type MenuProps,
   useProps,
 } from "@mantine/core"
+import { iterToArr } from "@open-event-systems/schedule-lib"
 import {
   IconCalendarDown,
   IconShare,
   IconShare3,
   IconTransfer,
 } from "@tabler/icons-react"
-import { iterToArr } from "../../utils.js"
 
 export const shareMenuOptions = ["export", "share", "sync"] as const
 export type ShareMenuOption = (typeof shareMenuOptions)[number]

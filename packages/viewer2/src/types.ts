@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query"
 import type { SWState } from "./sw/service-worker.js"
-import type { ViewerConfig } from "./config.js"
 import type {
   LocalSessionSelectionsStore,
   ScheduleAPI,
@@ -9,6 +8,39 @@ import type {
 } from "@open-event-systems/schedule-lib"
 import type { StoreApi } from "zustand"
 import type { PWAState } from "./sw/pwa.js"
+import type {
+  ScheduleConfig,
+  SchedulePageFeature,
+} from "@open-event-systems/schedule-react"
+import type { MapConfig } from "@open-event-systems/schedule-map"
+
+export type ViewConfig = Readonly<{
+  id: string
+  type: ScheduleViewComponentType
+  title: string
+  enableFeatures?: readonly SchedulePageFeature[]
+  showPastEvents?: boolean
+  onlyBookmarked?: boolean
+}>
+
+export type PageConfig = Readonly<{
+  id: string
+  title?: string
+  description?: string
+  views: readonly ViewConfig[]
+  onlyType?: readonly string[]
+  requireTags?: readonly string[]
+}>
+
+/**
+ * Viewer config object.
+ */
+export type ViewerConfig = ScheduleConfig &
+  Readonly<{
+    homeURL?: string
+    pages: readonly PageConfig[]
+    map?: MapConfig
+  }>
 
 /**
  * Parts of app context that are known at page load.

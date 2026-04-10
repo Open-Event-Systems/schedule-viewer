@@ -3,6 +3,7 @@ import {
   type BoxProps,
   createPolymorphicComponent,
   Divider,
+  type HoverCardProps,
   Indicator,
   Title,
   useProps,
@@ -10,6 +11,8 @@ import {
 import clsx from "clsx"
 import {
   memo,
+  useEffect,
+  useState,
   type AllHTMLAttributes,
   type MouseEvent,
   type ReactNode,
@@ -137,7 +140,7 @@ export type PillProps = {
   /**
    * Function to render a hover card.
    */
-  renderHoverCard?: (props: { children?: ReactNode }) => ReactNode
+  renderHoverCard?: (props: HoverCardProps) => ReactNode
 
   /**
    * Event handler for when the pill body is clicked.
@@ -162,6 +165,16 @@ const _PillsPillMemo = memo((props: PillProps) => {
     ...other
   } = useProps("PillsPill", { renderBody: defaultRenderBody }, props)
 
+  // hack to improve rendering performance by setting up the hover components
+  // after the first render
+  const [hoverEnabled, setHoverEnabled] = useState(false)
+
+  useEffect(() => {
+    window.setTimeout(() => {
+      setHoverEnabled(true)
+    }, 50)
+  }, [])
+
   const inner = (
     <Box
       renderRoot={renderBody}
@@ -174,8 +187,10 @@ const _PillsPillMemo = memo((props: PillProps) => {
 
   let withHover
 
-  if (renderHoverCard) {
-    withHover = renderHoverCard({ children: inner })
+  if (renderHoverCard && hoverEnabled) {
+    withHover = renderHoverCard({
+      children: inner,
+    })
   } else {
     withHover = inner
   }

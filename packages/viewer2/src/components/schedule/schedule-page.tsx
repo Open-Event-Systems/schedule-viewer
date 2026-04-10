@@ -6,9 +6,11 @@ import {
   type ShareMenuOption,
 } from "@open-event-systems/schedule-react"
 import { useViewerConfig, type PageConfig } from "../../config.js"
-import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
+import {
+  iterToArr,
+  type DetailedScheduleItem,
+} from "@open-event-systems/schedule-lib"
 import { usePageFilteredItems } from "../../filter.js"
-import { iterToArr } from "../../utils.js"
 import {
   BookmarkFilterContainer,
   PastEventsFilterContainer,

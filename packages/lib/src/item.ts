@@ -11,47 +11,39 @@ import type {
   MapFlag,
   ScheduleItemDetails,
 } from "./types.js"
-import { opt, optStr, strDate, strSetSchema } from "./schema.js"
 import z from "zod"
+import { isoDate, optional, strSet } from "./schema.js"
 
-const contactObjSchema = z
-  .looseObject({
-    name: optStr,
-    url: optStr,
-  })
-  .partial()
+const contactObjSchema = z.looseObject({
+  name: optional(z.string()),
+  url: optional(z.string()),
+})
 
-const contactSchema = z
-  .union([z.string(), contactObjSchema])
-  .transform((v): Contact & { [x: string]: unknown } => {
-    if (typeof v == "string") {
-      return {
-        name: v,
-      }
-    }
-    return v
-  })
+const contactSchema = z.codec(
+  z.union([z.string(), contactObjSchema]),
+  z.custom<Contact>(),
+  {
+    decode: (v) => (typeof v == "string" ? { name: v } : v),
+    encode: (v) => v,
+  },
+)
 
-const itemDetailsSchema = z
-  .looseObject({
-    title: optStr,
-    description: optStr,
-    location: optStr,
-    contacts: opt(z.array(contactSchema).readonly()),
-    tags: opt(strSetSchema),
-    icon: optStr,
-    image: optStr,
-  })
-  .partial()
+const itemDetailsSchema = z.looseObject({
+  title: optional(z.string()),
+  description: optional(z.string()),
+  location: optional(z.string()),
+  contacts: optional(z.array(contactSchema)),
+  tags: optional(strSet),
+  icon: optional(z.string()),
+  image: optional(z.string()),
+})
 
-const scheduleItemSchema = z
-  .looseObject({
-    id: z.string(),
-    type: z.string(),
-    start: strDate,
-    end: strDate,
-  })
-  .partial({ start: true, end: true })
+const scheduleItemSchema = z.looseObject({
+  id: z.string(),
+  type: z.string(),
+  start: optional(z.union([isoDate, z.date()])),
+  end: optional(z.union([isoDate, z.date()])),
+})
 
 const scheduleEventSchema = z.looseObject({
   ...scheduleItemSchema.shape,
@@ -156,6 +148,7 @@ export type ItemParserMap<M extends ItemTypeMap> = {
 export type ParseItemResult<M extends ItemTypeMap> = ParseResult<M[keyof M]>
 
 export type ParseItemsResult<M extends ItemTypeMap> = Readonly<{
+  items: readonly M[keyof M][]
   byType: {
     readonly [T in keyof M]: readonly M[T][]
   }
@@ -184,26 +177,29 @@ export const parseItems = <M extends ItemTypeMap>(
   typeParsers: ItemParserMap<M>,
   items: Iterable<ScheduleItem>,
 ): ParseItemsResult<M> => {
-  const results: Record<string, M[keyof M][]> = {}
+  const results: M[keyof M][] = []
+  const resultsByType: Record<string, M[keyof M][]> = {}
   const other: ParseResult<ScheduleItem>[] = []
 
   for (const key of Object.keys(typeParsers)) {
-    results[key] = []
+    resultsByType[key] = []
   }
 
   for (const itemInput of items) {
     const res = parseItemType(typeParsers, itemInput)
-    const arr = results[itemInput.type]
+    const arr = resultsByType[itemInput.type]
     if (arr && res.success) {
+      results.push(res.value)
       arr.push(res.value)
     } else {
       other.push(res)
     }
   }
 
-  const asReadonly = results as Record<keyof M, Readonly<M[keyof M][]>>
+  const asReadonly = resultsByType as Record<keyof M, Readonly<M[keyof M][]>>
 
   return {
+    items: results,
     byType: asReadonly as { readonly [T in keyof M]: readonly M[T][] },
     errors: other,
   }

@@ -1,6 +1,7 @@
 import {
   getDays,
   getDefaultDay,
+  iterToArr,
   type Day,
   type DetailedScheduleItem,
 } from "@open-event-systems/schedule-lib"
@@ -18,7 +19,7 @@ import {
   type TagEntry,
   type TagsViewProps,
 } from "@open-event-systems/schedule-react"
-import { iterToArr, useNow, useRequiredContext } from "../../utils.js"
+import { useNow, useRequiredContext } from "../../utils.js"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import {

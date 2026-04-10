@@ -320,7 +320,7 @@ export const sharedPagesRoute = createRoute({
     }
 
     return {
-      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
+      meta: [{ title: `Shared Schedule - ${pageTitle} - ${scheduleTitle}` }],
       links,
     }
   },
@@ -417,6 +417,90 @@ export const eventDetailsRoute = createRoute({
               {
                 name: "description",
                 content: loaderData?.event.description,
+              },
+            ]
+          : []),
+      ],
+    }
+  },
+})
+
+export const vendorDetailsRoute = createRoute({
+  getParentRoute: () => filterStateRoute,
+  path: "/vendors/$vendorId",
+  component: lazyRouteComponent(
+    () => import("./routes/details.js"),
+    "VendorDetailsRoute",
+  ),
+  async loader({ params, context }) {
+    const { vendorId } = params
+    const {
+      config,
+      queryClient,
+      scheduleAPI,
+      selectionsServiceAPI,
+      sessionSelectionsAPIs: { bookmarks: bookmarksSessionSelectionsAPI },
+    } = context
+
+    const {
+      itemQueryOptions,
+      selectionsQueryOptions,
+      sessionSelectionsQueryOptions,
+      parsers,
+    } = await getQueryOptions()
+
+    const itemsPromise = queryClient.fetchQuery(
+      itemQueryOptions.items(scheduleAPI, config.id, parsers),
+    )
+
+    // selections/counts dont need to be awaited now
+    queryClient.fetchQuery(
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
+
+    queryClient.fetchQuery(
+      selectionsQueryOptions.counts(
+        selectionsServiceAPI,
+        config.id,
+        "bookmarks",
+      ),
+    )
+
+    const [
+      {
+        byType: { vendor: vendors },
+      },
+    ] = await Promise.all([itemsPromise])
+
+    const vendor = vendors.find((e) => e.id == vendorId)
+    if (!vendor) {
+      throw notFound()
+    }
+
+    return {
+      vendor,
+    }
+  },
+  head: ({
+    match: {
+      context: { config },
+    },
+    loaderData,
+  }) => {
+    const vendorTitle = loaderData?.vendor.title || "Vendor Details"
+    const scheduleTitle = config.title
+    return {
+      meta: [
+        { title: `${vendorTitle} - ${scheduleTitle}` },
+        ...(loaderData?.vendor.description
+          ? [
+              {
+                name: "description",
+                content: loaderData?.vendor.description,
               },
             ]
           : []),

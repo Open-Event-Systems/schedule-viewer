@@ -111,12 +111,12 @@ export const getDay = (d: Date, dayChangeHour = 0): Day => {
  * date.
  */
 export const getDays = (
-  items: Iterable<{ readonly start: Date }>,
+  items?: Iterable<{ readonly start: Date }>,
   dayChangeHour?: number,
 ): readonly Day[] => {
   const startDates = []
 
-  for (const item of items) {
+  for (const item of items ?? []) {
     if (item.start) {
       startDates.push(item.start)
     }
@@ -147,8 +147,11 @@ export const getDays = (
       days.push(cur)
     }
 
-    cur = getDay(add(cur.start, { days: 1 }), dayChangeHour)
-    curEndTime = cur.end.getTime()
+    const next = startDates[0]
+    if (next) {
+      cur = getDay(next, dayChangeHour)
+      curEndTime = cur.end.getTime()
+    }
   }
   return days
 }

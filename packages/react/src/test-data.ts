@@ -1,6 +1,5 @@
 import { TZDate } from "@date-fns/tz"
 import {
-  makeScheduleItemCollection,
   parseScheduleEvent,
   type ScheduleEvent,
 } from "@open-event-systems/schedule-lib"
@@ -47,12 +46,10 @@ export const events = [
   },
 ] as const satisfies readonly ScheduleEvent[]
 
-export const parsedEvents = makeScheduleItemCollection(
-  events
-    .map(parseScheduleEvent)
-    .filter((r) => r.success)
-    .map((r) => r.value),
-)
+export const parsedEvents = events
+  .map(parseScheduleEvent)
+  .filter((r) => r.success)
+  .map((r) => r.value)
 
 export const config = {
   id: "example-event",

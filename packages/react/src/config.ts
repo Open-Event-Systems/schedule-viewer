@@ -5,79 +5,75 @@ import {
   makeSortedScheduleAPI,
   makeTZScheduleAPI,
   type ScheduleAPI,
+  optional,
+  omitUndef,
 } from "@open-event-systems/schedule-lib"
 import z from "zod"
 import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
 
-const opt = <OutT, InT>(
-  s: z.ZodType<OutT, InT>,
-): z.ZodType<OutT | undefined, InT | null | undefined> =>
-  s.nullish().transform((v) => v ?? undefined)
-
-const tagEntrySchema = z
-  .union([
+const tagEntrySchema = z.codec(
+  z.union([
     z.tuple([z.string(), z.string()]),
-    z.object({
+    z.looseObject({
       tag: z.string(),
       title: z.string(),
     }),
-  ])
-  .transform((v) => {
-    if (Array.isArray(v)) {
-      return {
-        tag: v[0],
-        title: v[1],
+  ]),
+  z.custom<TagEntry>(),
+  {
+    decode: (v) => {
+      if (Array.isArray(v)) {
+        const [tag, title] = v
+        return { tag, title }
+      } else {
+        return v
       }
-    } else {
-      return v
-    }
-  })
+    },
+    encode: (v) => v,
+  },
+)
 
-const tagIndicatorSchema = z
-  .union([
+const tagIndicatorSchema = z.codec(
+  z.union([
     z.tuple([z.union([z.string(), z.array(z.string())]), z.string()]),
-    z.object({
+    z.looseObject({
       tags: z.array(z.string()),
       label: z.string(),
     }),
-  ])
-  .transform((v): TagIndicatorEntry => {
-    if (Array.isArray(v)) {
-      const [tags, label] = v
-      if (Array.isArray(tags)) {
-        return {
-          tags,
-          label,
+  ]),
+  z.custom<TagIndicatorEntry>(),
+  {
+    decode: (v) => {
+      if (Array.isArray(v)) {
+        const [tags, label] = v
+        if (Array.isArray(tags)) {
+          return { tags, label }
+        } else {
+          return { tags: [tags], label }
         }
       } else {
-        return {
-          tags: [tags],
-          label: label,
-        }
+        return v
       }
-    } else {
-      return v
-    }
-  })
+    },
+    encode: (v) => ({ tags: [...v.tags], label: v.label }),
+  },
+)
 
-const configSchema = z
-  .looseObject({
-    id: opt(z.string()),
-    items: opt(z.array(z.union([z.string(), z.looseObject({})]))),
-    title: opt(z.string()),
-    description: opt(z.string()),
-    dayChangeHour: opt(z.number()),
-    binMinutes: opt(z.number()),
-    dayFormat: opt(z.string()),
-    timeZone: opt(z.string()),
-    tags: opt(z.array(tagEntrySchema)),
-    tagIndicators: opt(z.array(tagIndicatorSchema)),
-    bookmarks: opt(z.string()),
-    selectionsService: opt(z.string()),
-    icalPrefix: opt(z.string()),
-    icalDomain: opt(z.string()),
-  })
-  .partial()
+const configSchema = z.looseObject({
+  id: z.string(),
+  items: optional(z.array(z.union([z.string(), z.looseObject({})]))),
+  title: optional(z.string()),
+  description: optional(z.string()),
+  dayChangeHour: optional(z.number()),
+  dayFormat: optional(z.string()),
+  timeZone: optional(z.string()),
+  tags: optional(z.array(tagEntrySchema)),
+  tagIndicators: optional(z.array(tagIndicatorSchema)),
+  bookmarks: optional(z.string()),
+  selectionsService: optional(z.string()),
+  icalPrefix: optional(z.string()),
+  icalDomain: optional(z.string()),
+})
 
 export type ScheduleConfigInput = z.input<typeof configSchema>
 
@@ -90,18 +86,15 @@ const getDefaultTZ = (): string => {
 }
 
 export const DEFAULT_SCHEDULE_CONFIG = {
-  id: "",
+  id: "schedule",
   items: [],
   title: "Schedule",
-  description: "",
-  dayChangeHour: 6,
-  binMinutes: 30,
-  dayFormat: "EEEE, MMM d",
   timeZone: getDefaultTZ(),
+  dayChangeHour: 6,
+  dayFormat: "EEEE, MMM d",
   tags: [],
   tagIndicators: [],
-  icalPrefix: "",
-  icalDomain: "",
+  icalPrefix: "schedule",
 } as const satisfies ScheduleConfig
 
 /**
@@ -109,9 +102,10 @@ export const DEFAULT_SCHEDULE_CONFIG = {
  */
 export const parseConfig = (configData: unknown): ScheduleConfig => {
   const parsed = configSchema.parse(configData)
-  const config = {
+  const config: ScheduleConfig = {
     ...DEFAULT_SCHEDULE_CONFIG,
-    ...parsed,
+    icalPrefix: parsed.id,
+    ...omitUndef(parsed),
   }
 
   return config

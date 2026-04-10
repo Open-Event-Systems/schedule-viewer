@@ -1,4 +1,8 @@
-import { createPolymorphicComponent, useProps } from "@mantine/core"
+import {
+  createPolymorphicComponent,
+  useProps,
+  type HoverCardProps,
+} from "@mantine/core"
 import {
   memo,
   useCallback,
@@ -127,9 +131,9 @@ const _ItemPillsPillMemo = memo((props: ItemPillProps) => {
   const [detailsEnabled, setDetailsEnabled] = useState(false)
 
   const wrappedRenderHoverCard = useCallback(
-    ({ children }: { children?: ReactNode }) =>
+    (props: HoverCardProps) =>
       renderHoverCard({
-        children,
+        ...props,
         hideDetails: !detailsEnabled,
         ...omitUndef(ItemHoverCardProps),
         ItemDetailsProps: {

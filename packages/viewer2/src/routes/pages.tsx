@@ -7,11 +7,9 @@ import { useCallback, useMemo } from "react"
 import { useNavigate, useParams, useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
 
-import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
-
-import { combineScheduleItems } from "../utils.js"
-import classes from "./pages.module.scss"
 import { Page } from "../components/page/page.js"
+
+import classes from "./pages.module.scss"
 
 export const PagesRoute = () => {
   const { pageId } = useParams({
@@ -23,12 +21,11 @@ export const PagesRoute = () => {
 
   const navigate = useNavigate()
 
-  const {
-    byType: { event: events, vendor: vendors },
-  } = useItems(parsers)
-  const combinedItems = useMemo(() => {
-    return makeScheduleItemCollection(combineScheduleItems(events, vendors))
-  }, [events, vendors])
+  const { items } = useItems(parsers)
+  const eventsAndVendors = useMemo(
+    () => items.filter((t) => t.type == "event" || t.type == "vendor"),
+    [items],
+  )
 
   const onSelectPage = useCallback(
     (id: string) => {
@@ -72,7 +69,7 @@ export const PagesRoute = () => {
         selectedPage={pageId}
         onSelectPage={onSelectPage}
         renderPage={(pageConfig) => (
-          <Page items={combinedItems} pageConfig={pageConfig} />
+          <Page items={eventsAndVendors} pageConfig={pageConfig} />
         )}
         getPageURL={getPageURL}
       />

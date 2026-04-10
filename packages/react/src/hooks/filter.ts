@@ -1,4 +1,5 @@
 import {
+  iterToArr,
   makeBookmarkFilter,
   makePastItemFilter,
   makeTagFilter,
@@ -6,7 +7,6 @@ import {
   type DetailedScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import { useMemo } from "react"
-import { iterToArr } from "../utils.js"
 
 export type FilterOptions = Readonly<{
   disabledTags?: Iterable<string>

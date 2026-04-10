@@ -48,3 +48,22 @@ export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[] {
 
 // a singleton empty array is used for referential stability
 iterToArr.empty = [] as const
+
+/**
+ * Return an object with `undefined` values omitted.
+ */
+export const omitUndef = <T extends Readonly<Record<string, unknown>>>(
+  obj: T,
+): T => {
+  const newObj: Partial<T> = {}
+
+  for (const k of Object.keys(obj)) {
+    const key = k as keyof T
+    const value = obj[key]
+    if (value !== undefined) {
+      newObj[key] = value
+    }
+  }
+
+  return newObj as T
+}

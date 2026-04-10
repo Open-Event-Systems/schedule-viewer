@@ -10,6 +10,7 @@ import {
   filterStateRoute,
   pagesRoute,
   rootRoute,
+  vendorDetailsRoute,
 } from "../routes.js"
 import { Anchor, Stack } from "@mantine/core"
 import { useMemo, useState } from "react"
@@ -51,6 +52,25 @@ export const EventDetailsRoute = () => {
   return <ItemDetails item={event.data} />
 }
 
+export const VendorDetailsRoute = () => {
+  const api = useScheduleAPI()
+
+  const { vendorId } = vendorDetailsRoute.useParams()
+  const config = useViewerConfig()
+  const vendor = useSuspenseQuery({
+    ...itemQueryOptions.items(api, config.id, parsers),
+    select(items) {
+      return items.byType.vendor.find((e) => e.id == vendorId)
+    },
+  })
+
+  if (!vendor.data) {
+    throw notFound({ routeId: filterStateRoute.id })
+  }
+
+  return <ItemDetails item={vendor.data} />
+}
+
 export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
   const config = useViewerConfig()
 
@@ -71,7 +91,7 @@ export const ItemDetails = ({ item }: { item: DetailedScheduleItem }) => {
       makeItemNavPropsMap(
         router,
         router.origin ?? "",
-        getCurrentURL(),
+        getCurrentURL,
         locMatchFunc,
         [item],
       ),

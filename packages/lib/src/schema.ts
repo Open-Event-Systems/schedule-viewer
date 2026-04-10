@@ -1,48 +1,36 @@
-import { isValid, parseISO } from "date-fns"
+import { format, parseISO } from "date-fns"
 import z from "zod"
 
-const parseDate = (s: string | Date, ctx: z.RefinementCtx): Date => {
-  if (typeof s == "string") {
-    const parsed = parseISO(s)
-    if (!isValid(parsed)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Invalid date",
-        input: s,
-      })
-    }
-    return parsed
-  } else if (s instanceof Date) {
-    if (!isValid(s)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Invalid date",
-        input: s,
-      })
-    }
-    return s
-  } else {
-    ctx.addIssue({
-      code: "invalid_type",
-      expected: "string",
-      input: s,
-    })
-    return new Date()
-  }
-}
+/**
+ * ISO 8601 formatted date, including milliseconds.
+ */
+export const isoDate = z.codec(z.string(), z.date({ error: "Invalid date" }), {
+  decode: (v) => (typeof v == "string" ? parseISO(v) : v),
+  encode: (v) => format(v, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+})
 
-export const opt = <OutT, InT>(
+/**
+ * An optional schema coercing nulls to undefined.
+ */
+export const optional = <OutT, InT>(
   s: z.ZodType<OutT, InT>,
-): z.ZodType<OutT | undefined, InT | null | undefined> => {
-  return s.nullish().transform((v) => v ?? undefined)
-}
+): z.ZodOptional<
+  z.ZodCodec<
+    z.ZodType<OutT | null | undefined, InT | null | undefined>,
+    z.ZodType<OutT | undefined, OutT | undefined>
+  >
+> =>
+  z
+    .codec(s.nullish(), z.custom<OutT | undefined>(), {
+      decode: (v) => (v != null ? v : undefined),
+      encode: (v) => (v != null ? v : undefined),
+    })
+    .optional()
 
-export const optStr = opt(z.string())
-export const strDate = opt(z.preprocess(parseDate, z.date()))
-
-export const strSetSchema = z.union([
-  z.set(z.string()),
-  z.array(z.string()).transform((v): ReadonlySet<string> => {
-    return new Set(v)
-  }),
-])
+/**
+ * Schema for a Set<string>
+ */
+export const strSet = z.codec(z.array(z.string()), z.custom<Set<string>>(), {
+  decode: (v) => new Set(v),
+  encode: (v) => [...v],
+})

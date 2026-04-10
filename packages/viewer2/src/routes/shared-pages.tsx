@@ -11,9 +11,6 @@ import { useCallback, useMemo } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { useMediaQuery } from "@mantine/hooks"
 
-import { makeScheduleItemCollection } from "@open-event-systems/schedule-lib"
-
-import { combineScheduleItems } from "../utils.js"
 import classes from "./pages.module.scss"
 import { Page } from "../components/page/page.js"
 
@@ -25,13 +22,11 @@ const SharedPagesRoute = () => {
 
   const navigate = useNavigate()
 
-  const {
-    byType: { event: events, vendor: vendors },
-  } = useItems(parsers)
-
-  const combinedItems = useMemo(() => {
-    return makeScheduleItemCollection(combineScheduleItems(events, vendors))
-  }, [events, vendors])
+  const { items } = useItems(parsers)
+  const eventsAndVendors = useMemo(
+    () => items.filter((t) => t.type == "event" || t.type == "vendor"),
+    [items],
+  )
 
   const onSelectPage = useCallback(
     (id: string) => {
@@ -80,7 +75,7 @@ const SharedPagesRoute = () => {
         onSelectPage={onSelectPage}
         renderPage={(pageConfig) => (
           <Page
-            items={combinedItems}
+            items={eventsAndVendors}
             pageConfig={pageConfig}
             sharedSelections={sharedSelectionsQuery.data ?? undefined}
           />
