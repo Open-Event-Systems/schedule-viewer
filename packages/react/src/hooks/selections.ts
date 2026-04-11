@@ -14,13 +14,14 @@ import {
   useQueryClient,
   type UseQueryResult,
 } from "@tanstack/react-query"
-import { createContext, use, useCallback } from "react"
+import { createContext, use, useCallback, useEffect, useState } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
-export const SelectionsServiceAPIContext =
-  createContext<SelectionsServiceAPI | null>(null)
+export const SelectionsServiceAPIContext = createContext<
+  SelectionsServiceAPI | undefined
+>(undefined)
 
-export const useSelectionsServiceAPI = (): SelectionsServiceAPI | null =>
+export const useSelectionsServiceAPI = (): SelectionsServiceAPI | undefined =>
   use(SelectionsServiceAPIContext)
 
 export const SessionSelectionsAPIContext = createContext<{
@@ -243,3 +244,35 @@ export const useSelectionCount = (
   })
   return res
 }
+
+/**
+ * Hook that returns true when the selections service is configured and the
+ * network is available.
+ */
+export const useSelectionsServiceAvailable = (): boolean => {
+  const api = useSelectionsServiceAPI()
+  const [available, setAvailable] = useState(getIsOnline())
+
+  useEffect(() => {
+    const handler = () => {
+      setAvailable(getIsOnline() && !!api?.sessionToken)
+    }
+
+    window.addEventListener("online", handler)
+    window.addEventListener("offline", handler)
+    const unsub = api?.subscribe(handler) ?? (() => {})
+
+    handler()
+
+    return () => {
+      window.removeEventListener("online", handler)
+      window.removeEventListener("offline", handler)
+      unsub()
+    }
+  }, [api])
+
+  return available
+}
+
+const getIsOnline = () =>
+  !("onLine" in window.navigator && window.navigator.onLine === false)

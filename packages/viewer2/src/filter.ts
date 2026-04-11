@@ -11,7 +11,8 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import { createStore, type StoreApi } from "zustand"
 import { createContext, useMemo } from "react"
-import { useViewerConfig, type PageConfig } from "./config.js"
+import { useViewerConfig } from "./config.js"
+import type { PageConfig } from "./types.js"
 
 export type FilterState = Readonly<{
   text: string

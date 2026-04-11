@@ -3,9 +3,10 @@ import {
   schedulePageFeatures,
   ShareMenu,
   useRelevantTags,
+  useSelectionsServiceAvailable,
   type ShareMenuOption,
 } from "@open-event-systems/schedule-react"
-import { useViewerConfig, type PageConfig } from "../../config.js"
+import { useViewerConfig } from "../../config.js"
 import {
   iterToArr,
   type DetailedScheduleItem,
@@ -22,6 +23,7 @@ import { ScheduleContainer } from "./schedule.js"
 import { scheduleProvidersRoute } from "../../routes.js"
 import { notFound } from "@tanstack/react-router"
 import { useMemo } from "react"
+import type { PageConfig } from "../../types.js"
 
 export type SchedulePageContainerProps = {
   items?: Iterable<DetailedScheduleItem>
@@ -69,17 +71,18 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
     [pageConfig.views],
   )
 
+  const selectionsServiceAvailable = useSelectionsServiceAvailable()
+
   const enableFeatures = useMemo(() => {
     const features = [...(viewConfig.enableFeatures ?? schedulePageFeatures)]
 
-    // TODO: check directly for support
-    // for now, just see if bookmarks are enabled
-    if (!config.bookmarks) {
+    // hide share/sync options if selections service is unavailable
+    if (!selectionsServiceAvailable) {
       return features.filter((f) => f != "share" && f != "sync")
     } else {
       return features
     }
-  }, [viewConfig.enableFeatures, config.bookmarks])
+  }, [viewConfig.enableFeatures, selectionsServiceAvailable])
 
   // Items and tags
 

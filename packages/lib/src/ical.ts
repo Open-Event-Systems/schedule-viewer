@@ -18,12 +18,14 @@ export const createICS = (
   prefix: string,
   domain: string,
 ): string => {
+  const now = new Date()
   const eventAttrs: ics.EventAttributes[] = []
   for (const event of events) {
     const attrs: ics.EventAttributes = {
       uid: `${prefix}-${event.id}@${domain}`,
       start: event.start.getTime(),
       end: event.end.getTime(),
+      lastModified: now.getTime(),
     }
 
     if (event.title) {
@@ -34,8 +36,8 @@ export const createICS = (
       attrs.description = event.description
     }
 
-    if (event.location) {
-      attrs.location = event.location
+    if (event.location && event.location.length > 0) {
+      attrs.location = event.location.join(", ")
     }
 
     eventAttrs.push(attrs)

@@ -1,6 +1,7 @@
 import {
   makeParsedScheduleItemsAPI,
   parseItems,
+  type DetailedScheduleItem,
   type ItemParserMap,
   type ItemTypeMap,
   type ParseItemsResult,
@@ -11,6 +12,7 @@ import type { TagEntry } from "../types.js"
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
+import type { ItemDetailsProps } from "../components/index.js"
 
 export const ScheduleAPIContext = createContext<ScheduleAPI>(
   makeParsedScheduleItemsAPI([]),
@@ -83,4 +85,31 @@ export const useRelevantTags = (
   return useMemo(() => {
     return items ? getRelevantTags(tags, items) : []
   }, [tags, items])
+}
+
+/**
+ * Get {@link ItemDetailsProps} from item entries.
+ */
+export const getItemDetailsProps = (
+  item: DetailedScheduleItem,
+  ...otherItems: DetailedScheduleItem[]
+): ItemDetailsProps => {
+  const occurrences = []
+
+  for (const itemOcc of [item, ...otherItems]) {
+    occurrences.push({
+      start: item.start,
+      end: item.end,
+      location: itemOcc.location,
+    })
+  }
+
+  return {
+    itemId: item.id,
+    occurrences,
+    title: item.title,
+    description: item.description,
+    contacts: item.contacts,
+    tags: item.tags,
+  }
 }

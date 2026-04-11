@@ -7,11 +7,11 @@ import {
   type SelectProps,
   type TabsProps,
 } from "@mantine/core"
-import type { PageConfig } from "../../config.js"
 import type { ReactNode } from "react"
 import clsx from "clsx"
 
 import classes from "./page-menu.module.scss"
+import type { PageConfig } from "../../types.js"
 
 export type PageMenuProps = {
   className?: string

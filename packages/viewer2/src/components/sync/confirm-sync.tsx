@@ -33,9 +33,9 @@ export const ConfirmSyncPage = (props: ConfirmSyncPageProps) => {
       <Group>
         <Button
           onClick={() => {
-            if (config.bookmarks) {
+            if (config.selectionsService) {
               const api = makeSelectionsServiceAPI(
-                config.bookmarks,
+                config.selectionsService,
                 config.id,
                 sessionToken,
               )

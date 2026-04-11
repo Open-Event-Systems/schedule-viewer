@@ -31,7 +31,12 @@ const contactSchema = z.codec(
 const itemDetailsSchema = z.looseObject({
   title: optional(z.string()),
   description: optional(z.string()),
-  location: optional(z.string()),
+  location: optional(
+    z.codec(z.union([z.string(), z.array(z.string())]), z.array(z.string()), {
+      decode: (v) => (Array.isArray(v) ? v : [v]),
+      encode: (v) => v,
+    }),
+  ),
   contacts: optional(z.array(contactSchema)),
   tags: optional(strSet),
   icon: optional(z.string()),

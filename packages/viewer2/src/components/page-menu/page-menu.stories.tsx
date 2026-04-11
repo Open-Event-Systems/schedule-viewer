@@ -10,16 +10,37 @@ const meta: Meta<typeof PageMenu> = {
         id: "page1",
         title: "Page 1",
         description: "Example page 1.",
+        views: [
+          {
+            id: "default",
+            title: "Default",
+            type: "daily-agenda",
+          },
+        ],
       },
       {
         id: "page2",
         title: "Page 2",
         description: "Example page 2.",
+        views: [
+          {
+            id: "default",
+            title: "Default",
+            type: "daily-agenda",
+          },
+        ],
       },
       {
         id: "page3",
         title: "Page 3",
         description: "Example page 3.",
+        views: [
+          {
+            id: "default",
+            title: "Default",
+            type: "daily-agenda",
+          },
+        ],
       },
     ],
   },

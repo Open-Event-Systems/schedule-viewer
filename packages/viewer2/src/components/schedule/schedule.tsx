@@ -5,7 +5,7 @@ import {
   type Day,
   type DetailedScheduleItem,
 } from "@open-event-systems/schedule-lib"
-import { useViewerConfig, type ViewConfig } from "../../config.js"
+import { useViewerConfig } from "../../config.js"
 import {
   ItemPills,
   makeTagIndicatorFunc,
@@ -30,11 +30,13 @@ import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import {
   makeItemNavPropsMap,
+  makeItemsByIdMap,
   makeRenderItemDetailsFunc,
   makeRenderPillFunc,
 } from "../../schedule.js"
 import { useMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import { scheduleProvidersRoute } from "../../routes.js"
+import type { ViewConfig } from "../../types.js"
 
 export type ScheduleContainerProps = {
   items?: Iterable<DetailedScheduleItem>
@@ -158,20 +160,14 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
   const mapLocMatchFunc = useMapLocationMatchFunc(config.map?.locations)
 
   const itemPropsMap = useMemo(
-    () =>
-      makeItemNavPropsMap(
-        router,
-        origin,
-        getCurrentURL,
-        mapLocMatchFunc,
-        items,
-      ),
-    [router, origin, getCurrentURL, mapLocMatchFunc, items],
+    () => makeItemNavPropsMap(router, getCurrentURL, mapLocMatchFunc, items),
+    [router, getCurrentURL, mapLocMatchFunc, items],
   )
 
+  const itemsByIdMap = useMemo(() => makeItemsByIdMap(itemsArr), [itemsArr])
   const renderItemDetailsFunc = useMemo(
-    () => makeRenderItemDetailsFunc(itemPropsMap),
-    [itemPropsMap],
+    () => makeRenderItemDetailsFunc(itemPropsMap, itemsByIdMap),
+    [itemPropsMap, itemsByIdMap],
   )
 
   const tagIndicatorFunc = useMemo(

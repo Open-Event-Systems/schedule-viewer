@@ -2,6 +2,7 @@ import {
   parseMapFlag,
   parseScheduleEvent,
   parseVendor,
+  type DetailedScheduleItem,
   type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import type { Register } from "@tanstack/react-router"
@@ -26,26 +27,24 @@ export const parsers = {
 export type ItemNavProps = Readonly<{
   url?: string
   onClick?: (e: MouseEvent) => void
-  locationHref?: string
-  onClickLocation?: (e: MouseEvent) => void
+  getLocationProps?: (
+    locName: string,
+  ) => { href?: string; onClick: (e: MouseEvent) => void } | undefined
 }>
 
 export const getItemNavProps = (
   router: Register["router"],
-  origin: string,
   getCurrentURL: () => string,
   item: ScheduleItem,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
 ): ItemNavProps => {
   const history = router.history
   let url
-  let locationHref
   let onClick
-  let onClickLocation
 
   if (item.type == "event") {
     url =
-      origin +
+      router.origin +
       history.createHref(
         router.buildLocation({
           to: eventDetailsRoute.to,
@@ -68,7 +67,7 @@ export const getItemNavProps = (
     }
   } else if (item.type == "vendor") {
     url =
-      origin +
+      router.origin +
       history.createHref(
         router.buildLocation({
           to: vendorDetailsRoute.to,
@@ -91,32 +90,34 @@ export const getItemNavProps = (
     }
   }
 
-  if (
-    mapLocationMatchFunc &&
-    "location" in item &&
-    typeof item.location == "string" &&
-    item.location
-  ) {
-    const loc = mapLocationMatchFunc(item.location)
-    if (loc) {
-      locationHref =
-        origin +
-        history.createHref(
-          router.buildLocation({
+  const getLocationProps = (locName: string) => {
+    if (mapLocationMatchFunc) {
+      const loc = mapLocationMatchFunc(locName)
+      if (loc) {
+        const locationHref =
+          router.origin +
+          history.createHref(
+            router.buildLocation({
+              to: mapRoute.to,
+              search: {
+                show: loc.id,
+              },
+            }).href,
+          )
+        const onClick = (e: MouseEvent) => {
+          e.preventDefault()
+          router.navigate({
             to: mapRoute.to,
             search: {
               show: loc.id,
             },
-          }).href,
-        )
-      onClickLocation = (e: MouseEvent) => {
-        e.preventDefault()
-        router.navigate({
-          to: mapRoute.to,
-          search: {
-            show: loc.id,
-          },
-        })
+          })
+        }
+
+        return {
+          href: locationHref,
+          onClick,
+        }
       }
     }
   }
@@ -124,14 +125,12 @@ export const getItemNavProps = (
   return {
     url,
     onClick,
-    locationHref,
-    onClickLocation,
+    getLocationProps,
   }
 }
 
 export const makeItemNavPropsMap = (
   router: Register["router"],
-  origin: string,
   getCurrentURL: () => string,
   mapLocationMatchFunc: MapLocationMatchFunc | undefined,
   items?: Iterable<ScheduleItem>,
@@ -140,35 +139,49 @@ export const makeItemNavPropsMap = (
   for (const item of items ?? []) {
     map.set(
       item.id,
-      getItemNavProps(
-        router,
-        origin,
-        getCurrentURL,
-        item,
-        mapLocationMatchFunc,
-      ),
+      getItemNavProps(router, getCurrentURL, item, mapLocationMatchFunc),
     )
   }
   return map
 }
 
+export const makeItemsByIdMap = (
+  items?: Iterable<DetailedScheduleItem>,
+): ReadonlyMap<string, readonly DetailedScheduleItem[]> => {
+  const map = new Map<string, DetailedScheduleItem[]>()
+
+  for (const item of items ?? []) {
+    let arr = map.get(item.id)
+    if (!arr) {
+      arr = []
+      map.set(item.id, arr)
+    }
+    arr.push(item)
+  }
+
+  return map
+}
+
 export const makeRenderItemDetailsFunc = (
   itemNavPropsMap: ReadonlyMap<string, ItemNavProps>,
+  itemsById: ReadonlyMap<string, readonly DetailedScheduleItem[]>,
 ) => {
   // eslint-disable-next-line react/display-name
   return (props: ItemDetailsProps) => {
-    const { item } = props
+    const { itemId } = props
 
-    const navProps = itemNavPropsMap.get(item.id)
+    const occs = itemsById.get(itemId) ?? []
+
+    const navProps = itemNavPropsMap.get(itemId)
 
     return (
       <WrappedItemDetails
-        key={item.id}
+        key={itemId}
         {...props}
-        url={navProps?.url}
-        locationHref={navProps?.locationHref}
-        onClickLocation={navProps?.onClickLocation}
-        showShare
+        occurrences={occs}
+        getLocationProps={navProps?.getLocationProps}
+        shareURL={navProps?.url}
+        buttonOptions={["share", "bookmark"]}
       />
     )
   }

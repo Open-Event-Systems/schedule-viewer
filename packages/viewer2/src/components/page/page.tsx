@@ -1,5 +1,8 @@
-import { type DetailedScheduleItem } from "@open-event-systems/schedule-lib"
-import { type PageConfig } from "../../config.js"
+import {
+  isBounded,
+  iterToArr,
+  type DetailedScheduleItem,
+} from "@open-event-systems/schedule-lib"
 import { Box, useProps } from "@mantine/core"
 import {
   Markdown,
@@ -13,6 +16,8 @@ import classes from "./page.module.scss"
 import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useMemo, useRef } from "react"
 import { sharedPagesRoute, syncRoute } from "../../routes.js"
+import type { PageConfig } from "../../types.js"
+import { useViewerConfig } from "../../config.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -32,6 +37,7 @@ export type PageProps = {
  */
 export const Page = (props: PageProps) => {
   const { pageConfig, items, sharedSelections } = useProps("Page", {}, props)
+  const config = useViewerConfig()
   const navigate = useNavigate()
   const selectionsServiceAPI = useSelectionsServiceAPI()
 
@@ -71,6 +77,24 @@ export const Page = (props: PageProps) => {
                 hash: true,
               })
             }
+          } else if (option == "export") {
+            import("@open-event-systems/schedule-lib").then(({ createICS }) => {
+              const exportItems = iterToArr(items).filter(isBounded)
+
+              const calData = createICS(
+                exportItems,
+                config.icalPrefix,
+                config.icalDomain ?? window.location.hostname,
+              )
+
+              const blob = new Blob([calData])
+              const objURL = URL.createObjectURL(blob)
+              const el = document.createElement("a")
+              el.setAttribute("download", `${config.id || "schedule"}.ics`)
+              el.href = objURL
+              el.click()
+              URL.revokeObjectURL(objURL)
+            })
           }
         }}
       />

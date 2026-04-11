@@ -30,7 +30,11 @@ export const optional = <OutT, InT>(
 /**
  * Schema for a Set<string>
  */
-export const strSet = z.codec(z.array(z.string()), z.custom<Set<string>>(), {
-  decode: (v) => new Set(v),
-  encode: (v) => [...v],
-})
+export const strSet = z.codec(
+  z.union([z.array(z.string()), z.set(z.string())]),
+  z.custom<Set<string>>(),
+  {
+    decode: (v) => new Set(v),
+    encode: (v) => [...v],
+  },
+)

@@ -5,6 +5,7 @@ import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 
 import classes from "./item-hover-card.module.scss"
+import { getItemDetailsProps } from "../../hooks/items.js"
 
 export type ItemHoverCardProps = HoverCardProps & {
   item?: DetailedScheduleItem
@@ -54,7 +55,10 @@ export const ItemHoverCard = memo((props: ItemHoverCardProps) => {
       <HoverCard.Dropdown>
         {item &&
           !hideDetails &&
-          renderItemDetails({ ...ItemDetailsProps, item })}
+          renderItemDetails({
+            ...ItemDetailsProps,
+            ...getItemDetailsProps(item),
+          })}
       </HoverCard.Dropdown>
     </HoverCard>
   )

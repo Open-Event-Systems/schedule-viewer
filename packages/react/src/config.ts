@@ -7,6 +7,7 @@ import {
   type ScheduleAPI,
   optional,
   omitUndef,
+  iterToArr,
 } from "@open-event-systems/schedule-lib"
 import z from "zod"
 import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
@@ -129,9 +130,9 @@ export const makeScheduleAPIFromConfig = (
 }
 
 export const makeValidTagsFilter = (
-  tags: Iterable<TagEntry>,
+  tags?: Iterable<TagEntry>,
 ): ((t: string) => boolean) => {
-  const tagSet = new Set(Array.from(tags, (t) => t.tag))
+  const tagSet = new Set(iterToArr(tags).map((t) => t.tag))
   const filter = (t: string) => {
     return tagSet.has(t)
   }
@@ -139,10 +140,10 @@ export const makeValidTagsFilter = (
 }
 
 export const makeTagFormatter = (
-  tags: Iterable<TagEntry>,
+  tags?: Iterable<TagEntry>,
 ): ((t: string) => string) => {
   const map = new Map<string, string>()
-  for (const entry of tags) {
+  for (const entry of tags ?? []) {
     map.set(entry.tag, entry.title)
   }
   const formatter = (t: string) => {

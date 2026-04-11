@@ -106,23 +106,26 @@ export const Default: StoryObj<typeof SchedulePage> = {
         return (
           <ItemDetails
             {...props}
-            bookmarked={selections.has(props.item.id)}
-            url={`#${props.item.id}`}
-            locationHref={`#${props.item.location}`}
-            tags={parsedConfig.tags}
-            onClickLocation={(e) => {
-              e.preventDefault()
+            buttonOptions={["bookmark", "share"]}
+            bookmarked={selections.has(props.itemId)}
+            shareURL={`#${props.itemId}`}
+            getLocationProps={() => ({
+              href: "#",
+              onClick: (e) => e.preventDefault(),
+            })}
+            tagEntries={parsedConfig.tags}
+            bookmarkCount={selections.has(props.itemId) ? 1 : undefined}
+            onSelectOption={(opt) => {
+              if (opt == "bookmark") {
+                setSelections((cur) => {
+                  if (!selections.has(props.itemId)) {
+                    return cur.add(props.itemId)
+                  } else {
+                    return cur.delete(props.itemId)
+                  }
+                })
+              }
             }}
-            bookmarkCount={selections.has(props.item.id) ? 1 : undefined}
-            setBookmarked={(s) =>
-              setSelections((cur) => {
-                if (s) {
-                  return cur.add(props.item.id)
-                } else {
-                  return cur.delete(props.item.id)
-                }
-              })
-            }
           />
         )
       },

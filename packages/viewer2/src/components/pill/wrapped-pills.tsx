@@ -4,6 +4,7 @@ import {
   useIsSelected,
   useSelectionCount,
   useSetSelected,
+  type ItemDetailsButtonOption,
   type ItemDetailsProps,
   type ItemPillProps,
 } from "@open-event-systems/schedule-react"
@@ -42,23 +43,26 @@ export const WrappedItemDetails = (props: ItemDetailsProps) => {
   const { ...other } = props
 
   const config = useViewerConfig()
-  const { data: bookmarked } = useIsSelected("bookmarks", props.item.id)
-  const { data: count } = useSelectionCount("bookmarks", props.item.id)
+  const { data: bookmarked } = useIsSelected("bookmarks", props.itemId)
+  const { data: count } = useSelectionCount("bookmarks", props.itemId)
   const setBookmarked = useSetSelected("bookmarks")
-  const wrappedSetBookmarked = useCallback(
-    (bookmarked: boolean) => {
-      return setBookmarked(props.item.id, bookmarked)
+
+  const onSelect = useCallback(
+    (o: ItemDetailsButtonOption) => {
+      if (o == "bookmark") {
+        return setBookmarked(props.itemId, !bookmarked)
+      }
     },
-    [setBookmarked, props.item.id],
+    [setBookmarked, bookmarked, props.itemId],
   )
 
   return (
     <ItemDetails
       {...other}
       bookmarked={bookmarked}
-      setBookmarked={wrappedSetBookmarked}
+      onSelectOption={onSelect}
       bookmarkCount={count}
-      tags={config.tags}
+      tagEntries={config.tags}
     />
   )
 }

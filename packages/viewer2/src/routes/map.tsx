@@ -9,9 +9,13 @@ import {
 import { useViewerConfig } from "../config.js"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useItems } from "@open-event-systems/schedule-react"
+import {
+  getItemDetailsProps,
+  useItems,
+} from "@open-event-systems/schedule-react"
 import {
   makeItemNavPropsMap,
+  makeItemsByIdMap,
   makeRenderItemDetailsFunc,
   parsers,
 } from "../schedule.js"
@@ -57,12 +61,12 @@ export const MapRoute = () => {
   const locMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
 
   const nowItems = useMemo(() => {
-    return getCurrentMapLocationItems(items, locMatchFunc, now)
-  }, [items, locMatchFunc, now])
+    return getCurrentMapLocationItems(eventsAndVendors, locMatchFunc, now)
+  }, [eventsAndVendors, locMatchFunc, now])
 
   const laterItems = useMemo(() => {
-    return getLaterMapLocationItems(items, locMatchFunc, now, 2)
-  }, [items, locMatchFunc, now])
+    return getLaterMapLocationItems(eventsAndVendors, locMatchFunc, now, 2)
+  }, [eventsAndVendors, locMatchFunc, now])
 
   const locationItemInfo = useMemo(
     () => getMapLocationInfo(eventsAndVendors, locMatchFunc),
@@ -83,16 +87,19 @@ export const MapRoute = () => {
     () =>
       makeItemNavPropsMap(
         router,
-        router.origin ?? "",
         context.getCurrentURL,
         mapLocMatchFunc,
-        items,
+        eventsAndVendors,
       ),
-    [router, router.origin, context.getCurrentURL, mapLocMatchFunc, items],
+    [router, context.getCurrentURL, mapLocMatchFunc, items],
+  )
+  const itemsByIdMap = useMemo(
+    () => makeItemsByIdMap(eventsAndVendors),
+    [eventsAndVendors],
   )
   const renderItemDetailsFunc = useMemo(
-    () => makeRenderItemDetailsFunc(navPropsMap),
-    [navPropsMap],
+    () => makeRenderItemDetailsFunc(navPropsMap, itemsByIdMap),
+    [navPropsMap, itemsByIdMap],
   )
 
   return (
@@ -112,10 +119,14 @@ export const MapRoute = () => {
       isometric={isometric}
       hiddenLayers={hiddenLayers}
       nowDetails={
-        nowItem ? renderItemDetailsFunc({ item: nowItem }) : undefined
+        nowItem
+          ? renderItemDetailsFunc({ ...getItemDetailsProps(nowItem) })
+          : undefined
       }
       laterDetails={
-        laterItem ? renderItemDetailsFunc({ item: laterItem }) : undefined
+        laterItem
+          ? renderItemDetailsFunc({ ...getItemDetailsProps(laterItem) })
+          : undefined
       }
       onSetDetailsLocationId={(loc) => {
         if (loc) {

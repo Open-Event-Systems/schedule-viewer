@@ -45,7 +45,7 @@ export type ScheduleItem = Readonly<{
 export type ScheduleItemDetails = Readonly<{
   title?: string
   description?: string
-  location?: string
+  location?: readonly string[]
   contacts?: readonly Contact[]
   tags?: ReadonlySet<string>
   icon?: string

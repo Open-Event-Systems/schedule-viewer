@@ -55,7 +55,11 @@ export const useMapLocationMatchFunc = (
  * Get a map of location ids to currently occurring schedule items.
  */
 export const getCurrentMapLocationItems = <
-  T extends Readonly<{ location?: string; start?: Date; end?: Date }>,
+  T extends Readonly<{
+    location?: readonly string[]
+    start?: Date
+    end?: Date
+  }>,
 >(
   items: Iterable<T> | undefined,
   matchFunc: MapLocationMatchFunc,
@@ -66,8 +70,8 @@ export const getCurrentMapLocationItems = <
   const currentItems = iterToArr(items).filter((it) => contains(it, now))
 
   for (const item of currentItems) {
-    if (item.location) {
-      const loc = matchFunc(item.location)
+    for (const locName of item.location ?? []) {
+      const loc = matchFunc(locName)
 
       if (loc && !nowMap.has(loc.id)) {
         nowMap.set(loc.id, item)
@@ -82,7 +86,7 @@ export const getCurrentMapLocationItems = <
  * Get a map of location ids to schedule items that will begin soon.
  */
 export const getLaterMapLocationItems = <
-  T extends Readonly<{ location?: string; start?: Date }>,
+  T extends Readonly<{ location?: readonly string[]; start?: Date }>,
 >(
   items: Iterable<T> | undefined,
   matchFunc: MapLocationMatchFunc,
@@ -98,8 +102,8 @@ export const getLaterMapLocationItems = <
   )
 
   for (const item of laterItems) {
-    if (item.location) {
-      const loc = matchFunc(item.location)
+    for (const locName of item.location ?? []) {
+      const loc = matchFunc(locName)
 
       if (loc && !laterMap.has(loc.id)) {
         laterMap.set(loc.id, item)
@@ -115,15 +119,21 @@ export const getLaterMapLocationItems = <
  */
 export const getMapLocationInfo = (
   items:
-    | Iterable<Readonly<{ location?: string; icon?: string; title?: string }>>
+    | Iterable<
+        Readonly<{
+          location?: readonly string[]
+          icon?: string
+          title?: string
+        }>
+      >
     | undefined,
   matchFunc: MapLocationMatchFunc,
 ): readonly MapViewerLocationItemInfo[] => {
   const info: MapViewerLocationItemInfo[] = []
 
   for (const item of items ?? []) {
-    if (item.location) {
-      const loc = matchFunc(item.location)
+    for (const locName of item.location ?? []) {
+      const loc = matchFunc(locName)
       if (loc) {
         info.push({
           id: loc.id,

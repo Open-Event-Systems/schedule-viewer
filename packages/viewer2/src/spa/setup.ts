@@ -31,9 +31,9 @@ export const setup = async (
   const config = await loadConfig(`${spaConfig.basePath}/config.json`)
   const scheduleAPI = makeScheduleAPIFromConfig(config)
 
-  const selectionsServiceAPI = config.bookmarks
-    ? makeSelectionsServiceAPI(config.bookmarks, config.id)
-    : null
+  const selectionsServiceAPI = config.selectionsService
+    ? makeSelectionsServiceAPI(config.selectionsService, config.id)
+    : undefined
 
   if (selectionsServiceAPI) {
     window.addEventListener("storage", selectionsServiceAPI.handleStorageEvent)

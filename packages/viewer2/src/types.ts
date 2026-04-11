@@ -63,7 +63,7 @@ export type DynamicAppContextValue = Readonly<{
   localSessionSelectionsStores: {
     bookmarks: LocalSessionSelectionsStore
   }
-  selectionsServiceAPI: SelectionsServiceAPI | null
+  selectionsServiceAPI?: SelectionsServiceAPI
   sessionSelectionsAPIs: Readonly<{
     bookmarks: SessionSelectionsAPI
   }>

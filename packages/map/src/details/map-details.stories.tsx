@@ -22,16 +22,17 @@ export const Default: StoryObj<typeof MapDetails> = {
         {...args}
         nowChildren={
           <ItemDetails
-            item={{
-              id: "e1",
-              type: "event",
-              title: "Now Event",
-              description: "Event happening now.",
-              start: new Date(2020, 0, 1, 12),
-              end: new Date(2020, 0, 1, 13),
-              tags: new Set(["main-event", "performance"]),
-            }}
-            tags={[
+            itemId="e1"
+            title="Now Event"
+            description="Event happening now."
+            occurrences={[
+              {
+                start: new Date(2020, 0, 1, 12),
+                end: new Date(2020, 0, 1, 13),
+              },
+            ]}
+            tags={new Set(["main-event", "performance"])}
+            tagEntries={[
               { tag: "main-event", title: "Main Event" },
               { tag: "performance", title: "Performance" },
             ]}
@@ -39,16 +40,17 @@ export const Default: StoryObj<typeof MapDetails> = {
         }
         laterChildren={
           <ItemDetails
-            item={{
-              id: "e2",
-              type: "event",
-              title: "Later Event",
-              description: "Event happening later.",
-              start: new Date(2020, 0, 1, 13),
-              end: new Date(2020, 0, 1, 14),
-              tags: new Set(["main-event", "performance"]),
-            }}
-            tags={[
+            itemId="e2"
+            title="Later Event"
+            description="Event happening later."
+            occurrences={[
+              {
+                start: new Date(2020, 0, 1, 13),
+                end: new Date(2020, 0, 1, 14),
+              },
+            ]}
+            tags={new Set(["main-event", "performance"])}
+            tagEntries={[
               { tag: "main-event", title: "Main Event" },
               { tag: "performance", title: "Performance" },
             ]}
@@ -66,16 +68,17 @@ export const Now_Only: StoryObj<typeof MapDetails> = {
         {...args}
         nowChildren={
           <ItemDetails
-            item={{
-              id: "e1",
-              type: "event",
-              title: "Now Event",
-              description: "Event happening now.",
-              start: new Date(2020, 0, 1, 12),
-              end: new Date(2020, 0, 1, 13),
-              tags: new Set(["main-event", "performance"]),
-            }}
-            tags={[
+            itemId="e1"
+            title="Now Event"
+            description="Event happening now."
+            occurrences={[
+              {
+                start: new Date(2020, 0, 1, 12),
+                end: new Date(2020, 0, 1, 13),
+              },
+            ]}
+            tags={new Set(["main-event", "performance"])}
+            tagEntries={[
               { tag: "main-event", title: "Main Event" },
               { tag: "performance", title: "Performance" },
             ]}
@@ -93,16 +96,17 @@ export const Later_Only: StoryObj<typeof MapDetails> = {
         {...args}
         laterChildren={
           <ItemDetails
-            item={{
-              id: "e2",
-              type: "event",
-              title: "Later Event",
-              description: "Event happening later.",
-              start: new Date(2020, 0, 1, 13),
-              end: new Date(2020, 0, 1, 14),
-              tags: new Set(["main-event", "performance"]),
-            }}
-            tags={[
+            itemId="e2"
+            title="Later Event"
+            description="Event happening later."
+            occurrences={[
+              {
+                start: new Date(2020, 0, 1, 13),
+                end: new Date(2020, 0, 1, 14),
+              },
+            ]}
+            tags={new Set(["main-event", "performance"])}
+            tagEntries={[
               { tag: "main-event", title: "Main Event" },
               { tag: "performance", title: "Performance" },
             ]}
@@ -121,17 +125,17 @@ export const Drawer: StoryObj<typeof MapDetails> = {
           {...args}
           nowChildren={
             <ItemDetails
-              item={{
-                id: "e1",
-                type: "event",
-                title: "Now Event",
-                description:
-                  "Event happening now.\n\nLine\n\nLine\n\nLine\n\nLine\n\n",
-                start: new Date(2020, 0, 1, 12),
-                end: new Date(2020, 0, 1, 13),
-                tags: new Set(["main-event", "performance"]),
-              }}
-              tags={[
+              itemId="e1"
+              title="Now Event"
+              description="Event happening now."
+              occurrences={[
+                {
+                  start: new Date(2020, 0, 1, 12),
+                  end: new Date(2020, 0, 1, 13),
+                },
+              ]}
+              tags={new Set(["main-event", "performance"])}
+              tagEntries={[
                 { tag: "main-event", title: "Main Event" },
                 { tag: "performance", title: "Performance" },
               ]}
@@ -139,17 +143,17 @@ export const Drawer: StoryObj<typeof MapDetails> = {
           }
           laterChildren={
             <ItemDetails
-              item={{
-                id: "e2",
-                type: "event",
-                title: "Later Event",
-                description:
-                  "Event happening later.\n\nLine\n\nLine\n\nLine\n\nLine\n\n",
-                start: new Date(2020, 0, 1, 13),
-                end: new Date(2020, 0, 1, 14),
-                tags: new Set(["main-event", "performance"]),
-              }}
-              tags={[
+              itemId="e2"
+              title="Later Event"
+              description="Event happening later."
+              occurrences={[
+                {
+                  start: new Date(2020, 0, 1, 13),
+                  end: new Date(2020, 0, 1, 14),
+                },
+              ]}
+              tags={new Set(["main-event", "performance"])}
+              tagEntries={[
                 { tag: "main-event", title: "Main Event" },
                 { tag: "performance", title: "Performance" },
               ]}
@@ -169,17 +173,17 @@ export const Drawer_Only_Now: StoryObj<typeof MapDetails> = {
           {...args}
           nowChildren={
             <ItemDetails
-              item={{
-                id: "e1",
-                type: "event",
-                title: "Now Event",
-                description:
-                  "Event happening now.\n\nLine\n\nLine\n\nLine\n\nLine\n\n",
-                start: new Date(2020, 0, 1, 12),
-                end: new Date(2020, 0, 1, 13),
-                tags: new Set(["main-event", "performance"]),
-              }}
-              tags={[
+              itemId="e1"
+              title="Now Event"
+              description="Event happening now."
+              occurrences={[
+                {
+                  start: new Date(2020, 0, 1, 12),
+                  end: new Date(2020, 0, 1, 13),
+                },
+              ]}
+              tags={new Set(["main-event", "performance"])}
+              tagEntries={[
                 { tag: "main-event", title: "Main Event" },
                 { tag: "performance", title: "Performance" },
               ]}
@@ -203,17 +207,17 @@ export const Drawer_Only_Now_No_Title: StoryObj<typeof MapDetails> = {
           {...args}
           nowChildren={
             <ItemDetails
-              item={{
-                id: "e1",
-                type: "event",
-                title: "Now Event",
-                description:
-                  "Event happening now.\n\nLine\n\nLine\n\nLine\n\nLine\n\n",
-                start: new Date(2020, 0, 1, 12),
-                end: new Date(2020, 0, 1, 13),
-                tags: new Set(["main-event", "performance"]),
-              }}
-              tags={[
+              itemId="e1"
+              title="Now Event"
+              description="Event happening now."
+              occurrences={[
+                {
+                  start: new Date(2020, 0, 1, 12),
+                  end: new Date(2020, 0, 1, 13),
+                },
+              ]}
+              tags={new Set(["main-event", "performance"])}
+              tagEntries={[
                 { tag: "main-event", title: "Main Event" },
                 { tag: "performance", title: "Performance" },
               ]}

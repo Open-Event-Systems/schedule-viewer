@@ -16,7 +16,7 @@ export const Default: StoryObj<typeof ItemHoverCard> = {
       <ItemHoverCard
         {...args}
         item={events[2]}
-        ItemDetailsProps={{ tags: tagEntries }}
+        ItemDetailsProps={{ tagEntries }}
       >
         <Button>Open</Button>
       </ItemHoverCard>

@@ -137,7 +137,7 @@ const _ItemPillsPillMemo = memo((props: ItemPillProps) => {
         hideDetails: !detailsEnabled,
         ...omitUndef(ItemHoverCardProps),
         ItemDetailsProps: {
-          tags,
+          tagEntries: tags,
           ...omitUndef(ItemHoverCardProps?.ItemDetailsProps),
         },
         item,
