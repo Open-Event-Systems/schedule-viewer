@@ -13,7 +13,7 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { usePageFilteredItems } from "../../filter.js"
 import {
-  BookmarkFilterContainer,
+  SelectionsFilterContainer,
   PastEventsFilterContainer,
   TagFilterContainer,
   TextFilterContainer,
@@ -95,7 +95,9 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
       tags={relevantTags}
       viewOptions={viewOpts}
       enableFeatures={enableFeatures}
-      renderBookmarkFilter={(props) => <BookmarkFilterContainer {...props} />}
+      renderSelectionsFilter={(props) => (
+        <SelectionsFilterContainer {...props} />
+      )}
       renderViewSelect={(props) => (
         <ViewSelectContainer defaultValue={defaultViewConfig?.id} {...props} />
       )}

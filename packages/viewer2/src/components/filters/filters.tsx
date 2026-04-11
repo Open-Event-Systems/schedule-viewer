@@ -1,11 +1,12 @@
 import {
-  BookmarkFilter,
   PastEventsFilter,
+  SelectionsFilter,
   TagFilter,
   TextFilter,
   ViewSelect,
-  type BookmarkFilterProps,
   type PastEventsFilterProps,
+  type SelectionsFilterOption,
+  type SelectionsFilterProps,
   type TagFilterProps,
   type TextFilterProps,
   type ViewSelectProps,
@@ -14,9 +15,9 @@ import { FilterStateStoreContext } from "../../filter.js"
 import { useRequiredContext } from "../../utils.js"
 import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
-import { useCallback, type ChangeEvent } from "react"
+import { useCallback, type AllHTMLAttributes, type ChangeEvent } from "react"
 import { useViewerConfig } from "../../config.js"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useNavigate, useRouter, useSearch } from "@tanstack/react-router"
 
 export const ViewSelectContainer = (props: ViewSelectProps) => {
   const navigate = useNavigate()
@@ -41,30 +42,75 @@ export const ViewSelectContainer = (props: ViewSelectProps) => {
   )
 }
 
-export const BookmarkFilterContainer = (props: BookmarkFilterProps) => {
-  const onlyBookmarked = useSearch({
+export const SelectionsFilterContainer = (props: SelectionsFilterProps) => {
+  const selectionsOpts = useSearch({
     strict: false,
-    select: (state) => !!state.bookmarked,
+    select: (state) => {
+      const opts: SelectionsFilterOption[] = []
+      if (state.bookmarked) {
+        opts.push("bookmarked")
+      }
+      if (state.unvisited) {
+        opts.push("unvisited")
+      }
+      return opts
+    },
+    structuralSharing: true,
   })
   const navigate = useNavigate()
+  const router = useRouter()
+
+  const renderButton = useCallback(
+    (
+      props: AllHTMLAttributes<HTMLElement>,
+      option: SelectionsFilterOption,
+      state: boolean,
+    ) => {
+      const href =
+        router.origin +
+        router.history.createHref(
+          router.buildLocation({
+            to: ".",
+            params: true,
+            hash: true,
+            search: (cur) => ({
+              ...cur,
+              ...(option == "bookmarked" && { bookmarked: state }),
+              ...(option == "unvisited" && { unvisited: state }),
+            }),
+          }).href,
+        )
+
+      return (
+        <a
+          {...props}
+          href={href}
+          onClick={(e) => {
+            e.preventDefault()
+            navigate({
+              to: ".",
+              params: true,
+              state: true,
+              hash: true,
+              search: (cur) => ({
+                ...cur,
+                ...(option == "bookmarked" && { bookmarked: state }),
+                ...(option == "unvisited" && { unvisited: state }),
+              }),
+              replace: true,
+            })
+          }}
+        />
+      )
+    },
+    [router, navigate],
+  )
 
   return (
-    <BookmarkFilter
+    <SelectionsFilter
       {...props}
-      value={onlyBookmarked}
-      onChange={(bookmarked) => {
-        navigate({
-          to: ".",
-          params: true,
-          state: true,
-          hash: true,
-          search: (cur) => ({
-            ...cur,
-            bookmarked: bookmarked,
-          }),
-          replace: true,
-        })
-      }}
+      renderButton={renderButton}
+      value={selectionsOpts}
     />
   )
 }

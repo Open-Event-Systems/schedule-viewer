@@ -57,6 +57,7 @@ export type PagesParams = Readonly<{
   day?: string
   past?: boolean
   bookmarked?: boolean
+  unvisited?: boolean
 }>
 
 export const scheduleProvidersRoute = createRoute({
@@ -69,29 +70,33 @@ export const scheduleProvidersRoute = createRoute({
       day: dayVal,
       past: pastVal,
       bookmarked: bookmarkedVal,
+      unvisited: unvisitedVal,
     } = search
 
     const view = typeof viewVal == "string" && viewVal ? viewVal : ""
     const day = typeof dayVal == "string" && dayVal ? dayVal : ""
     const past = pastVal == "true"
     const bookmarked = bookmarkedVal == "true"
+    const unvisited = unvisitedVal == "true"
 
     return {
       ...(view ? { view } : {}),
       ...(day ? { day } : {}),
       ...(past ? { past } : {}),
       ...(bookmarked ? { bookmarked } : {}),
+      ...(unvisited ? { unvisited } : {}),
     }
   },
   search: {
     middlewares: [
       ({ search, next }) => {
-        const { past, bookmarked, ...other } = next(search)
+        const { past, bookmarked, unvisited, ...other } = next(search)
 
         return {
           ...other,
           ...(past ? { past: true } : {}),
           ...(bookmarked ? { bookmarked: true } : {}),
+          ...(unvisited ? { unvisited: true } : {}),
         }
       },
     ],

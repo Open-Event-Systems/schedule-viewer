@@ -16,6 +16,7 @@ import {
   type DailyCatalogViewProps,
   type FullAgendaViewProps,
   type ItemPillsProps,
+  type SelectionsFilterOption,
   type TagEntry,
   type TagsViewProps,
 } from "@open-event-systems/schedule-react"
@@ -71,6 +72,20 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
       structuralSharing: true,
     })
 
+  const selectionsFilterOptions = scheduleProvidersRoute.useSearch({
+    select: (state) => {
+      const opts: SelectionsFilterOption[] = []
+      if (state.bookmarked) {
+        opts.push("bookmarked")
+      }
+      if (state.unvisited) {
+        opts.push("unvisited")
+      }
+      return opts
+    },
+    structuralSharing: true,
+  })
+
   const filterStore = useRequiredContext(FilterStateStoreContext)
   const [text, disabledTags] = useStore(
     filterStore,
@@ -94,9 +109,10 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
     disabledTags,
     text,
     now,
-    onlyBookmarked,
+    selectionsFilterOptions,
     showPastEvents,
-    selections: sharedSelections ?? sessionSelections,
+    bookmarked: sharedSelections ?? sessionSelections,
+    visited: [], // TODO: visited
   })
 
   // Day related setup

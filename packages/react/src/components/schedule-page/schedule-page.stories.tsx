@@ -22,7 +22,10 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { TagFilter } from "../filters/tag-filter.js"
 import { makeTagIndicatorFunc } from "../../config.js"
-import { BookmarkFilter } from "../filters/bookmark-filter.js"
+import {
+  SelectionsFilter,
+  type SelectionsFilterOption,
+} from "../filters/selections-filter.js"
 import { ViewSelect } from "../view-select/view-select.js"
 import { TextFilter } from "../filters/text-filter.js"
 import { PastEventsFilter } from "../filters/past-events-filter.js"
@@ -38,7 +41,8 @@ const meta: Meta<typeof SchedulePage> = {
     enableFeatures: {
       control: "check",
       options: [
-        "bookmark-filter",
+        "bookmarked-filter",
+        "unvisited-filter",
         "past-events-filter",
         "share",
         "sync",
@@ -57,7 +61,8 @@ type Options = FilterOptions & {
 export const Default: StoryObj<typeof SchedulePage> = {
   args: {
     enableFeatures: [
-      "bookmark-filter",
+      "bookmarked-filter",
+      "unvisited-filter",
       "past-events-filter",
       "share",
       "sync",
@@ -66,7 +71,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
   },
   render(args) {
     const [
-      { disabledTags, onlyBookmarked, showPastEvents, text, selectedDayKey },
+      {
+        disabledTags,
+        selectionsFilterOptions,
+        showPastEvents,
+        text,
+        selectedDayKey,
+      },
       dispatch,
     ] = useReducer(
       (prevState: Options, action: Partial<Options>) => {
@@ -77,7 +88,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
       },
       {
         disabledTags: new Set<string>(),
-        onlyBookmarked: false,
+        selectionsFilterOptions: [] as readonly SelectionsFilterOption[],
         showPastEvents: false,
         text: "",
       },
@@ -87,7 +98,8 @@ export const Default: StoryObj<typeof SchedulePage> = {
       useState<ComponentPropsWithoutRef<typeof Schedule>["type"]>(
         "daily-agenda",
       )
-    const [selections, setSelections] = useState(makeSelections())
+    const [bookmarks, setBookmarks] = useState(makeSelections())
+    const [visited, setVisited] = useState(makeSelections())
 
     const days = useMemo(
       () =>
@@ -106,19 +118,28 @@ export const Default: StoryObj<typeof SchedulePage> = {
         return (
           <ItemDetails
             {...props}
-            buttonOptions={["bookmark", "share"]}
-            bookmarked={selections.has(props.itemId)}
+            buttonOptions={["bookmark", "visited", "share"]}
+            bookmarked={bookmarks.has(props.itemId)}
+            visited={visited.has(props.itemId)}
             shareURL={`#${props.itemId}`}
             getLocationProps={() => ({
               href: "#",
               onClick: (e) => e.preventDefault(),
             })}
             tagEntries={parsedConfig.tags}
-            bookmarkCount={selections.has(props.itemId) ? 1 : undefined}
+            bookmarkCount={bookmarks.has(props.itemId) ? 1 : undefined}
             onSelectOption={(opt) => {
               if (opt == "bookmark") {
-                setSelections((cur) => {
-                  if (!selections.has(props.itemId)) {
+                setBookmarks((cur) => {
+                  if (!bookmarks.has(props.itemId)) {
+                    return cur.add(props.itemId)
+                  } else {
+                    return cur.delete(props.itemId)
+                  }
+                })
+              } else if (opt == "visited") {
+                setVisited((cur) => {
+                  if (!visited.has(props.itemId)) {
                     return cur.add(props.itemId)
                   } else {
                     return cur.delete(props.itemId)
@@ -129,7 +150,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
           />
         )
       },
-      [selections, setSelections],
+      [bookmarks, setBookmarks, visited, setVisited],
     )
 
     const tagIndicatorFunc = useMemo(
@@ -147,7 +168,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
           />
         )
       },
-      [selections, setSelections, renderDetails],
+      [bookmarks, setBookmarks, renderDetails],
     )
 
     const renderItemPills = useCallback(
@@ -159,10 +180,11 @@ export const Default: StoryObj<typeof SchedulePage> = {
 
     const filtered = useFilteredItems(parsedEvents, {
       disabledTags,
-      onlyBookmarked,
+      selectionsFilterOptions,
       text,
       showPastEvents,
-      selections,
+      bookmarked: bookmarks,
+      visited,
     })
 
     return (
@@ -172,11 +194,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
         p="xs"
         {...args}
         tags={parsedConfig.tags}
-        renderBookmarkFilter={(props) => (
-          <BookmarkFilter
+        renderSelectionsFilter={(props) => (
+          <SelectionsFilter
             {...props}
-            value={onlyBookmarked}
-            onChange={(onlyBookmarked) => dispatch({ onlyBookmarked })}
+            value={selectionsFilterOptions}
+            onChange={(selectionsFilterOptions) =>
+              dispatch({ selectionsFilterOptions })
+            }
           />
         )}
         renderViewSelect={(props) => (

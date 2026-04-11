@@ -8,9 +8,10 @@ import {
   type ShareMenuProps,
 } from "../share-menu/share-menu.js"
 import {
-  BookmarkFilter,
-  type BookmarkFilterProps,
-} from "../filters/bookmark-filter.js"
+  SelectionsFilter,
+  type SelectionsFilterOption,
+  type SelectionsFilterProps,
+} from "../filters/selections-filter.js"
 
 import { memo, useMemo } from "react"
 import { ViewSelect, type ViewSelectProps } from "../view-select/view-select.js"
@@ -28,7 +29,8 @@ import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export const schedulePageFeatures = [
   ...shareMenuOptions,
-  "bookmark-filter",
+  "bookmarked-filter",
+  "unvisited-filter",
   "past-events-filter",
 ] as const
 
@@ -38,7 +40,7 @@ export type SchedulePageProps = {
   viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
   enableFeatures?: Iterable<SchedulePageFeature>
   tags?: Iterable<TagEntry>
-  renderBookmarkFilter?: (props: BookmarkFilterProps) => ReactNode
+  renderSelectionsFilter?: (props: SelectionsFilterProps) => ReactNode
   renderViewSelect?: (props: ViewSelectProps) => ReactNode
   renderTextFilter?: (props: TextFilterProps) => ReactNode
   renderPastEventsFilter?: (props: PastEventsFilterProps) => ReactNode
@@ -56,7 +58,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     viewOptions,
     enableFeatures,
     tags,
-    renderBookmarkFilter,
+    renderSelectionsFilter,
     renderViewSelect,
     renderTextFilter,
     renderPastEventsFilter,
@@ -68,8 +70,8 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     "SchedulePage",
     {
       enableFeatures: schedulePageFeatures,
-      renderBookmarkFilter: (props: BookmarkFilterProps) => (
-        <BookmarkFilter {...props} />
+      renderSelectionsFilter: (props: SelectionsFilterProps) => (
+        <SelectionsFilter {...props} />
       ),
       renderViewSelect: (props: ViewSelectProps) => <ViewSelect {...props} />,
       renderTextFilter: (props: TextFilterProps) => <TextFilter {...props} />,
@@ -85,6 +87,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
 
   const viewOptsArr = iterToArr(viewOptions)
   const enableFeaturesArr = iterToArr(enableFeatures)
+  const selectionsOptsArr: SelectionsFilterOption[] = []
   const shareOptsArr: ShareMenuOption[] = []
 
   if (enableFeaturesArr.includes("share")) {
@@ -97,6 +100,13 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     shareOptsArr.push("export")
   }
 
+  if (enableFeaturesArr.includes("bookmarked-filter")) {
+    selectionsOptsArr.push("bookmarked")
+  }
+  if (enableFeaturesArr.includes("unvisited-filter")) {
+    selectionsOptsArr.push("unvisited")
+  }
+
   const tagsArr = useMemo(() => iterToArr(tags), [tags])
 
   const isSmall = useMediaQuery("(max-width: 48rem)")
@@ -106,9 +116,9 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
       className: clsx("SchedulePage-viewSelect", classes.viewSelect),
       data: viewOptsArr,
     })
-  const bookmarkFilter =
-    enableFeaturesArr.includes("bookmark-filter") &&
-    renderBookmarkFilter({
+  const selectionsFilter =
+    selectionsOptsArr.length > 0 &&
+    renderSelectionsFilter({
       className: clsx("SchedulePage-bookmarkFilter", classes.bookmarkFilter),
     })
   const shareMenu =
@@ -144,7 +154,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
           {viewSelect}
           {shareMenu}
         </Box>
-        <Box className={clsx(classes.toolbar)}>{bookmarkFilter}</Box>
+        <Box className={clsx(classes.toolbar)}>{selectionsFilter}</Box>
         <Box className={clsx(classes.toolbar)}>{textFilter}</Box>
         <Box className={clsx(classes.toolbar)}>{pastEventsFilter}</Box>
         <Box className={clsx(classes.toolbar)}>{tagFilter}</Box>
@@ -164,7 +174,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
           )}
         >
           {viewSelect}
-          {bookmarkFilter}
+          {selectionsFilter}
         </Box>
         <Box
           className={clsx(

@@ -14,6 +14,18 @@ export const makeBookmarkFilter = (
 }
 
 /**
+ * Return a filter for unvisited items.
+ */
+export const makeUnvisitedFilter = (
+  itemIds?: Iterable<string>,
+): ((e: { readonly id: string }) => boolean) => {
+  const idSet = new Set(itemIds)
+  return (e) => {
+    return !idSet.has(e.id)
+  }
+}
+
+/**
  * Return whether an interval has both start and end set.
  */
 export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
