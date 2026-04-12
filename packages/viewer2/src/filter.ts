@@ -85,10 +85,12 @@ export const usePageFilteredItems = <T extends DetailedScheduleItem>(
   return useMemo(() => {
     const typeFilter = makeTypeFilter(pageConfig.onlyType)
     const reqTagsFilter = makeRequireTagsFilter(pageConfig.requireTags)
+    const exTagsFilter = makeExcludeTagsFilter(pageConfig.excludeTags)
 
     const byType = iterToArr(items).filter(typeFilter)
     const byReqTags = byType.filter(reqTagsFilter)
-    return byReqTags
+    const byExTags = byReqTags.filter(exTagsFilter)
+    return byExTags
   }, [items, pageConfig])
 }
 
@@ -120,6 +122,24 @@ export const makeRequireTagsFilter = (
   return (item) => {
     for (const reqTag of reqTags) {
       if (!item.tags || !item.tags.has(reqTag)) {
+        return false
+      }
+    }
+
+    return true
+  }
+}
+
+export const makeExcludeTagsFilter = (
+  option?: readonly string[],
+): ((
+  item: ScheduleItem & { readonly tags?: ReadonlySet<string> },
+) => boolean) => {
+  const exTags = option ?? []
+
+  return (item) => {
+    for (const exTag of exTags) {
+      if (item.tags && item.tags.has(exTag)) {
         return false
       }
     }

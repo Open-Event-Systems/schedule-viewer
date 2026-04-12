@@ -63,15 +63,17 @@ const pageConfigSchema = z.codec(
       }),
     ),
     requireTags: optional(z.array(z.string())),
+    excludeTags: optional(z.array(z.string())),
   }),
   z.custom<PageConfig>(),
   {
     decode: ({ views, ...v }) => ({ ...v, views: views ?? [] }),
-    encode: ({ views, onlyType, requireTags, ...v }) => ({
+    encode: ({ views, onlyType, requireTags, excludeTags, ...v }) => ({
       ...v,
       views: [...views],
       ...(onlyType ? { onlyType: [...onlyType] } : null),
       ...(requireTags ? { requireTags: [...requireTags] } : null),
+      ...(excludeTags ? { excludeTags: [...excludeTags] } : null),
     }),
   },
 )

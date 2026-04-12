@@ -31,6 +31,7 @@ export type PageConfig = Readonly<{
   views: readonly ViewConfig[]
   onlyType?: readonly string[]
   requireTags?: readonly string[]
+  excludeTags?: readonly string[]
 }>
 
 /**
