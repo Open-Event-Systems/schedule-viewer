@@ -186,11 +186,19 @@ export const pagesRoute = createRoute({
     )
 
     // only await selections if viewing the bookmarked mode
-    const selectionsPromise = queryClient.fetchQuery(
+    const bookmarksPromise = queryClient.fetchQuery(
       sessionSelectionsQueryOptions.sessionSelections(
         bookmarksSessionSelectionsAPI,
         config.id,
         "bookmarks",
+      ),
+    )
+
+    const visitedPromise = queryClient.fetchQuery(
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
+        config.id,
+        "visited",
       ),
     )
 
@@ -204,7 +212,8 @@ export const pagesRoute = createRoute({
 
     await Promise.all([
       itemsPromise,
-      bookmarked ? selectionsPromise : undefined,
+      bookmarked ? bookmarksPromise : undefined,
+      bookmarked ? visitedPromise : undefined,
     ])
   },
   head: ({
@@ -271,11 +280,19 @@ export const sharedPagesRoute = createRoute({
     )
 
     // only await selections if viewing the bookmarked mode
-    const selectionsPromise = queryClient.fetchQuery(
+    const bookmarksPromise = queryClient.fetchQuery(
       sessionSelectionsQueryOptions.sessionSelections(
         bookmarksSessionSelectionsAPI,
         config.id,
         "bookmarks",
+      ),
+    )
+
+    const visitedPromise = queryClient.fetchQuery(
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
+        config.id,
+        "visited",
       ),
     )
 
@@ -299,7 +316,8 @@ export const sharedPagesRoute = createRoute({
     const [sharedSelections] = await Promise.all([
       sharedSelectionsPromise,
       itemsPromise,
-      bookmarked ? selectionsPromise : undefined,
+      bookmarked ? bookmarksPromise : undefined,
+      bookmarked ? visitedPromise : undefined,
     ])
 
     if (!sharedSelections) {
@@ -609,6 +627,14 @@ export const mapRoute = createRoute({
     )
 
     queryClient.fetchQuery(
+      sessionSelectionsQueryOptions.sessionSelections(
+        bookmarksSessionSelectionsAPI,
+        config.id,
+        "visited",
+      ),
+    )
+
+    queryClient.fetchQuery(
       selectionsQueryOptions.counts(
         selectionsServiceAPI,
         config.id,
@@ -616,16 +642,7 @@ export const mapRoute = createRoute({
       ),
     )
 
-    const [
-      {
-        byType: { event: events, vendor: vendors },
-      },
-    ] = await Promise.all([itemsPromise])
-
-    return {
-      events,
-      vendors,
-    }
+    await Promise.all([itemsPromise])
   },
   component: lazyRouteComponent(() => import("./routes/map.js"), "MapRoute"),
   head: ({

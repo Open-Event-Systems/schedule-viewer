@@ -69,7 +69,7 @@ export const MapRoute = () => {
   }, [eventsAndVendors, locMatchFunc, now])
 
   const locationItemInfo = useMemo(
-    () => getMapLocationInfo(eventsAndVendors, locMatchFunc),
+    () => getMapLocationInfo(nowItems.values(), locMatchFunc),
     [nowItems, locMatchFunc],
   )
 

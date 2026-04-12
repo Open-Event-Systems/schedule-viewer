@@ -21,6 +21,7 @@ export type ViewConfig = Readonly<{
   enableFeatures?: readonly SchedulePageFeature[]
   showPastEvents?: boolean
   onlyBookmarked?: boolean
+  onlyUnvisited?: boolean
 }>
 
 export type PageConfig = Readonly<{

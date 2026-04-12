@@ -66,11 +66,16 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
 
   // Params
 
-  const [selectedDayKey, optShowPastEvents, optOnlyBookmarked] =
-    scheduleProvidersRoute.useSearch({
-      select: (state) => [state.day, state.past, state.bookmarked] as const,
-      structuralSharing: true,
-    })
+  const [
+    selectedDayKey,
+    optShowPastEvents,
+    optOnlyBookmarked,
+    optOnlyUnvisited,
+  ] = scheduleProvidersRoute.useSearch({
+    select: (state) =>
+      [state.day, state.past, state.bookmarked, state.unvisited] as const,
+    structuralSharing: true,
+  })
 
   const selectionsFilterOptions = scheduleProvidersRoute.useSearch({
     select: (state) => {
@@ -94,6 +99,7 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
 
   const onlyBookmarked =
     !!sharedSelections || (viewConfig.onlyBookmarked ?? optOnlyBookmarked)
+  const onlyUnvisited = viewConfig.onlyUnvisited ?? optOnlyUnvisited
   const showPastEvents = viewConfig.showPastEvents ?? optShowPastEvents
 
   // Items
@@ -101,7 +107,9 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
 
   // Selections
 
-  const sessionSelections = useSessionSelectionsIfEnabled(onlyBookmarked)
+  const sessionSelections = useSessionSelectionsIfEnabled(
+    onlyBookmarked || onlyUnvisited,
+  )
 
   // Filtered items
 
@@ -111,8 +119,8 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
     now,
     selectionsFilterOptions,
     showPastEvents,
-    bookmarked: sharedSelections ?? sessionSelections,
-    visited: [], // TODO: visited
+    bookmarked: sharedSelections ?? sessionSelections.bookmarks,
+    visited: sessionSelections.visited,
   })
 
   // Day related setup

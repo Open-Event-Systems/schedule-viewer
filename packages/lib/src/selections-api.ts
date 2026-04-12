@@ -92,7 +92,9 @@ export const makeMemoryLocalSelectionsStore =
 
 export type LocalStorageSelectionsStore = LocalSessionSelectionsStore &
   Readonly<{
-    handleStorageEvent: (e: StorageEvent) => void
+    handleStorageEvent: (
+      e: StorageEvent,
+    ) => LocalSessionSelections | null | false
   }>
 
 export const makeLocalStorageSessionSelectionsStore = (
@@ -174,6 +176,9 @@ export const makeLocalStorageSessionSelectionsStore = (
           setCurrent(newCur)
           notify()
         }
+        return newCur
+      } else {
+        return false
       }
     },
     subscribe: (cb) => {

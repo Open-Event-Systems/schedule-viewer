@@ -30,6 +30,7 @@ const viewConfigSchema = z.codec(
     ),
     showPastEvents: optional(z.boolean()),
     onlyBookmarked: optional(z.boolean()),
+    onlyUnvisited: optional(z.boolean()),
   }),
   z.custom<ViewConfig>(),
   {

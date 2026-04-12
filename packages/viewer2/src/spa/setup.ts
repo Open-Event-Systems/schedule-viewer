@@ -41,24 +41,47 @@ export const setup = async (
 
   const localSessionSelectionsStores = {
     bookmarks: makeLocalStorageSessionSelectionsStore("bookmarks", config.id),
+    visited: makeLocalStorageSessionSelectionsStore("visited", config.id),
   }
 
   window.addEventListener("storage", (e) => {
-    localSessionSelectionsStores.bookmarks.handleStorageEvent(e)
-    queryClient.setQueryData(
-      sessionSelectionsQueryOptions.sessionSelections(
-        sessionSelectionsAPIs.bookmarks,
-        config.id,
-        "bookmarks",
-      ).queryKey,
-      localSessionSelectionsStores.bookmarks.get(),
-    )
+    const bookmarkRes =
+      localSessionSelectionsStores.bookmarks.handleStorageEvent(e)
+    const visitedRes =
+      localSessionSelectionsStores.visited.handleStorageEvent(e)
+
+    if (bookmarkRes) {
+      queryClient.setQueryData(
+        sessionSelectionsQueryOptions.sessionSelections(
+          sessionSelectionsAPIs.bookmarks,
+          config.id,
+          "bookmarks",
+        ).queryKey,
+        bookmarkRes,
+      )
+    }
+
+    if (visitedRes) {
+      queryClient.setQueryData(
+        sessionSelectionsQueryOptions.sessionSelections(
+          sessionSelectionsAPIs.visited,
+          config.id,
+          "visited",
+        ).queryKey,
+        visitedRes,
+      )
+    }
   })
 
   const sessionSelectionsAPIs = {
     bookmarks: makeSyncedSelectionsAPI(
       "bookmarks",
       localSessionSelectionsStores.bookmarks,
+      selectionsServiceAPI,
+    ),
+    visited: makeSyncedSelectionsAPI(
+      "visited",
+      localSessionSelectionsStores.visited,
       selectionsServiceAPI,
     ),
   }

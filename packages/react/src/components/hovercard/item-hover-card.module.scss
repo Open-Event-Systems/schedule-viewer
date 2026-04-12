@@ -1,4 +1,5 @@
 .dropdown {
   max-width: calc(100vw - 2rem);
   max-width: min(calc(100vw - 2rem), 500px);
+  padding: calc(var(--mantine-spacing-xs) / 2);
 }

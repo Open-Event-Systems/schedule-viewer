@@ -284,6 +284,24 @@ export const ItemDetailsButtons = memo((props: ItemDetailsButtonsProps) => {
           />
         </Box>
       )}
+      {optsArr.includes("visited") && (
+        <Box
+          component="li"
+          className={clsx("ItemDetails-buttonItem", classes.buttonItem)}
+        >
+          <ActionIcon
+            title="Visited"
+            role="switch"
+            aria-checked={!!visited}
+            size={large ? "lg" : "sm"}
+            variant={visited ? "filled" : "default"}
+            className={clsx("ItemDetails-button", classes.button)}
+            onClick={() => onSelectOption && onSelectOption("visited")}
+          >
+            <IconEyeCheck />
+          </ActionIcon>
+        </Box>
+      )}
       {optsArr.includes("bookmark") && (
         <>
           <Box
@@ -318,24 +336,6 @@ export const ItemDetailsButtons = memo((props: ItemDetailsButtonsProps) => {
             </Text>
           )}
         </>
-      )}
-      {optsArr.includes("visited") && (
-        <Box
-          component="li"
-          className={clsx("ItemDetails-buttonItem", classes.buttonItem)}
-        >
-          <ActionIcon
-            title="Visited"
-            role="switch"
-            aria-checked={!!visited}
-            size={large ? "lg" : "sm"}
-            variant={visited ? "filled" : "default"}
-            className={clsx("ItemDetails-button", classes.button)}
-            onClick={() => onSelectOption && onSelectOption("visited")}
-          >
-            <IconEyeCheck />
-          </ActionIcon>
-        </Box>
       )}
     </Box>
   )

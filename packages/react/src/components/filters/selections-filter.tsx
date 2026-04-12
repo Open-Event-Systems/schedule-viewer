@@ -3,6 +3,9 @@ import clsx from "clsx"
 
 import { iterToArr } from "@open-event-systems/schedule-lib"
 import type { AllHTMLAttributes, ReactNode } from "react"
+import { IconBookmark, IconEye } from "@tabler/icons-react"
+
+import classes from "./selections-filter.module.scss"
 
 export const selectionsFilterOptions = ["bookmarked", "unvisited"] as const
 
@@ -47,6 +50,8 @@ export const SelectionsFilter = (props: SelectionsFilterProps) => {
       <Button
         key="bookmarked"
         renderRoot={render}
+        className={clsx(classes.button)}
+        leftSection={<IconBookmark />}
         variant={valArr.includes("bookmarked") ? "filled" : "default"}
         onClick={() => {
           if (onChange) {
@@ -72,6 +77,8 @@ export const SelectionsFilter = (props: SelectionsFilterProps) => {
       <Button
         key="unvisited"
         renderRoot={render}
+        className={clsx(classes.button)}
+        leftSection={<IconEye />}
         variant={valArr.includes("unvisited") ? "filled" : "default"}
         onClick={() => {
           if (onChange) {

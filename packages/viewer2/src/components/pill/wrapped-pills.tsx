@@ -44,22 +44,27 @@ export const WrappedItemDetails = (props: ItemDetailsProps) => {
 
   const config = useViewerConfig()
   const { data: bookmarked } = useIsSelected("bookmarks", props.itemId)
+  const { data: visited } = useIsSelected("visited", props.itemId)
   const { data: count } = useSelectionCount("bookmarks", props.itemId)
   const setBookmarked = useSetSelected("bookmarks")
+  const setVisited = useSetSelected("visited")
 
   const onSelect = useCallback(
     (o: ItemDetailsButtonOption) => {
       if (o == "bookmark") {
         return setBookmarked(props.itemId, !bookmarked)
+      } else if (o == "visited") {
+        return setVisited(props.itemId, !visited)
       }
     },
-    [setBookmarked, bookmarked, props.itemId],
+    [setBookmarked, setVisited, bookmarked, visited, props.itemId],
   )
 
   return (
     <ItemDetails
       {...other}
       bookmarked={bookmarked}
+      visited={visited}
       onSelectOption={onSelect}
       bookmarkCount={count}
       tagEntries={config.tags}

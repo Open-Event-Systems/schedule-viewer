@@ -13,14 +13,6 @@
 
   gap: var(--mantine-spacing-xs);
 
-  // > * {
-  //   margin-top: var(--margin-top);
-  // }
-
-  // > :first-child {
-  //   margin-top: 0;
-  // }
-
   &.dark {
     --secondary-text-color: var(--secondary-text-color-dark);
   }

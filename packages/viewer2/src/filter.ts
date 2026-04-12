@@ -3,6 +3,7 @@ import {
   type DetailedScheduleItem,
   type ScheduleItem,
   type Selections,
+  type SelectionsType,
 } from "@open-event-systems/schedule-lib"
 import {
   sessionSelectionsQueryOptions,
@@ -49,22 +50,32 @@ export const FilterStateStoreContext = createContext<
 >(undefined)
 
 export const useSessionSelectionsIfEnabled = (
-  onlyBookmarked?: boolean,
-): Selections | undefined => {
+  enabled?: boolean,
+): { [T in SelectionsType]?: Selections | undefined } => {
   const api = useSessionSelectionsAPI("bookmarks")
   const config = useViewerConfig()
 
-  const query = useQuery({
+  const bookmarksQuery = useQuery({
     ...sessionSelectionsQueryOptions.sessionSelections(
       api,
       config.id,
       "bookmarks",
     ),
-    subscribed: !!onlyBookmarked,
-    enabled: !!onlyBookmarked,
+    subscribed: !!enabled,
+    enabled: !!enabled,
   })
 
-  return query.data
+  const visitedQuery = useQuery({
+    ...sessionSelectionsQueryOptions.sessionSelections(
+      api,
+      config.id,
+      "visited",
+    ),
+    subscribed: !!enabled,
+    enabled: !!enabled,
+  })
+
+  return { bookmarks: bookmarksQuery.data, visited: visitedQuery.data }
 }
 
 export const usePageFilteredItems = <T extends DetailedScheduleItem>(
