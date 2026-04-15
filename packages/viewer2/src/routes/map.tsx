@@ -25,6 +25,7 @@ import { isMapLevel } from "../../../map/src/viewer/util.js"
 
 import classes from "./map.module.scss"
 import { useNow } from "../utils.js"
+import { contains } from "@open-event-systems/schedule-lib"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -48,7 +49,7 @@ export const MapRoute = () => {
   const context = mapRoute.useRouteContext()
   const navigate = useNavigate()
 
-  const { iso: isometric } = mapRoute.useSearch()
+  const { iso: isometric, flag: searchFlags } = mapRoute.useSearch()
 
   const now = useNow()
 
@@ -57,6 +58,20 @@ export const MapRoute = () => {
     () => items.filter((t) => t.type == "event" || t.type == "vendor"),
     [items],
   )
+
+  const currentMapFlags = useMemo(
+    () =>
+      items.filter((t) => t.type == "map-flag").filter((t) => contains(t, now)),
+    [items, now],
+  )
+
+  // Flags
+
+  const fullFlags = useMemo(() => {
+    return [...(searchFlags ?? []), ...currentMapFlags.map((f) => f.id)]
+  }, [searchFlags, currentMapFlags])
+
+  // Now/later items
 
   const locMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
 
@@ -81,6 +96,8 @@ export const MapRoute = () => {
       ? [nowItems.get(selectedLoc.id), laterItems.get(selectedLoc.id)]
       : []
   }, [selectedLoc?.id, nowItems, laterItems])
+
+  // Render funcs
 
   const mapLocMatchFunc = useMapLocationMatchFunc(mapCfg.locations)
   const navPropsMap = useMemo(
@@ -116,6 +133,7 @@ export const MapRoute = () => {
       detailsLocationId={selectedLoc?.id}
       zoomLocationId={zoomLocationId}
       locationItemInfo={locationItemInfo}
+      flags={fullFlags}
       isometric={isometric}
       hiddenLayers={hiddenLayers}
       nowDetails={

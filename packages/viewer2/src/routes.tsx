@@ -562,6 +562,7 @@ export type MapParams = Readonly<{
   loc?: string
   level?: string
   iso?: boolean
+  flag?: readonly string[]
 }>
 
 export const mapRoute = createRoute({
@@ -573,21 +574,28 @@ export const mapRoute = createRoute({
     const loc = params.loc
     const level = params.level
     const iso = params.iso
+    const flags = Array.isArray(params.flag)
+      ? params.flag
+      : typeof params.flag == "string"
+        ? [params.flag]
+        : []
     return {
       ...(typeof show == "string" && show ? { show } : {}),
       ...(typeof loc == "string" && loc ? { loc } : {}),
       ...(typeof level == "string" && level ? { level } : {}),
       ...(iso ? { iso: true } : {}),
+      flag: flags,
     }
   },
   search: {
     middlewares: [
       ({ search, next }) => {
-        const { iso, ...other } = next(search)
+        const { iso, flag, ...other } = next(search)
 
         return {
           ...other,
           ...(iso ? { iso: true } : {}),
+          ...(flag && flag.length > 0 && { flag }),
         }
       },
     ],

@@ -90,6 +90,25 @@ export const makeRouter = (
       syncRoute,
       mapProvidersRoute.addChildren([mapRoute]),
     ]),
+    stringifySearch: (search) => {
+      const params = new URLSearchParams()
+      for (const key of Object.keys(search)) {
+        const val = search[key]
+        if (val == null) {
+          continue
+        } else if (Array.isArray(val)) {
+          for (const arrVal of val) {
+            params.append(key, arrVal)
+          }
+        } else if (typeof val == "object") {
+          params.set(key, JSON.stringify(val))
+        } else {
+          params.set(key, val)
+        }
+      }
+
+      return `?${params}`
+    },
   })
 
   return router
