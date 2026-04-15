@@ -46,7 +46,7 @@
   align-items: center;
 }
 
-.titleIcon {
+.logo {
   display: block;
   margin-right: var(--mantine-spacing-sm);
 }
@@ -73,7 +73,7 @@
   grid-template:
     "divider divider divider" auto
     "left btt right" 1fr
-    / auto auto auto;
+    / 1fr auto 1fr;
 }
 
 .footerDivider {

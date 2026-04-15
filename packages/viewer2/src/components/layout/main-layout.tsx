@@ -64,12 +64,12 @@ export const MainLayoutHeader = (props: MainLayoutHeaderProps) => {
 export type MainLayoutTitleProps = {
   className?: string
   homeURL?: string
-  iconURL?: string
+  logoURL?: string
   children?: ReactNode
 }
 
 export const MainLayoutTitle = (props: MainLayoutTitleProps) => {
-  const { className, children, homeURL, iconURL } = useProps(
+  const { className, children, homeURL, logoURL } = useProps(
     "MainLayoutTitle",
     null,
     props,
@@ -84,12 +84,12 @@ export const MainLayoutTitle = (props: MainLayoutTitleProps) => {
     </Title>
   )
 
-  if (iconURL) {
+  if (logoURL) {
     el = (
       <>
         <img
-          className={clsx("MainLayout-titleIcon", classes.titleIcon)}
-          src={iconURL}
+          className={clsx("MainLayout-logo", classes.logo)}
+          src={logoURL}
           alt=""
         />
         {el}

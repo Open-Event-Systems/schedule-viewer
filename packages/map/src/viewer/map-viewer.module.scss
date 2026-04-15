@@ -127,16 +127,3 @@
     display: block;
   }
 }
-
-// Temp rules for testing
-
-:global(.MapViewer-level-id-lobby) {
-  --map-isometric-y-offset: 400px;
-  --map-isometric-center-x-offset: 480px;
-  --map-isometric-center-y-offset: 480px;
-}
-
-:global(.MapViewer-level-id-2f) {
-  --map-isometric-center-x-offset: 480px;
-  --map-isometric-center-y-offset: 480px;
-}

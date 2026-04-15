@@ -80,6 +80,7 @@ const pageConfigSchema = z.codec(
 
 const viewerConfigSchema = z.looseObject({
   homeURL: optional(z.string()),
+  logoURL: optional(z.string()),
   pages: optional(z.array(pageConfigSchema)),
   map: optional(z.looseObject({})),
 })

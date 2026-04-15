@@ -40,6 +40,7 @@ export type PageConfig = Readonly<{
 export type ViewerConfig = ScheduleConfig &
   Readonly<{
     homeURL?: string
+    logoURL?: string
     pages: readonly PageConfig[]
     map?: MapConfig
   }>

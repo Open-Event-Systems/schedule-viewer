@@ -120,6 +120,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     selectionsOptsArr.length > 0 &&
     renderSelectionsFilter({
       className: clsx("SchedulePage-bookmarkFilter", classes.bookmarkFilter),
+      enableOptions: selectionsOptsArr,
     })
   const shareMenu =
     shareOptsArr.length > 0 &&

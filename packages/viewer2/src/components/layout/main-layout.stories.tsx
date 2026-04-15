@@ -115,7 +115,7 @@ export const WithIcon: StoryObj<typeof MainLayout> = {
             </>
           }
         >
-          <MainLayout.Title iconURL="/example-icon-192.png">
+          <MainLayout.Title logoURL="/example-icon-192.png">
             Page Title
           </MainLayout.Title>
         </MainLayout.Header>
@@ -147,7 +147,7 @@ export const WithIconAndAnchor: StoryObj<typeof MainLayout> = {
             </>
           }
         >
-          <MainLayout.Title homeURL="#" iconURL="/example-icon-192.png">
+          <MainLayout.Title homeURL="#" logoURL="/example-icon-192.png">
             Page Title
           </MainLayout.Title>
         </MainLayout.Header>

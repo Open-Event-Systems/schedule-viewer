@@ -15,12 +15,12 @@ import { SWButtons } from "../components/sw/sw-buttons.js"
 import classes from "./main-layout.module.scss"
 
 const _MainLayoutRoute = () => {
-  const { homeURL } = useViewerConfig()
+  const { homeURL, logoURL } = useViewerConfig()
 
   return (
     <MainLayout>
       <MainLayout.Header icons={<MainLayoutRoute.SWMenu />}>
-        <MainLayout.Title homeURL={homeURL}>
+        <MainLayout.Title homeURL={homeURL} logoURL={logoURL}>
           <PageTitle />
         </MainLayout.Title>
       </MainLayout.Header>

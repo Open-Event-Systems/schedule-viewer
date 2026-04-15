@@ -181,7 +181,11 @@ export const makeRenderItemDetailsFunc = (
         occurrences={occs}
         getLocationProps={navProps?.getLocationProps}
         shareURL={navProps?.url}
-        buttonOptions={["share", "bookmark", "visited"]}
+        buttonOptions={[
+          "share",
+          "bookmark",
+          ...(occs[0]?.type == "vendor" ? (["visited"] as const) : []),
+        ]}
       />
     )
   }
