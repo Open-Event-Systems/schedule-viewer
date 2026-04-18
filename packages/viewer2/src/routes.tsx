@@ -104,7 +104,10 @@ export const scheduleProvidersRoute = createRoute({
     ],
   },
   async beforeLoad({ context: { contextPromise } }) {
-    await contextPromise
+    const { config } = await contextPromise
+    return {
+      pageTitle: config.title,
+    }
   },
   component: lazyRouteComponent(
     () => import("./routes/providers.js"),
