@@ -96,10 +96,10 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
   const wrappedOnSelectShareOption = useCallback(
     (option: ShareMenuOption) => {
       if (onSelectShareOption) {
-        onSelectShareOption(option, items ?? [])
+        onSelectShareOption(option, pageItems ?? [])
       }
     },
-    [items, onSelectShareOption],
+    [pageItems, onSelectShareOption],
   )
 
   return (
