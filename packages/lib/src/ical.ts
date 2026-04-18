@@ -42,19 +42,16 @@ export type CreateICSOptions = Readonly<{
  */
 export const createICS = (
   itemOccurrences: Iterable<
-    readonly (
-      ScheduleItem &
-      Pick<ScheduleItemDetails, "title" | "description" | "location">
-    )[]
+    readonly (ScheduleItem &
+      Pick<ScheduleItemDetails, "title" | "description" | "location">)[]
   >,
-  options: CreateICSOptions
+  options: CreateICSOptions,
 ): string => {
   const now = new Date()
 
   const calendar = ical({
     name: options.title,
   })
-
 
   for (const occs of itemOccurrences) {
     for (const res of processItem(now, occs, options)) {
@@ -65,8 +62,12 @@ export const createICS = (
   return calendar.toString()
 }
 
-const processItem = (now: Date, occurrences: readonly (ScheduleItem &
-  Pick<ScheduleItemDetails, "title" | "description" | "location">)[], options: CreateICSOptions): ICalEventData[] => {
+const processItem = (
+  now: Date,
+  occurrences: readonly (ScheduleItem &
+    Pick<ScheduleItemDetails, "title" | "description" | "location">)[],
+  options: CreateICSOptions,
+): ICalEventData[] => {
   const results: ICalEventData[] = []
 
   const firstItem = occurrences[0]!
@@ -78,10 +79,12 @@ const processItem = (now: Date, occurrences: readonly (ScheduleItem &
   if (occurrences.length > 1) {
     const ruleSet = new RRuleSet()
 
-    ruleSet.rrule(new RRule({
-      freq: RRule.DAILY,
-      count: 1,
-    }))
+    ruleSet.rrule(
+      new RRule({
+        freq: RRule.DAILY,
+        count: 1,
+      }),
+    )
 
     for (const extraOcc of occurrences.slice(1)) {
       if (extraOcc.start) {
@@ -91,7 +94,6 @@ const processItem = (now: Date, occurrences: readonly (ScheduleItem &
         overrideAttrs.recurrenceId = extraOcc.start
 
         results.push(overrideAttrs)
-
       }
     }
 
@@ -101,9 +103,12 @@ const processItem = (now: Date, occurrences: readonly (ScheduleItem &
   return results
 }
 
-const getEventAttrs = (now: Date, item: ScheduleItem &
-  Pick<ScheduleItemDetails, "title" | "description" | "location">, options: CreateICSOptions): ICalEventData => {
-
+const getEventAttrs = (
+  now: Date,
+  item: ScheduleItem &
+    Pick<ScheduleItemDetails, "title" | "description" | "location">,
+  options: CreateICSOptions,
+): ICalEventData => {
   const attrs: ICalEventData = {
     id: `${options.prefix}-${item.id}@${options.domain}`,
     start: item.start ?? options.defaultStart,

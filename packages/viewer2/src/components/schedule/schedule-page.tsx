@@ -28,7 +28,10 @@ import type { PageConfig } from "../../types.js"
 export type SchedulePageContainerProps = {
   items?: Iterable<DetailedScheduleItem>
   pageConfig: PageConfig
-  onSelectShareOption?: (option: ShareMenuOption, items: Iterable<DetailedScheduleItem>) => void
+  onSelectShareOption?: (
+    option: ShareMenuOption,
+    items: Iterable<DetailedScheduleItem>,
+  ) => void
   sharedSelections?: Iterable<string>
 }
 
@@ -90,11 +93,14 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
 
   const relevantTags = useRelevantTags(config.tags, pageItems)
 
-  const wrappedOnSelectShareOption = useCallback((option: ShareMenuOption) => {
-    if (onSelectShareOption) {
-      onSelectShareOption(option, items ?? [])
-    }
-  }, [items, onSelectShareOption])
+  const wrappedOnSelectShareOption = useCallback(
+    (option: ShareMenuOption) => {
+      if (onSelectShareOption) {
+        onSelectShareOption(option, items ?? [])
+      }
+    },
+    [items, onSelectShareOption],
+  )
 
   return (
     <SchedulePage

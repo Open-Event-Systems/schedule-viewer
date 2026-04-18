@@ -1,6 +1,4 @@
-import {
-  type DetailedScheduleItem,
-} from "@open-event-systems/schedule-lib"
+import { type DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import { Box, useProps } from "@mantine/core"
 import {
   Markdown,

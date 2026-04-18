@@ -94,7 +94,6 @@ export const VendorDetailsRoute = () => {
       }).href,
     )
 
-
   if (!vendor.data || vendor.data.length == 0) {
     throw notFound({ routeId: filterStateRoute.id })
   }

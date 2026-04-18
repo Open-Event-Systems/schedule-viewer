@@ -90,14 +90,11 @@ const addressSchema = z.looseObject({
 
 const locationAddressEntrySchema = z.codec(
   z.union([
-    z.tuple([
-      z.union([z.string(), z.array(z.string())]),
-      addressSchema,
-    ]),
+    z.tuple([z.union([z.string(), z.array(z.string())]), addressSchema]),
     z.looseObject({
       location: z.union([z.string(), z.array(z.string())]),
       address: addressSchema,
-    })
+    }),
   ]),
   z.custom<LocationAddressEntry>(),
   {
@@ -118,7 +115,7 @@ const locationAddressEntrySchema = z.codec(
       }
     },
     encode: ({ location, ...other }) => ({ location: [...location], ...other }),
-  }
+  },
 )
 
 const viewerConfigSchema = z.looseObject({

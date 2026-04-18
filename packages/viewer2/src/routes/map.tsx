@@ -8,7 +8,7 @@ import {
 } from "@open-event-systems/schedule-map"
 import { useViewerConfig } from "../config.js"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import {
   getItemDetailsProps,
   useItems,
@@ -120,107 +120,118 @@ export const MapRoute = () => {
   )
 
   return (
-    <MapViewer
-      className={classes.root}
-      homeURL={config.homeURL}
-      contentWidth={mapCfg.width}
-      contentHeight={mapCfg.height}
-      layers={mapCfg.layers}
-      locations={mapCfg.locations}
-      objects={mapCfg.objects}
-      currentLevelId={levelId}
-      activeLocationId={activeLocationId}
-      detailsLocationId={selectedLoc?.id}
-      zoomLocationId={zoomLocationId}
-      locationItemInfo={locationItemInfo}
-      flags={fullFlags}
-      isometric={isometric}
-      hiddenLayers={hiddenLayers}
-      nowDetails={
-        nowItem
-          ? renderItemDetailsFunc({ ...getItemDetailsProps(nowItem) })
-          : undefined
-      }
-      laterDetails={
-        laterItem
-          ? renderItemDetailsFunc({ ...getItemDetailsProps(laterItem) })
-          : undefined
-      }
-      onSetDetailsLocationId={(loc) => {
-        if (loc) {
+    <>
+      <MapViewer
+        className={classes.root}
+        homeURL={config.homeURL}
+        contentWidth={mapCfg.width}
+        contentHeight={mapCfg.height}
+        layers={mapCfg.layers}
+        locations={mapCfg.locations}
+        objects={mapCfg.objects}
+        currentLevelId={levelId}
+        activeLocationId={activeLocationId}
+        detailsLocationId={selectedLoc?.id}
+        zoomLocationId={zoomLocationId}
+        locationItemInfo={locationItemInfo}
+        flags={fullFlags}
+        isometric={isometric}
+        hiddenLayers={hiddenLayers}
+        nowDetails={
+          nowItem
+            ? renderItemDetailsFunc({ ...getItemDetailsProps(nowItem) })
+            : undefined
+        }
+        laterDetails={
+          laterItem
+            ? renderItemDetailsFunc({ ...getItemDetailsProps(laterItem) })
+            : undefined
+        }
+        onSetDetailsLocationId={(loc) => {
+          if (loc) {
+            navigate({
+              to: mapRoute.to,
+              search: (prev) => {
+                return {
+                  ...prev,
+                  loc,
+                  level: undefined,
+                  show: undefined,
+                }
+              },
+              state: {
+                mapModalBack: true,
+              },
+            })
+          } else {
+            if (router.history.location.state.mapModalBack) {
+              router.history.go(-1)
+            } else if (selectedLoc) {
+              navigate({
+                to: mapRoute.to,
+                search: (prev) => {
+                  return {
+                    ...prev,
+                    loc: undefined,
+                    show: undefined,
+                    level: selectedLoc.level,
+                  }
+                },
+              })
+            } else if (activeLocationId) {
+              navigate({
+                to: mapRoute.to,
+                search: (prev) => {
+                  return {
+                    ...prev,
+                    loc: undefined,
+                    show: undefined,
+                  }
+                },
+                replace: true,
+              })
+            }
+          }
+        }}
+        onSetLevelId={(id) => {
           navigate({
             to: mapRoute.to,
             search: (prev) => {
               return {
                 ...prev,
-                loc,
-                level: undefined,
+                level: id,
                 show: undefined,
               }
             },
-            state: {
-              mapModalBack: true,
-            },
+            replace: true,
           })
-        } else {
-          if (router.history.location.state.mapModalBack) {
-            router.history.go(-1)
-          } else if (selectedLoc) {
-            navigate({
-              to: mapRoute.to,
-              search: (prev) => {
-                return {
-                  ...prev,
-                  loc: undefined,
-                  show: undefined,
-                  level: selectedLoc.level,
-                }
-              },
-            })
-          } else if (activeLocationId) {
-            navigate({
-              to: mapRoute.to,
-              search: (prev) => {
-                return {
-                  ...prev,
-                  loc: undefined,
-                  show: undefined,
-                }
-              },
-              replace: true,
-            })
-          }
-        }
-      }}
-      onSetLevelId={(id) => {
-        navigate({
-          to: mapRoute.to,
-          search: (prev) => {
-            return {
-              ...prev,
-              level: id,
-              show: undefined,
-            }
-          },
-          replace: true,
-        })
-      }}
-      onSetHiddenLayers={(layers) => setHiddenLayers(new Set(layers))}
-      onSetIsometric={(iso) => {
-        navigate({
-          to: mapRoute.to,
-          search: (prev) => {
-            return {
-              ...prev,
-              iso: iso || undefined,
-            }
-          },
-          replace: true,
-        })
-      }}
-    />
+        }}
+        onSetHiddenLayers={(layers) => setHiddenLayers(new Set(layers))}
+        onSetIsometric={(iso) => {
+          navigate({
+            to: mapRoute.to,
+            search: (prev) => {
+              return {
+                ...prev,
+                iso: iso || undefined,
+              }
+            },
+            replace: true,
+          })
+        }}
+      />
+      <Suspense>
+        <LazyNotifications />
+      </Suspense>
+    </>
   )
 }
+
+const LazyNotifications = lazy(() =>
+  import("@mantine/notifications").then(({ Notifications }) => ({
+    default: Notifications,
+  })),
+)
 
 const useLocationIds = (mapCfg: MapConfig) => {
   const firstRenderRef = useRef(true)
