@@ -22,13 +22,13 @@ import {
 import { ScheduleContainer } from "./schedule.js"
 import { scheduleProvidersRoute } from "../../routes.js"
 import { notFound } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import type { PageConfig } from "../../types.js"
 
 export type SchedulePageContainerProps = {
   items?: Iterable<DetailedScheduleItem>
   pageConfig: PageConfig
-  onSelectShareOption?: (option: ShareMenuOption) => void
+  onSelectShareOption?: (option: ShareMenuOption, items: Iterable<DetailedScheduleItem>) => void
   sharedSelections?: Iterable<string>
 }
 
@@ -90,6 +90,12 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
 
   const relevantTags = useRelevantTags(config.tags, pageItems)
 
+  const wrappedOnSelectShareOption = useCallback((option: ShareMenuOption) => {
+    if (onSelectShareOption) {
+      onSelectShareOption(option, items ?? [])
+    }
+  }, [items, onSelectShareOption])
+
   return (
     <SchedulePage
       tags={relevantTags}
@@ -107,7 +113,7 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
       )}
       renderTagFilter={(props) => <TagFilterContainer {...props} />}
       renderShare={(props) => (
-        <ShareMenu {...props} onSelect={onSelectShareOption} />
+        <ShareMenu {...props} onSelect={wrappedOnSelectShareOption} />
       )}
       renderSchedule={() => (
         <ScheduleContainer

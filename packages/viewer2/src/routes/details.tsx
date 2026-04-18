@@ -28,6 +28,7 @@ import {
   itemQueryOptions,
   useScheduleAPI,
 } from "@open-event-systems/schedule-react"
+import { JSONLDEvent } from "../components/ld/ld.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -47,11 +48,27 @@ export const EventDetailsRoute = () => {
     },
   })
 
+  const router = useRouter()
+
+  const url =
+    router.origin +
+    router.history.createHref(
+      router.buildLocation({
+        to: ".",
+        params: true,
+      }).href,
+    )
+
   if (!event.data || event.data.length == 0) {
     throw notFound({ routeId: filterStateRoute.id })
   }
 
-  return <ItemDetails items={event.data} />
+  return (
+    <>
+      <JSONLDEvent event={event.data[0]!} url={url} />
+      <ItemDetails items={event.data} />
+    </>
+  )
 }
 
 export const VendorDetailsRoute = () => {
@@ -66,11 +83,28 @@ export const VendorDetailsRoute = () => {
     },
   })
 
+  const router = useRouter()
+
+  const url =
+    router.origin +
+    router.history.createHref(
+      router.buildLocation({
+        to: ".",
+        params: true,
+      }).href,
+    )
+
+
   if (!vendor.data || vendor.data.length == 0) {
     throw notFound({ routeId: filterStateRoute.id })
   }
 
-  return <ItemDetails items={vendor.data} />
+  return (
+    <>
+      <JSONLDEvent event={vendor.data[0]!} url={url} />
+      <ItemDetails items={vendor.data} />
+    </>
+  )
 }
 
 export const ItemDetails = ({

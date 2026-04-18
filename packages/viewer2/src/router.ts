@@ -107,7 +107,7 @@ export const makeRouter = (
         }
       }
 
-      return `?${params}`
+      return params.size > 0 ? `?${params}` : ""
     },
   })
 

@@ -32,7 +32,9 @@
     "date-fns": "^4.1.0"
   },
   "dependencies": {
+    "ical-generator": "^10.1.0",
     "ics": "^3.10.0",
+    "rrule": "^2.8.1",
     "wretch": "^3.0.7",
     "zod": "^4.3.6"
   }

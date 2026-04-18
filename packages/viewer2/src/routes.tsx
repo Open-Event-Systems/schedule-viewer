@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router"
 import type { RouterContext } from "./router.js"
 import { Loading } from "./components/loading/loading.js"
-import type { DetailedHTMLProps, LinkHTMLAttributes } from "react"
+import type { MetaHTMLAttributes } from "react"
 import { DedupedHeadContent } from "./components/head/deduped-head-content.js"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
@@ -40,15 +40,17 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
   head({ match }) {
     if (match.status == "notFound") {
       return {
-        meta: [{ title: "Not Found" }],
+        meta: [{ title: "Not Found" }, { name: "robots", content: "noindex" }],
       }
     } else if (match.status == "error") {
       return {
-        meta: [{ title: "Error" }],
+        meta: [{ title: "Error" }, { name: "robots", content: "noindex" }],
       }
     }
 
-    return {}
+    return {
+      meta: [{ property: "og:type", content: "article" }],
+    }
   },
 })
 
@@ -102,15 +104,27 @@ export const scheduleProvidersRoute = createRoute({
     ],
   },
   async beforeLoad({ context: { contextPromise } }) {
-    const { config } = await contextPromise
-    return {
-      pageTitle: config.title,
-    }
+    await contextPromise
   },
   component: lazyRouteComponent(
     () => import("./routes/providers.js"),
     "Providers",
   ),
+  head: ({
+    match: {
+      context: { config },
+    },
+  }) => {
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = []
+
+    if (config.title) {
+      metaAttrs.push({ property: "og:site_name", content: config.title })
+    }
+
+    return {
+      meta: metaAttrs,
+    }
+  },
 })
 
 export const scheduleLayoutRoute = createRoute({
@@ -136,7 +150,7 @@ export const filterStateRoute = createRoute({
   head({ match }) {
     if (match.status == "notFound") {
       return {
-        meta: [{ title: "Not Found" }],
+        meta: [{ title: "Not Found" }, { name: "robots", content: "noindex" }],
       }
     } else {
       return {}
@@ -218,25 +232,29 @@ export const pagesRoute = createRoute({
   },
   head: ({
     match: {
-      context: { config, pageConfig, defaultPageCanonicalHref },
+      context: { config, pageConfig },
     },
-    params: { pageId },
   }) => {
     const scheduleTitle = config.title
     const pageTitle = pageConfig.title || "Schedule"
-    const links: DetailedHTMLProps<
-      LinkHTMLAttributes<HTMLLinkElement>,
-      HTMLLinkElement
-    >[] = []
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = [
+      { title: `${pageTitle} - ${scheduleTitle}` },
+      { property: "og:title", content: pageTitle },
+    ]
 
-    // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && defaultPageCanonicalHref) {
-      links.push({ rel: "canonical", href: defaultPageCanonicalHref })
+    if (pageConfig.description) {
+      metaAttrs.push({
+        property: "og:description",
+        content: pageConfig.description,
+      })
+      metaAttrs.push({
+        name: "description",
+        content: pageConfig.description,
+      })
     }
 
     return {
-      meta: [{ title: `${pageTitle} - ${scheduleTitle}` }],
-      links,
+      meta: metaAttrs,
     }
   },
 })
@@ -326,25 +344,29 @@ export const sharedPagesRoute = createRoute({
   },
   head: ({
     match: {
-      context: { config, pageConfig, defaultPageCanonicalHref },
+      context: { config, pageConfig },
     },
-    params: { pageId },
   }) => {
     const scheduleTitle = config.title
     const pageTitle = pageConfig.title || "Schedule"
-    const links: DetailedHTMLProps<
-      LinkHTMLAttributes<HTMLLinkElement>,
-      HTMLLinkElement
-    >[] = []
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = [
+      { title: `Shared Schedule - ${pageTitle} - ${scheduleTitle}` },
+      { property: "og:title", content: `Shared Schedule - ${pageTitle}` },
+    ]
 
-    // add canonical rel if accessing the default page (browser routing only)
-    if (!pageId && defaultPageCanonicalHref) {
-      links.push({ rel: "canonical", href: defaultPageCanonicalHref })
+    if (pageConfig.description) {
+      metaAttrs.push({
+        property: "og:description",
+        content: pageConfig.description,
+      })
+      metaAttrs.push({
+        name: "description",
+        content: pageConfig.description,
+      })
     }
 
     return {
-      meta: [{ title: `Shared Schedule - ${pageTitle} - ${scheduleTitle}` }],
-      links,
+      meta: metaAttrs,
     }
   },
 })
@@ -432,18 +454,27 @@ export const eventDetailsRoute = createRoute({
   }) => {
     const eventTitle = loaderData?.event.title || "Event Details"
     const scheduleTitle = config.title
+
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = [
+      { title: `${eventTitle} - ${scheduleTitle}` },
+      { property: "og:title", content: eventTitle },
+    ]
+
+    if (loaderData?.event.description) {
+      metaAttrs.push({
+        name: "description",
+        content: loaderData.event.description,
+      })
+      metaAttrs.push({
+        name: "og:description",
+        content: loaderData.event.description,
+      })
+    }
+
+    // TODO: icon/image?
+
     return {
-      meta: [
-        { title: `${eventTitle} - ${scheduleTitle}` },
-        ...(loaderData?.event.description
-          ? [
-              {
-                name: "description",
-                content: loaderData?.event.description,
-              },
-            ]
-          : []),
-      ],
+      meta: metaAttrs,
     }
   },
 })
@@ -516,18 +547,27 @@ export const vendorDetailsRoute = createRoute({
   }) => {
     const vendorTitle = loaderData?.vendor.title || "Vendor Details"
     const scheduleTitle = config.title
+
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = [
+      { title: `${vendorTitle} - ${scheduleTitle}` },
+      { property: "og:title", content: vendorTitle },
+    ]
+
+    if (loaderData?.vendor.description) {
+      metaAttrs.push({
+        name: "description",
+        content: loaderData.vendor.description,
+      })
+      metaAttrs.push({
+        name: "og:description",
+        content: loaderData.vendor.description,
+      })
+    }
+
+    // TODO: icon/image?
+
     return {
-      meta: [
-        { title: `${vendorTitle} - ${scheduleTitle}` },
-        ...(loaderData?.vendor.description
-          ? [
-              {
-                name: "description",
-                content: loaderData?.vendor.description,
-              },
-            ]
-          : []),
-      ],
+      meta: metaAttrs,
     }
   },
 })
@@ -549,10 +589,20 @@ export const mapProvidersRoute = createRoute({
   head: ({ match }) => {
     if (match.status == "notFound") {
       return {
-        meta: [{ title: "Not Found" }],
+        meta: [{ title: "Not Found" }, { name: "robots", content: "noindex" }],
       }
-    } else {
-      return {}
+    }
+
+    const config = match.context.config
+
+    const metaAttrs: MetaHTMLAttributes<HTMLMetaElement>[] = []
+
+    if (config.title) {
+      metaAttrs.push({ property: "og:site_name", content: config.title })
+    }
+
+    return {
+      meta: metaAttrs,
     }
   },
 })
@@ -660,7 +710,18 @@ export const mapRoute = createRoute({
   }) => {
     const scheduleTitle = config.title
     return {
-      meta: [{ title: `Map - ${scheduleTitle}` }],
+      meta: [
+        { title: `Map - ${scheduleTitle}` },
+        { property: "og:title", content: "Map" },
+        {
+          name: "description",
+          content: "Explore the interactive map of the event",
+        },
+        {
+          property: "og:description",
+          content: "Explore the interactive map of the event",
+        },
+      ],
     }
   },
 })

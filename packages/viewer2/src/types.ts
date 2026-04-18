@@ -34,6 +34,20 @@ export type PageConfig = Readonly<{
   excludeTags?: readonly string[]
 }>
 
+export type Address = Readonly<{
+  address?: string
+  address2?: string
+  city?: string
+  state?: string
+  postal?: string
+  country?: string
+}>
+
+export type LocationAddressEntry = Readonly<{
+  location: readonly string[]
+  address: Address
+}>
+
 /**
  * Viewer config object.
  */
@@ -42,6 +56,7 @@ export type ViewerConfig = ScheduleConfig &
     homeURL?: string
     logoURL?: string
     pages: readonly PageConfig[]
+    locationAddresses: readonly LocationAddressEntry[]
     map?: MapConfig
   }>
 

@@ -8,6 +8,8 @@ import {
   optional,
   omitUndef,
   iterToArr,
+  isoDate,
+  toTimezone,
 } from "@open-event-systems/schedule-lib"
 import z from "zod"
 import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
@@ -63,6 +65,8 @@ const tagIndicatorSchema = z.codec(
 const configSchema = z.looseObject({
   id: z.string(),
   items: optional(z.array(z.union([z.string(), z.looseObject({})]))),
+  start: isoDate,
+  end: isoDate,
   title: optional(z.string()),
   description: optional(z.string()),
   dayChangeHour: optional(z.number()),
@@ -89,6 +93,8 @@ const getDefaultTZ = (): string => {
 export const DEFAULT_SCHEDULE_CONFIG = {
   id: "schedule",
   items: [],
+  start: new Date(0),
+  end: new Date(4102444800),
   title: "Schedule",
   timeZone: getDefaultTZ(),
   dayChangeHour: 6,
@@ -102,10 +108,18 @@ export const DEFAULT_SCHEDULE_CONFIG = {
  * Parse a {@link ScheduleConfig} object.
  */
 export const parseConfig = (configData: unknown): ScheduleConfig => {
-  const { bookmarks, selectionsService, ...parsed } =
+  const { bookmarks, selectionsService, start, end, timeZone, ...parsed } =
     configSchema.parse(configData)
+
+  const defaultTz = getDefaultTZ()
+  const tzStart = toTimezone(start, timeZone || defaultTz)
+  const tzEnd = toTimezone(end, timeZone || defaultTz)
+
   const config: ScheduleConfig = {
     ...DEFAULT_SCHEDULE_CONFIG,
+    start: tzStart,
+    end: tzEnd,
+    timeZone: defaultTz,
     icalPrefix: parsed.id,
     ...omitUndef(parsed),
     selectionsService: selectionsService ?? bookmarks,

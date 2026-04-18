@@ -13,6 +13,7 @@ import wretch from "wretch"
 import { createContext, use } from "react"
 import { parseMapConfig } from "@open-event-systems/schedule-map"
 import {
+  type LocationAddressEntry,
   type PageConfig,
   type ScheduleViewComponentType,
   type ViewConfig,
@@ -78,16 +79,60 @@ const pageConfigSchema = z.codec(
   },
 )
 
+const addressSchema = z.looseObject({
+  address: optional(z.string()),
+  address2: optional(z.string()),
+  city: optional(z.string()),
+  state: optional(z.string()),
+  postal: optional(z.string()),
+  country: optional(z.string()),
+})
+
+const locationAddressEntrySchema = z.codec(
+  z.union([
+    z.tuple([
+      z.union([z.string(), z.array(z.string())]),
+      addressSchema,
+    ]),
+    z.looseObject({
+      location: z.union([z.string(), z.array(z.string())]),
+      address: addressSchema,
+    })
+  ]),
+  z.custom<LocationAddressEntry>(),
+  {
+    decode: (v) => {
+      if (Array.isArray(v)) {
+        const [locs, addr] = v
+        const locsArr = Array.isArray(locs) ? locs : [locs]
+        return {
+          location: locsArr,
+          address: addr,
+        }
+      } else {
+        const locsArr = Array.isArray(v.location) ? v.location : [v.location]
+        return {
+          location: locsArr,
+          address: v.address,
+        }
+      }
+    },
+    encode: ({ location, ...other }) => ({ location: [...location], ...other }),
+  }
+)
+
 const viewerConfigSchema = z.looseObject({
   homeURL: optional(z.string()),
   logoURL: optional(z.string()),
   pages: optional(z.array(pageConfigSchema)),
   map: optional(z.looseObject({})),
+  locationAddresses: optional(z.array(locationAddressEntrySchema)),
 })
 
 export const DEFAULT_VIEWER_CONFIG = {
   ...DEFAULT_SCHEDULE_CONFIG,
   pages: [],
+  locationAddresses: [],
 } as const satisfies ViewerConfig
 
 export const loadConfig = async (url: string): Promise<ViewerConfig> => {
