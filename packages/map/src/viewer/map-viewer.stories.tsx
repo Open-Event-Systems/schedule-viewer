@@ -6,9 +6,10 @@ import {
 } from "./map-viewer.js"
 import { useCallback, useMemo, useReducer } from "react"
 
-import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
-import f2Svg from "../../../viewer/public/example-map-2f.svg"
-import logoSvg from "../../../viewer/public/example-icon.svg"
+import lobbySvg from "../../example-map-lobby.svg"
+import f2Svg from "../../example-map-2f.svg"
+import logoSvg from "../../example-icon.svg"
+
 import { parseMapConfig, type MapConfigInput } from "../config.js"
 
 const meta: Meta<typeof MapViewer> = {
