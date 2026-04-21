@@ -1,5 +1,5 @@
 import z from "zod"
-import type { MapConfig } from "./types.js"
+import { type MapConfig, type MapLocation } from "./types.js"
 import { omitUndef, optional } from "@open-event-systems/schedule-lib"
 
 const objectSchema = z.looseObject({
@@ -27,14 +27,32 @@ const flagToggleSchema = z.looseObject({
   title: z.string(),
 })
 
-const locationSchema = z.looseObject({
-  id: z.string(),
-  level: z.string(),
-  title: optional(z.string()),
-  description: optional(z.string()),
-  aliases: optional(z.array(z.string())),
-  zoomScale: optional(z.number()),
-})
+const locationSchema = z.codec(
+  z.looseObject({
+    id: z.string(),
+    level: z.string(),
+    title: optional(z.string()),
+    description: optional(z.string()),
+    aliases: optional(z.array(z.string())),
+    zoomScale: optional(z.number()),
+    requireFlags: optional(z.array(z.string())),
+    excludeFlags: optional(z.array(z.string())),
+  }),
+  z.custom<MapLocation>(),
+  {
+    decode: ({ requireFlags, excludeFlags, ...v }) => ({
+      ...v,
+      requireFlags: requireFlags ?? [],
+      excludeFlags: excludeFlags ?? [],
+    }),
+    encode: ({ requireFlags, aliases, excludeFlags, ...v }) => ({
+      ...v,
+      aliases: [...(aliases ?? [])],
+      requireFlags: [...requireFlags],
+      excludeFlags: [...excludeFlags],
+    }),
+  },
+)
 
 const configSchema = z.looseObject({
   objects: z.array(levelOrObjectSchema),

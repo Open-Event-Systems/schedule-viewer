@@ -63,37 +63,6 @@ export const MapRoute = () => {
     [items],
   )
 
-  const initialCurrentMapFlags = useMemo(
-    () =>
-      items.filter((t) => t.type == "map-flag").filter((t) => contains(t, now)),
-    [items, now],
-  )
-
-  // Flags
-
-  const initialFullFlags = useMemo(() => {
-    return [...(searchFlags ?? []), ...initialCurrentMapFlags.map((f) => f.id)]
-  }, [searchFlags, initialCurrentMapFlags])
-
-  const [enabledFlags, setEnabledFlags] = useState<ReadonlySet<string>>(
-    () => new Set(initialFullFlags),
-  )
-
-  const onSetFlag = useCallback(
-    (flag: string, enable: boolean) => {
-      setEnabledFlags((cur) => {
-        const newSet = new Set(cur)
-        if (enable) {
-          newSet.add(flag)
-        } else {
-          newSet.delete(flag)
-        }
-        return newSet
-      })
-    },
-    [setEnabledFlags],
-  )
-
   // Layer visibility
   const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
     () => new Set<string>(),
@@ -131,8 +100,43 @@ export const MapRoute = () => {
     [nowItems, locMatchFunc],
   )
 
-  const { selectedLoc, levelId, activeLocationId, zoomLocationId } =
-    useLocationIds(mapCfg)
+  const { selectedLoc, level, activeLoc, zoomLocation } = useLocations(mapCfg)
+
+  // Flags
+
+  const initialCurrentMapFlags = useMemo(
+    () =>
+      items.filter((t) => t.type == "map-flag").filter((t) => contains(t, now)),
+    [items, now],
+  )
+
+  const initialFullFlags = useMemo(() => {
+    return [...(searchFlags ?? []), ...initialCurrentMapFlags.map((f) => f.id)]
+  }, [searchFlags, initialCurrentMapFlags])
+
+  const [enabledFlags, setEnabledFlags] = useState<ReadonlySet<string>>(() => {
+    const set = new Set(initialFullFlags)
+
+    zoomLocation?.requireFlags.forEach((l) => set.add(l))
+    zoomLocation?.excludeFlags.forEach((l) => set.delete(l))
+
+    return set
+  })
+
+  const onSetFlag = useCallback(
+    (flag: string, enable: boolean) => {
+      setEnabledFlags((cur) => {
+        const newSet = new Set(cur)
+        if (enable) {
+          newSet.add(flag)
+        } else {
+          newSet.delete(flag)
+        }
+        return newSet
+      })
+    },
+    [setEnabledFlags],
+  )
 
   const [nowItem, laterItem] = useMemo(() => {
     return selectedLoc
@@ -172,10 +176,10 @@ export const MapRoute = () => {
         layers={mapCfg.layers}
         locations={mapCfg.locations}
         objects={mapCfg.objects}
-        currentLevelId={levelId}
-        activeLocationId={activeLocationId}
+        currentLevelId={level?.id || ""}
+        activeLocationId={activeLoc?.id}
         detailsLocationId={selectedLoc?.id}
-        zoomLocationId={zoomLocationId}
+        zoomLocationId={zoomLocation?.id}
         locationItemInfo={locationItemInfo}
         flags={enabledFlags}
         flagToggles={mapCfg.flagToggles}
@@ -222,7 +226,7 @@ export const MapRoute = () => {
                   }
                 },
               })
-            } else if (activeLocationId) {
+            } else if (activeLoc) {
               navigate({
                 to: mapRoute.to,
                 search: (prev) => {
@@ -278,7 +282,7 @@ const LazyNotifications = lazy(() =>
   })),
 )
 
-const useLocationIds = (mapCfg: MapConfig) => {
+const useLocations = (mapCfg: MapConfig) => {
   const firstRenderRef = useRef(true)
 
   useEffect(() => {
@@ -313,24 +317,33 @@ const useLocationIds = (mapCfg: MapConfig) => {
 
     const levelLoc = selectedLoc ?? showLoc
 
-    let levelId
+    const defaultLevel = mapCfg.objects
+      .filter(isMapLevel)
+      .find((o) => o.id == mapCfg.defaultLevel)
+
+    let level
 
     if (levelLoc) {
-      levelId = levelLoc.level
+      level =
+        mapCfg.objects.filter(isMapLevel).find((o) => o.id == levelLoc.level) ??
+        defaultLevel
     } else if (searchLevelId) {
-      const level = mapCfg.objects
-        .filter(isMapLevel)
-        .find((o) => o.id == searchLevelId)
-      levelId = level?.id ?? mapCfg.defaultLevel
+      level =
+        mapCfg.objects.filter(isMapLevel).find((o) => o.id == searchLevelId) ??
+        defaultLevel
     } else {
-      levelId = mapCfg.defaultLevel
+      level = defaultLevel
     }
 
     return {
       selectedLoc,
-      activeLocationId,
-      zoomLocationId,
-      levelId,
+      activeLoc: activeLocationId
+        ? mapCfg.locations.find((loc) => loc.id == activeLocationId)
+        : undefined,
+      zoomLocation: zoomLocationId
+        ? mapCfg.locations.find((loc) => loc.id == zoomLocationId)
+        : undefined,
+      level,
     }
   }, [mapCfg.locations, mapCfg.layers, searchLocId, searchLevelId, isometric])
 }

@@ -28,6 +28,8 @@ export type MapLocation = Readonly<{
   description?: string
   aliases?: readonly string[]
   zoomScale?: number
+  requireFlags: readonly string[]
+  excludeFlags: readonly string[]
 }>
 
 export type MapConfig = Readonly<{
