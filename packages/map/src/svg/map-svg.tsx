@@ -13,6 +13,7 @@ import {
 import { SVG, type SVGData } from "./svg.js"
 import { mapSVGClassNames } from "./classes.js"
 import { useFlagTransitions } from "./hooks/transition.js"
+import { useMapFlagToggle } from "./hooks/flag.js"
 
 export type MapSVGProps = {
   svgData: SVGData
@@ -22,6 +23,7 @@ export type MapSVGProps = {
   locationInfo?: Iterable<
     Readonly<{ id: string; title?: string; icon?: string }>
   >
+  onToggleFlag?: (flag: string) => void
   onClickArea?: (id: string | undefined) => void
   ref?: Ref<SVGSVGElement>
 } & Omit<ComponentPropsWithoutRef<"svg">, "children">
@@ -35,6 +37,7 @@ export const MapSVG = memo((props: MapSVGProps) => {
     flags,
     activeLocation,
     locationInfo,
+    onToggleFlag,
     onClickArea,
     ...other
   } = useProps("MapSVG", {}, props)
@@ -81,6 +84,8 @@ export const MapSVG = memo((props: MapSVGProps) => {
   }, [locationInfo, svgEl])
 
   useFlagTransitions(svgEl, flags)
+
+  useMapFlagToggle(svgEl, onToggleFlag ?? (() => {}))
 
   const clickHandler = useCallback(
     (e: MouseEvent<SVGElement>) => {

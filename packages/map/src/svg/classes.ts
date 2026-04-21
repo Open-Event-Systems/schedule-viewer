@@ -15,6 +15,8 @@ export const mapSVGClassNames = {
   flagTransitionForward: "Map-flag-transition-forward",
   flagTransitionBackward: "Map-flag-transition-backward",
   flagTransitionFinished: "Map-flag-transition-finished",
+  flagToggle: "Map-flag-toggle",
+  flagToggleId: (id: string) => `Map-flag-toggle-id-${id}`,
   foreignObjectText: "Map-foreignObjectText",
   isometric: "Map-isometric",
   isometricTransform: "Map-isometric-transform",

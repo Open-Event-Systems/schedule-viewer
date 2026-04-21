@@ -47,6 +47,7 @@ import {
 
 import classes from "./map-viewer.module.scss"
 import "./map.scss"
+import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export type MapViewerLocationItemInfo = Readonly<{
   id: string
@@ -147,6 +148,17 @@ const _MapViewer = memo((props: MapViewerProps) => {
     return [...objects].filter(isMapLevel)
   }, [objects])
 
+  const toggleFlag = useCallback(
+    (flag: string) => {
+      if (iterToArr(flags).includes(flag)) {
+        onSetFlag && onSetFlag(flag, false)
+      } else {
+        onSetFlag && onSetFlag(flag, true)
+      }
+    },
+    [flags, onSetFlag],
+  )
+
   const objectEls = useMemo(() => {
     return [...objects].map((obj, i) => {
       const objSvg = svgData.get(obj.url)
@@ -168,6 +180,7 @@ const _MapViewer = memo((props: MapViewerProps) => {
             flags={flags}
             locationInfo={locationItemInfo}
             activeLocationId={activeLocationId}
+            onToggleFlag={toggleFlag}
             onClickArea={(id) => {
               onSetActiveLocationId && onSetActiveLocationId(id)
               onSetDetailsLocationId && onSetDetailsLocationId(id)
@@ -434,6 +447,7 @@ export type MapViewerObjectProps = {
     Readonly<{ id: string; title?: string; icon?: string }>
   >
   onClickArea?: (id: string | undefined) => void
+  onToggleFlag?: (flag: string) => void
 } & { className?: string }
 
 const MapViewerObject = (props: MapViewerObjectProps) => {
@@ -447,6 +461,7 @@ const MapViewerObject = (props: MapViewerObjectProps) => {
     activeLocationId,
     locationInfo,
     onClickArea,
+    onToggleFlag,
   } = useProps("MapViewerObject", {}, props)
 
   const [hasIsoCls, hasTransformCls, hasFinishedCls, onTransitionEnd] =
@@ -478,6 +493,7 @@ const MapViewerObject = (props: MapViewerObjectProps) => {
         activeLocation={activeLocationId}
         locationInfo={locationInfo}
         onClickArea={onClickArea}
+        onToggleFlag={onToggleFlag}
       />
     </Box>
   )
