@@ -2,16 +2,17 @@ import { useProps } from "@mantine/core"
 import clsx from "clsx"
 import {
   type ComponentPropsWithoutRef,
-  forwardRef,
   memo,
   type MouseEvent,
+  type Ref,
   useCallback,
   useLayoutEffect,
   useMemo,
-  useRef,
+  useState,
 } from "react"
-import type { SVGData } from "./svg.js"
+import { SVG, type SVGData } from "./svg.js"
 import { mapSVGClassNames } from "./classes.js"
+import { useFlagTransitions } from "./hooks/transition.js"
 
 export type MapSVGProps = {
   svgData: SVGData
@@ -22,120 +23,118 @@ export type MapSVGProps = {
     Readonly<{ id: string; title?: string; icon?: string }>
   >
   onClickArea?: (id: string | undefined) => void
+  ref?: Ref<SVGSVGElement>
 } & Omit<ComponentPropsWithoutRef<"svg">, "children">
 
-export const MapSVG = memo(
-  forwardRef<SVGSVGElement, MapSVGProps>((props, ref) => {
-    const {
-      className,
-      svgData,
-      hiddenLayers,
-      flags,
-      activeLocation,
-      locationInfo,
-      onClickArea,
-      ...other
-    } = useProps("MapSVG", {}, props)
+export const MapSVG = memo((props: MapSVGProps) => {
+  const {
+    ref,
+    className,
+    svgData,
+    hiddenLayers,
+    flags,
+    activeLocation,
+    locationInfo,
+    onClickArea,
+    ...other
+  } = useProps("MapSVG", {}, props)
 
-    const svgRef = useRef<SVGSVGElement | null>(null)
-    const setRef = useCallback(
-      (el: SVGSVGElement | null) => {
-        svgRef.current = el
+  const [svgEl, setSVGEl] = useState<SVGSVGElement | null>(null)
+  const setRef = useCallback(
+    (el: SVGSVGElement | null) => {
+      setSVGEl(el)
 
-        if (el) {
-          el.innerHTML = svgData.innerHTML
-          initSVG(el)
-        }
-
-        if (typeof ref == "function") {
-          ref(el)
-        } else if (ref) {
-          ref.current = el
-        }
-      },
-      [ref],
-    )
-
-    useLayoutEffect(() => {
-      if (svgRef.current) {
-        updateActiveArea(svgRef.current, activeLocation)
+      if (el) {
+        initSVG(el)
       }
-    }, [activeLocation])
 
-    useLayoutEffect(() => {
-      if (svgRef.current) {
-        updateLayers(svgRef.current, hiddenLayers ?? [])
+      if (typeof ref == "function") {
+        ref(el)
+      } else if (ref) {
+        ref.current = el
       }
-    }, [hiddenLayers])
+    },
+    [setSVGEl, ref],
+  )
 
-    const flagClassNames = useMemo(() => {
-      return [...(flags ?? [])].map((f) => mapSVGClassNames.flagId(f))
-    }, [flags])
+  useLayoutEffect(() => {
+    if (svgEl) {
+      updateActiveArea(svgEl, activeLocation)
+    }
+  }, [activeLocation, svgEl])
 
-    useLayoutEffect(() => {
-      if (svgRef.current) {
-        updateLocationText(svgRef.current, locationInfo ?? [])
-        updateLocationIcon(svgRef.current, locationInfo ?? [])
-      }
-    }, [locationInfo])
+  useLayoutEffect(() => {
+    if (svgEl) {
+      updateLayers(svgEl, hiddenLayers ?? [])
+    }
+  }, [hiddenLayers, svgEl])
 
-    const clickHandler = useCallback(
-      (e: MouseEvent<SVGElement>) => {
-        const base = mapSVGClassNames.clickId("")
-        if (onClickArea) {
+  const flagClassNames = useMemo(() => {
+    return [...(flags ?? [])].map((f) => mapSVGClassNames.flagId(f))
+  }, [flags])
+
+  useLayoutEffect(() => {
+    if (svgEl) {
+      updateLocationText(svgEl, locationInfo ?? [])
+      updateLocationIcon(svgEl, locationInfo ?? [])
+    }
+  }, [locationInfo, svgEl])
+
+  useFlagTransitions(svgEl, flags)
+
+  const clickHandler = useCallback(
+    (e: MouseEvent<SVGElement>) => {
+      const base = mapSVGClassNames.clickId("")
+      if (onClickArea) {
+        if (e.target instanceof SVGElement || e.target instanceof HTMLElement) {
+          let targetEl = e.target
+
           if (
-            e.target instanceof SVGElement ||
-            e.target instanceof HTMLElement
+            targetEl.classList.contains(mapSVGClassNames.foreignObjectText) &&
+            targetEl.parentElement
           ) {
-            let targetEl = e.target
+            targetEl = targetEl.parentElement
+          } else if (
+            targetEl.parentElement &&
+            targetEl.parentElement.classList.contains(
+              mapSVGClassNames.foreignObjectText,
+            ) &&
+            targetEl.parentElement.parentElement
+          ) {
+            targetEl = targetEl.parentElement.parentElement
+          }
 
-            if (
-              targetEl.classList.contains(mapSVGClassNames.foreignObjectText) &&
-              targetEl.parentElement
-            ) {
-              targetEl = targetEl.parentElement
-            } else if (
-              targetEl.parentElement &&
-              targetEl.parentElement.classList.contains(
-                mapSVGClassNames.foreignObjectText,
-              ) &&
-              targetEl.parentElement.parentElement
-            ) {
-              targetEl = targetEl.parentElement.parentElement
-            }
-
-            const clsIds = [...targetEl.classList]
-              .filter((cls) => cls.startsWith(base))
-              .map((cls) => cls.substring(base.length))
-            if (clsIds[0]) {
-              onClickArea(clsIds[0])
-            } else {
-              onClickArea(undefined)
-            }
+          const clsIds = [...targetEl.classList]
+            .filter((cls) => cls.startsWith(base))
+            .map((cls) => cls.substring(base.length))
+          if (clsIds[0]) {
+            onClickArea(clsIds[0])
           } else {
             onClickArea(undefined)
           }
+        } else {
+          onClickArea(undefined)
         }
-      },
-      [onClickArea],
-    )
+      }
+    },
+    [onClickArea],
+  )
 
-    return (
-      <svg
-        ref={setRef}
-        {...svgData.props}
-        className={clsx(
-          "MapSVG-root",
-          svgData?.props.className,
-          flagClassNames,
-          className,
-        )}
-        {...other}
-        onClick={clickHandler}
-      />
-    )
-  }),
-)
+  return (
+    <SVG
+      ref={setRef}
+      svgData={svgData}
+      className={clsx(
+        "MapSVG-root",
+        svgData?.props.className,
+        flagClassNames,
+        className,
+      )}
+      {...other}
+      onClick={clickHandler}
+    />
+  )
+})
 
 MapSVG.displayName = "MapSVG"
 
@@ -143,6 +142,7 @@ const initSVG = (svg: SVGSVGElement) => {
   for (const el of svg.getElementsByClassName(mapSVGClassNames.layer)) {
     removeInlineDisplay(el)
   }
+
   for (const el of svg.getElementsByClassName(mapSVGClassNames.locationTitle)) {
     if (el instanceof SVGRectElement) {
       replaceWithForeignTextObject(el)

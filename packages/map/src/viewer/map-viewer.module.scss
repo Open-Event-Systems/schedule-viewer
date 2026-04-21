@@ -3,7 +3,7 @@
   grid-template:
     "zoom-menu . level-menu" auto
     ". . ." 1fr
-    "iso-menu . layer-menu" auto
+    "iso-menu . toggle-menu" auto
     / auto 1fr auto;
 
   position: relative;
@@ -32,8 +32,8 @@
   margin: 4px;
 }
 
-.layerMenu {
-  grid-area: layer-menu;
+.toggleMenu {
+  grid-area: toggle-menu;
   justify-self: end;
   align-self: end;
   margin: 4px;

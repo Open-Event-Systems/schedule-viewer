@@ -22,6 +22,11 @@ const layerSchema = z.looseObject({
   title: z.string(),
 })
 
+const flagToggleSchema = z.looseObject({
+  id: z.string(),
+  title: z.string(),
+})
+
 const locationSchema = z.looseObject({
   id: z.string(),
   level: z.string(),
@@ -36,6 +41,7 @@ const configSchema = z.looseObject({
   defaultLevel: z.string(),
   layers: optional(z.array(layerSchema)),
   locations: optional(z.array(locationSchema)),
+  flagToggles: optional(z.array(flagToggleSchema)),
   width: z.number(),
   height: z.number(),
   homeURL: optional(z.string()),
@@ -51,6 +57,7 @@ export const parseMapConfig = (data: unknown): MapConfig => {
   return {
     layers: [],
     locations: [],
+    flagToggles: [],
     ...omitUndef(parsed),
   }
 }

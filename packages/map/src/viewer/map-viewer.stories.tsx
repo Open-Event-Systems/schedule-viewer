@@ -26,11 +26,20 @@ export const Default: StoryObj<typeof MapViewer> = {
     const reducer = useCallback(
       (
         cur: MapViewerProps,
-        action: Partial<MapViewerProps>,
+        action:
+          | Partial<MapViewerProps>
+          | ((cur: MapViewerProps) => Partial<MapViewerProps>),
       ): MapViewerProps => {
-        return {
-          ...cur,
-          ...action,
+        if (typeof action == "function") {
+          return {
+            ...cur,
+            ...action(cur),
+          }
+        } else {
+          return {
+            ...cur,
+            ...action,
+          }
         }
       },
       [],
@@ -49,6 +58,7 @@ export const Default: StoryObj<typeof MapViewer> = {
         },
       ],
       locations: mapCfg.locations,
+      flagToggles: mapCfg.flagToggles,
     })
 
     const callbacks = useMemo<MapViewerCallbacks>(() => {
@@ -56,8 +66,33 @@ export const Default: StoryObj<typeof MapViewer> = {
         onSetLevelId(id) {
           dispatch({ currentLevelId: id })
         },
-        onSetHiddenLayers(layers) {
-          dispatch({ hiddenLayers: [...layers] })
+        onSetLayerVisible(layer, visible) {
+          dispatch((cur) => {
+            const newLayers = new Set(cur.hiddenLayers)
+            if (visible) {
+              newLayers.delete(layer)
+            } else {
+              newLayers.add(layer)
+            }
+            return {
+              ...cur,
+              hiddenLayers: [...newLayers],
+            }
+          })
+        },
+        onSetFlag(flag, enabled) {
+          dispatch((cur) => {
+            const newFlags = new Set(cur.flags)
+            if (enabled) {
+              newFlags.add(flag)
+            } else {
+              newFlags.delete(flag)
+            }
+            return {
+              ...cur,
+              flags: [...newFlags],
+            }
+          })
         },
         onSetIsometric(isometric) {
           dispatch({ isometric })
@@ -83,11 +118,13 @@ export const Default: StoryObj<typeof MapViewer> = {
         locations={state.locations}
         locationItemInfo={state.locationItemInfo}
         flags={state.flags}
+        flagToggles={mapCfg.flagToggles}
         activeLocationId={state.activeLocationId}
         detailsLocationId={state.detailsLocationId}
         zoomLocationId={state.zoomLocationId}
         onSetLevelId={callbacks.onSetLevelId}
-        onSetHiddenLayers={callbacks.onSetHiddenLayers}
+        onSetLayerVisible={callbacks.onSetLayerVisible}
+        onSetFlag={callbacks.onSetFlag}
         onSetActiveLocationId={callbacks.onSetActiveLocationId}
         onSetIsometric={callbacks.onSetIsometric}
         onSetDetailsLocationId={callbacks.onSetDetailsLocationId}
