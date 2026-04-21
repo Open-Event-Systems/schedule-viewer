@@ -8,7 +8,15 @@ import {
 } from "@open-event-systems/schedule-map"
 import { useViewerConfig } from "../config.js"
 
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import {
   getItemDetailsProps,
   useItems,
@@ -41,10 +49,6 @@ export const MapRoute = () => {
     throw new Error("Map not configured")
   }
 
-  const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
-    () => new Set<string>(),
-  )
-
   const router = useRouter()
   const context = mapRoute.useRouteContext()
   const navigate = useNavigate()
@@ -59,7 +63,7 @@ export const MapRoute = () => {
     [items],
   )
 
-  const currentMapFlags = useMemo(
+  const initialCurrentMapFlags = useMemo(
     () =>
       items.filter((t) => t.type == "map-flag").filter((t) => contains(t, now)),
     [items, now],
@@ -67,9 +71,48 @@ export const MapRoute = () => {
 
   // Flags
 
-  const fullFlags = useMemo(() => {
-    return [...(searchFlags ?? []), ...currentMapFlags.map((f) => f.id)]
-  }, [searchFlags, currentMapFlags])
+  const initialFullFlags = useMemo(() => {
+    return [...(searchFlags ?? []), ...initialCurrentMapFlags.map((f) => f.id)]
+  }, [searchFlags, initialCurrentMapFlags])
+
+  const [enabledFlags, setEnabledFlags] = useState<ReadonlySet<string>>(
+    () => new Set(initialFullFlags),
+  )
+
+  const onSetFlag = useCallback(
+    (flag: string, enable: boolean) => {
+      setEnabledFlags((cur) => {
+        const newSet = new Set(cur)
+        if (enable) {
+          newSet.add(flag)
+        } else {
+          newSet.delete(flag)
+        }
+        return newSet
+      })
+    },
+    [setEnabledFlags],
+  )
+
+  // Layer visibility
+  const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<string>>(
+    () => new Set<string>(),
+  )
+
+  const setLayerVisible = useCallback(
+    (layer: string, visible: boolean) => {
+      setHiddenLayers((cur) => {
+        const newSet = new Set(cur)
+        if (visible) {
+          newSet.delete(layer)
+        } else {
+          newSet.add(layer)
+        }
+        return newSet
+      })
+    },
+    [setHiddenLayers],
+  )
 
   // Now/later items
 
@@ -134,7 +177,8 @@ export const MapRoute = () => {
         detailsLocationId={selectedLoc?.id}
         zoomLocationId={zoomLocationId}
         locationItemInfo={locationItemInfo}
-        flags={fullFlags}
+        flags={enabledFlags}
+        flagToggles={mapCfg.flagToggles}
         isometric={isometric}
         hiddenLayers={hiddenLayers}
         nowDetails={
@@ -206,7 +250,8 @@ export const MapRoute = () => {
             replace: true,
           })
         }}
-        onSetHiddenLayers={(layers) => setHiddenLayers(new Set(layers))}
+        onSetFlag={onSetFlag}
+        onSetLayerVisible={setLayerVisible}
         onSetIsometric={(iso) => {
           navigate({
             to: mapRoute.to,
