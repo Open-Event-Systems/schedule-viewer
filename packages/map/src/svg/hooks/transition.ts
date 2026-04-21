@@ -10,6 +10,7 @@ export const makeTransitionManager = (
 ): [(newState: boolean) => void, () => void] => {
   let state = initialState
   let transitionState: TransitionState = initialState ? "on" : "off"
+  let timeout: number | null = null
 
   const setState = (newState: boolean) => {
     if (newState == state) {
@@ -20,11 +21,18 @@ export const makeTransitionManager = (
 
     if (newState) {
       // 1 30fps frame delay
-      window.setTimeout(() => {
+      if (timeout != null) {
+        window.clearTimeout(timeout)
+      }
+      timeout = window.setTimeout(() => {
         transitionState = "forward"
         set("forward")
       }, 34)
     } else {
+      if (timeout != null) {
+        window.clearTimeout(timeout)
+        timeout = null
+      }
       transitionState = "backward"
       set("backward")
     }
@@ -40,6 +48,8 @@ export const makeTransitionManager = (
     }
   }
 
+  set(transitionState)
+
   return [setState, onTransitionEnd]
 }
 
@@ -54,10 +64,16 @@ export const makeFlagTransitionManager = (
       el.classList.remove(mapSVGClassNames.flagTransitionFinished)
     }
 
-    if (transitionState == "forward" || transitionState == "on") {
-      el.classList.add(mapSVGClassNames.flagTransform)
+    if (transitionState == "forward") {
+      el.classList.add(mapSVGClassNames.flagTransitionForward)
     } else {
-      el.classList.remove(mapSVGClassNames.flagTransform)
+      el.classList.remove(mapSVGClassNames.flagTransitionForward)
+    }
+
+    if (transitionState == "backward") {
+      el.classList.add(mapSVGClassNames.flagTransitionBackward)
+    } else {
+      el.classList.remove(mapSVGClassNames.flagTransitionBackward)
     }
   }
 
@@ -66,7 +82,7 @@ export const makeFlagTransitionManager = (
     initialState,
   )
 
-  const handleTransitionEnd = (e: TransitionEvent) => {
+  const handleTransitionEnd = (e: TransitionEvent | AnimationEvent) => {
     if (e.currentTarget == e.target) {
       onTransitionEnd()
     }
@@ -74,8 +90,10 @@ export const makeFlagTransitionManager = (
 
   if (el instanceof HTMLElement) {
     el.addEventListener("transitionend", handleTransitionEnd)
+    el.addEventListener("animationend", handleTransitionEnd)
   } else if (el instanceof SVGElement) {
     el.addEventListener("transitionend", handleTransitionEnd)
+    el.addEventListener("animationend", handleTransitionEnd)
   }
 
   return [
@@ -83,8 +101,10 @@ export const makeFlagTransitionManager = (
     () => {
       if (el instanceof HTMLElement) {
         el.removeEventListener("transitionend", handleTransitionEnd)
+        el.removeEventListener("animationend", handleTransitionEnd)
       } else if (el instanceof SVGElement) {
         el.removeEventListener("transitionend", handleTransitionEnd)
+        el.removeEventListener("animationend", handleTransitionEnd)
       }
     },
   ]

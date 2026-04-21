@@ -121,9 +121,9 @@ export class FlagTransitionManager {
     }
 
     if (curTransState == "forward" || curTransState == "backward") {
-      this.el.classList.add(mapSVGClassNames.flagTransform)
+      this.el.classList.add(mapSVGClassNames.flagTransitionForward)
     } else {
-      this.el.classList.remove(mapSVGClassNames.flagTransform)
+      this.el.classList.remove(mapSVGClassNames.flagTransitionForward)
     }
   }
 
