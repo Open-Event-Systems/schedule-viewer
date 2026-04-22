@@ -71,9 +71,9 @@ export type MapViewerSettings = {
   zoomFuncRef?: Ref<ZoomFunc>
   hiddenLayers?: Iterable<string>
   flags?: Iterable<string>
-  activeLocationId?: string
-  zoomLocationId?: string
-  detailsLocationId?: string
+  activeLocationId?: string | null
+  zoomLocationId?: string | null
+  detailsLocationId?: string | null
   nowDetails?: ReactNode
   laterDetails?: ReactNode
   locationItemInfo?: Iterable<MapViewerLocationItemInfo>
@@ -84,8 +84,8 @@ export type MapViewerCallbacks = {
   onSetIsometric?: (isometric: boolean) => void
   onSetLayerVisible?: (layer: string, visible: boolean) => void
   onSetFlag?: (flag: string, enabled: boolean) => void
-  onSetActiveLocationId?: (id: string | undefined) => void
-  onSetDetailsLocationId?: (id: string | undefined) => void
+  onSetActiveLocationId?: (id: string | null) => void
+  onSetDetailsLocationId?: (id: string | null) => void
 }
 
 export type MapViewerProps = MapViewerConfig &
@@ -176,7 +176,7 @@ const _MapViewer = memo((props: MapViewerProps) => {
             active={active}
             isometric={isometric && !obj.noIsometricTransform}
             svgData={objSvg}
-            hiddenLayers={hiddenLayers}
+            hiddenLayerIds={hiddenLayers}
             flags={flags}
             locationInfo={locationItemInfo}
             activeLocationId={activeLocationId}
@@ -194,7 +194,7 @@ const _MapViewer = memo((props: MapViewerProps) => {
             type={obj.type}
             isometric={isometric && !obj.noIsometricTransform}
             svgData={objSvg}
-            hiddenLayers={hiddenLayers}
+            hiddenLayerIds={hiddenLayers}
             flags={flags}
             locationInfo={locationItemInfo}
             activeLocationId={activeLocationId}
@@ -239,8 +239,11 @@ const _MapViewer = memo((props: MapViewerProps) => {
       const locCls = mapSVGClassNames.areaId(zoomLocationId)
       const els = rootRef.current.getElementsByClassName(locCls)
       for (const el of els) {
-        zoomFunc(el as HTMLElement, zoomAmt)
-        break
+        const styles = window.getComputedStyle(el)
+        if (styles.display != "none") {
+          zoomFunc(el as HTMLElement, zoomAmt)
+          break
+        }
       }
     }
   }, [zoomLocationId, locations, zoomFunc])
@@ -292,9 +295,7 @@ const _MapViewer = memo((props: MapViewerProps) => {
       />
       <MapViewer.DetailsDrawer
         opened={!!locationObj}
-        onClose={() =>
-          onSetDetailsLocationId && onSetDetailsLocationId(undefined)
-        }
+        onClose={() => onSetDetailsLocationId && onSetDetailsLocationId(null)}
         MapDetailsProps={
           locationObj
             ? {
@@ -317,7 +318,7 @@ export type MapViewerRootProps = {
   children?: ReactNode
 }
 
-const MapViewerRoot = forwardRef<HTMLDivElement, MapViewerRootProps>(
+export const MapViewerRoot = forwardRef<HTMLDivElement, MapViewerRootProps>(
   (props, ref) => {
     const { className, children } = useProps("MapViewerRoot", {}, props)
 
@@ -336,7 +337,7 @@ MapViewerRoot.displayName = "MapViewerRoot"
 
 export type MapViewerZoomMenuProps = ZoomMenuProps
 
-const MapViewerZoomMenu = (props: MapViewerZoomMenuProps) => {
+export const MapViewerZoomMenu = (props: MapViewerZoomMenuProps) => {
   const { ...other } = useProps("MapViewerZoomMenu", {}, props)
 
   return (
@@ -349,7 +350,7 @@ const MapViewerZoomMenu = (props: MapViewerZoomMenuProps) => {
 
 export type MapViewerLevelMenuProps = LevelMenuProps
 
-const MapViewerLevelMenu = (props: MapViewerLevelMenuProps) => {
+export const MapViewerLevelMenu = (props: MapViewerLevelMenuProps) => {
   const { ...other } = useProps("MapViewerLevelMenu", {}, props)
 
   return (
@@ -365,7 +366,7 @@ export type MapViewerIsoMenuProps = {
   onSetIsometric?: (isometric: boolean) => void
 }
 
-const MapViewerIsoMenu = (props: MapViewerIsoMenuProps) => {
+export const MapViewerIsoMenu = (props: MapViewerIsoMenuProps) => {
   const { isometric, onSetIsometric } = useProps("MapViewerIsoMenu", {}, props)
 
   return (
@@ -388,7 +389,7 @@ const MapViewerIsoMenu = (props: MapViewerIsoMenuProps) => {
 
 export type MapViewerToggleMenuProps = ToggleMenuProps
 
-const MapViewerToggleMenu = (props: MapViewerToggleMenuProps) => {
+export const MapViewerToggleMenu = (props: MapViewerToggleMenuProps) => {
   const { ...other } = useProps("MapViewerToggleMenu", {}, props)
 
   const [opened, setOpened] = useState(false)
@@ -404,7 +405,7 @@ export type MapViewerLoadingProps = BoxProps & {
   LoaderProps?: Partial<LoaderProps>
 }
 
-const MapViewerLoading = (props: MapViewerLoadingProps) => {
+export const MapViewerLoading = (props: MapViewerLoadingProps) => {
   const { LoaderProps, ...other } = useProps("MapViewerLoading", {}, props)
 
   return (
@@ -420,7 +421,7 @@ const MapViewerLoading = (props: MapViewerLoadingProps) => {
 
 export type MapViewerContentProps = PanZoomProps
 
-const MapViewerContent = (props: MapViewerContentProps) => {
+export const MapViewerContent = (props: MapViewerContentProps) => {
   const { children, ...other } = useProps("MapViewerContent", {}, props)
 
   return (
@@ -440,23 +441,23 @@ export type MapViewerObjectProps = {
   svgData: SVGData
   type?: string
   isometric?: boolean
-  hiddenLayers?: Iterable<string>
+  hiddenLayerIds?: Iterable<string>
   flags?: Iterable<string>
-  activeLocationId?: string
+  activeLocationId?: string | null
   locationInfo?: Iterable<
     Readonly<{ id: string; title?: string; icon?: string }>
   >
-  onClickArea?: (id: string | undefined) => void
+  onClickArea?: (id: string | null) => void
   onToggleFlag?: (flag: string) => void
 } & { className?: string }
 
-const MapViewerObject = (props: MapViewerObjectProps) => {
+export const MapViewerObject = (props: MapViewerObjectProps) => {
   const {
     className,
     svgData,
     type,
     isometric,
-    hiddenLayers,
+    hiddenLayerIds,
     flags,
     activeLocationId,
     locationInfo,
@@ -488,9 +489,9 @@ const MapViewerObject = (props: MapViewerObjectProps) => {
           [mapSVGClassNames.isometricTransform]: hasTransformCls,
           [mapSVGClassNames.isometricTransitionFinished]: hasFinishedCls,
         })}
-        hiddenLayers={hiddenLayers}
+        hiddenLayerIds={hiddenLayerIds}
         flags={flags}
-        activeLocation={activeLocationId}
+        activeLocationId={activeLocationId}
         locationInfo={locationInfo}
         onClickArea={onClickArea}
         onToggleFlag={onToggleFlag}
@@ -504,7 +505,7 @@ export type MapViewerLevelProps = {
   active?: boolean
 } & MapViewerObjectProps
 
-const MapViewerLevel = (props: MapViewerLevelProps) => {
+export const MapViewerLevel = (props: MapViewerLevelProps) => {
   const { className, levelId, active, ...other } = useProps(
     "MapViewerLevel",
     {},
@@ -530,7 +531,7 @@ export type MapViewerDetailsDrawerProps = {
   MapDetailsProps?: MapDetailsProps
 } & MapDetailsDrawerProps
 
-const MapViewerDetailsDrawer = (props: MapViewerDetailsDrawerProps) => {
+export const MapViewerDetailsDrawer = (props: MapViewerDetailsDrawerProps) => {
   const { className, MapDetailsProps, opened, ...other } = useProps(
     "MapViewerDetailsDrawer",
     {},

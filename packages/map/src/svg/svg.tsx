@@ -17,14 +17,13 @@ export const SVG = memo((props: SVGProps) => {
   const { svgData, ref, ...otherSvgProps } = props
 
   // memoize this object so a re-render doesn't replace the inner html
-  const htmlProps = useMemo(
-    () => ({ __html: svgData.innerHTML }),
-    [svgData.innerHTML],
-  )
+  const htmlProps = useMemo(() => ({ __html: svgData.innerHTML }), [svgData])
 
   return (
     <svg
       ref={ref}
+      // Fully replace the element if the svg data changes
+      key={svgData.innerHTML}
       {...svgData.props}
       {...otherSvgProps}
       dangerouslySetInnerHTML={htmlProps}

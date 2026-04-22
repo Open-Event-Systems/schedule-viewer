@@ -1,12 +1,21 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { mapSVGClassNames } from "../classes.js"
+import { iterToArr } from "@open-event-systems/schedule-lib"
+
+export const useMapFlagClassNames = (
+  flags?: Iterable<string>,
+): readonly string[] => {
+  return useMemo(() => {
+    return iterToArr(flags).map((f) => mapSVGClassNames.flagId(f))
+  }, [flags])
+}
 
 export const useMapFlagToggle = (
-  el: SVGSVGElement | null,
+  svgEl: SVGSVGElement | null,
   toggleFlag: (flag: string) => void,
 ) => {
   useEffect(() => {
-    if (!el) {
+    if (!svgEl) {
       return
     }
 
@@ -25,10 +34,10 @@ export const useMapFlagToggle = (
       }
     }
 
-    el.addEventListener("click", handler)
+    svgEl.addEventListener("click", handler)
 
     return () => {
-      el.removeEventListener("click", handler)
+      svgEl.removeEventListener("click", handler)
     }
-  }, [el, toggleFlag])
+  }, [svgEl, toggleFlag])
 }
