@@ -68,7 +68,7 @@ export const Default: StoryObj<typeof MapViewer> = {
         },
         onSetLayerVisible(layer, visible) {
           dispatch((cur) => {
-            const newLayers = new Set(cur.hiddenLayers)
+            const newLayers = new Set(cur.hiddenLayerIds)
             if (visible) {
               newLayers.delete(layer)
             } else {
@@ -76,7 +76,7 @@ export const Default: StoryObj<typeof MapViewer> = {
             }
             return {
               ...cur,
-              hiddenLayers: [...newLayers],
+              hiddenLayerIds: [...newLayers],
             }
           })
         },
@@ -114,7 +114,7 @@ export const Default: StoryObj<typeof MapViewer> = {
         objects={state.objects}
         layers={state.layers}
         isometric={state.isometric}
-        hiddenLayers={state.hiddenLayers}
+        hiddenLayerIds={state.hiddenLayerIds}
         locations={state.locations}
         locationItemInfo={state.locationItemInfo}
         flags={state.flags}

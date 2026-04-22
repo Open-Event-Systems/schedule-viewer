@@ -17,7 +17,7 @@ export type ToggleMenuProps = PaperProps & {
   onSetOpened?: (opened: boolean) => void
   layers?: Iterable<MapLayer>
   flagToggles?: Iterable<MapFlagToggle>
-  hiddenLayers?: Iterable<string>
+  hiddenLayerIds?: Iterable<string>
   onChangeLayer?: (layer: string, enable: boolean) => void
   enabledFlags?: Iterable<string>
   onChangeFlag?: (flag: string, enable: boolean) => void
@@ -30,14 +30,14 @@ export const ToggleMenu = (props: ToggleMenuProps) => {
     onSetOpened,
     layers,
     flagToggles,
-    hiddenLayers,
+    hiddenLayerIds,
     onChangeLayer,
     enabledFlags,
     onChangeFlag,
     ...other
   } = useProps("ToggleMenu", {}, props)
 
-  const hiddenSet = useMemo(() => new Set(hiddenLayers), [hiddenLayers])
+  const hiddenSet = useMemo(() => new Set(hiddenLayerIds), [hiddenLayerIds])
 
   const layersArr = iterToArr(layers)
   const togglesArr = iterToArr(flagToggles)

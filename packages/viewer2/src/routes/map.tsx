@@ -184,7 +184,7 @@ export const MapRoute = () => {
         flags={enabledFlags}
         flagToggles={mapCfg.flagToggles}
         isometric={isometric}
-        hiddenLayers={hiddenLayers}
+        hiddenLayerIds={hiddenLayers}
         nowDetails={
           nowItem
             ? renderItemDetailsFunc({ ...getItemDetailsProps(nowItem) })

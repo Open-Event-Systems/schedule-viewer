@@ -12,7 +12,7 @@ export const useMapFlagClassNames = (
 
 export const useMapFlagToggle = (
   svgEl: SVGSVGElement | null,
-  toggleFlag: (flag: string) => void,
+  toggleFlag?: (flag: string) => void,
 ) => {
   useEffect(() => {
     if (!svgEl) {
@@ -28,7 +28,7 @@ export const useMapFlagToggle = (
         e.target.classList.forEach((c) => {
           if (c.startsWith(prefix)) {
             const id = c.slice(prefix.length)
-            toggleFlag(id)
+            toggleFlag && toggleFlag(id)
           }
         })
       }

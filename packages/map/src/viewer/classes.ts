@@ -1,11 +1,13 @@
+import { makePrefixFunc } from "../svg/classes.js"
+
 export const mapViewerClassNames = {
   visible: "MapViewer-visible",
   object: "MapViewer-object",
-  objectType: (typeId: string) => `MapViewer-object-type-${typeId}`,
+  objectType: makePrefixFunc("MapViewer-object-type-"),
   objectIsometric: "MapViewer-object-isometric",
   objectIsometricTransform: "MapViewer-object-isometric-transform",
   objectNoIsometricTransition: "MapViewer-object-no-isometric-transition",
   level: "MapViewer-level",
-  levelId: (id: string) => `MapViewer-level-id-${id}`,
+  levelId: makePrefixFunc("MapViewer-level-id-"),
   levelActive: "MapViewer-level-active",
 } as const

@@ -40,7 +40,7 @@ export const useMapSVG = (
 
   useSetLocationInfo(svgEl, locationInfo)
   useFlagTransitions(svgEl, flags)
-  useMapFlagToggle(svgEl, onToggleFlag ?? (() => {}))
+  useMapFlagToggle(svgEl, onToggleFlag)
 
   const clickHandler = useClickHandler(onClickArea)
 

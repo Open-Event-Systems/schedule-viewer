@@ -44,7 +44,7 @@ export const Default: StoryObj<typeof ToggleMenu> = {
         {...args}
         opened={opened}
         onSetOpened={setOpened}
-        hiddenLayers={hiddenLayers}
+        hiddenLayerIds={hiddenLayers}
         onChangeLayer={(layer, enabled) => {
           setHiddenLayers((cur) => {
             const newSet = new Set(cur)

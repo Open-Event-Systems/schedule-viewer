@@ -17,7 +17,10 @@ export const SVG = memo((props: SVGProps) => {
   const { svgData, ref, ...otherSvgProps } = props
 
   // memoize this object so a re-render doesn't replace the inner html
-  const htmlProps = useMemo(() => ({ __html: svgData.innerHTML }), [svgData])
+  const htmlProps = useMemo(
+    () => ({ __html: svgData.innerHTML }),
+    [svgData.innerHTML],
+  )
 
   return (
     <svg

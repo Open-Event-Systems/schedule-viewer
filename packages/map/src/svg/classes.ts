@@ -6,7 +6,7 @@ type PrefixFunc<P extends string> = (<S extends string>(id: S) => `${P}${S}`) &
     }
   }>
 
-const makePrefixFunc = <P extends string>(prefix: P): PrefixFunc<P> => {
+export const makePrefixFunc = <P extends string>(prefix: P): PrefixFunc<P> => {
   const func = <S extends string>(id: S): `${P}${S}` => `${prefix}${id}`
   func.parse = (className: string): string | undefined => {
     if (className.startsWith(prefix)) {
