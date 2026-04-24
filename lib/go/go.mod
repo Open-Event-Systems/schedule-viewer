@@ -1,4 +1,4 @@
-module ule
+module github.com/open-event-systems/schedule-viewer/lib/go
 
 go 1.25.9
 

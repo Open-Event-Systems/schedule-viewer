@@ -1,45 +1,20 @@
 package client
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type cacheEntry struct {
+type cacheEntry[T any] struct {
 	Date    time.Time
 	Expires time.Time
-	Value   any
+	Data   T
 }
 
 var cacheMinTime = 1 * time.Minute
-
-func (c *Client) conditionalGet(ctx context.Context, url string, lastDate *time.Time) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if lastDate != nil {
-		gmtLastDate := lastDate.UTC()
-		req.Header.Set("If-Modified-Since", gmtLastDate.Format(http.TimeFormat))
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 && resp.StatusCode != 304 {
-		resp.Body.Close()
-		return nil, fmt.Errorf("unexpected http status %d", resp.StatusCode)
-	}
-
-	return resp, err
-}
+var cacheDefaultTime = 5 * time.Minute
 
 func getResponseDate(r *http.Response) time.Time {
 	dateHeader := r.Header.Get("Date")
@@ -57,15 +32,15 @@ func getResponseExpiration(r *http.Response) time.Time {
 		age := getResponseAge(r)
 		return date.Add(maxAge).Add(-age)
 	}
-	exp, hasExp := getResponseExpires(r)
+	exp, hasExp := getResponseExpiresHeader(r)
 	if hasExp {
 		return exp
 	}
 
-	return time.Now().Add(cacheMinTime)
+	return time.Now().Add(cacheDefaultTime)
 }
 
-func getResponseExpires(r *http.Response) (time.Time, bool) {
+func getResponseExpiresHeader(r *http.Response) (time.Time, bool) {
 	dateHeader := r.Header.Get("Expires")
 	dateVal, err := http.ParseTime(dateHeader)
 	if err != nil {
@@ -77,10 +52,10 @@ func getResponseExpires(r *http.Response) (time.Time, bool) {
 func getResponseMaxAge(r *http.Response) (time.Duration, bool) {
 	ccHeader := r.Header.Get("Cache-Control")
 	for part := range strings.SplitSeq(ccHeader, ",") {
-		k, v, ok := strings.Cut(part, "=")
+		k, v, ok := strings.Cut(strings.TrimSpace(part), "=")
 		if ok && k == "max-age" {
 			val, err := strconv.Atoi(v)
-			if err != nil {
+			if err == nil {
 				return time.Duration(val) * time.Second, true
 			}
 		}
