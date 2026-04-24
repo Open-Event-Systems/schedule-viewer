@@ -1,56 +1,52 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
-	"fmt"
-	"oembed/internal/server"
-	"strings"
+	"log"
+	"net"
+	"net/http"
+	"ogp/internal/handler"
+	"os"
+	"os/signal"
+	"strconv"
 )
-
-type SchedulePath struct {
-	ScheduleID string
-	Path       string
-}
-
-type SchedulePathSlice []*SchedulePath
-
-func ParseEventPath(val string) *SchedulePath {
-	scheduleId, path, ok := strings.Cut(val, ":")
-	if !ok {
-		return nil
-	}
-
-	return &SchedulePath{ScheduleID: scheduleId, Path: path}
-}
-
-func (es *SchedulePathSlice) String() string {
-	return fmt.Sprintf("%v", *es)
-}
-
-func (es *SchedulePathSlice) Set(val string) error {
-	parsed := ParseEventPath(val)
-	if parsed == nil {
-		return errors.New("invalid event path mapping")
-	}
-
-	*es = append(*es, parsed)
-	return nil
-}
 
 func main() {
 	var port int
-	var eventPathSlice SchedulePathSlice
-	flag.IntVar(&port, "port", 8001, "the port to listen on")
-	flag.Var(&eventPathSlice, "path", "map a schedule ID to a path where the files are located")
 
+	flag.IntVar(&port, "port", 8000, "listen port")
 	flag.Parse()
 
-	pathMap := make(map[string]string)
-
-	for _, ep := range eventPathSlice {
-		pathMap[ep.ScheduleID] = ep.Path
+	httpServer := http.Server{
+		Addr:    net.JoinHostPort("", strconv.Itoa(port)),
+		Handler: handler.NewHandler(),
 	}
 
-	server.RunServer(port, pathMap)
+	doneChan := make(chan struct{})
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	var serverErr error
+
+	go func() {
+		defer close(doneChan)
+		serverErr = httpServer.ListenAndServe()
+	}()
+
+	log.Printf("listening on :%d", port)
+
+	select {
+	case <-doneChan:
+	case <-sigChan:
+		signal.Reset(os.Interrupt)
+		httpServer.Shutdown(context.Background())
+	}
+
+	<-doneChan
+
+	if !errors.Is(serverErr, http.ErrServerClosed) {
+		log.Println(serverErr)
+		os.Exit(1)
+	}
 }

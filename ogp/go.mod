@@ -1,9 +1,20 @@
-module oembed
+module ogp
 
-go 1.23.7
+go 1.25.9
 
 require (
-	github.com/phuslu/lru v1.0.18
-	golang.org/x/net v0.38.0
-	gopkg.in/yaml.v3 v3.0.1
+	github.com/go-chi/chi/v5 v5.2.5
+	github.com/goccy/go-json v0.10.6
+	github.com/open-event-systems/schedule-viewer/lib/go v0.0.0
+	golang.org/x/net v0.53.0
 )
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/maypok86/otter/v2 v2.3.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+replace github.com/open-event-systems/schedule-viewer/lib/go => ../lib/go
