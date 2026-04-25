@@ -1,4 +1,3 @@
-import { TZDate } from "@date-fns/tz"
 import {
   parseScheduleEvent,
   type ScheduleEvent,
@@ -13,8 +12,8 @@ export const events = [
     type: "event",
     title: "Opening Ceremonies",
     description: "Join us as we kick off another year of our annual event.",
-    start: new TZDate(2025, 0, 17, 11, timeZone),
-    end: new TZDate(2025, 0, 17, 12, timeZone),
+    start: new Date(2025, 0, 17, 11),
+    end: new Date(2025, 0, 17, 12),
     location: ["Main Ballroom"],
     tags: new Set(["main-event"]),
     contacts: [{ name: "Events Team" }],
@@ -24,8 +23,8 @@ export const events = [
     type: "event",
     title: "Photography Meetup",
     description: "A meetup for amateur and professional photographers.",
-    start: new TZDate(2025, 0, 18, 12, timeZone),
-    end: new TZDate(2025, 0, 18, 13, timeZone),
+    start: new Date(2025, 0, 18, 12),
+    end: new Date(2025, 0, 18, 13),
     location: ["Panel Room 1"],
     tags: new Set(["photography", "hobby"]),
     contacts: [{ name: "Person", url: "https://example.net" }],
@@ -35,8 +34,8 @@ export const events = [
     type: "event",
     title: "Figure Drawing",
     description: "A live figure drawing demonstration.",
-    start: new TZDate(2025, 0, 18, 14, timeZone),
-    end: new TZDate(2025, 0, 18, 16, 30, timeZone),
+    start: new Date(2025, 0, 18, 14),
+    end: new Date(2025, 0, 18, 16, 30),
     location: ["Panel Room 2"],
     tags: new Set(["art", "mature"]),
     contacts: [

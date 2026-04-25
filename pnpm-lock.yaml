@@ -47,9 +47,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      "@date-fns/tz":
-        specifier: ^1.4.1
-        version: 1.4.1
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -81,9 +78,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      "@date-fns/tz":
-        specifier: ^1.4.1
-        version: 1.4.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -145,9 +139,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      "@date-fns/tz":
-        specifier: ^1.4.1
-        version: 1.4.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -202,9 +193,6 @@ importers:
 
   packages/viewer2:
     dependencies:
-      "@date-fns/tz":
-        specifier: ^1.4.1
-        version: 1.4.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -1100,12 +1088,6 @@ packages:
     resolution:
       {
         integrity: sha512-sBXGT13cpmPR5BMgHE6UEEfEaShh5Ror6rfN3yEK5si7QVrtZg8LEPQb0VVhiLRUslD2yLnXtnRzG035J/mZXQ==,
-      }
-
-  "@date-fns/tz@1.4.1":
-    resolution:
-      {
-        integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==,
       }
 
   "@emnapi/core@1.9.2":
@@ -7521,8 +7503,6 @@ snapshots:
       "@babel/helper-validator-identifier": 7.28.5
 
   "@bufbuild/protobuf@2.11.0": {}
-
-  "@date-fns/tz@1.4.1": {}
 
   "@emnapi/core@1.9.2":
     dependencies:
