@@ -1,7 +1,6 @@
 import z from "zod"
 import wretch from "wretch"
 import type { ScheduleAPI, ScheduleItem } from "./types.js"
-import { intervalToTimezone } from "./time.js"
 import { sortScheduleItems } from "./utils.js"
 import { parseScheduleItem } from "./item.js"
 
@@ -62,27 +61,6 @@ export const composeScheduleAPIs = (...objs: ScheduleAPI[]): ScheduleAPI => {
         concat.push(...res)
       })
       return concat
-    },
-  }
-}
-
-/**
- * Wrap a {@link ScheduleAPI} to make its items use TZ aware dates.
- */
-export const makeTZScheduleAPI = (
-  api: ScheduleAPI,
-  tz?: string,
-): ScheduleAPI => {
-  return {
-    async getItems() {
-      const items = await api.getItems()
-      return items.map((item) => {
-        const newDates = intervalToTimezone(item, tz)
-        return {
-          ...item,
-          ...newDates,
-        }
-      })
     },
   }
 }

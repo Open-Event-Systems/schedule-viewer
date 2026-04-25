@@ -1,5 +1,4 @@
 import { add, format, isAfter, isBefore, isEqual, set } from "date-fns"
-import { TZDate } from "@date-fns/tz"
 import type { Day, Interval } from "./types.js"
 
 /**
@@ -30,29 +29,6 @@ export const intersects = (a: Interval, b: Interval): boolean => {
 }
 
 /**
- * Convert a date into a timezone-specific date.
- */
-export const toTimezone = (d: Date, tz?: string): TZDate => {
-  return new TZDate(d, tz)
-}
-
-/**
- * Convert an interval to use timezone-specific dates.
- */
-export const intervalToTimezone = (t: Interval, tz?: string): Interval => {
-  const newDates: { start?: Date; end?: Date } = {}
-
-  if (t.start) {
-    newDates.start = toTimezone(t.start, tz)
-  }
-  if (t.end) {
-    newDates.end = toTimezone(t.end, tz)
-  }
-
-  return newDates
-}
-
-/**
  * Sort an array of intervals by start date, in place.
  *
  * Undefined start dates are before all defined start dates.
@@ -76,17 +52,6 @@ export const sortIntervalsByStartDate = <T extends Interval[]>(arr: T): T => {
     }
   })
   return arr
-}
-
-/**
- * Get the default timezone from the browser.
- */
-export const getDefaultTZ = (): string => {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone
-  } catch (_e) {
-    return "America/New_York"
-  }
 }
 
 /**
