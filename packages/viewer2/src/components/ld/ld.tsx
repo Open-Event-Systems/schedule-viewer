@@ -3,6 +3,7 @@ import { useViewerConfig } from "../../config.js"
 import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import { makeLocationAddressMatchFunc } from "../../schedule.js"
 import { InitialHeadContext } from "../head/deduped-head.js"
+import { format } from "date-fns"
 
 export const JSONLD = ({
   children,
@@ -71,11 +72,11 @@ export const JSONLDEvent = ({
   }
 
   if (event.start) {
-    data.startDate = event.start.toISOString()
+    data.startDate = format(event.start, "yyyy-MM-dd'T'HH:mm:ss")
   }
 
   if (event.end) {
-    data.endDate = event.end.toISOString()
+    data.endDate = format(event.end, "yyyy-MM-dd'T'HH:mm:ss")
   }
 
   if (event.title) {
