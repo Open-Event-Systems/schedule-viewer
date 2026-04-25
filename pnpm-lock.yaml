@@ -50,9 +50,6 @@ importers:
       "@date-fns/tz":
         specifier: ^1.4.1
         version: 1.4.1
-      "@date-fns/utc":
-        specifier: ^2.1.1
-        version: 2.1.1
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -87,9 +84,6 @@ importers:
       "@date-fns/tz":
         specifier: ^1.4.1
         version: 1.4.1
-      "@date-fns/utc":
-        specifier: ^2.1.1
-        version: 2.1.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -154,9 +148,6 @@ importers:
       "@date-fns/tz":
         specifier: ^1.4.1
         version: 1.4.1
-      "@date-fns/utc":
-        specifier: ^2.1.1
-        version: 2.1.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -214,9 +205,6 @@ importers:
       "@date-fns/tz":
         specifier: ^1.4.1
         version: 1.4.1
-      "@date-fns/utc":
-        specifier: ^2.1.1
-        version: 2.1.1
       "@mantine/core":
         specifier: ^9.0.2
         version: 9.1.0(@mantine/hooks@9.1.0(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -1118,12 +1106,6 @@ packages:
     resolution:
       {
         integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==,
-      }
-
-  "@date-fns/utc@2.1.1":
-    resolution:
-      {
-        integrity: sha512-SlJDfG6RPeEX8wEVv6ZB3kak4MmbtyiI2qX/5zuKdordbrhB/iaJ58GVMZgJ6P1sJaM1gMgENFYYeg1JWrCFrA==,
       }
 
   "@emnapi/core@1.9.2":
@@ -7541,8 +7523,6 @@ snapshots:
   "@bufbuild/protobuf@2.11.0": {}
 
   "@date-fns/tz@1.4.1": {}
-
-  "@date-fns/utc@2.1.1": {}
 
   "@emnapi/core@1.9.2":
     dependencies:

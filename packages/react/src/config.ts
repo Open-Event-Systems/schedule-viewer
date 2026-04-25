@@ -138,7 +138,7 @@ export const makeScheduleAPIFromConfig = (
   const allAPIs = [parsedAPI, ...urlAPIs]
 
   const composed = composeScheduleAPIs(...allAPIs)
-  const tz = makeTZScheduleAPI(composed)
+  const tz = makeTZScheduleAPI(composed, config.timeZone)
   const sorted = makeSortedScheduleAPI(tz)
   return sorted
 }

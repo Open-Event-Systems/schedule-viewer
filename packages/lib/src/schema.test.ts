@@ -3,11 +3,12 @@ import { isoDate, optional, strSet } from "./schema.js"
 import { isEqual } from "date-fns"
 import { TZDate } from "@date-fns/tz"
 import z from "zod"
+import { toTimezone } from "./time.js"
 
 describe("schemas", () => {
   test("iso date", () => {
     const asStr = "2020-01-01T12:00:00.123-05:00"
-    const date = isoDate.decode(asStr)
+    const date = toTimezone(isoDate.decode(asStr), "America/New_York")
 
     const expected = new TZDate(2020, 0, 1, 12, 0, 0, 123, "America/New_York")
 

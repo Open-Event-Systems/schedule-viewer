@@ -256,7 +256,10 @@ describe("time module", () => {
   })
 
   test("getDay", () => {
-    const dt = parseISO("2020-01-01T03:00:00-05:00")
+    const dt = toTimezone(
+      parseISO("2020-01-01T03:00:00-05:00"),
+      "America/New_York",
+    )
 
     expect(getDay(dt, 0)).toEqual({
       key: "2020-01-01",
@@ -282,10 +285,16 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T12:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-01T12:00:00-05:00"),
+              "America/New_York",
+            ),
           },
           {
-            start: parseISO("2020-01-01T15:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-01T15:00:00-05:00"),
+              "America/New_York",
+            ),
           },
         ],
         3,
@@ -293,8 +302,14 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: toTimezone(
+          parseISO("2020-01-01T03:00:00-05:00"),
+          "America/New_York",
+        ),
+        end: toTimezone(
+          parseISO("2020-01-02T03:00:00-05:00"),
+          "America/New_York",
+        ),
       },
     ])
 
@@ -302,13 +317,22 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T03:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-01T03:00:00-05:00"),
+              "America/New_York",
+            ),
           },
           {
-            start: parseISO("2020-01-02T03:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-02T03:00:00-05:00"),
+              "America/New_York",
+            ),
           },
           {
-            start: parseISO("2020-01-03T02:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-03T02:00:00-05:00"),
+              "America/New_York",
+            ),
           },
         ],
         3,
@@ -316,13 +340,25 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: toTimezone(
+          parseISO("2020-01-01T03:00:00-05:00"),
+          "America/New_York",
+        ),
+        end: toTimezone(
+          parseISO("2020-01-02T03:00:00-05:00"),
+          "America/New_York",
+        ),
       },
       {
         key: "2020-01-02",
-        start: parseISO("2020-01-02T03:00:00-05:00"),
-        end: parseISO("2020-01-03T03:00:00-05:00"),
+        start: toTimezone(
+          parseISO("2020-01-02T03:00:00-05:00"),
+          "America/New_York",
+        ),
+        end: toTimezone(
+          parseISO("2020-01-03T03:00:00-05:00"),
+          "America/New_York",
+        ),
       },
     ])
 
@@ -330,13 +366,22 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T12:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-01T12:00:00-05:00"),
+              "America/New_York",
+            ),
           },
           {
-            start: parseISO("2020-01-01T15:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-01T15:00:00-05:00"),
+              "America/New_York",
+            ),
           },
           {
-            start: parseISO("2020-01-03T12:00:00-05:00"),
+            start: toTimezone(
+              parseISO("2020-01-03T12:00:00-05:00"),
+              "America/New_York",
+            ),
           },
         ],
         3,
@@ -344,13 +389,25 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: toTimezone(
+          parseISO("2020-01-01T03:00:00-05:00"),
+          "America/New_York",
+        ),
+        end: toTimezone(
+          parseISO("2020-01-02T03:00:00-05:00"),
+          "America/New_York",
+        ),
       },
       {
         key: "2020-01-03",
-        start: parseISO("2020-01-03T03:00:00-05:00"),
-        end: parseISO("2020-01-04T03:00:00-05:00"),
+        start: toTimezone(
+          parseISO("2020-01-03T03:00:00-05:00"),
+          "America/New_York",
+        ),
+        end: toTimezone(
+          parseISO("2020-01-04T03:00:00-05:00"),
+          "America/New_York",
+        ),
       },
     ])
   })

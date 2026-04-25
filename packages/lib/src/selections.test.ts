@@ -4,7 +4,7 @@ import {
   makeSelections,
   parseLocalSessionSelections,
 } from "./selections.js"
-import { isEqual, parseISO } from "date-fns"
+import { format, parseISO } from "date-fns"
 
 describe("selections module", () => {
   test("construct/size", () => {
@@ -55,7 +55,10 @@ describe("selections module", () => {
   test("parse local selections", () => {
     const data = {
       base: {
-        date: "2020-01-01T12:00:00.001-05:00",
+        date: format(
+          parseISO("2020-01-01T12:00:00.001-05:00"),
+          "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+        ),
         selections: {
           id: "testsels",
           items: ["a", "b", "c"],
@@ -64,16 +67,16 @@ describe("selections module", () => {
       added: ["d"],
       deleted: ["c"],
       items: ["a", "b", "d"],
-      date: "2020-01-01T13:00:00.001-05:00",
+      date: format(
+        parseISO("2020-01-01T13:00:00.001-05:00"),
+        "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+      ),
     }
 
     const parsed = parseLocalSessionSelections(data)
     expect(parsed.equals(["d", "b", "a"])).toBe(true)
     expect(parsed.base?.equals(["a", "b", "c"])).toBe(true)
-    expect(
-      parsed.date &&
-        isEqual(parsed.date, parseISO("2020-01-01T13:00:00.001-05:00", {})),
-    ).toBe(true)
+    expect(parsed.date).toEqual(parseISO("2020-01-01T13:00:00.001-05:00"))
 
     const unparsed = encodeLocalSessionSelections(parsed)
     expect(unparsed).toStrictEqual(data)
