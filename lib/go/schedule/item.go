@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"errors"
-	"time"
 
 	"github.com/goccy/go-json"
 )
@@ -13,8 +12,8 @@ type Item struct {
 	Type        string                `json:"type"`
 	Title       string                `json:"title,omitempty"`
 	Description string                `json:"description,omitempty"`
-	Start       *time.Time            `json:"start,omitempty"`
-	End         *time.Time            `json:"end,omitempty"`
+	Start       *LocalTime            `json:"start,omitempty"`
+	End         *LocalTime            `json:"end,omitempty"`
 	Location    SliceOrScalar[string] `json:"location,omitempty"`
 	Icon        string                `json:"icon,omitempty"`
 	Image       string                `json:"image,omitempty"`

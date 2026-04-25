@@ -24,8 +24,8 @@ func TestJSONLD(t *testing.T) {
 		Title: "Test",
 	}
 
-	start := time.Date(2020, 1, 1, 12, 0, 0, 0, time.UTC)
-	end := start.Add(1 * time.Hour)
+	start := schedule.LocalTime{Time: time.Date(2020, 1, 1, 12, 0, 0, 0, time.Local)}
+	end := schedule.LocalTime{Time: start.Add(1 * time.Hour)}
 
 	item := schedule.Item{
 		Id:          "item1",

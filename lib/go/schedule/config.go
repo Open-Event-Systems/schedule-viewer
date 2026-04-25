@@ -54,7 +54,6 @@ type LocationAddressEntry struct {
 
 var errLocAddressEntry = errors.New("invalid location address entry")
 
-
 func (e *LocationAddressEntry) UnmarshalJSON(data []byte) error {
 	var locs SliceOrScalar[string]
 	var addr Address
@@ -85,35 +84,3 @@ func (e *LocationAddressEntry) UnmarshalJSON(data []byte) error {
 
 	return errors.Join(sliceErr, structErr)
 }
-
-
-// func (e *LocationAddressEntry) UnmarshalJSON(data []byte) error {
-// 	var locs Locations
-// 	var addr Address
-// 	asSlice := []any{&locs, &addr}
-// 	var sliceErr error
-
-// 	if sliceErr = json.Unmarshal(data, &asSlice); sliceErr == nil {
-// 		if len(asSlice) == 2 {
-// 			e.Location = locs
-// 			e.Address = addr
-// 			return nil
-// 		} else {
-// 			sliceErr = errLocAddressEntry
-// 		}
-// 	}
-
-// 	type plainStruct struct {
-// 		Location Locations `json:"location"`
-// 		Address  Address   `json:"address"`
-// 	}
-
-// 	var asStruct plainStruct
-// 	var structErr error
-// 	if structErr = json.Unmarshal(data, &asStruct); structErr == nil {
-// 		*e = LocationAddressEntry(asStruct)
-// 		return nil
-// 	}
-
-// 	return errors.Join(sliceErr, structErr)
-// }

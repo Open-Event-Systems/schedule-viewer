@@ -1,9 +1,8 @@
 package jsonld
 
 import (
-	"time"
-
 	"github.com/goccy/go-json"
+	"github.com/open-event-systems/schedule-viewer/lib/go/schedule"
 )
 
 type jsonLDObject struct {
@@ -23,8 +22,8 @@ type jsonLDEvent struct {
 	Status      string                      `json:"eventStatus,omitempty"`
 	Title       string                      `json:"name,omitempty"`
 	Description string                      `json:"description,omitempty"`
-	Start       *time.Time                  `json:"startDate,omitempty"`
-	End         *time.Time                  `json:"endDate,omitempty"`
+	Start       *schedule.LocalTime         `json:"startDate,omitempty"`
+	End         *schedule.LocalTime         `json:"endDate,omitempty"`
 	Location    optionalSlice[jsonLDPlace]  `json:"location,omitempty"`
 	Performer   optionalSlice[jsonLDPerson] `json:"performer,omitempty"`
 	Image       optionalSlice[string]       `json:"image,omitempty"`
