@@ -16,6 +16,11 @@ export type MapLayer = Readonly<{
   title: string
 }>
 
+export type MapFlagToggle = Readonly<{
+  id: string
+  title: string
+}>
+
 export type MapLocation = Readonly<{
   id: string
   level: string
@@ -23,6 +28,8 @@ export type MapLocation = Readonly<{
   description?: string
   aliases?: readonly string[]
   zoomScale?: number
+  requireFlags: readonly string[]
+  excludeFlags: readonly string[]
 }>
 
 export type MapConfig = Readonly<{
@@ -30,6 +37,7 @@ export type MapConfig = Readonly<{
   defaultLevel: string
   layers: readonly MapLayer[]
   locations: readonly MapLocation[]
+  flagToggles: readonly MapFlagToggle[]
   width: number
   height: number
   homeURL?: string

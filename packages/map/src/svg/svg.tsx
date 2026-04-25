@@ -1,9 +1,40 @@
-import type { ComponentPropsWithoutRef } from "react"
+import { memo, useMemo, type ComponentPropsWithoutRef, type Ref } from "react"
 
 export type SVGData = Readonly<{
   props: Readonly<Omit<ComponentPropsWithoutRef<"svg">, "children">>
   innerHTML: string
 }>
+
+export type SVGProps = ComponentPropsWithoutRef<"svg"> & {
+  svgData: SVGData
+  ref?: Ref<SVGSVGElement>
+}
+
+/**
+ * Renders a SVG element from a {@link SVGData} object.
+ */
+export const SVG = memo((props: SVGProps) => {
+  const { svgData, ref, ...otherSvgProps } = props
+
+  // memoize this object so a re-render doesn't replace the inner html
+  const htmlProps = useMemo(
+    () => ({ __html: svgData.innerHTML }),
+    [svgData.innerHTML],
+  )
+
+  return (
+    <svg
+      ref={ref}
+      // Fully replace the element if the svg data changes
+      key={svgData.innerHTML}
+      {...svgData.props}
+      {...otherSvgProps}
+      dangerouslySetInnerHTML={htmlProps}
+    />
+  )
+})
+
+SVG.displayName = "SVG"
 
 /**
  * Parse {@link SVGData} from a string representing an SVG document.

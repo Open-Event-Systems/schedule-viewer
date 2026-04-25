@@ -21,9 +21,8 @@
   },
   "devDependencies": {
     "@date-fns/tz": "^1.4.1",
-    "@date-fns/utc": "^2.1.1",
-    "@mantine/core": "^8.3.18",
-    "@mantine/hooks": "^8.3.18",
+    "@mantine/core": "^9.0.2",
+    "@mantine/hooks": "^9.0.2",
     "@open-event-systems/schedule-lib": "workspace:",
     "@open-event-systems/schedule-react": "workspace:",
     "@storybook/addon-docs": "^10.3.3",
@@ -38,9 +37,8 @@
   },
   "peerDependencies": {
     "@date-fns/tz": "^1.2.0",
-    "@date-fns/utc": "^2.1.0",
-    "@mantine/core": "^8.2.4",
-    "@mantine/hooks": "^8.2.4",
+    "@mantine/core": "^9.0.2",
+    "@mantine/hooks": "^9.0.2",
     "@open-event-systems/schedule-lib": "workspace:",
     "@open-event-systems/schedule-react": "workspace:",
     "date-fns": "^4.1.0",
@@ -49,7 +47,7 @@
   "dependencies": {
     "@tabler/icons-react": "^3.40.0",
     "clsx": "^2.1.1",
-    "react-zoom-pan-pinch": "^3.7.0",
+    "react-zoom-pan-pinch": "^4.0.3",
     "zod": "^4.3.6"
   }
 }

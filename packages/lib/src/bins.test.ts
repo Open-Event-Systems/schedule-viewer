@@ -6,7 +6,6 @@ import {
   makeTimeBinFunc,
 } from "./bins.js"
 import { isEqual, parseISO } from "date-fns"
-import { toTimezone } from "./time.js"
 
 describe("bin by title", () => {
   test("basic sorting", () => {
@@ -199,42 +198,21 @@ describe("bin by tag", () => {
 })
 
 describe("bin by time", () => {
-  const now = toTimezone(
-    parseISO("2020-01-01T12:00:00-05:00"),
-    "America/New_York",
-  )
+  const now = parseISO("2020-01-01T12:00:00")
 
   test("bins by time", () => {
     const items = [
       {
-        start: toTimezone(
-          parseISO("2020-01-01T13:01:00-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T14:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T13:01:00"),
+        end: parseISO("2020-01-01T14:00:00"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-01T13:04:59-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T14:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T13:04:59"),
+        end: parseISO("2020-01-01T14:00:00"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-01T13:30:00-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T14:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T13:30:00"),
+        end: parseISO("2020-01-01T14:00:00"),
       },
     ]
 
@@ -246,7 +224,7 @@ describe("bin by time", () => {
     expect(
       isEqual(
         [...(binned[0]?.items ?? [])][0]?.start ?? new Date(),
-        toTimezone(parseISO("2020-01-01T13:01:00-05:00"), "America/New_York"),
+        parseISO("2020-01-01T13:01:00"),
       ),
     ).toBe(true)
     expect([...(binned[0]?.items ?? [])].length).toBe(2)
@@ -258,34 +236,16 @@ describe("bin by time", () => {
   test("includes now bin", () => {
     const items = [
       {
-        start: toTimezone(
-          parseISO("2020-01-01T09:00:00-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T10:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T09:00:00"),
+        end: parseISO("2020-01-01T10:00:00"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-01T11:00:00-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T12:01:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T11:00:00"),
+        end: parseISO("2020-01-01T12:01:00"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-01T13:00:00-05:00"),
-          "America/New_York",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T13:30:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T13:00:00"),
+        end: parseISO("2020-01-01T13:30:00"),
       },
     ]
 
@@ -296,42 +256,16 @@ describe("bin by time", () => {
     expect([...(binned[0]?.items ?? [])].length).toBe(1)
     expect(binned[1]?.key).toBe("202001010900")
   })
-
-  test("represents timezones correctly", () => {
-    const items = [
-      {
-        start: toTimezone(
-          parseISO("2020-01-01T13:00:00-06:00"),
-          "America/Chicago",
-        ),
-        end: toTimezone(
-          parseISO("2020-01-01T13:30:00-06:00"),
-          "America/Chicago",
-        ),
-      },
-    ]
-
-    const func = makeTimeBinFunc(now)
-    const binned = [...func(items)]
-    expect(binned[0]?.key).toBe("202001011300")
-    expect(binned[0]?.title).toBe("1:00 pm")
-  })
 })
 
 describe("bin by day", () => {
   test("bin by day", () => {
     const items = [
       {
-        start: toTimezone(
-          parseISO("2020-01-01T23:59:59-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T23:59:59"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-02T00:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-02T00:00:00"),
       },
     ]
 
@@ -347,16 +281,10 @@ describe("bin by day", () => {
   test("use day change hour", () => {
     const items = [
       {
-        start: toTimezone(
-          parseISO("2020-01-01T23:59:59-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-01T23:59:59"),
       },
       {
-        start: toTimezone(
-          parseISO("2020-01-02T00:00:00-05:00"),
-          "America/New_York",
-        ),
+        start: parseISO("2020-01-02T00:00:00"),
       },
     ]
 

@@ -16,6 +16,16 @@ export type ScheduleConfig = Readonly<{
 
   items: readonly (string | Readonly<Record<string, unknown>>)[]
 
+  /**
+   * The start of the overall event schedule.
+   */
+  start: Date
+
+  /**
+   * The end of the overall event schedule.
+   */
+  end: Date
+
   title?: string
   description?: string
 

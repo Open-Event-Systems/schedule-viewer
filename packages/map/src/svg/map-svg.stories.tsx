@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapSVG } from "./map-svg.js"
 
-import svgMap from "../../../viewer/public/example-map-lobby.svg"
+import svgMap from "../../example-map-lobby.svg"
+
 import { useEffect, useState } from "react"
 import { parseSVGData, type SVGData } from "./svg.js"
 

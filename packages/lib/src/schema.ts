@@ -2,11 +2,11 @@ import { format, parseISO } from "date-fns"
 import z from "zod"
 
 /**
- * ISO 8601 formatted date, including milliseconds.
+ * ISO 8601 formatted date without offset, including milliseconds.
  */
 export const isoDate = z.codec(z.string(), z.date({ error: "Invalid date" }), {
   decode: (v) => (typeof v == "string" ? parseISO(v) : v),
-  encode: (v) => format(v, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+  encode: (v) => format(v, "yyyy-MM-dd'T'HH:mm:ss.SSS"),
 })
 
 /**

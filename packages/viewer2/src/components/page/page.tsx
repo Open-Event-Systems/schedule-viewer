@@ -1,8 +1,4 @@
-import {
-  isBounded,
-  iterToArr,
-  type DetailedScheduleItem,
-} from "@open-event-systems/schedule-lib"
+import { type DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import { Box, useProps } from "@mantine/core"
 import {
   Markdown,
@@ -18,6 +14,7 @@ import { useMemo, useRef } from "react"
 import { sharedPagesRoute, syncRoute } from "../../routes.js"
 import type { PageConfig } from "../../types.js"
 import { useViewerConfig } from "../../config.js"
+import { makeItemsByIdMap } from "../../schedule.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -50,7 +47,7 @@ export const Page = (props: PageProps) => {
         pageConfig={pageConfig}
         items={items}
         sharedSelections={sharedSelections}
-        onSelectShareOption={(option) => {
+        onSelectShareOption={(option, items) => {
           if (option == "share") {
             selectionsServiceAPI
               ?.getSessionSelections("bookmarks")
@@ -79,13 +76,16 @@ export const Page = (props: PageProps) => {
             }
           } else if (option == "export") {
             import("@open-event-systems/schedule-lib").then(({ createICS }) => {
-              const exportItems = iterToArr(items).filter(isBounded)
+              const itemOccsMap = makeItemsByIdMap(items)
 
-              const calData = createICS(
-                exportItems,
-                config.icalPrefix,
-                config.icalDomain ?? window.location.hostname,
-              )
+              const calData = createICS(itemOccsMap.values(), {
+                title: config.title || "Schedule",
+                defaultStart: config.start,
+                defaultEnd: config.end,
+                domain: config.icalDomain || window.location.hostname,
+                prefix: config.icalPrefix,
+                timeZone: config.timeZone,
+              })
 
               const blob = new Blob([calData])
               const objURL = URL.createObjectURL(blob)

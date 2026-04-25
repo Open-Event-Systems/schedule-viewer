@@ -1,99 +1,78 @@
-import { createContext, type JSX, type MetaHTMLAttributes } from "react"
+import { createContext, type MetaHTMLAttributes } from "react"
 
-type MetaEntry = Readonly<MetaHTMLAttributes<HTMLMetaElement>>
-type MatchOpts = Readonly<{
-  meta?: readonly (JSX.IntrinsicElements["meta"] | undefined)[]
-}>
+export const getHeadElements = (): HTMLElement[] => {
+  const els = []
 
-const metaMatchEntries = [
-  {
-    name: "description",
-  },
-  {
-    property: "og:title",
-  },
-  {
-    property: "og:type",
-  },
-  {
-    property: "og:url",
-  },
-  {
-    property: "og:description",
-  },
-] as const satisfies readonly MetaEntry[]
-
-export const InitialHeadContext = createContext<Element[]>([])
-
-const metaEntryIsTitle = (testEntry: MetaEntry) => !!testEntry.title
-
-const metaEntryMatches = (matchEntry: MetaEntry, testEntry: MetaEntry) => {
-  return Object.entries(matchEntry).every(
-    ([attr, val]) => !val || testEntry[attr as keyof MetaEntry] == val,
-  )
-}
-
-const elementIsTitle = (el: Element) => el.tagName == "TITLE"
-
-const elementMatchesMetaEntry = (matchEntry: MetaEntry, el: Element) => {
-  return (
-    el.tagName == "META" &&
-    Object.entries(matchEntry).every(
-      ([attr, val]) => !val || el.getAttribute(attr) == val,
-    )
-  )
-}
-
-export const getRouteMatchesMetaEntries = (
-  matches: readonly MatchOpts[],
-): MetaEntry[] => {
-  const res = []
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const match = matches[i]
-    if (match?.meta) {
-      res.push(
-        ...match.meta
-          .filter((m) => !!m)
-          .filter(
-            (m) =>
-              metaEntryIsTitle(m) ||
-              metaMatchEntries.some((mm) => metaEntryMatches(mm, m)),
-          ),
-      )
+  for (const el of document.head.children) {
+    if (
+      el.tagName == "TITLE" ||
+      el.tagName == "META" ||
+      el.tagName == "SCRIPT"
+    ) {
+      els.push(el as HTMLElement)
     }
   }
-  return res
+
+  return els
 }
 
-export const getHeadElements = (): Element[] => {
-  return [...document.head.children].filter(
-    (el) =>
-      elementIsTitle(el) ||
-      metaMatchEntries.some((mm) => elementMatchesMetaEntry(mm, el)),
+export const getMatchingMetaElement = (
+  attrs: MetaHTMLAttributes<HTMLMetaElement>,
+  els: readonly HTMLElement[],
+): HTMLElement | undefined => {
+  if (attrs.title != null) {
+    return els.find((el) => el.tagName == "TITLE")
+  }
+
+  if (attrs.name != null) {
+    return els.find(
+      (el) => el.tagName == "META" && el.getAttribute("name") == attrs.name,
+    )
+  }
+
+  if (attrs.property != null) {
+    return els.find(
+      (el) =>
+        el.tagName == "META" && el.getAttribute("property") == attrs.property,
+    )
+  }
+}
+
+const uniqueOGPPropNames = [
+  "og:title",
+  "og:description",
+  "og:site_name",
+  "og:type",
+  "og:url",
+]
+
+const uniqueMetaNames = ["description"]
+
+export const isUniqueMetaElement = (
+  attrs: MetaHTMLAttributes<HTMLMetaElement>,
+): boolean => {
+  return (
+    attrs.title != null ||
+    (!!attrs.property && uniqueOGPPropNames.includes(attrs.property)) ||
+    (!!attrs.name && uniqueMetaNames.includes(attrs.name))
   )
 }
 
 export const removeDuplicateHeadElements = (
-  initialEls: Element[],
-  matches: readonly MetaEntry[],
+  currentElements: HTMLElement[],
+  metaAttrs?: Iterable<MetaHTMLAttributes<HTMLMetaElement>>,
 ) => {
-  const removed = []
-  for (const el of initialEls) {
-    if (
-      (elementIsTitle(el) && matches.some((mm) => metaEntryIsTitle(mm))) ||
-      metaMatchEntries.some(
-        (mm) =>
-          matches.some((m) => metaEntryMatches(mm, m)) &&
-          elementMatchesMetaEntry(mm, el),
-      )
-    ) {
-      el.remove()
-      removed.push(el)
+  const elsArr = [...(currentElements ?? [])]
+  for (const attrs of metaAttrs ?? []) {
+    const match = getMatchingMetaElement(attrs, elsArr)
+    if (match) {
+      match.remove()
+      const idx = currentElements.indexOf(match)
+      if (idx != -1) {
+        currentElements.splice(idx, 1)
+      }
     }
   }
-
-  for (const el of removed) {
-    const idx = initialEls.indexOf(el)
-    initialEls.splice(idx, 1)
-  }
 }
+
+export const InitialHeadContext = createContext<HTMLElement[]>([])

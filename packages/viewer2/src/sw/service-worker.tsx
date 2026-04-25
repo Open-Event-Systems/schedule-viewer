@@ -36,12 +36,11 @@ export const makeSWStore = (): StoreApi<SWState> => {
       (r) => (resolveFirstInstall = r),
     )
 
-    return {
+    const state: SWState & SWStatePrivate = {
       hasExistingSW: hasCurrentSW(),
       registrationState: "not-started",
       isWaiting: false,
       resolveFirstInstall,
-      status: "unavailable",
       firstInstallPromise,
       register: async (basePath = "", urlsToCache) => {
         if (get().registrationState != "not-started") {
@@ -72,6 +71,7 @@ export const makeSWStore = (): StoreApi<SWState> => {
           workbox.addEventListener("waiting", () => {
             console.info("Service worker update available")
             set({ isWaiting: true })
+            showUpdateNotification(() => state.update())
           })
 
           workbox.addEventListener("controlling", (e) => {
@@ -149,118 +149,14 @@ export const makeSWStore = (): StoreApi<SWState> => {
         }
       },
     }
+
+    return state
   })
 }
 
 const hasCurrentSW = (): boolean => {
   return !!navigator.serviceWorker.controller
 }
-
-// export const makeSWStore = (): StoreApi<SWStore> => {
-//   let resolveFirstInstall = () => {}
-//   const firstInstallPromise = new Promise<void>(
-//     (r) => (resolveFirstInstall = r),
-//   )
-
-//   return createStore<SWStore & SWStorePrivate>()((set, get) => {
-//     // install prompts
-//     window.addEventListener("beforeinstallprompt", (e) => {
-//       e.preventDefault()
-//       console.info("Install prompt captured")
-
-//       const promptFunc = async () => {
-//         set({ installPrompted: true })
-//         return await e.prompt()
-//       }
-
-//       set({
-//         beforeInstallPromptEvent: e,
-//         installPrompted: false,
-//         promptInstall: promptFunc,
-//       })
-//     })
-
-//     return {
-//       registering: false,
-//       swReady: !!navigator.serviceWorker.controller,
-//       updateAvailable: false,
-//       installPrompted: false,
-//       firstInstallPromise,
-//       resolveFirstInstall,
-//       register: async (basePath = "", urlsToCache) => {
-//         set({ registering: true })
-//         try {
-//           const swPath = `${basePath}/sw.js`
-//           const { Workbox } = await import("workbox-window")
-//           const workbox = new Workbox(swPath)
-
-//           workbox.addEventListener("installed", (e) => {
-//             if (!e.isUpdate) {
-//               console.info("Initial service worker installed")
-//               cacheURLs(workbox, urlsToCache)
-//                 .then(() => {
-//                   set({ swReady: true, registering: false })
-//                 })
-//                 .catch(() => {
-//                   set({ registering: false })
-//                 })
-//             }
-//           })
-
-//           workbox.addEventListener("controlling", (e) => {
-//             if (!e.isUpdate) {
-//               get().resolveFirstInstall()
-//             }
-//           })
-
-//           workbox.addEventListener("waiting", () => {
-//             console.info("Service worker update available")
-//             set({ updateAvailable: true, registering: false })
-//             showUpdateNotification()
-//           })
-
-//           // for windows to reload when a new SW activates
-//           window.addEventListener("storage", (e) => {
-//             if (e.key == LOCAL_STORAGE_KEY && e.newValue != null) {
-//               console.info(
-//                 "Reloading due to service worker update from another window",
-//               )
-//               window.location.reload()
-//             }
-//           })
-
-//           await workbox.register()
-//           set({ workbox })
-//           console.info("Service worker registered")
-//         } catch (err) {
-//           console.error(`Service worker registration failed: ${err}`)
-//           set({ registering: false })
-//         }
-//       },
-//       unregister: async () => {
-//         const regs = await window.navigator.serviceWorker.getRegistrations()
-//         const res = await Promise.resolve(regs.map((r) => r.unregister()))
-//         if (res.some((res) => !!res)) {
-//           console.info("Unregistering service workers")
-//           notifyReload()
-//           window.location.reload()
-//         }
-//       },
-//       update: () => {
-//         const wb = get().workbox
-//         if (wb) {
-//           const reload = () => {
-//             wb.removeEventListener("controlling", reload)
-//             notifyReload()
-//             window.location.reload()
-//           }
-//           wb.addEventListener("controlling", reload)
-//           wb.messageSkipWaiting()
-//         }
-//       },
-//     }
-//   })
-// }
 
 const cacheURLs = async (workbox: Workbox, urls?: Iterable<string>) => {
   // https://developer.chrome.com/docs/workbox/modules/workbox-window#send_the_service_worker_a_list_of_urls_to_cache
@@ -277,7 +173,7 @@ const notifyReload = () => {
   window.localStorage.removeItem(LOCAL_STORAGE_KEY)
 }
 
-const showUpdateNotification = async () => {
+const showUpdateNotification = async (onUpdate: () => void) => {
   const [notifications, { updateNotificationProps, UpdateNotificationBody }] =
     await Promise.all([
       import("@mantine/notifications").then(
@@ -293,7 +189,7 @@ const showUpdateNotification = async () => {
 
   notifications.show({
     ...updateNotificationProps,
-    message: <UpdateNotificationBody />,
+    message: <UpdateNotificationBody onUpdate={onUpdate} />,
   })
 }
 

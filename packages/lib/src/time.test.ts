@@ -1,65 +1,63 @@
 import { describe, test, expect } from "vitest"
-import { formatISO, parseISO } from "date-fns"
+import { parseISO } from "date-fns"
 import {
   contains,
   getDay,
   getDays,
   intersects,
-  intervalToTimezone,
   sortIntervalsByStartDate,
-  toTimezone,
 } from "./time.js"
 
 describe("time module", () => {
   test.each([
     {
-      start: "2020-01-01T00:00:00Z",
-      end: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T00:00:00Z",
+      start: "2020-01-01T00:00:00",
+      end: "2020-01-01T01:00:00",
+      date: "2020-01-01T00:00:00",
       expected: true,
     },
     {
-      start: "2020-01-01T00:00:00Z",
-      end: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T01:00:00Z",
+      start: "2020-01-01T00:00:00",
+      end: "2020-01-01T01:00:00",
+      date: "2020-01-01T01:00:00",
       expected: false,
     },
     {
-      start: "2020-01-01T00:00:00Z",
-      end: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T00:30:00Z",
+      start: "2020-01-01T00:00:00",
+      end: "2020-01-01T01:00:00",
+      date: "2020-01-01T00:30:00",
       expected: true,
     },
     {
-      start: "2020-01-01T00:00:00Z",
-      end: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T01:30:00Z",
+      start: "2020-01-01T00:00:00",
+      end: "2020-01-01T01:00:00",
+      date: "2020-01-01T01:30:00",
       expected: false,
     },
     {
-      start: "2020-01-01T01:00:00Z",
-      end: "2020-01-01T02:00:00Z",
-      date: "2020-01-01T00:00:00Z",
+      start: "2020-01-01T01:00:00",
+      end: "2020-01-01T02:00:00",
+      date: "2020-01-01T00:00:00",
       expected: false,
     },
     {
-      start: "2020-01-01T01:00:00Z",
-      date: "2020-01-02T01:00:00Z",
+      start: "2020-01-01T01:00:00",
+      date: "2020-01-02T01:00:00",
       expected: true,
     },
     {
-      start: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T00:00:00Z",
+      start: "2020-01-01T01:00:00",
+      date: "2020-01-01T00:00:00",
       expected: false,
     },
     {
-      end: "2020-01-01T01:00:00Z",
-      date: "2000-01-01T01:00:00Z",
+      end: "2020-01-01T01:00:00",
+      date: "2000-01-01T01:00:00",
       expected: true,
     },
     {
-      end: "2020-01-01T01:00:00Z",
-      date: "2020-01-01T01:00:00Z",
+      end: "2020-01-01T01:00:00",
+      date: "2020-01-01T01:00:00",
       expected: false,
     },
   ])(
@@ -78,94 +76,94 @@ describe("time module", () => {
 
   test("includeEndpoint works", () => {
     const interval = {
-      start: parseISO("2020-01-01T00:00:00Z"),
-      end: parseISO("2020-01-01T01:00:00Z"),
+      start: parseISO("2020-01-01T00:00:00"),
+      end: parseISO("2020-01-01T01:00:00"),
     }
 
-    const dateObj = parseISO("2020-01-01T01:00:00Z")
+    const dateObj = parseISO("2020-01-01T01:00:00")
 
     expect(contains(interval, dateObj, true)).toBe(true)
   })
 
   test.each([
     {
-      a: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T00:30:00Z", end: "2020-01-01T01:30:00Z" },
+      a: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T00:30:00", end: "2020-01-01T01:30:00" },
       expected: true,
     },
     {
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
-      a: { start: "2020-01-01T00:30:00Z", end: "2020-01-01T01:30:00Z" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
+      a: { start: "2020-01-01T00:30:00", end: "2020-01-01T01:30:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: false,
     },
     {
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
-      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
+      a: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: false,
     },
     {
-      a: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
+      a: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T04:00:00Z" },
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T00:00:00", end: "2020-01-01T04:00:00" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: true,
     },
     {
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T04:00:00Z" },
-      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T04:00:00" },
+      a: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
-      b: { start: "2020-01-01T01:30:00Z" },
+      a: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
+      b: { start: "2020-01-01T01:30:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
-      b: { start: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
+      b: { start: "2020-01-01T02:00:00" },
       expected: false,
     },
     {
-      a: { start: "2020-01-01T00:00:00Z" },
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T00:00:00" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T03:00:00Z" },
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T03:00:00" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: false,
     },
     {
-      a: { end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T02:00:00" },
       expected: true,
     },
     {
-      a: { end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T00:00:00Z", end: "2020-01-01T01:00:00Z" },
+      a: { end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T00:00:00", end: "2020-01-01T01:00:00" },
       expected: true,
     },
     {
-      a: { end: "2020-01-01T01:00:00Z" },
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      a: { end: "2020-01-01T01:00:00" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: false,
     },
     {
-      a: { start: "2020-01-01T01:00:00Z" },
-      b: { end: "2020-01-01T02:00:00Z" },
+      a: { start: "2020-01-01T01:00:00" },
+      b: { end: "2020-01-01T02:00:00" },
       expected: true,
     },
     {
-      a: { start: "2020-01-01T01:00:00Z" },
-      b: { end: "2020-01-01T01:00:00Z" },
+      a: { start: "2020-01-01T01:00:00" },
+      b: { end: "2020-01-01T01:00:00" },
       expected: false,
     },
     {
@@ -175,7 +173,7 @@ describe("time module", () => {
     },
     {
       a: {},
-      b: { start: "2020-01-01T01:00:00Z", end: "2020-01-01T02:00:00Z" },
+      b: { start: "2020-01-01T01:00:00", end: "2020-01-01T02:00:00" },
       expected: true,
     },
   ])(
@@ -195,58 +193,36 @@ describe("time module", () => {
     },
   )
 
-  test("toTimezone works", () => {
-    const dt = parseISO("2020-01-01T00:00:00Z")
-    const dTz = toTimezone(dt, "America/New_York")
-    const dTz2 = toTimezone(dt, "America/Chicago")
-    const format = formatISO(dTz)
-    const format2 = formatISO(dTz2)
-
-    expect(format).toEqual("2019-12-31T19:00:00-05:00")
-    expect(format2).toEqual("2019-12-31T18:00:00-06:00")
-  })
-
-  test("intervalToTimezone works", () => {
-    const int = {
-      start: parseISO("2020-01-01T00:00:00Z"),
-    }
-
-    const intTz = intervalToTimezone(int, "America/Chicago")
-    const format = intTz.start ? formatISO(intTz.start) : undefined
-    expect(format).toEqual("2019-12-31T18:00:00-06:00")
-    expect(intTz.end).toBeUndefined()
-  })
-
   test("sortByDate", () => {
     const intervals = [
       {},
       {
-        start: parseISO("2020-01-01T01:00:00Z"),
-        end: parseISO("2020-01-01T01:30:00Z"),
+        start: parseISO("2020-01-01T01:00:00"),
+        end: parseISO("2020-01-01T01:30:00"),
       },
       {
-        start: parseISO("2020-01-01T00:00:00Z"),
-        end: parseISO("2020-01-01T01:00:00Z"),
+        start: parseISO("2020-01-01T00:00:00"),
+        end: parseISO("2020-01-01T01:00:00"),
       },
       {
-        start: parseISO("2020-01-01T00:30:00Z"),
-        end: parseISO("2020-01-01T01:00:00Z"),
+        start: parseISO("2020-01-01T00:30:00"),
+        end: parseISO("2020-01-01T01:00:00"),
       },
     ]
 
     const expected = [
       {},
       {
-        start: parseISO("2020-01-01T00:00:00Z"),
-        end: parseISO("2020-01-01T01:00:00Z"),
+        start: parseISO("2020-01-01T00:00:00"),
+        end: parseISO("2020-01-01T01:00:00"),
       },
       {
-        start: parseISO("2020-01-01T00:30:00Z"),
-        end: parseISO("2020-01-01T01:00:00Z"),
+        start: parseISO("2020-01-01T00:30:00"),
+        end: parseISO("2020-01-01T01:00:00"),
       },
       {
-        start: parseISO("2020-01-01T01:00:00Z"),
-        end: parseISO("2020-01-01T01:30:00Z"),
+        start: parseISO("2020-01-01T01:00:00"),
+        end: parseISO("2020-01-01T01:30:00"),
       },
     ]
 
@@ -256,24 +232,24 @@ describe("time module", () => {
   })
 
   test("getDay", () => {
-    const dt = parseISO("2020-01-01T03:00:00-05:00")
+    const dt = parseISO("2020-01-01T03:00:00")
 
     expect(getDay(dt, 0)).toEqual({
       key: "2020-01-01",
-      start: parseISO("2020-01-01T00:00:00-05:00"),
-      end: parseISO("2020-01-02T00:00:00-05:00"),
+      start: parseISO("2020-01-01T00:00:00"),
+      end: parseISO("2020-01-02T00:00:00"),
     })
 
     expect(getDay(dt, 6)).toEqual({
       key: "2019-12-31",
-      start: parseISO("2019-12-31T06:00:00-05:00"),
-      end: parseISO("2020-01-01T06:00:00-05:00"),
+      start: parseISO("2019-12-31T06:00:00"),
+      end: parseISO("2020-01-01T06:00:00"),
     })
 
     expect(getDay(dt, 3)).toEqual({
       key: "2020-01-01",
-      start: parseISO("2020-01-01T03:00:00-05:00"),
-      end: parseISO("2020-01-02T03:00:00-05:00"),
+      start: parseISO("2020-01-01T03:00:00"),
+      end: parseISO("2020-01-02T03:00:00"),
     })
   })
 
@@ -282,10 +258,10 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T12:00:00-05:00"),
+            start: parseISO("2020-01-01T12:00:00"),
           },
           {
-            start: parseISO("2020-01-01T15:00:00-05:00"),
+            start: parseISO("2020-01-01T15:00:00"),
           },
         ],
         3,
@@ -293,8 +269,8 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: parseISO("2020-01-01T03:00:00"),
+        end: parseISO("2020-01-02T03:00:00"),
       },
     ])
 
@@ -302,13 +278,13 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T03:00:00-05:00"),
+            start: parseISO("2020-01-01T03:00:00"),
           },
           {
-            start: parseISO("2020-01-02T03:00:00-05:00"),
+            start: parseISO("2020-01-02T03:00:00"),
           },
           {
-            start: parseISO("2020-01-03T02:00:00-05:00"),
+            start: parseISO("2020-01-03T02:00:00"),
           },
         ],
         3,
@@ -316,13 +292,13 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: parseISO("2020-01-01T03:00:00"),
+        end: parseISO("2020-01-02T03:00:00"),
       },
       {
         key: "2020-01-02",
-        start: parseISO("2020-01-02T03:00:00-05:00"),
-        end: parseISO("2020-01-03T03:00:00-05:00"),
+        start: parseISO("2020-01-02T03:00:00"),
+        end: parseISO("2020-01-03T03:00:00"),
       },
     ])
 
@@ -330,13 +306,13 @@ describe("time module", () => {
       getDays(
         [
           {
-            start: parseISO("2020-01-01T12:00:00-05:00"),
+            start: parseISO("2020-01-01T12:00:00"),
           },
           {
-            start: parseISO("2020-01-01T15:00:00-05:00"),
+            start: parseISO("2020-01-01T15:00:00"),
           },
           {
-            start: parseISO("2020-01-03T12:00:00-05:00"),
+            start: parseISO("2020-01-03T12:00:00"),
           },
         ],
         3,
@@ -344,13 +320,13 @@ describe("time module", () => {
     ).toEqual([
       {
         key: "2020-01-01",
-        start: parseISO("2020-01-01T03:00:00-05:00"),
-        end: parseISO("2020-01-02T03:00:00-05:00"),
+        start: parseISO("2020-01-01T03:00:00"),
+        end: parseISO("2020-01-02T03:00:00"),
       },
       {
         key: "2020-01-03",
-        start: parseISO("2020-01-03T03:00:00-05:00"),
-        end: parseISO("2020-01-04T03:00:00-05:00"),
+        start: parseISO("2020-01-03T03:00:00"),
+        end: parseISO("2020-01-04T03:00:00"),
       },
     ])
   })

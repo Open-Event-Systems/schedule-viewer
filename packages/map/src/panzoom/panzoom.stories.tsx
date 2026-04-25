@@ -3,7 +3,8 @@ import { PanZoom, type ZoomFunc } from "./panzoom.js"
 import { useEffect, useRef, useState } from "react"
 import { parseSVGData, type SVGData } from "../svg/svg.js"
 
-import lobbyMap from "../../../viewer/public/example-map-lobby.svg"
+import lobbyMap from "../../example-map-lobby.svg"
+
 import { MapSVG } from "../svg/map-svg.js"
 
 const meta: Meta<typeof PanZoom> = {

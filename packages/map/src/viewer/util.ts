@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react"
 import type { MapLevel, MapObject } from "../types.js"
+import { parseSVGData, type SVGData } from "../svg/svg.js"
 
 type TransitionState = "off" | "forward" | "backward" | "on"
 
@@ -89,3 +90,13 @@ export const useIsometricTransition = (
 
 export const isMapLevel = (obj: MapObject): obj is MapLevel =>
   obj.type == "level" && "id" in obj && !!obj.id
+
+export const fetchMapSVG = async (url: string): Promise<SVGData> => {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`Could not fetch map ${url}: http status ${res.status}`)
+  }
+
+  const text = await res.text()
+  return parseSVGData(text)
+}

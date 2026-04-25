@@ -107,6 +107,10 @@ export const PanZoom = (props: PanZoomProps) => {
           limitToBounds={false}
           minScale={0.1}
           maxScale={10}
+          smooth={false}
+          wheel={{
+            step: 0.01,
+          }}
           panning={{
             velocityDisabled: true,
           }}

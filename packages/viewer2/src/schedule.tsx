@@ -17,6 +17,7 @@ import {
   WrappedItemDetails,
   WrappedItemPill,
 } from "./components/pill/wrapped-pills.js"
+import type { Address, LocationAddressEntry } from "./types.js"
 
 export const parsers = {
   event: parseScheduleEvent,
@@ -215,5 +216,26 @@ export const makeRenderPillFunc = (
         onClickBody={navProps?.onClick}
       />
     )
+  }
+}
+
+export const makeLocationAddressMatchFunc = (
+  entries?: Iterable<LocationAddressEntry>,
+): ((loc: string) => Address | undefined) => {
+  const map = new Map<string, Address>()
+  let defaultEntry: Address | undefined
+
+  for (const entry of entries ?? []) {
+    for (const loc of entry.location) {
+      map.set(loc, entry.address)
+    }
+
+    if (entry.location.length == 0) {
+      defaultEntry = entry.address
+    }
+  }
+
+  return (loc) => {
+    return map.get(loc) ?? defaultEntry
   }
 }

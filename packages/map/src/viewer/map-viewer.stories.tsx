@@ -6,9 +6,10 @@ import {
 } from "./map-viewer.js"
 import { useCallback, useMemo, useReducer } from "react"
 
-import lobbySvg from "../../../viewer/public/example-map-lobby.svg"
-import f2Svg from "../../../viewer/public/example-map-2f.svg"
-import logoSvg from "../../../viewer/public/example-icon.svg"
+import lobbySvg from "../../example-map-lobby.svg"
+import f2Svg from "../../example-map-2f.svg"
+import logoSvg from "../../example-icon.svg"
+
 import { parseMapConfig, type MapConfigInput } from "../config.js"
 
 const meta: Meta<typeof MapViewer> = {
@@ -25,11 +26,20 @@ export const Default: StoryObj<typeof MapViewer> = {
     const reducer = useCallback(
       (
         cur: MapViewerProps,
-        action: Partial<MapViewerProps>,
+        action:
+          | Partial<MapViewerProps>
+          | ((cur: MapViewerProps) => Partial<MapViewerProps>),
       ): MapViewerProps => {
-        return {
-          ...cur,
-          ...action,
+        if (typeof action == "function") {
+          return {
+            ...cur,
+            ...action(cur),
+          }
+        } else {
+          return {
+            ...cur,
+            ...action,
+          }
         }
       },
       [],
@@ -48,6 +58,7 @@ export const Default: StoryObj<typeof MapViewer> = {
         },
       ],
       locations: mapCfg.locations,
+      flagToggles: mapCfg.flagToggles,
     })
 
     const callbacks = useMemo<MapViewerCallbacks>(() => {
@@ -55,8 +66,33 @@ export const Default: StoryObj<typeof MapViewer> = {
         onSetLevelId(id) {
           dispatch({ currentLevelId: id })
         },
-        onSetHiddenLayers(layers) {
-          dispatch({ hiddenLayers: [...layers] })
+        onSetLayerVisible(layer, visible) {
+          dispatch((cur) => {
+            const newLayers = new Set(cur.hiddenLayerIds)
+            if (visible) {
+              newLayers.delete(layer)
+            } else {
+              newLayers.add(layer)
+            }
+            return {
+              ...cur,
+              hiddenLayerIds: [...newLayers],
+            }
+          })
+        },
+        onSetFlag(flag, enabled) {
+          dispatch((cur) => {
+            const newFlags = new Set(cur.flags)
+            if (enabled) {
+              newFlags.add(flag)
+            } else {
+              newFlags.delete(flag)
+            }
+            return {
+              ...cur,
+              flags: [...newFlags],
+            }
+          })
         },
         onSetIsometric(isometric) {
           dispatch({ isometric })
@@ -78,15 +114,17 @@ export const Default: StoryObj<typeof MapViewer> = {
         objects={state.objects}
         layers={state.layers}
         isometric={state.isometric}
-        hiddenLayers={state.hiddenLayers}
+        hiddenLayerIds={state.hiddenLayerIds}
         locations={state.locations}
         locationItemInfo={state.locationItemInfo}
         flags={state.flags}
+        flagToggles={mapCfg.flagToggles}
         activeLocationId={state.activeLocationId}
         detailsLocationId={state.detailsLocationId}
         zoomLocationId={state.zoomLocationId}
         onSetLevelId={callbacks.onSetLevelId}
-        onSetHiddenLayers={callbacks.onSetHiddenLayers}
+        onSetLayerVisible={callbacks.onSetLayerVisible}
+        onSetFlag={callbacks.onSetFlag}
         onSetActiveLocationId={callbacks.onSetActiveLocationId}
         onSetIsometric={callbacks.onSetIsometric}
         onSetDetailsLocationId={callbacks.onSetDetailsLocationId}

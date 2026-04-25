@@ -3,11 +3,11 @@ import {
   makeScheduleFetchAPI,
   makeParsedScheduleItemsAPI,
   makeSortedScheduleAPI,
-  makeTZScheduleAPI,
   type ScheduleAPI,
   optional,
   omitUndef,
   iterToArr,
+  isoDate,
 } from "@open-event-systems/schedule-lib"
 import z from "zod"
 import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
@@ -63,6 +63,8 @@ const tagIndicatorSchema = z.codec(
 const configSchema = z.looseObject({
   id: z.string(),
   items: optional(z.array(z.union([z.string(), z.looseObject({})]))),
+  start: isoDate,
+  end: isoDate,
   title: optional(z.string()),
   description: optional(z.string()),
   dayChangeHour: optional(z.number()),
@@ -89,6 +91,8 @@ const getDefaultTZ = (): string => {
 export const DEFAULT_SCHEDULE_CONFIG = {
   id: "schedule",
   items: [],
+  start: new Date(0),
+  end: new Date(4102444800),
   title: "Schedule",
   timeZone: getDefaultTZ(),
   dayChangeHour: 6,
@@ -102,10 +106,14 @@ export const DEFAULT_SCHEDULE_CONFIG = {
  * Parse a {@link ScheduleConfig} object.
  */
 export const parseConfig = (configData: unknown): ScheduleConfig => {
-  const { bookmarks, selectionsService, ...parsed } =
+  const { bookmarks, selectionsService, timeZone, ...parsed } =
     configSchema.parse(configData)
+
+  const defaultTz = getDefaultTZ()
+
   const config: ScheduleConfig = {
     ...DEFAULT_SCHEDULE_CONFIG,
+    timeZone: timeZone || defaultTz,
     icalPrefix: parsed.id,
     ...omitUndef(parsed),
     selectionsService: selectionsService ?? bookmarks,
@@ -124,8 +132,7 @@ export const makeScheduleAPIFromConfig = (
   const allAPIs = [parsedAPI, ...urlAPIs]
 
   const composed = composeScheduleAPIs(...allAPIs)
-  const tz = makeTZScheduleAPI(composed)
-  const sorted = makeSortedScheduleAPI(tz)
+  const sorted = makeSortedScheduleAPI(composed)
   return sorted
 }
 

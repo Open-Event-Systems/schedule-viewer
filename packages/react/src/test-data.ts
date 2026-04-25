@@ -55,6 +55,8 @@ export const config = {
   id: "example-event",
   title: "Example Event",
   dayChangeHour: 6,
+  start: "2025-01-17T08:00:00-05:00",
+  end: "2025-01-18T00:00:00-05:00",
   tags: [
     ["main-event", "Main Event"],
     ["hobby", "Hobby"],
