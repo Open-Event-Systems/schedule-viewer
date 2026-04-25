@@ -4,7 +4,11 @@ export const getHeadElements = (): HTMLElement[] => {
   const els = []
 
   for (const el of document.head.children) {
-    if (el.tagName == "TITLE" || el.tagName == "META") {
+    if (
+      el.tagName == "TITLE" ||
+      el.tagName == "META" ||
+      el.tagName == "SCRIPT"
+    ) {
       els.push(el as HTMLElement)
     }
   }

@@ -1,13 +1,15 @@
-import { useLayoutEffect, useMemo } from "react"
+import { use, useLayoutEffect, useMemo } from "react"
 import { useViewerConfig } from "../../config.js"
 import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import { makeLocationAddressMatchFunc } from "../../schedule.js"
+import { InitialHeadContext } from "../head/deduped-head.js"
 
 export const JSONLD = ({
   children,
 }: {
   children?: Readonly<Record<string, unknown>>
 }) => {
+  const initialHead = use(InitialHeadContext)
   useLayoutEffect(() => {
     if (!children) {
       return
@@ -18,12 +20,31 @@ export const JSONLD = ({
     el.setAttribute("type", "application/ld+json")
     el.innerHTML = jsonStr
 
+    // remove any initial ld+json elements
+
+    const toRemove = []
+
+    for (const el of initialHead) {
+      if (
+        el.tagName == "SCRIPT" &&
+        el.getAttribute("type") == "application/ld+json"
+      ) {
+        toRemove.push(el)
+      }
+    }
+
+    for (const el of toRemove) {
+      el.remove()
+      const idx = toRemove.indexOf(el)
+      toRemove.splice(idx, 1)
+    }
+
     document.head.appendChild(el)
 
     return () => {
       el.remove()
     }
-  }, [children])
+  }, [children, initialHead])
 
   return null
 }
