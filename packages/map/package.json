@@ -20,7 +20,6 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "@date-fns/tz": "^1.4.1",
     "@mantine/core": "^9.0.2",
     "@mantine/hooks": "^9.0.2",
     "@open-event-systems/schedule-lib": "workspace:",
@@ -36,7 +35,6 @@
     "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {
-    "@date-fns/tz": "^1.2.0",
     "@mantine/core": "^9.0.2",
     "@mantine/hooks": "^9.0.2",
     "@open-event-systems/schedule-lib": "workspace:",
