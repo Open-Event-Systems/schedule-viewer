@@ -59,7 +59,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
-	opts := getHeaderOptions(r)
+	opts, err := getHeaderOptions(r)
+
+	if err != nil {
+		httpError(w, http.StatusBadRequest)
+		log.Printf("bad request: %s", err)
+		return
+	}
 
 	if opts.url == "" {
 		serverError(w, errors.New("X-Schedule-URL was not set"))
@@ -116,7 +122,13 @@ func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleItemRoute(w http.ResponseWriter, r *http.Request) {
 	itemId := chi.URLParam(r, "itemId")
-	opts := getHeaderOptions(r)
+	opts, err := getHeaderOptions(r)
+
+	if err != nil {
+		httpError(w, http.StatusBadRequest)
+		log.Printf("bad request: %s", err)
+		return
+	}
 
 	if opts.url == "" {
 		serverError(w, errors.New("X-Schedule-URL was not set"))
@@ -244,22 +256,27 @@ func (h *Handler) fetchData(ctx context.Context, htmlURL string, configURL strin
 	return
 }
 
-func getHeaderOptions(r *http.Request) headerOptions {
+func getHeaderOptions(r *http.Request) (headerOptions, error) {
 	var opts headerOptions
+	var errs []error
 
 	opts.url = r.Header.Get("X-Schedule-URL")
 	opts.htmlURL = r.Header.Get("X-Schedule-HTML-URL")
 	opts.configURL = r.Header.Get("X-Schedule-Config-URL")
 
-	if opts.htmlURL == "" && opts.url != "" {
-		opts.htmlURL = removeTrailingSlash(opts.url) + "/index.html"
+	if opts.url == "" {
+		errs = append(errs, errors.New("header X-Schedule-URL was not set"))
 	}
 
-	if opts.configURL == "" && opts.url != "" {
-		opts.configURL = removeTrailingSlash(opts.url) + "/config.json"
+	if opts.htmlURL == "" {
+		errs = append(errs, errors.New("header X-Schedule-HTML-URL was not set"))
 	}
 
-	return opts
+	if opts.configURL == "" {
+		errs = append(errs, errors.New("header X-Schedule-Config-URL was not set"))
+	}
+
+	return opts, errors.Join(errs...)
 }
 
 func serverError(w http.ResponseWriter, err error) {
