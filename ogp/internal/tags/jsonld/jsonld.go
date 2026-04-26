@@ -15,18 +15,21 @@ func GetIndexTagActions(ctx tags.TagContext, items []schedule.Item) tags.HeadAct
 	list := jsonLDEventList{
 		jsonLDObject: jsonLDObject{
 			Context: "https://schema.org",
-			Type: "ItemList",
+			Type:    "ItemList",
 		},
 	}
 
 	for i := range items {
 
+		var eventType string
 		var url string
 
 		switch items[i].Type {
 		case "event":
+			eventType = "ConferenceEvent"
 			url = fmt.Sprintf("%s/events/%s", ctx.URL, items[i].Id)
 		case "vendor":
+			eventType = "SaleEvent"
 			url = fmt.Sprintf("%s/vendors/%s", ctx.URL, items[i].Id)
 		}
 
@@ -36,7 +39,7 @@ func GetIndexTagActions(ctx tags.TagContext, items []schedule.Item) tags.HeadAct
 
 		entry := jsonLDEvent{
 			jsonLDObject: jsonLDObject{
-				Type: "Event",
+				Type: eventType,
 				Id:   url,
 			},
 		}
@@ -74,9 +77,21 @@ func GetIndexTagActions(ctx tags.TagContext, items []schedule.Item) tags.HeadAct
 }
 
 func GetItemTagActions(ctx tags.TagContext) tags.HeadActionFunc {
+	var eventType string
+	var contactType string
+
+	switch ctx.Item.Type {
+	case "event":
+		eventType = "ConferenceEvent"
+		contactType = "Person"
+	case "vendor":
+		eventType = "SaleEvent"
+		contactType = "Store"
+	}
+
 	event := jsonLDEvent{
 		jsonLDObject: jsonLDObject{
-			Type:    "Event",
+			Type:    eventType,
 			Context: "https://schema.org",
 			Id:      ctx.URL,
 		},
@@ -101,7 +116,7 @@ func GetItemTagActions(ctx tags.TagContext) tags.HeadActionFunc {
 	}
 
 	for _, contact := range ctx.Item.Contacts {
-		event.Performer = append(event.Performer, getPerformerObject(contact))
+		event.Performer = append(event.Performer, getPerformerObject(contact, contactType))
 	}
 
 	encoded, err := json.Marshal(event)
@@ -133,10 +148,10 @@ func GetItemTagActions(ctx tags.TagContext) tags.HeadActionFunc {
 	}
 }
 
-func getPerformerObject(contact schedule.Contact) jsonLDPerson {
+func getPerformerObject(contact schedule.Contact, contactType string) jsonLDPerson {
 	return jsonLDPerson{
 		jsonLDObject: jsonLDObject{
-			Type: "Person",
+			Type: contactType,
 		},
 		Name: contact.Name,
 		URL:  contact.URL,

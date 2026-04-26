@@ -28,7 +28,7 @@ import {
   itemQueryOptions,
   useScheduleAPI,
 } from "@open-event-systems/schedule-react"
-import { JSONLDEvent } from "../components/ld/ld.js"
+import { JSONLDItem } from "../components/ld/ld.js"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -65,7 +65,7 @@ export const EventDetailsRoute = () => {
 
   return (
     <>
-      <JSONLDEvent event={event.data[0]!} url={url} />
+      <JSONLDItem event={event.data[0]!} url={url} />
       <ItemDetails items={event.data} />
     </>
   )
@@ -100,7 +100,7 @@ export const VendorDetailsRoute = () => {
 
   return (
     <>
-      <JSONLDEvent event={vendor.data[0]!} url={url} />
+      <JSONLDItem event={vendor.data[0]!} url={url} />
       <ItemDetails items={vendor.data} />
     </>
   )

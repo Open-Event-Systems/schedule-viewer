@@ -50,7 +50,33 @@ export const JSONLD = ({
   return null
 }
 
-export const JSONLDEvent = ({
+export const JSONLDItems = ({
+  items,
+  getItemURL,
+}: {
+  items?: Iterable<DetailedScheduleItem>
+  getItemURL: (item: DetailedScheduleItem) => string
+}) => {
+  const itemData = []
+
+  for (const item of items ?? []) {
+    const itemURL = getItemURL(item)
+    itemData.push({
+      "@id": itemURL,
+      "@type": item.type == "vendor" ? "SaleEvent" : "ConferenceEvent",
+    })
+  }
+
+  const data: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: itemData,
+  }
+
+  return <JSONLD>{data}</JSONLD>
+}
+
+export const JSONLDItem = ({
   event,
   url,
 }: {
