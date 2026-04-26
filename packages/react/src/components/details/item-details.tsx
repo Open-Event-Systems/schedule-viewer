@@ -374,7 +374,7 @@ export type ItemDetailsContactProps = {
 }
 
 const ItemDetailsContact = memo(({ name, url }: ItemDetailsContactProps) => {
-  let content: ReactNode = name
+  let content: ReactNode = name || url
 
   if (url) {
     content = (
@@ -383,7 +383,7 @@ const ItemDetailsContact = memo(({ name, url }: ItemDetailsContactProps) => {
         href={url}
         target="_blank"
       >
-        {name}
+        {name || url}
       </Anchor>
     )
   }
