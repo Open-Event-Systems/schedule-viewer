@@ -18,6 +18,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "references": [{ "path": "../react" }],
-  "include": ["./src/**/*", "./.storybook/**/*"]
+  "references": [{ "path": "../react" }]
 }

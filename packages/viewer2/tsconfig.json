@@ -21,6 +21,5 @@
     { "path": "../map" },
     { "path": "../react" },
     { "path": "../lib" }
-  ],
-  "include": ["./src/**/*", "./.storybook/**/*"]
+  ]
 }

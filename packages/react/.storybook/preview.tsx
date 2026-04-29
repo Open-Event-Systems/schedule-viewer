@@ -2,6 +2,7 @@ import type { Preview } from "@storybook/react-vite"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
 
 import "@mantine/core/styles.css"
+import "../src/styles.scss"
 
 import { parsedConfig } from "../src/test-data.js"
 import { ScheduleConfigContext } from "../src/hooks/config.js"
