@@ -2,7 +2,6 @@ import type { Preview } from "@storybook/react-vite"
 import { MantineProvider } from "@mantine/core"
 
 import "@mantine/core/styles.css"
-import "@open-event-systems/schedule-react/schedule-react.css"
 
 const preview: Preview = {
   parameters: {

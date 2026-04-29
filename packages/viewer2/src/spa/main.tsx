@@ -4,7 +4,6 @@
 
 import "@mantine/core/styles.css"
 import "@mantine/notifications/styles.css"
-import "@open-event-systems/schedule-react/schedule-react.css"
 import "@open-event-systems/schedule-map/schedule-map.css"
 import "../styles.scss"
 
