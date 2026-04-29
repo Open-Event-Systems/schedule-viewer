@@ -1,259 +1,246 @@
-import { Box, useProps, type BoxProps } from "@mantine/core"
+import {
+  Box,
+  Text,
+  useProps,
+  type BoxProps,
+  type TextProps,
+} from "@mantine/core"
 import clsx from "clsx"
-import { createContext, useContext, type ReactNode } from "react"
+import { createContext, use, type ReactNode } from "react"
+import { useDefaultCalendarRange } from "./hooks.js"
 
-export type CalendarContextValue = Readonly<{
-  start: Date
-  end: Date
-}>
+import classes from "./calendar.module.scss"
+import { Track, type TrackItemProps, type TrackProps } from "./track.js"
 
-export const CalendarContext = createContext<CalendarContextValue>({
-  start: new Date(),
-  end: new Date(),
-})
+const CalendarContext =
+  createContext<
+    Readonly<
+      | { start: Date; end: Date; orientation: "horizontal" | "vertical" }
+      | undefined
+    >
+  >(undefined)
 
-export type CalendarProps = CalendarRootProps & {
-  start: Date
-  end: Date
-}
-
-export const Calendar = (props: CalendarProps) => {
-  const { start, end, ...other } = props
-
-  return (
-    <CalendarContext value={{ start, end }}>
-      <Calendar.Root {...other} />
-    </CalendarContext>
-  )
-}
-
-export type CalendarRootProps = {
-  orientation?: "vertical" | "horizontal"
-  numTracks?: number
-  numCells?: number
+export type CalendarProps = BoxProps & {
+  classNames?: {
+    root?: string
+    vertical?: string
+    horizontal?: string
+  }
+  start?: Date | null
+  end?: Date | null
+  orientation?: "horizontal" | "vertical"
+  dayChangeHour?: number
   children?: ReactNode
-} & BoxProps
+}
 
-const Root = (props: CalendarRootProps) => {
+/**
+ * Base calendar display component.
+ */
+const _Calendar = (props: CalendarProps) => {
   const {
     className,
-    orientation = "vertical",
-    numTracks = 0,
-    numCells = 0,
+    classNames,
+    start: startProp,
+    end: endProp,
+    orientation: orientationProp,
+    dayChangeHour,
+    children,
     ...other
-  } = useProps("CalendarRoot", {}, props)
+  } = useProps("Calendar", null, props)
+
+  const [defaultStart, defaultEnd] = useDefaultCalendarRange(dayChangeHour)
+  const start = startProp ?? defaultStart
+  const end = endProp ?? defaultEnd
+  const orientation = orientationProp ?? "vertical"
 
   return (
     <Box
       className={clsx(
         "Calendar-root",
-        {
-          "Calendar-vertical": orientation == "vertical",
-          "Calendar-horizontal": orientation == "horizontal",
-        },
+        classes.root,
+        orientation == "horizontal"
+          ? ["Calendar-horizontal", classes.horizontal, classNames?.horizontal]
+          : ["Calendar-vertical", classes.vertical, classNames?.vertical],
+        classNames?.root,
         className,
       )}
       {...other}
-      style={{
-        ...other.style,
-        "--num-tracks": numTracks,
-        "--num-cells": numCells,
-      }}
-    />
-  )
-}
-
-export type CalendarBackgroundProps = {
-  numTracks?: number
-} & Omit<BoxProps, "children">
-
-const Background = (props: CalendarBackgroundProps) => {
-  const {
-    className,
-    numTracks = 0,
-    ...other
-  } = useProps("CalendarBackground", {}, props)
-
-  const els = []
-  for (let i = 0; i < numTracks; i++) {
-    els.push(<Box key={i} className="Calendar-trackBackground" />)
-  }
-
-  return (
-    <Box
-      className={clsx("Calendar-gaps", "Calendar-trackSpacing", className)}
-      {...other}
     >
-      {els}
+      <CalendarContext.Provider value={{ start, end, orientation }}>
+        {children}
+      </CalendarContext.Provider>
     </Box>
   )
 }
 
-export type CalendarMarksProps = {
-  numMarks?: number
-} & Omit<BoxProps, "children">
+export type CalendarTimesProps = BoxProps & { children?: ReactNode }
 
-const Marks = (props: CalendarMarksProps) => {
-  const {
-    className,
-    numMarks = 0,
-    ...other
-  } = useProps("CalendarMarks", {}, props)
+export const CalendarTimes = (props: CalendarTimesProps) => {
+  const { className, ...other } = useProps("CalendarTimes", null, props)
 
-  const els = []
-  for (let i = 0; i < numMarks; i++) {
-    els.push(<Box key={i} className="Calendar-mark" />)
+  return (
+    <Box
+      className={clsx("Calendar-times", classes.times, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTimeProps = TextProps & { children?: ReactNode }
+
+export const CalendarTime = (props: CalendarTimesProps) => {
+  const { className, ...other } = useProps("CalendarTime", null, props)
+
+  return (
+    <Text
+      component="span"
+      size="sm"
+      className={clsx("Calendar-time", classes.time, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarMarksProps = BoxProps & { children?: ReactNode }
+
+export const CalendarMarks = (props: CalendarMarksProps) => {
+  const { className, ...other } = useProps("CalendarMarks", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-marks", classes.marks, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarMarkProps = BoxProps
+
+export const CalendarMark = (props: CalendarMarkProps) => {
+  const { className, ...other } = useProps("CalendarMark", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-mark", classes.mark, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarHeadersProps = BoxProps & { children?: ReactNode }
+
+export const CalendarHeaders = (props: CalendarHeadersProps) => {
+  const { className, ...other } = useProps("CalendarTrackHeaders", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-headers", classes.headers, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarHeaderProps = TextProps & { children?: ReactNode }
+
+export const CalendarHeader = (props: CalendarHeaderProps) => {
+  const { className, ...other } = useProps("CalendarHeader", null, props)
+
+  return (
+    <Text
+      component="span"
+      className={clsx("Calendar-header", classes.header, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarBackgroundsProps = BoxProps & { children?: ReactNode }
+
+export const CalendarBackgrounds = (props: CalendarBackgroundsProps) => {
+  const { className, ...other } = useProps("CalendarBackgrounds", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-backgrounds", classes.backgrounds, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarBackgroundProps = BoxProps
+
+export const CalendarBackground = (props: CalendarBackgroundProps) => {
+  const { className, ...other } = useProps("CalendarBackground", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-background", classes.background, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTracksProps = BoxProps & { children?: ReactNode }
+
+export const CalendarTracks = (props: CalendarTracksProps) => {
+  const { className, ...other } = useProps("CalendarTracks", null, props)
+
+  return (
+    <Box
+      className={clsx("Calendar-tracks", classes.tracks, className)}
+      {...other}
+    />
+  )
+}
+
+export type CalendarTrackProps = Omit<
+  TrackProps,
+  "start" | "end" | "orientation"
+>
+
+export const CalendarTrack = (props: CalendarTrackProps) => {
+  const { className, ...other } = useProps("CalendarTrack", null, props)
+
+  const ctx = use(CalendarContext)
+  if (!ctx) {
+    throw new Error("Calendar.Track used outside of Calendar")
   }
+  const { start, end, orientation } = ctx
 
   return (
-    <Box
-      className={clsx("Calendar-content", "Calendar-markSpacing", className)}
-      {...other}
-    >
-      {els}
-    </Box>
-  )
-}
-
-export type CalendarLabelsProps = { children?: ReactNode } & BoxProps
-
-const Labels = (props: CalendarLabelsProps) => {
-  const { className, ...other } = useProps("CalendarLabels", {}, props)
-
-  return (
-    <Box
-      className={clsx("Calendar-labels", "Calendar-markSpacing", className)}
+    <Track
+      start={start}
+      end={end}
+      orientation={orientation}
+      className={clsx("Calendar-track", classes.track, className)}
       {...other}
     />
   )
 }
 
-export type CalendarLabelProps = { children?: ReactNode } & BoxProps
+export type CalendarItemProps = TrackItemProps
 
-const Label = (props: CalendarLabelProps) => {
-  const { className, ...other } = useProps("CalendarLabel", {}, props)
-
-  return <Box className={clsx("Calendar-label", className)} {...other} />
-}
-
-export type CalendarTracksProps = { children?: ReactNode } & BoxProps
-
-const Tracks = (props: CalendarTracksProps) => {
-  const { className, ...other } = useProps("CalendarTracks", {}, props)
+export const CalendarItem = (props: CalendarItemProps) => {
+  const { className, ...other } = useProps("CalendarItem", null, props)
 
   return (
-    <Box
-      className={clsx("Calendar-tracks", "Calendar-trackSpacing", className)}
+    <Track.Item
+      className={clsx("Calendar-item", classes.item, className)}
       {...other}
     />
   )
 }
 
-export type CalendarTrackProps = { children?: ReactNode } & BoxProps
-
-const Track = (props: CalendarTrackProps) => {
-  const { className, ...other } = useProps("CalendarTrack", {}, props)
-
-  return <Box className={clsx("Calendar-track", className)} {...other} />
-}
-
-export type CalendarTrackHeaderProps = { children?: ReactNode } & BoxProps
-
-const TrackHeader = (props: CalendarTrackHeaderProps) => {
-  const { className, ...other } = useProps("CalendarTrackHeader", {}, props)
-
-  return (
-    <Box
-      className={clsx(
-        "Calendar-trackHeader",
-        "Calendar-headerTitle",
-        className,
-      )}
-      {...other}
-    />
-  )
-}
-
-export type CalendarTrackContentProps = { children?: ReactNode } & BoxProps
-
-const TrackContent = (props: CalendarTrackContentProps) => {
-  const { className, ...other } = useProps("CalendarTrackContent", {}, props)
-
-  return (
-    <Box
-      className={clsx(
-        "Calendar-trackContent",
-        "Calendar-trackItems",
-        className,
-      )}
-      {...other}
-    />
-  )
-}
-
-export type CalendarTrackItemProps = {
-  children?: ReactNode
-  start?: Date
-  end?: Date
-} & BoxProps
-
-const TrackItem = (props: CalendarTrackItemProps) => {
-  const { className, start, end, ...other } = useProps(
-    "CalendarTrackItem",
-    {},
-    props,
-  )
-
-  const styleProps = useTrackItemInset(start, end)
-
-  return (
-    <Box
-      className={clsx("Calendar-trackItem", className)}
-      {...other}
-      style={{ ...other.style, ...styleProps }}
-    />
-  )
-}
-
-Calendar.Root = Root
-Calendar.Background = Background
-Calendar.Marks = Marks
-Calendar.Labels = Labels
-Calendar.Label = Label
-Calendar.Tracks = Tracks
-Calendar.Track = Track
-Calendar.TrackHeader = TrackHeader
-Calendar.TrackContent = TrackContent
-Calendar.TrackItem = TrackItem
-
-const useTrackItemInset = (
-  start?: Date,
-  end?: Date,
-): Record<string, string> => {
-  const { start: trackStart, end: trackEnd } = useContext(CalendarContext)
-  const trackStartT = trackStart.getTime()
-  const trackEndT = trackEnd.getTime()
-  const range = trackEndT - trackStartT
-  const startT = start?.getTime()
-  const endT = end?.getTime()
-
-  let startPct: string
-  let endPct: string
-
-  if (startT != null && startT >= trackStartT) {
-    startPct = `${(100 * (startT - trackStartT)) / range}%`
-  } else {
-    startPct = "0%"
-  }
-
-  if (endT != null && endT <= trackEndT) {
-    endPct = `${(100 * (trackEndT - endT)) / range}%`
-  } else {
-    endPct = "0%"
-  }
-
-  return {
-    "--item-start": startPct,
-    "--item-end": endPct,
-  }
-}
+export const Calendar = Object.assign(_Calendar, {
+  Backgrounds: CalendarBackgrounds,
+  Background: CalendarBackground,
+  Marks: CalendarMarks,
+  Mark: CalendarMark,
+  Times: CalendarTimes,
+  Time: CalendarTime,
+  Headers: CalendarHeaders,
+  Header: CalendarHeader,
+  Tracks: CalendarTracks,
+  Track: CalendarTrack,
+  Item: CalendarItem,
+})

@@ -1,13 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import { Calendar } from "./calendar.js"
-import { useCalendarMarks } from "./utils.js"
-
-import "./calendar.scss"
 import { Box } from "@mantine/core"
-
-const start = new Date(2020, 0, 1, 9)
-const end = new Date(2020, 0, 1, 17)
+import { useCalendarMarks, useCalendarTimes } from "./hooks.js"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -16,49 +10,68 @@ const meta: Meta<typeof Calendar> = {
 export default meta
 
 export const Default: StoryObj<typeof Calendar> = {
-  args: {
-    orientation: "vertical",
-  },
   render(args) {
+    const start = new Date(2020, 0, 1, 9)
+    const end = new Date(2020, 0, 1, 12)
+
+    const times = useCalendarTimes(start, end)
+    const timeEls = times.map((t, i) => (
+      <Calendar.Time key={i}>{t}</Calendar.Time>
+    ))
+
     const marks = useCalendarMarks(start, end)
+    const markEls = marks.map((p, i) => <Calendar.Mark key={i} {...p} />)
 
     return (
-      <Calendar numTracks={3} numCells={8} {...args} start={start} end={end}>
-        <Calendar.Background numTracks={3} />
-        <Calendar.Marks numMarks={marks.length} />
-        <Calendar.Labels>
-          {marks.map((s, i) => (
-            <Calendar.Label key={i}>{s}</Calendar.Label>
-          ))}
-        </Calendar.Labels>
+      <Calendar mih={400} start={start} end={end} {...args}>
+        <Calendar.Backgrounds>
+          <Calendar.Background />
+          <Calendar.Background />
+          <Calendar.Background />
+        </Calendar.Backgrounds>
+        <Calendar.Times>{timeEls}</Calendar.Times>
+        <Calendar.Marks>{markEls}</Calendar.Marks>
+        <Calendar.Headers>
+          <Calendar.Header>Header 1</Calendar.Header>
+          <Calendar.Header>Header 2</Calendar.Header>
+          <Calendar.Header>Header 3</Calendar.Header>
+        </Calendar.Headers>
         <Calendar.Tracks>
           <Calendar.Track>
-            <Calendar.TrackHeader>Room 1</Calendar.TrackHeader>
-            <Calendar.TrackContent>
-              <Calendar.TrackItem
-                bg="cyan"
-                start={new Date(2020, 0, 1, 12)}
-                end={new Date(2020, 0, 1, 16)}
-              >
-                Item 1
-              </Calendar.TrackItem>
-            </Calendar.TrackContent>
+            <Calendar.Item
+              start={new Date(2020, 0, 1, 11)}
+              end={new Date(2020, 0, 1, 12)}
+              renderRoot={(props) => (
+                <Box bg="#1f711f" c="#ffffff" {...props} />
+              )}
+            >
+              T1
+            </Calendar.Item>
           </Calendar.Track>
           <Calendar.Track>
-            <Calendar.TrackHeader>Room 2</Calendar.TrackHeader>
+            <Calendar.Item
+              start={new Date(2020, 0, 1, 9)}
+              end={new Date(2020, 0, 1, 10, 30)}
+              renderRoot={(props) => (
+                <Box bg="#2c1766" c="#ffffff" {...props} />
+              )}
+            >
+              T2
+            </Calendar.Item>
           </Calendar.Track>
           <Calendar.Track>
-            <Calendar.TrackHeader>Room 3</Calendar.TrackHeader>
+            <Calendar.Item
+              start={new Date(2020, 0, 1, 10, 30)}
+              end={new Date(2020, 0, 1, 11, 30)}
+              renderRoot={(props) => (
+                <Box bg="#641414" c="#ffffff" {...props} />
+              )}
+            >
+              T3
+            </Calendar.Item>
           </Calendar.Track>
         </Calendar.Tracks>
       </Calendar>
     )
   },
-  decorators: [
-    (Story) => (
-      <Box w={800} h={500}>
-        <Story />
-      </Box>
-    ),
-  ],
 }

@@ -1,0 +1,19 @@
+.root {
+  position: relative;
+}
+
+.item {
+  --start-inset: 0%;
+  --end-inset: 0%;
+  position: absolute;
+
+  .horizontal & {
+    left: var(--start-inset);
+    right: var(--end-inset);
+  }
+
+  .vertical & {
+    top: var(--start-inset);
+    bottom: var(--end-inset);
+  }
+}

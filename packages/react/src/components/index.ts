@@ -1,5 +1,7 @@
 export * from "./bins/bins.js"
 export * from "./calendar/calendar.js"
+export * from "./calendar/hooks.js"
+export * from "./calendar/track.js"
 export * from "./confirm-sync-dialog/confirm-sync-dialog.js"
 export * from "./details/item-details.js"
 export * from "./filters/selections-filter.js"

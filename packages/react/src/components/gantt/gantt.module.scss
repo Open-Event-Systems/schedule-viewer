@@ -1,0 +1,108 @@
+.root {
+  --body-vertical-gap-start: 2rem;
+
+  --cell-vertical-min-height: 4rem;
+  --cell-horizontal-min-width: 4rem;
+
+  --track-vertical-width: 2rem;
+  --track-horizontal-height: 2rem;
+
+  --bar-vertical-width: 1.5rem;
+  --bar-horizontal-height: 1.5rem;
+
+  --node-size: 0.65rem;
+
+  --bar-color: darkblue;
+  --node-color: #ffffff;
+}
+
+.header {
+  .vertical & {
+    writing-mode: vertical-lr;
+    transform: rotate(-45deg);
+    transform-origin: bottom right;
+    width: calc(var(--track-vertical-width) / 1.414214);
+    margin-left: calc(var(--track-vertical-width) * (1 - 1 / 1.414214));
+    text-align: right;
+    justify-content: end;
+    align-content: center;
+  }
+}
+
+.track {
+  display: grid;
+  .vertical & {
+    justify-items: center;
+  }
+
+  .horizontal & {
+    align-items: center;
+  }
+}
+
+.bar {
+  background-color: var(--bar-color);
+
+  display: grid;
+
+  .vertical & {
+    left: initial;
+    right: initial;
+    width: var(--bar-vertical-width);
+    grid-template:
+      "start" 0px
+      "body" 1fr
+      "end" 0px
+      / 1fr;
+  }
+
+  .horizontal & {
+    top: initial;
+    bottom: initial;
+    height: var(--bar-horizontal-height);
+    grid-template:
+      "start body end" 1fr
+      / 0px 1fr 0px;
+  }
+}
+
+.node {
+  position: relative;
+  background-color: var(--bar-color);
+  display: grid;
+  justify-items: center;
+  align-items: center;
+
+  .vertical & {
+    width: var(--bar-vertical-width);
+    height: var(--bar-vertical-width);
+    border-radius: calc(var(--bar-vertical-width) / 2);
+    top: calc(-0.5 * var(--bar-vertical-width));
+  }
+
+  .horizontal & {
+    width: var(--bar-horizontal-height);
+    height: var(--bar-horizontal-height);
+    border-radius: calc(var(--bar-horizontal-height) / 2);
+    left: calc(-0.5 * var(--bar-vertical-width));
+  }
+
+  &::before {
+    display: block;
+    content: "";
+    background-color: var(--node-color);
+    width: var(--node-size);
+    height: var(--node-size);
+    border-radius: calc(var(--node-size) / 2);
+  }
+}
+
+.barBody {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+
+  .vertical & {
+    writing-mode: vertical-lr;
+  }
+}
