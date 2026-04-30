@@ -35,6 +35,7 @@ export const ViewSelectContainer = (props: ViewSelectProps) => {
             ...cur,
             ...(t ? { view: t } : {}),
           }),
+          resetScroll: false,
           replace: true,
         })
       }}

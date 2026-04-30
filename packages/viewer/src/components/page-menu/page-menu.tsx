@@ -151,6 +151,7 @@ const PageMenuSelect = (props: PageMenuSelectProps) => {
           justify="start"
         >
           <Select
+            label="Page"
             className={clsx("PageMenu-select")}
             width="auto"
             data={pages.map((p) => ({
@@ -164,7 +165,6 @@ const PageMenuSelect = (props: PageMenuSelectProps) => {
               }
             }}
             allowDeselect={false}
-            aria-label="Page"
             {...other}
           />
         </Group>

@@ -153,6 +153,7 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
           ...prev,
           day: day.key,
         }),
+        resetScroll: false,
       })
     },
     [navigate],

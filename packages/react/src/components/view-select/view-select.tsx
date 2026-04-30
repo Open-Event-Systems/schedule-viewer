@@ -11,8 +11,7 @@ export const ViewSelect = (props: ViewSelectProps) => {
     <Select
       className={clsx("ViewSelect-root", className)}
       size="sm"
-      title="View Type"
-      aria-label="view type"
+      label="View Type"
       allowDeselect={false}
       leftSection={<IconEye size={18} />}
       variant="default"
