@@ -1,56 +1,37 @@
-import type { DayFilterDay } from "@open-event-systems/schedule-react/components/day-filter/day-filter"
-import {
-  contains,
-  getDay,
-  sortIntervalsByStartDate,
-} from "@open-event-systems/schedule-lib"
-import { format, isBefore } from "date-fns"
+import { useLocation, type ParsedLocation } from "@tanstack/react-router"
+import { parseISO } from "date-fns"
+import { use, useMemo, type Context } from "react"
 
-/**
- * Get the days for a collection of items.
- */
-export const getDays = (
-  items: Iterable<{ readonly start: Date }>,
-  tz: string,
-  dayChangeHour?: number,
-): readonly DayFilterDay[] => {
-  const days = new Map<string, DayFilterDay>()
+let overrideDate: Date | undefined
 
-  for (const item of items) {
-    const day = getDay(item.start, tz, dayChangeHour)
-    const key = format(day.start, "yyyy-MM-dd")
-    if (!days.has(key)) {
-      days.set(key, { key, ...day })
+export const getNow = (loc: ParsedLocation): Date => {
+  const hashParams = new URLSearchParams(loc.hash)
+  const dateParam = hashParams.get("date")
+
+  if (dateParam) {
+    const parsed = parseISO(dateParam)
+    if (!isNaN(parsed.getTime())) {
+      overrideDate = parsed
     }
   }
 
-  const dayArr = Array.from(days.values())
-  sortIntervalsByStartDate(dayArr)
-  return dayArr
+  if (overrideDate) {
+    return overrideDate
+  }
+
+  return new Date()
 }
 
-/**
- * Get the default day.
- */
-export const getDefaultDay = (
-  days: readonly DayFilterDay[],
-  now: Date,
-): DayFilterDay | undefined => {
-  if (days.length == 0) {
-    return
+export const useNow = (): Date => {
+  const loc = useLocation()
+  return useMemo(() => getNow(loc), [loc.hash])
+}
+
+export const useRequiredContext = <T>(ctx: Context<T | undefined>): T => {
+  const val = use(ctx)
+  if (val === undefined) {
+    throw new Error("Required context not provided")
   }
 
-  for (const day of days) {
-    if (contains(day, now)) {
-      return day
-    }
-  }
-
-  const lastDay = days[days.length - 1]
-
-  if (lastDay && !isBefore(now, lastDay.end)) {
-    return days[days.length - 1]
-  } else {
-    return days[0]
-  }
+  return val
 }
