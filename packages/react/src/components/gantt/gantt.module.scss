@@ -17,6 +17,7 @@
 }
 
 .header {
+  font-weight: var(--mantine-font-weight-bold);
   .vertical & {
     writing-mode: vertical-lr;
     transform: rotate(-45deg);

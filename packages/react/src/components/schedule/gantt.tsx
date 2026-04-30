@@ -60,6 +60,10 @@ export const GanttView = (props: GanttViewProps) => {
           (item): GanttBarProps => ({
             start: item.start,
             end: item.end,
+            children:
+              "ganttTitle" in item && typeof item.ganttTitle == "string"
+                ? item.ganttTitle
+                : undefined,
             renderRoot: (props) => (
               <div
                 {...props}
