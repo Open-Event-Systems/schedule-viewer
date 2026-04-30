@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./schedule-react.css": "./dist/schedule-react.css",
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/index.js"
