@@ -52,12 +52,13 @@ export const FilterStateStoreContext = createContext<
 export const useSessionSelectionsIfEnabled = (
   enabled?: boolean,
 ): { [T in SelectionsType]?: Selections | undefined } => {
-  const api = useSessionSelectionsAPI("bookmarks")
+  const bookmarksAPI = useSessionSelectionsAPI("bookmarks")
+  const visitedAPI = useSessionSelectionsAPI("visited")
   const config = useViewerConfig()
 
   const bookmarksQuery = useQuery({
     ...sessionSelectionsQueryOptions.sessionSelections(
-      api,
+      bookmarksAPI,
       config.id,
       "bookmarks",
     ),
@@ -67,7 +68,7 @@ export const useSessionSelectionsIfEnabled = (
 
   const visitedQuery = useQuery({
     ...sessionSelectionsQueryOptions.sessionSelections(
-      api,
+      visitedAPI,
       config.id,
       "visited",
     ),

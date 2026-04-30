@@ -5,7 +5,7 @@ import type { Bounded, Interval, ScheduleItem } from "./types.js"
  * Return a filter for bookmarked items.
  */
 export const makeBookmarkFilter = (
-  itemIds?: Iterable<string>,
+  itemIds?: Iterable<string> | null,
 ): ((e: { readonly id: string }) => boolean) => {
   const idSet = new Set(itemIds)
   return (e) => {
@@ -17,7 +17,7 @@ export const makeBookmarkFilter = (
  * Return a filter for unvisited items.
  */
 export const makeUnvisitedFilter = (
-  itemIds?: Iterable<string>,
+  itemIds?: Iterable<string> | null,
 ): ((e: { readonly id: string }) => boolean) => {
   const idSet = new Set(itemIds)
   return (e) => {

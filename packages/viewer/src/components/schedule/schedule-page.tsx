@@ -1,10 +1,14 @@
 import {
+  filterItems,
   SchedulePage,
   schedulePageFeatures,
+  sessionSelectionsQueryOptions,
   ShareMenu,
   useRelevantTags,
   useSelectionsServiceAvailable,
+  useSessionSelectionsAPI,
   type ShareMenuOption,
+  type ShareMenuProps,
 } from "@open-event-systems/schedule-react"
 import { useViewerConfig } from "../../config.js"
 import {
@@ -23,7 +27,9 @@ import { ScheduleContainer } from "./schedule.js"
 import { scheduleProvidersRoute } from "../../routes.js"
 import { notFound } from "@tanstack/react-router"
 import { useCallback, useMemo } from "react"
-import type { PageConfig } from "../../types.js"
+import type { PageConfig, ViewConfig } from "../../types.js"
+import { useFilterOptions } from "./hooks.js"
+import { useQueryClient } from "@tanstack/react-query"
 
 export type SchedulePageContainerProps = {
   items?: Iterable<DetailedScheduleItem>
@@ -77,30 +83,27 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
   const selectionsServiceAvailable = useSelectionsServiceAvailable()
 
   const enableFeatures = useMemo(() => {
-    const features = [...(viewConfig.enableFeatures ?? schedulePageFeatures)]
+    let features = [...(viewConfig.enableFeatures ?? schedulePageFeatures)]
 
     // hide share/sync options if selections service is unavailable
     if (!selectionsServiceAvailable) {
-      return features.filter((f) => f != "share" && f != "sync")
-    } else {
-      return features
+      features = features.filter((f) => f != "share" && f != "sync")
     }
-  }, [viewConfig.enableFeatures, selectionsServiceAvailable])
+
+    // hide bookmark/visited filters for shared schedules
+    if (sharedSelections) {
+      features = features.filter(
+        (f) => f != "bookmarked-filter" && f != "unvisited-filter",
+      )
+    }
+
+    return features
+  }, [viewConfig.enableFeatures, selectionsServiceAvailable, sharedSelections])
 
   // Items and tags
 
   const pageItems = usePageFilteredItems(pageConfig, items)
-
   const relevantTags = useRelevantTags(config.tags, pageItems)
-
-  const wrappedOnSelectShareOption = useCallback(
-    (option: ShareMenuOption) => {
-      if (onSelectShareOption) {
-        onSelectShareOption(option, pageItems ?? [])
-      }
-    },
-    [pageItems, onSelectShareOption],
-  )
 
   return (
     <SchedulePage
@@ -119,7 +122,13 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
       )}
       renderTagFilter={(props) => <TagFilterContainer {...props} />}
       renderShare={(props) => (
-        <ShareMenu {...props} onSelect={wrappedOnSelectShareOption} />
+        <ShareMenuContainer
+          {...props}
+          viewConfig={viewConfig}
+          items={pageItems}
+          sharedSelections={sharedSelections}
+          onSelect={onSelectShareOption}
+        />
       )}
       renderSchedule={() => (
         <ScheduleContainer
@@ -132,4 +141,70 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
       )}
     />
   )
+}
+
+const ShareMenuContainer = (
+  props: Omit<ShareMenuProps, "onSelect"> & {
+    viewConfig: ViewConfig
+    items?: Iterable<DetailedScheduleItem>
+    sharedSelections?: Iterable<string>
+    onSelect?: (
+      option: ShareMenuOption,
+      items: Iterable<DetailedScheduleItem>,
+    ) => void
+  },
+) => {
+  const { viewConfig, items, sharedSelections, onSelect, ...other } = props
+
+  const config = useViewerConfig()
+  const options = useFilterOptions(viewConfig, !!sharedSelections)
+  const bookmarksAPI = useSessionSelectionsAPI("bookmarks")
+  const visitedAPI = useSessionSelectionsAPI("visited")
+  const queryClient = useQueryClient()
+
+  const wrappedOnSelect = useCallback(
+    (opt: ShareMenuOption) => {
+      const bookmarked = queryClient.getQueryData(
+        sessionSelectionsQueryOptions.sessionSelections(
+          bookmarksAPI,
+          config.id,
+          "bookmarks",
+        ).queryKey,
+      )
+      const visited = queryClient.getQueryData(
+        sessionSelectionsQueryOptions.sessionSelections(
+          visitedAPI,
+          config.id,
+          "visited",
+        ).queryKey,
+      )
+
+      const filtered = filterItems(items, {
+        disabledTags: options.disabledTags,
+        now: options.now,
+        selectionsFilterOptions: options.selectionsFilterOptions,
+        showPastEvents: options.showPastEvents,
+        text: options.text,
+        bookmarked,
+        visited,
+      })
+
+      onSelect && onSelect(opt, filtered)
+    },
+    [
+      config,
+      bookmarksAPI,
+      visitedAPI,
+      queryClient,
+      onSelect,
+      items,
+      options.disabledTags,
+      options.now,
+      options.selectionsFilterOptions,
+      options.showPastEvents,
+      options.text,
+    ],
+  )
+
+  return <ShareMenu onSelect={wrappedOnSelect} {...other} />
 }

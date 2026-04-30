@@ -16,7 +16,7 @@ import (
 func main() {
 	var port int
 
-	flag.IntVar(&port, "port", 8000, "listen port")
+	flag.IntVar(&port, "port", 8080, "listen port")
 	flag.Parse()
 
 	httpServer := http.Server{
