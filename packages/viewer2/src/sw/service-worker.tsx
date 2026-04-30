@@ -155,7 +155,7 @@ export const makeSWStore = (): StoreApi<SWState> => {
 }
 
 const hasCurrentSW = (): boolean => {
-  return !!navigator.serviceWorker.controller
+  return "serviceWorker" in navigator && !!navigator.serviceWorker.controller
 }
 
 const cacheURLs = async (workbox: Workbox, urls?: Iterable<string>) => {
