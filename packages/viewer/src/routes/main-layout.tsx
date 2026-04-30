@@ -1,4 +1,4 @@
-import { Outlet } from "@tanstack/react-router"
+import { Outlet, type ErrorComponentProps } from "@tanstack/react-router"
 import { useViewerConfig } from "../config.js"
 import { Text } from "@mantine/core"
 import { PageTitle } from "../components/title/title.js"
@@ -65,8 +65,21 @@ export const MainLayoutRouteNotFoundMessage = () => {
   )
 }
 
-export const MainLayoutRouteError = () => {
+declare global {
+  var Rollbar:
+    | {
+        error: (...args: unknown[]) => void
+      }
+    | undefined
+}
+
+export const MainLayoutRouteError = ({ error }: ErrorComponentProps) => {
   const { homeURL } = useViewerConfig()
+
+  if (typeof Rollbar != "undefined") {
+    Rollbar.error("Error", error)
+  }
+
   return (
     <MainLayout>
       <MainLayout.Header>

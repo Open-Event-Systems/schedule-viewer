@@ -1,0 +1,598 @@
+{
+  "id": "ao-2026",
+  "title": "AnthrOhio 2026",
+  "homeURL": "/",
+  "logoURL": "/test-schedule-2026/images/icon-192x192.png",
+  "description": "This is the schedule of events, panels, artists, and vendors at AnthrOhio 2026.\n\nBe sure to check back regularly as we add more information.",
+  "binMinutes": 20,
+  "timeZone": "America/New_York",
+  "start": "2026-05-21T20:00:00",
+  "end": "2026-05-24T22:00:00",
+  "items": [
+    "https://anthrohio.org/_schedule/2026/events-test.json",
+    "https://anthrohio.org/_schedule/2026/vendors.json",
+    {
+      "id": "registration-vip",
+      "type": "event",
+      "title": "Registration (Patron/PhilAnthropist Only)",
+      "ganttTitle": "VIP",
+      "start": "2026-05-21T16:00:00",
+      "end": "2026-05-21T18:00:00",
+      "location": "Registration",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "registration",
+      "type": "event",
+      "title": "Registration",
+      "start": "2026-05-21T18:00:00",
+      "end": "2026-05-21T22:00:00",
+      "location": "Registration",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "registration",
+      "type": "event",
+      "title": "Registration",
+      "start": "2026-05-22T10:00:00",
+      "end": "2026-05-22T20:00:00",
+      "location": "Registration",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "registration",
+      "type": "event",
+      "title": "Registration",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T20:00:00",
+      "location": "Registration",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "registration",
+      "type": "event",
+      "title": "Registration",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T15:00:00",
+      "location": "Registration",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "dealers-den",
+      "type": "event",
+      "title": "Dealers' Den",
+      "start": "2026-05-22T13:00:00",
+      "end": "2026-05-22T18:00:00",
+      "location": "Dealers' Den",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "dealers-den",
+      "type": "event",
+      "title": "Dealers' Den",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T18:00:00",
+      "location": "Dealers' Den",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "dealers-den",
+      "type": "event",
+      "title": "Dealers' Den",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T16:00:00",
+      "location": "Dealers' Den",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "artists-alley",
+      "type": "event",
+      "title": "Artists' Alley",
+      "start": "2026-05-22T19:00:00",
+      "end": "2026-05-22T22:00:00",
+      "location": "Artists' Alley",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "artists-alley",
+      "type": "event",
+      "title": "Artists' Alley",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T18:00:00",
+      "location": "Artists' Alley",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "artists-alley",
+      "type": "event",
+      "title": "Artists' Alley",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T16:00:00",
+      "location": "Artists' Alley",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-21T20:00:00",
+      "end": "2026-05-21T22:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-22T10:00:00",
+      "end": "2026-05-22T15:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-22T17:00:00",
+      "end": "2026-05-22T20:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T15:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-23T17:00:00",
+      "end": "2026-05-23T20:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "hospitality",
+      "type": "event",
+      "title": "Hospitality",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T16:00:00",
+      "location": "Hospitality",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "video-gaming",
+      "type": "event",
+      "title": "Video Gaming",
+      "start": "2026-05-22T13:00:00",
+      "end": "2026-05-22T23:40:00",
+      "location": "Video Gaming",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "video-gaming",
+      "type": "event",
+      "title": "Video Gaming",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T23:40:00",
+      "location": "Video Gaming",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "video-gaming",
+      "type": "event",
+      "title": "Video Gaming",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T18:00:00",
+      "location": "Video Gaming",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "board-gaming",
+      "type": "event",
+      "title": "Board Gaming",
+      "start": "2026-05-22T10:00:00",
+      "end": "2026-05-22T23:40:00",
+      "location": "Board Gaming",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "board-gaming",
+      "type": "event",
+      "title": "Video Gaming",
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T23:40:00",
+      "location": "Board Gaming",
+      "tags": ["gantt"]
+    },
+    {
+      "id": "board-gaming",
+      "type": "event",
+      "title": "Video Gaming",
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T18:00:00",
+      "location": "Board Gaming",
+      "tags": ["gantt"]
+    }
+  ],
+  "pages": [
+    {
+      "id": "events",
+      "title": "Events",
+      "description": "View the schedule of events and panels.",
+      "onlyType": "event",
+      "excludeTags": ["gantt"],
+      "views": [
+        {
+          "id": "daily-agenda",
+          "title": "Daily Agenda",
+          "type": "daily-agenda",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "past-events-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ]
+        },
+        {
+          "id": "full-agenda",
+          "title": "Full Agenda",
+          "type": "full-agenda",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "past-events-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ]
+        },
+        {
+          "id": "catalog",
+          "title": "Catalog",
+          "type": "catalog",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        },
+        {
+          "id": "tags",
+          "title": "Tags",
+          "type": "tags",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        }
+      ]
+    },
+    {
+      "id": "dealers",
+      "title": "Dealers",
+      "description": "Browse the vendors in our Dealers' Den.",
+      "requireTags": ["dealer"],
+      "views": [
+        {
+          "id": "catalog",
+          "title": "Catalog",
+          "type": "catalog",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "unvisited-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        },
+        {
+          "id": "tags",
+          "title": "Tags",
+          "type": "tags",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "unvisited-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        }
+      ],
+      "onlyType": "vendor"
+    },
+    {
+      "id": "artists",
+      "title": "Artists",
+      "description": "Browse the artists in our Artists' Alley.",
+      "requireTags": ["artist"],
+      "views": [
+        {
+          "id": "daily-catalog",
+          "title": "By Day",
+          "type": "daily-catalog",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "unvisited-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        },
+        {
+          "id": "catalog",
+          "title": "Catalog",
+          "type": "catalog",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "unvisited-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        },
+        {
+          "id": "tags",
+          "title": "Tags",
+          "type": "tags",
+          "enableFeatures": [
+            "search",
+            "bookmarked-filter",
+            "unvisited-filter",
+            "tag-filter",
+            "sync",
+            "share",
+            "export"
+          ],
+          "showPastEvents": true
+        }
+      ],
+      "onlyType": "vendor"
+    },
+    {
+      "id": "hours",
+      "title": "Hours",
+      "description": "Department hours.",
+      "requireTags": ["gantt"],
+      "views": [
+        {
+          "id": "gantt",
+          "title": "Hours",
+          "type": "gantt",
+          "enableFeatures": [],
+          "locations": [
+            "Registration",
+            "Dealers' Den",
+            "Artists' Alley",
+            "Video Gaming",
+            "Board Gaming",
+            "Hospitality"
+          ],
+          "showPastEvents": true
+        }
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "tag": "arts",
+      "title": "Arts"
+    },
+    {
+      "tag": "educational",
+      "title": "Educational"
+    },
+    {
+      "tag": "competition",
+      "title": "Competition"
+    },
+    {
+      "tag": "meet-and-greet",
+      "title": "Meet & Greet"
+    },
+    {
+      "tag": "gaming",
+      "title": "Gaming"
+    },
+    {
+      "tag": "music",
+      "title": "Music"
+    },
+    {
+      "tag": "performance",
+      "title": "Performance"
+    },
+    {
+      "tag": "seating",
+      "title": "Seating"
+    },
+    {
+      "tag": "special",
+      "title": "Special"
+    },
+    {
+      "tag": "mature",
+      "title": "Mature"
+    },
+    {
+      "tag": "loud-sounds",
+      "title": "Loud Sounds"
+    },
+    {
+      "tag": "flashing-lights",
+      "title": "Flashing Lights"
+    },
+    {
+      "tag": "hand-eye-coordination",
+      "title": "Hand-Eye Coordination"
+    },
+    {
+      "tag": "digital-art",
+      "title": "Digital Art"
+    },
+    {
+      "tag": "traditional-art",
+      "title": "Traditional Art"
+    },
+    {
+      "tag": "fursuits",
+      "title": "Fursuits/Parts"
+    },
+    {
+      "tag": "textiles",
+      "title": "Other Textiles"
+    },
+    {
+      "tag": "soaps",
+      "title": "Soaps/Perfumes"
+    }
+  ],
+  "tagIndicators": [
+    {
+      "tags": ["mature"],
+      "label": "18+"
+    }
+  ],
+  "locationAddresses": [
+    [
+      [],
+      {
+        "address": "402 N High St",
+        "city": "Columbus",
+        "state": "OH",
+        "country": "US",
+        "postal": "43215"
+      }
+    ]
+  ],
+  "map": {
+    "objects": [
+      {
+        "id": "lower",
+        "type": "level",
+        "title": "Lower Level",
+        "url": "/test-schedule-2026/lower.svg"
+      },
+      {
+        "id": "lobby",
+        "type": "level",
+        "title": "Lobby",
+        "url": "/test-schedule-2026/lobby.svg"
+      },
+      {
+        "id": "2f",
+        "type": "level",
+        "title": "2F",
+        "url": "/test-schedule-2026/2f.svg"
+      },
+      {
+        "id": "3f",
+        "type": "level",
+        "title": "3F",
+        "url": "/test-schedule-2026/3f.svg"
+      },
+      {
+        "id": "4f",
+        "type": "level",
+        "title": "4F",
+        "url": "/test-schedule-2026/4f.svg"
+      }
+    ],
+    "defaultLevel": "lobby",
+    "width": 4224,
+    "height": 5280,
+    "flagToggles": [
+      {
+        "id": "aa",
+        "title": "Sat/Sun Artists' Alley"
+      }
+    ],
+    "locations": [
+      {
+        "id": "burkhart",
+        "title": "Burkhart",
+        "level": "lower"
+      },
+      {
+        "id": "king",
+        "title": "King",
+        "level": "lobby"
+      },
+      {
+        "id": "hopkins",
+        "title": "Hopkins",
+        "level": "lobby"
+      },
+      {
+        "id": "kamau",
+        "title": "Kamau",
+        "level": "4f"
+      },
+      {
+        "id": "west",
+        "title": "West",
+        "level": "3f"
+      },
+      {
+        "id": "johnson",
+        "title": "Johnson",
+        "level": "3f"
+      },
+      {
+        "id": "massey-a",
+        "title": "Massey A",
+        "level": "3f"
+      },
+      {
+        "id": "massey-bc",
+        "title": "Massey BC",
+        "level": "3f"
+      },
+      {
+        "id": "griffith",
+        "title": "Griffith",
+        "level": "3f"
+      },
+      {
+        "id": "frey",
+        "title": "Frey",
+        "level": "3f"
+      },
+      {
+        "id": "spark-bar",
+        "title": "Spark Bar",
+        "level": "2f"
+      }
+    ]
+  }
+}

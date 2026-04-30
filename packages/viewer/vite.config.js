@@ -6,6 +6,7 @@ import { VitePWA } from "vite-plugin-pwa"
 import packageJSON from "./package.json"
 
 export default defineConfig({
+  base: "/test-schedule-2026",
   build: {
     target: "es2017",
     rolldownOptions: {
@@ -92,7 +93,7 @@ export default defineConfig({
             tag: "link",
             attrs: {
               rel: "stylesheet",
-              href: "/custom.css",
+              href: "/test-schedule-2026/custom.css",
             },
             injectTo: "head",
           },

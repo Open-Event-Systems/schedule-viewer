@@ -1,0 +1,51 @@
+{
+  "short_name": "AO 2026",
+  "name": "AnthrOhio 2026",
+  "description": "The AnthrOhio 2026 schedule and map.",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ff475d",
+  "background_color": "#292234",
+  "icons": [
+    {
+      "src": "images/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "images/ss-mobile-1.jpg",
+      "type": "image/jpeg",
+      "sizes": "320x693",
+      "form_factor": "narrow",
+      "label": "Schedule"
+    },
+    {
+      "src": "images/ss-mobile-2.jpg",
+      "type": "image/jpeg",
+      "sizes": "320x693",
+      "form_factor": "narrow",
+      "label": "Map"
+    },
+    {
+      "src": "images/ss-desktop-1.jpg",
+      "type": "image/jpeg",
+      "sizes": "854x480",
+      "form_factor": "wide",
+      "label": "Schedule"
+    },
+    {
+      "src": "images/ss-desktop-2.jpg",
+      "type": "image/jpeg",
+      "sizes": "854x480",
+      "form_factor": "wide",
+      "label": "Map"
+    }
+  ]
+}
