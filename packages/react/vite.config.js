@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import dtsPlugin from "vite-plugin-dts"
+import dtsPlugin from "unplugin-dts/vite"
 import react, { reactCompilerPreset } from "@vitejs/plugin-react"
 import babel from "@rolldown/plugin-babel"
 

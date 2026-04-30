@@ -1,7 +1,7 @@
 import { defineConfig } from "vite"
 
 import packageJson from "./package.json" with { type: "json" }
-import dtsPlugin from "vite-plugin-dts"
+import dtsPlugin from "unplugin-dts/vite"
 
 const deps = [
   ...Object.keys(packageJson.dependencies),
