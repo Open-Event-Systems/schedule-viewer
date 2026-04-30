@@ -262,6 +262,7 @@ body {
 
 #schedule .Gantt-bar-id-artists-alley {
   --bar-color: var(--color-4);
+  color: #ffffff;
 }
 
 #schedule .Gantt-bar-id-hospitality {
