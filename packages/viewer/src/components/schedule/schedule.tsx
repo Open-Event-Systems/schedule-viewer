@@ -16,19 +16,13 @@ import {
   type DailyCatalogViewProps,
   type FullAgendaViewProps,
   type ItemPillsProps,
-  type SelectionsFilterOption,
   type TagEntry,
   type TagsViewProps,
 } from "@open-event-systems/schedule-react"
-import { useNow, useRequiredContext } from "../../utils.js"
+import { useNow } from "../../utils.js"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
-import {
-  FilterStateStoreContext,
-  useSessionSelectionsIfEnabled,
-} from "../../filter.js"
-import { useStore } from "zustand"
-import { useShallow } from "zustand/react/shallow"
+import { useSessionSelectionsIfEnabled } from "../../filter.js"
 import {
   makeItemNavPropsMap,
   makeItemsByIdMap,
@@ -38,6 +32,7 @@ import {
 import { useMapLocationMatchFunc } from "@open-event-systems/schedule-map"
 import { scheduleProvidersRoute } from "../../routes.js"
 import type { ViewConfig } from "../../types.js"
+import { useFilterOptions } from "./hooks.js"
 
 export type ScheduleContainerProps = {
   items?: Iterable<DetailedScheduleItem>
@@ -66,59 +61,22 @@ export const ScheduleContainer = (props: ScheduleContainerProps) => {
 
   // Params
 
-  const [
-    selectedDayKey,
-    optShowPastEvents,
-    optOnlyBookmarked,
-    optOnlyUnvisited,
-  ] = scheduleProvidersRoute.useSearch({
-    select: (state) =>
-      [state.day, state.past, state.bookmarked, state.unvisited] as const,
-    structuralSharing: true,
+  const selectedDayKey = scheduleProvidersRoute.useSearch({
+    select: (state) => state.day,
   })
-
-  const selectionsFilterOptions = scheduleProvidersRoute.useSearch({
-    select: (state) => {
-      const opts: SelectionsFilterOption[] = []
-      if (state.bookmarked) {
-        opts.push("bookmarked")
-      }
-      if (state.unvisited) {
-        opts.push("unvisited")
-      }
-      return opts
-    },
-    structuralSharing: true,
-  })
-
-  const filterStore = useRequiredContext(FilterStateStoreContext)
-  const [text, disabledTags] = useStore(
-    filterStore,
-    useShallow((state) => [state.text, state.disabledTags]),
-  )
-
-  const onlyBookmarked =
-    !!sharedSelections || (viewConfig.onlyBookmarked ?? optOnlyBookmarked)
-  const onlyUnvisited = viewConfig.onlyUnvisited ?? optOnlyUnvisited
-  const showPastEvents = viewConfig.showPastEvents ?? optShowPastEvents
 
   // Items
   const itemsArr = useMemo(() => iterToArr(items), [items])
 
-  // Selections
+  // Filtered items
+  const filterOptions = useFilterOptions(viewConfig, !!sharedSelections)
 
   const sessionSelections = useSessionSelectionsIfEnabled(
-    onlyBookmarked || onlyUnvisited,
+    filterOptions.selectionsFilterOptions.length > 0,
   )
 
-  // Filtered items
-
   const filteredItems = useFilteredItems(itemsArr, {
-    disabledTags,
-    text,
-    now,
-    selectionsFilterOptions,
-    showPastEvents,
+    ...filterOptions,
     bookmarked: sharedSelections ?? sessionSelections.bookmarks,
     visited: sessionSelections.visited,
   })

@@ -197,7 +197,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
         renderSelectionsFilter={(props) => (
           <SelectionsFilter
             {...props}
-            value={selectionsFilterOptions}
+            value={selectionsFilterOptions ?? undefined}
             onChange={(selectionsFilterOptions) =>
               dispatch({ selectionsFilterOptions })
             }
@@ -216,14 +216,14 @@ export const Default: StoryObj<typeof SchedulePage> = {
         renderTextFilter={(props) => (
           <TextFilter
             {...props}
-            value={text}
+            value={text ?? undefined}
             onChange={(e) => dispatch({ text: e.target.value })}
           />
         )}
         renderPastEventsFilter={(props) => (
           <PastEventsFilter
             {...props}
-            checked={showPastEvents}
+            checked={showPastEvents ?? undefined}
             onChange={(e) => dispatch({ showPastEvents: e.target.checked })}
           />
         )}
@@ -231,7 +231,7 @@ export const Default: StoryObj<typeof SchedulePage> = {
           <TagFilter
             {...props}
             tagIndicators={parsedConfig.tagIndicators}
-            disabledTags={disabledTags}
+            disabledTags={disabledTags ?? undefined}
             onSetDisabled={(tag, disabled) => {
               const newSet = new Set(disabledTags)
               if (disabled) {
