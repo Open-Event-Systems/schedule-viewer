@@ -59,6 +59,7 @@ func NewHandler(cfg config.Config, conn *gorm.DB, tokenSecret string) http.Handl
 	r.Use(realIP(cfg.TrustedProxies))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.GetHead)
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   cfg.AllowedOrigins,

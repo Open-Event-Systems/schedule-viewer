@@ -3,9 +3,14 @@ package main
 import (
 	"bookmarks/internal/config"
 	"bookmarks/internal/server"
+	"context"
+	"errors"
 	"flag"
+	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 
 	"gorm.io/driver/sqlite"
@@ -38,12 +43,35 @@ func main() {
 		panic(res.Error)
 	}
 
-	handler := server.NewHandler(cfg, conn, "changeit")
+	handler := server.NewHandler(cfg, conn, cfg.TokenSecret)
 
 	server := &http.Server{
 		Addr:    net.JoinHostPort("", strconv.Itoa(port)),
 		Handler: handler,
 	}
 
-	server.ListenAndServe()
+	doneChan := make(chan struct{})
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+
+	go func() {
+		defer close(doneChan)
+		log.Printf("listening on :%d", port)
+		err = server.ListenAndServe()
+	}()
+
+	select {
+	case <-sigChan:
+		signal.Reset(os.Interrupt)
+		server.Shutdown(context.Background())
+	case <-doneChan:
+		signal.Reset(os.Interrupt)
+	}
+
+	<-doneChan
+
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Println(err)
+		os.Exit(1)
+	}
 }
