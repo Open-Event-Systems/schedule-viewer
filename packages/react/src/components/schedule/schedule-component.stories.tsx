@@ -2,24 +2,25 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Schedule } from "./schedule-component.js"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
 import { getDays, type Day } from "@open-event-systems/schedule-lib"
-import { useState } from "react"
+import { useState, type ComponentPropsWithoutRef } from "react"
 
 const meta: Meta<typeof Schedule> = {
   component: Schedule,
   argTypes: {
     type: {
       control: "radio",
-      options: ["Daily Agenda", "Full Agenda", "Catalog", "Tags"],
+      options: ["Daily Agenda", "Full Agenda", "Catalog", "Tags", "Gantt"],
       mapping: {
         "Daily Agenda": "daily-agenda",
         "Full Agenda": "full-agenda",
         Catalog: "catalog",
         Tags: "tags",
+        Gantt: "gantt",
       },
     },
   },
   args: {
-    type: "daily-agenda",
+    type: "daily-agenda" as ComponentPropsWithoutRef<typeof Schedule>["type"],
     items: parsedEvents,
     days: getDays(
       [...parsedEvents].filter(
@@ -28,6 +29,7 @@ const meta: Meta<typeof Schedule> = {
     ),
     tags: parsedConfig.tags,
     tagIndicators: parsedConfig.tagIndicators,
+    locations: ["Main Ballroom", "Panel Room 1", "Panel Room 2"],
   },
   decorators: [
     (Story, { args }) => {

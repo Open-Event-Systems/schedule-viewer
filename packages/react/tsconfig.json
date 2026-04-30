@@ -15,5 +15,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "references": [{ "path": "../lib" }]
+  "references": [{ "path": "../lib" }],
+  "include": ["./src/**/*", "./.storybook/*"]
 }

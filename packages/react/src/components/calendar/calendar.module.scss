@@ -23,8 +23,14 @@
   --track-background-even: none;
 
   --num-times: 1;
-  --min-height: calc((var(--num-times) - 1) * var(--cell-vertical-min-height));
-  --min-width: calc((var(--num-times) - 1) * var(--cell-horizontal-min-width));
+  --min-height: calc(
+    (var(--num-times) - 1) * var(--cell-vertical-min-height) +
+      var(--body-vertical-gap-start) + var(--body-vertical-gap-end)
+  );
+  --min-width: calc(
+    (var(--num-times) - 1) * var(--cell-horizontal-min-width) +
+      var(--body-horizontal-gap-start) + var(--body-horizontal-gap-end)
+  );
 
   display: grid;
 

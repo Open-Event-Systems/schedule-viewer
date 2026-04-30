@@ -7,6 +7,7 @@ import {
   FullAgendaView,
   TagsView,
 } from "./binned-views.js"
+import { GanttView } from "./gantt.js"
 
 type ComponentMap<PM> = {
   readonly [T in keyof PM]: PM[T] extends { type: unknown }
@@ -59,4 +60,5 @@ export const Schedule = makeScheduleComponent({
   "daily-catalog": DailyCatalogView,
   catalog: CatalogView,
   tags: TagsView,
+  gantt: GanttView,
 })

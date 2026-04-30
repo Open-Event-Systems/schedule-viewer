@@ -14,6 +14,7 @@ import {
 } from "../calendar/hooks.js"
 
 import classes from "./gantt.module.scss"
+import type { TrackItemProps } from "../calendar/track.js"
 
 export type GanttTrack = Readonly<{
   id: string
@@ -23,6 +24,7 @@ export type GanttTrack = Readonly<{
 
 export type GanttProps = Omit<GanttRootProps, "children"> & {
   tracks?: Iterable<GanttTrack>
+  renderBar?: (props: TrackItemProps) => ReactNode
 }
 
 const _Gantt = (props: GanttProps) => {
@@ -31,6 +33,7 @@ const _Gantt = (props: GanttProps) => {
     start: startProp,
     end: endProp,
     dayChangeHour,
+    renderBar,
     ...other
   } = useProps("Gantt", null, props)
 
@@ -58,7 +61,7 @@ const _Gantt = (props: GanttProps) => {
 
     let idx = 0
     for (const item of track.items ?? []) {
-      trackItems.push(<Gantt.Bar key={idx} {...item} />)
+      trackItems.push(<Gantt.Bar key={idx} renderRoot={renderBar} {...item} />)
       idx++
     }
 
