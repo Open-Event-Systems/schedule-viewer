@@ -29,6 +29,8 @@ import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export const schedulePageFeatures = [
   ...shareMenuOptions,
+  "search",
+  "tag-filter",
   "bookmarked-filter",
   "unvisited-filter",
   "past-events-filter",
@@ -130,9 +132,11 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
       },
       enabledOptions: shareOptsArr,
     })
-  const textFilter = renderTextFilter({
-    className: clsx("SchedulePage-textFilter", classes.textFilter),
-  })
+  const textFilter =
+    enableFeaturesArr.includes("search") &&
+    renderTextFilter({
+      className: clsx("SchedulePage-textFilter", classes.textFilter),
+    })
   const pastEventsFilter =
     enableFeaturesArr.includes("past-events-filter") &&
     renderPastEventsFilter({
@@ -140,6 +144,7 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
     })
   const tagFilter =
     tagsArr.length > 0 &&
+    enableFeaturesArr.includes("tag-filter") &&
     renderTagFilter({
       className: clsx("SchedulePage-tagFilter"),
       tags: tagsArr,
@@ -155,10 +160,16 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
           {viewSelect}
           {shareMenu}
         </Box>
-        <Box className={clsx(classes.toolbar)}>{selectionsFilter}</Box>
-        <Box className={clsx(classes.toolbar)}>{textFilter}</Box>
-        <Box className={clsx(classes.toolbar)}>{pastEventsFilter}</Box>
-        <Box className={clsx(classes.toolbar)}>{tagFilter}</Box>
+        {selectionsFilter && (
+          <Box className={clsx(classes.toolbar)}>{selectionsFilter}</Box>
+        )}
+        {textFilter && (
+          <Box className={clsx(classes.toolbar)}>{textFilter}</Box>
+        )}
+        {pastEventsFilter && (
+          <Box className={clsx(classes.toolbar)}>{pastEventsFilter}</Box>
+        )}
+        {tagFilter && <Box className={clsx(classes.toolbar)}>{tagFilter}</Box>}
         <Box className={clsx("SchedulePage-schedule", classes.schedule)}>
           {schedule}
         </Box>
@@ -184,11 +195,13 @@ export const SchedulePage = memo((props: SchedulePageProps) => {
             classes.toolbar,
           )}
         >
-          {textFilter}
+          {/* Put either the text filter or the past events filter here, or an empty element to get the spacing right */}
+          {textFilter || pastEventsFilter || <div></div>}
           {shareMenu}
         </Box>
         <Box className={clsx("SchedulePage-filter", classes.filter)}>
-          {pastEventsFilter}
+          {/* Past event filter goes here unless it was moved up due to text filter being omitted */}
+          {textFilter ? pastEventsFilter : null}
           {tagFilter}
         </Box>
         <Box
