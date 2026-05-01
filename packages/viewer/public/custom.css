@@ -478,6 +478,13 @@ body {
   display: none;
 }
 
+.area-warn {
+  display: none;
+}
+.Map-flag-id-area-warn .area-warn {
+  display: initial;
+}
+
 .Map-flag-id-registration-open .registration-status .traffic-red {
   display: none;
 }
