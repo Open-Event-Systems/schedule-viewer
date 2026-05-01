@@ -325,6 +325,24 @@
     "defaultLevel": "lobby",
     "width": 4224,
     "height": 5280,
+    "layers": [
+      {
+        "id": "text",
+        "title": "Text"
+      },
+      {
+        "id": "detail",
+        "title": "Detail"
+      },
+      {
+        "id": "landmark",
+        "title": "Landmarks"
+      },
+      {
+        "id": "vendor",
+        "title": "Dealer/Artist Info"
+      }
+    ],
     "flagToggles": [
       {
         "id": "aa",
