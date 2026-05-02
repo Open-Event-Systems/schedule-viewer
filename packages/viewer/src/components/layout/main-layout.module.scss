@@ -1,11 +1,13 @@
 .root {
+  --min-page-width: 20rem;
   --max-page-width: 75rem;
   --header-min-height: 8rem;
   --footer-min-height: 8rem;
   flex: auto;
   display: grid;
-  grid-template: 1fr / minmax(min-content, var(--max-page-width));
+  grid-template: 1fr / minmax(var(--min-page-width), var(--max-page-width));
   justify-content: center;
+  min-width: var(--min-page-width);
 }
 
 .container {
