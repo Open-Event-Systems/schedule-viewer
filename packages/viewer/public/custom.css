@@ -242,14 +242,15 @@ body {
 }
 
 #schedule .GanttView-gantt {
-  --track-background-odd: rgba(0, 0, 0, 0.45);
+  --track-background-odd: hsl(281, 76%, 5%);
+  --track-background-even: hsl(281, 76%, 10%);
   --track-vertical-width: 2.5rem;
   --mark-border: #999 dashed 1px;
 }
 
 #schedule .Gantt-bar-id-registration-vip {
-  --bar-color: var(--color-8);
-  color: #ffffff;
+  --bar-color: #e6c271;
+  color: #333333;
 }
 
 #schedule .Gantt-bar-id-registration {
@@ -263,6 +264,7 @@ body {
 #schedule .Gantt-bar-id-artists-alley {
   --bar-color: var(--color-4);
   color: #ffffff;
+  text-shadow: #333 -1px 1px 2px;
 }
 
 #schedule .Gantt-bar-id-hospitality {
@@ -274,7 +276,28 @@ body {
 }
 
 #schedule .Gantt-bar-id-board-gaming {
+  --bar-color: var(--color-8);
+}
+
+#schedule .Gantt-bar-id-safety-con-ops {
   --bar-color: var(--color-5);
+  color: #333333;
+}
+
+#schedule .Gantt-bar-id-charity {
+  --bar-color: #882255;
+}
+
+#schedule .Gantt-bar-id-headless-lounge {
+  --bar-color: #117733;
+  color: #ffffff;
+  text-shadow: #333 -1px 1px 2px;
+}
+
+#schedule .Gantt-bar-id-headless-lounge-402-only {
+  --bar-color: #29633c;
+  color: #ffffff;
+  text-shadow: #333 -1px 1px 2px;
 }
 
 /* Map styles */
