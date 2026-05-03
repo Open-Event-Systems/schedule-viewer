@@ -355,57 +355,68 @@
     "locations": [
       {
         "id": "burkhart",
-        "title": "Burkhart",
+        "title": "Emerson Burkhart",
+        "aliases": ["Burkhart", "Burkhart : Program"],
         "level": "lower"
       },
       {
         "id": "king",
-        "title": "King",
+        "title": "Robert King",
+        "aliases": ["King", "King : Board Games", "Board Games"],
         "level": "lobby"
       },
       {
         "id": "hopkins",
-        "title": "Hopkins",
+        "title": "Edna Boies Hopkins",
+        "aliases": ["Hopkins", "Hopkins : Video Games", "Video Games"],
         "level": "lobby"
       },
       {
         "id": "kamau",
-        "title": "Kamau",
+        "title": "Kojo Kamau Junior Ballroom",
+        "aliases": ["Kamau", "Kamau : Main Stage", "Main Stage"],
         "level": "4f"
       },
       {
         "id": "west",
-        "title": "West",
+        "title": "Pheoris West Room",
+        "aliases": ["West", "West : Second Stage", "Second Stage"],
         "level": "3f"
       },
       {
         "id": "johnson",
-        "title": "Johnson",
+        "title": "Roman Johnson Room",
+        "aliases": ["Johnson", "Johnson : Panel Room 1", "Panel Room 1"],
         "level": "3f"
       },
       {
         "id": "massey-a",
-        "title": "Massey A",
+        "title": "Charles Massey Room A",
+        "aliases": ["Massey A", "Massey A : Panel Room 2", "Panel Room 2"],
         "level": "3f"
       },
       {
         "id": "massey-bc",
-        "title": "Massey BC",
+        "title": "Charles Massey Room BC",
+        "aliases": ["Massey BC", "Massey BC : Panel Room 3", "Panel Room 3"],
         "level": "3f"
       },
       {
         "id": "griffith",
-        "title": "Griffith",
+        "title": "Denny Griffith Boardroom",
+        "aliases": ["Griffith", "Griffith : Meeting Room 1", "Meeting Room 1"],
         "level": "3f"
       },
       {
         "id": "frey",
-        "title": "Frey",
+        "title": "Erwin Frey Room",
+        "aliases": ["Frey", "Frey : Meeting Room 2", "Meeting Room 2"],
         "level": "3f"
       },
       {
         "id": "spark-bar",
         "title": "Spark Bar",
+        "aliases": ["Spark Bar : Hilton Bar"],
         "level": "2f"
       }
     ]
