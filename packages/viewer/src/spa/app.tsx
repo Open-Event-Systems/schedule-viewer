@@ -17,6 +17,7 @@ import { makeRouter } from "../router.js"
 import { useState } from "react"
 import { cacheData } from "../setup.js"
 import { makePWAStore } from "../sw/pwa.js"
+import { setupUmami } from "../umami.js"
 
 // singleton
 const pwaStore = makePWAStore()
@@ -42,6 +43,9 @@ export const App = () => {
     } else {
       history = createHashHistory()
     }
+
+    // setup analytics
+    setupUmami()
 
     return {
       initialHeadElements: getHeadElements(),

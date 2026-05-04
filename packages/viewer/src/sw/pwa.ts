@@ -92,7 +92,7 @@ export const makePWAStore = () => {
   })
 }
 
-const isPWAMode = (): boolean => {
+export const isPWAMode = (): boolean => {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
     window.matchMedia("(display-mode: minimal-ui)").matches ||

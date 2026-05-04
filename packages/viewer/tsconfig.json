@@ -6,7 +6,7 @@
     "outDir": "./dist",
     "module": "nodenext",
     "target": "esnext",
-    "types": ["vite/client", "vite-plugin-pwa/client"],
+    "types": ["vite/client", "vite-plugin-pwa/client", "@types/umami"],
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "strict": true,
