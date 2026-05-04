@@ -374,10 +374,16 @@ body {
 .event-title .Map-foreignObjectText {
   font-size: 0.75in;
   line-height: 0.75in;
-  color: #eeeeee;
+  text-align: left;
 }
 .event-title .Map-foreignObjectText::before {
   content: "Now: ";
+}
+.event-title.is-light .Map-foreignObjectText {
+  color: #eeeeee;
+}
+.event-title.is-dark .Map-foreignObjectText {
+  color: #333333;
 }
 .vendor-small .Map-foreignObjectText {
   font-size: 0.2in;
@@ -505,6 +511,34 @@ body {
   display: none;
 }
 .Map-flag-id-area-warn .area-warn {
+  display: initial;
+}
+
+.manick {
+  display: none;
+}
+.Map-flag-id-manick .manick {
+  display: initial;
+}
+
+.cosmik-rhubarb {
+  display: none;
+}
+.Map-flag-id-cosmik-rhubarb .cosmik-rhubarb {
+  display: initial;
+}
+
+.ice-cream {
+  display: none;
+}
+.Map-flag-id-ice-cream .ice-cream {
+  display: initial;
+}
+
+.dance {
+  display: none;
+}
+.Map-flag-id-dance .dance {
   display: initial;
 }
 

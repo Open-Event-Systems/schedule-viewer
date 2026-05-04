@@ -115,7 +115,7 @@
       "type": "event",
       "title": "Hospitality",
       "start": "2026-05-22T16:00:00",
-      "end": "2026-05-22T18:00:00",
+      "end": "2026-05-22T20:00:00",
       "location": "Hospitality",
       "tags": ["gantt"]
     },
@@ -133,7 +133,7 @@
       "type": "event",
       "title": "Hospitality",
       "start": "2026-05-23T16:00:00",
-      "end": "2026-05-23T18:00:00",
+      "end": "2026-05-23T20:00:00",
       "location": "Hospitality",
       "tags": ["gantt"]
     },
@@ -387,6 +387,36 @@
       "type": "map-flag",
       "start": "2026-05-24T15:30:00",
       "end": "2026-05-24T16:00:00"
+    },
+    {
+      "id": "manick",
+      "type": "map-flag",
+      "start": "2026-05-24T14:40:00",
+      "end": "2026-05-24T16:00:00"
+    },
+    {
+      "id": "cosmik-rhubarb",
+      "type": "map-flag",
+      "start": "2026-05-22T20:40:00",
+      "end": "2026-05-22T22:00:00"
+    },
+    {
+      "id": "ice-cream",
+      "type": "map-flag",
+      "start": "2026-05-24T11:40:00",
+      "end": "2026-05-24T14:00:00"
+    },
+    {
+      "id": "dance",
+      "type": "map-flag",
+      "start": "2026-05-23T20:00:00",
+      "end": "2026-05-23T22:00:00"
+    },
+    {
+      "id": "dance",
+      "type": "map-flag",
+      "start": "2026-05-23T23:00:00",
+      "end": "2026-05-24T02:00:00"
     }
   ]
 }
