@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"ogp/internal/sitemap"
 	"ogp/internal/tags"
 	"ogp/internal/tags/jsonld"
 	"ogp/internal/tags/meta"
@@ -47,6 +48,7 @@ func NewHandler() *Handler {
 	r.Use(middleware.GetHead)
 
 	r.Get("/", h.handleIndex)
+	r.Get("/sitemap.xml", h.handleSitemap)
 	r.Get("/items/{itemId}", h.handleItemRoute)
 
 	h.r = r
@@ -117,6 +119,35 @@ func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+	buf.WriteTo(w)
+}
+
+func (h *Handler) handleSitemap( w http.ResponseWriter, r *http.Request) {
+	opts, err := getHeaderOptions(r)
+
+	if err != nil {
+		httpError(w, http.StatusBadRequest)
+		log.Printf("bad request: %s", err)
+		return
+	}
+
+
+	_, _, _, items, err := h.fetchData(r.Context(), opts.htmlURL, opts.configURL)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	buf := bytes.NewBuffer(nil)
+	if err = sitemap.WriteSiteMap(buf, opts.url, items); err != nil {
+		serverError(w, err)
+		return
+	}
+
+
+	w.Header().Set("Content-Type", "application/xml")
+	w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+
 	buf.WriteTo(w)
 }
 
