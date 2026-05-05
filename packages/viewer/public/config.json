@@ -9,7 +9,7 @@
   "start": "2026-05-21T20:00:00",
   "end": "2026-05-24T22:00:00",
   "items": [
-    "https://anthrohio.org/_schedule/2026/events-test.json",
+    "https://anthrohio.org/_schedule/2026/events.json",
     "https://anthrohio.org/_schedule/2026/vendors.json",
     "https://anthrohio.org/test-schedule-2026/hours.json"
   ],
