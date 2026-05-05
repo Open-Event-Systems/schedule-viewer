@@ -114,7 +114,11 @@ export const SchedulePageContainer = (props: SchedulePageContainerProps) => {
         <SelectionsFilterContainer {...props} />
       )}
       renderViewSelect={(props) => (
-        <ViewSelectContainer defaultValue={defaultViewConfig?.id} {...props} />
+        <ViewSelectContainer
+          defaultValue={defaultViewConfig?.id}
+          value={viewConfig.id}
+          {...props}
+        />
       )}
       renderTextFilter={(props) => <TextFilterContainer {...props} />}
       renderPastEventsFilter={(props) => (
