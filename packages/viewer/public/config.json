@@ -188,12 +188,14 @@
             "Registration",
             "Dealers' Den",
             "Artists' Alley",
+            "Exhibitor's Row",
             "Video Gaming",
             "Board Gaming",
             "Hospitality",
             "Safety & Con Ops",
             "Charity",
-            "Headless Lounge"
+            "Headless Lounge",
+            "AHF Testing"
           ],
           "showPastEvents": true
         }
