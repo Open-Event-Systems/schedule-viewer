@@ -19,6 +19,8 @@
   --track-vertical-width: 10rem;
   --track-horizontal-height: 5rem;
 
+  --time-background: #eeeeee;
+
   --track-background-odd: #eeeeee;
   --track-background-even: none;
 
@@ -52,8 +54,11 @@
 .times {
   grid-area: times;
   display: grid;
+  position: sticky;
+  background: var(--time-background);
 
   .vertical & {
+    left: 0px;
     grid-template-columns: auto;
     grid-auto-rows: 0px;
     grid-auto-flow: row;
@@ -63,6 +68,7 @@
   }
 
   .horizontal & {
+    top: 0px;
     grid-template-rows: auto;
     grid-auto-flow: column;
     grid-auto-columns: 0px;
@@ -81,6 +87,7 @@
     line-height: var(--time-vertical-height);
     top: calc(-0.5 * var(--time-vertical-height));
     text-align: right;
+    margin-left: var(--times-vertical-gap);
     margin-right: var(--times-vertical-gap);
   }
 
