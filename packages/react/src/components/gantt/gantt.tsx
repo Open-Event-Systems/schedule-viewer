@@ -80,9 +80,9 @@ const _Gantt = (props: GanttProps) => {
     >
       <Gantt.Backgrounds>{backgroundEls}</Gantt.Backgrounds>
       <Gantt.Marks>{marks}</Gantt.Marks>
-      <Gantt.Times>{times}</Gantt.Times>
-      <Gantt.Headers>{headers}</Gantt.Headers>
       <Gantt.Tracks>{trackEls}</Gantt.Tracks>
+      <Gantt.Headers>{headers}</Gantt.Headers>
+      <Gantt.Times>{times}</Gantt.Times>
     </Gantt.Root>
   )
 }

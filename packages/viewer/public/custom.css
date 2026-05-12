@@ -244,6 +244,7 @@ body {
 #schedule .GanttView-gantt {
   --track-background-odd: hsl(281, 76%, 5%);
   --track-background-even: hsl(281, 76%, 10%);
+  --time-background: hsl(281, 76%, 5%);
   --track-vertical-width: 2.5rem;
   --mark-border: #999 dashed 1px;
 }
