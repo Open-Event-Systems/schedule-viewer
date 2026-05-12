@@ -302,24 +302,28 @@ body {
 
 /* Map styles */
 
+.MapViewer-level-id-5f {
+  --map-isometric-y-offset: -36.5in;
+}
+
 .MapViewer-level-id-4f {
-  --map-isometric-y-offset: -34.5in;
+  --map-isometric-y-offset: -24.5in;
 }
 
 .MapViewer-level-id-3f {
-  --map-isometric-y-offset: -22.5in;
+  --map-isometric-y-offset: -12.5in;
 }
 
 .MapViewer-level-id-2f {
-  --map-isometric-y-offset: -10in;
-}
-
-.MapViewer-level-id-lobby {
   --map-isometric-y-offset: 0in;
 }
 
+.MapViewer-level-id-lobby {
+  --map-isometric-y-offset: 10in;
+}
+
 .MapViewer-level-id-lower {
-  --map-isometric-y-offset: 14.5in;
+  --map-isometric-y-offset: 24.5in;
 }
 
 .MapViewer-root {
@@ -408,7 +412,8 @@ body {
 
 .Map-isometric:not(.Map-isometric-transition-finished) .escalator-2f,
 .Map-isometric:not(.Map-isometric-transition-finished) .escalator-3f,
-.Map-isometric:not(.Map-isometric-transition-finished) .escalator-4f {
+.Map-isometric:not(.Map-isometric-transition-finished) .escalator-4f,
+.Map-isometric:not(.Map-isometric-transition-finished) .escalator-5f {
   display: none;
 }
 
@@ -423,6 +428,9 @@ body {
 .Map-isometric-transition-finished .escalator-4f {
   transform: translate(5.5in, 11.3in) translate(50%, 50%) scaleX(0.5)
     skew(0deg, -45deg) translate(-50%, -50%);
+}
+.Map-isometric-transition-finished .escalator-5f {
+  display: none;
 }
 .Map-isometric-transition-finished .stairs-lobby {
   transform: translate(0, 3.6in) translate(50%, 50%) skew(0deg, 10deg)
@@ -624,10 +632,12 @@ body {
     transform: rotateY(-90deg);
   }
 }
-#lower__test-aa.Map-flag-transition-finished {
+#lower__test-aa.Map-flag-transition-finished,
+#lower__burkhart.Map-flag-transition-finished {
   display: none;
 }
-#lower__test-aa {
+#lower__test-aa,
+#lower__burkhart {
   animation-duration: 0.5s;
   animation-timing-function: linear;
   animation-iteration-count: 1;
@@ -635,22 +645,29 @@ body {
   transform-origin: center;
   transform-box: fill-box;
 }
-#lower__test-aa.Map-flag-transition-forward {
+#lower__test-aa.Map-flag-transition-forward,
+#lower__burkhart.Map-flag-transition-forward {
   animation-name: aa-switch-forward;
 }
-#lower__test-aa.Map-flag-transition-backward {
+#lower__test-aa.Map-flag-transition-backward,
+#lower__burkhart.Map-flag-transition-backward {
   animation-name: aa-switch-backward;
 }
 
-#lower__test-aa-alt {
+#lower__test-aa-alt,
+#lower__artists-alley {
   display: none;
 }
 #lower__test-aa-alt.Map-flag-transition-backward,
 #lower__test-aa-alt.Map-flag-transition-forward,
-#lower__test-aa-alt.Map-flag-transition-finished {
+#lower__test-aa-alt.Map-flag-transition-finished,
+#lower__artists-alley.Map-flag-transition-backward,
+#lower__artists-alley.Map-flag-transition-forward,
+#lower__artists-alley.Map-flag-transition-finished {
   display: initial;
 }
-#lower__test-aa-alt {
+#lower__test-aa-alt,
+#lower__artists-alley {
   animation-duration: 0.5s;
   animation-timing-function: linear;
   animation-iteration-count: 1;
@@ -658,11 +675,17 @@ body {
   transform-origin: center;
   transform-box: fill-box;
 }
-#lower__test-aa-alt.Map-flag-transition-forward {
+#lower__test-aa-alt.Map-flag-transition-forward,
+#lower__artists-alley.Map-flag-transition-forward {
   animation-name: aa-switch-alt-forward;
 }
-#lower__test-aa-alt.Map-flag-transition-backward {
+#lower__test-aa-alt.Map-flag-transition-backward,
+#lower__artists-alley.Map-flag-transition-backward {
   animation-name: aa-switch-alt-backward;
+}
+
+.Map-flag-id-aa .Map-click-id-burkhart {
+  display: none;
 }
 
 /*# sourceMappingURL=map.css.map */

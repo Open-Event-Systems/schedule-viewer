@@ -323,6 +323,12 @@
         "type": "level",
         "title": "4F",
         "url": "/test-schedule-2026/4f.svg"
+      },
+      {
+        "id": "5f",
+        "type": "level",
+        "title": "5F",
+        "url": "/test-schedule-2026/5f.svg"
       }
     ],
     "defaultLevel": "lobby",
@@ -418,6 +424,12 @@
         "title": "Spark Bar",
         "aliases": ["Spark Bar : Hilton Bar"],
         "level": "2f"
+      },
+      {
+        "id": "robinson",
+        "title": "Aminah Robinson Grand Ballroom",
+        "aliases": ["Robinson", "Robinson : Tower 402"],
+        "level": "5f"
       }
     ]
   }
