@@ -432,6 +432,384 @@
         "title": "Aminah Robinson Grand Ballroom",
         "aliases": ["Robinson", "Robinson : Tower 402"],
         "level": "5f"
+      },
+      {
+        "id": "b-1",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["B 1"]
+      },
+      {
+        "id": "b-2",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["B 2"]
+      },
+      {
+        "id": "b-3",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["B 3"]
+      },
+      {
+        "id": "mm-1",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 1"]
+      },
+      {
+        "id": "mm-2",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 2"]
+      },
+      {
+        "id": "mm-3",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 3"]
+      },
+      {
+        "id": "mm-4",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 4"]
+      },
+      {
+        "id": "mm-5",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 5"]
+      },
+      {
+        "id": "mm-6",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 6"]
+      },
+      {
+        "id": "mm-7",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 7"]
+      },
+      {
+        "id": "mm-8",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 8"]
+      },
+      {
+        "id": "mm-9",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 9"]
+      },
+      {
+        "id": "mm-10",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 10"]
+      },
+      {
+        "id": "mm-11",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 11"]
+      },
+      {
+        "id": "mm-12",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 12"]
+      },
+      {
+        "id": "mm-13",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 13"]
+      },
+      {
+        "id": "mm-14",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 14"]
+      },
+      {
+        "id": "dd-15",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 15"]
+      },
+      {
+        "id": "dd-16",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 16"]
+      },
+      {
+        "id": "dd-17",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 17"]
+      },
+      {
+        "id": "dd-18",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 18"]
+      },
+      {
+        "id": "dd-19",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 19"]
+      },
+      {
+        "id": "dd-20",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 20"]
+      },
+      {
+        "id": "dd-21",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 21"]
+      },
+      {
+        "id": "dd-22",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 22"]
+      },
+      {
+        "id": "dd-23",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 23"]
+      },
+      {
+        "id": "dd-24",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 24"]
+      },
+      {
+        "id": "dd-25",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 25"]
+      },
+      {
+        "id": "dd-26",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 26"]
+      },
+      {
+        "id": "dd-27",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 27"]
+      },
+      {
+        "id": "dd-28",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 28"]
+      },
+      {
+        "id": "dd-29",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 29"]
+      },
+      {
+        "id": "dd-30",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 30"]
+      },
+      {
+        "id": "dd-31",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 31"]
+      },
+      {
+        "id": "dd-32",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 32"]
+      },
+      {
+        "id": "dd-33",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 33"]
+      },
+      {
+        "id": "dd-34",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 34"]
+      },
+      {
+        "id": "dd-35",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 35"]
+      },
+      {
+        "id": "dd-36",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 36"]
+      },
+      {
+        "id": "dd-37",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 37"]
+      },
+      {
+        "id": "dd-38",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 38"]
+      },
+      {
+        "id": "dd-39",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 39"]
+      },
+      {
+        "id": "dd-40",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 40"]
+      },
+      {
+        "id": "dd-41",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 41"]
+      },
+      {
+        "id": "dd-42",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 42"]
+      },
+      {
+        "id": "dd-43",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 43"]
+      },
+      {
+        "id": "dd-44",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 44"]
+      },
+      {
+        "id": "dd-45",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 45"]
+      },
+      {
+        "id": "dd-46",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 46"]
+      },
+      {
+        "id": "dd-47",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 47"]
+      },
+      {
+        "id": "dd-48",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 48"]
+      },
+      {
+        "id": "dd-49",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 49"]
+      },
+      {
+        "id": "dd-50",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 50"]
+      },
+      {
+        "id": "dd-51",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 51"]
+      },
+      {
+        "id": "dd-52",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 52"]
+      },
+      {
+        "id": "dd-53",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 53"]
+      },
+      {
+        "id": "dd-54",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 54"]
+      },
+      {
+        "id": "dd-55",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 55"]
+      },
+      {
+        "id": "dd-56",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 56"]
+      },
+      {
+        "id": "dd-57",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 57"]
+      },
+      {
+        "id": "dd-58",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 58"]
+      },
+      {
+        "id": "dd-59",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 59"]
+      },
+      {
+        "id": "dd-60",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 60"]
       }
     ]
   }
