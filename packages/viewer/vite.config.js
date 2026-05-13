@@ -64,6 +64,7 @@ export default defineConfig({
                 (url.pathname.endsWith("/config.js") ||
                   url.pathname.endsWith("/config.json") ||
                   url.pathname.endsWith("/custom.css") ||
+                  url.pathname.endsWith("/map.css") ||
                   /\.(?:json|css|png|svg|jpe?g|webp|woff2)$/i.test(
                     url.pathname,
                   ) ||
@@ -80,7 +81,7 @@ export default defineConfig({
           /\.(?:html|js|json|css|png|svg|jpe?g|webp|woff2)$/i,
         ],
         globPatterns: ["**/*.{html,js,css,png,svg,jpg,jpeg,webp,woff2}"],
-        globIgnores: ["config.js", "config.json", "custom.css"],
+        globIgnores: ["config.js", "config.json", "custom.css", "map.css"],
       },
     }),
     // Insert custom css tag at end of head
@@ -94,6 +95,14 @@ export default defineConfig({
             attrs: {
               rel: "stylesheet",
               href: "/test-schedule-2026/custom.css",
+            },
+            injectTo: "head",
+          },
+          {
+            tag: "link",
+            attrs: {
+              rel: "stylesheet",
+              href: "/test-schedule-2026/map.css",
             },
             injectTo: "head",
           },
