@@ -10,6 +10,8 @@ import (
 type Config struct {
 	Id                string                  `json:"id"`
 	Title             string                  `json:"title"`
+	Start             *LocalTime              `json:"start,omitempty"`
+	End               *LocalTime              `json:"end,omitempty"`
 	Items             []ItemOrURL             `json:"items"`
 	LocationAddresses []*LocationAddressEntry `json:"locationAddresses,omitempty"`
 }
