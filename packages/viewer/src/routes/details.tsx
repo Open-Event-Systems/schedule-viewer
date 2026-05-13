@@ -65,7 +65,12 @@ export const EventDetailsRoute = () => {
 
   return (
     <>
-      <JSONLDItem event={event.data[0]!} url={url} />
+      <JSONLDItem
+        event={event.data[0]!}
+        url={url}
+        defaultStart={config.start}
+        defaultEnd={config.end}
+      />
       <ItemDetails items={event.data} />
     </>
   )
@@ -100,7 +105,12 @@ export const VendorDetailsRoute = () => {
 
   return (
     <>
-      <JSONLDItem event={vendor.data[0]!} url={url} />
+      <JSONLDItem
+        event={vendor.data[0]!}
+        url={url}
+        defaultStart={config.start}
+        defaultEnd={config.end}
+      />
       <ItemDetails items={vendor.data} />
     </>
   )

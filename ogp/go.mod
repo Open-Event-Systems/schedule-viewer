@@ -5,7 +5,7 @@ go 1.25.9
 require (
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/goccy/go-json v0.10.6
-	github.com/open-event-systems/schedule-viewer/lib/go v0.0.0-20260430041023-248edff504dc
+	github.com/open-event-systems/schedule-viewer/lib/go v0.0.0-20260513213733-630ac58948c7
 	golang.org/x/net v0.53.0
 )
 

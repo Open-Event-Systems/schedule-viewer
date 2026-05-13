@@ -79,9 +79,13 @@ export const JSONLDItems = ({
 export const JSONLDItem = ({
   event,
   url,
+  defaultStart,
+  defaultEnd,
 }: {
   event: DetailedScheduleItem
   url: string
+  defaultStart?: Date
+  defaultEnd?: Date
 }) => {
   const config = useViewerConfig()
 
@@ -97,12 +101,15 @@ export const JSONLDItem = ({
     url,
   }
 
-  if (event.start) {
-    data.startDate = format(event.start, "yyyy-MM-dd'T'HH:mm:ss")
+  if (event.start || defaultStart) {
+    data.startDate = format(
+      event.start || defaultStart!,
+      "yyyy-MM-dd'T'HH:mm:ss",
+    )
   }
 
-  if (event.end) {
-    data.endDate = format(event.end, "yyyy-MM-dd'T'HH:mm:ss")
+  if (event.end || defaultEnd) {
+    data.endDate = format(event.end || defaultEnd!, "yyyy-MM-dd'T'HH:mm:ss")
   }
 
   if (event.title) {
