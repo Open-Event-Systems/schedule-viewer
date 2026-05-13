@@ -1,9 +1,9 @@
-name: Deploy schedule (prod)
+name: Deploy schedule (test)
 
 on:
   push:
     branches:
-      - ao
+      - ao-test
   workflow_dispatch:
 
 jobs:
@@ -40,6 +40,6 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 2222
           local_path: ./packages/viewer/dist/*
-          remote_path: anthrohio.org/static/schedule-2026/
+          remote_path: anthrohio.org/static/test-schedule-2026/
           password: ${{ secrets.SFTP_PASSWORD }}
           sftp_only: true
