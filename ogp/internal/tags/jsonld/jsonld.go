@@ -103,6 +103,15 @@ func GetItemTagActions(ctx tags.TagContext) tags.HeadActionFunc {
 		End:         ctx.Item.End,
 	}
 
+	// default start/end times
+	if event.Start == nil {
+		event.Start = ctx.Config.Start
+	}
+
+	if event.End == nil {
+		event.End = ctx.Config.End
+	}
+
 	for _, locName := range ctx.Item.Location {
 		event.Location = append(event.Location, getLocationObject(ctx.AddressEntries, locName))
 	}
