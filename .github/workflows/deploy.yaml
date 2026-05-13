@@ -1,0 +1,44 @@
+name: Deploy schedule
+
+on:
+  push:
+    branches:
+      - ao-test
+  workflow_dispatch:
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup pnpm
+        uses: actions/setup-pnpm@v6.0.8
+        with:
+          run_install: true
+          cache: true
+
+      - name: Setup node
+        uses: actions/setup-node@6.4.0
+        with:
+          node-version: 24
+
+      - name: Build dependencies
+        run: pnpm build:deps
+
+      - name: Build viewer
+        run: pnpm build:viewer
+
+      - name: Deploy viewer
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          username: ${{ secrets.SFTP_USERNAME }}
+          server: ${{ secrets.SFTP_SERVER }}
+          port: 2222
+          local_path: ./packages/viewer/dist/*
+          remote_path: anthrohio.org/static/test-schedule-2026/
+          password: ${{ secrets.SFTP_PASSWORD }}
+          sftp_only: true
