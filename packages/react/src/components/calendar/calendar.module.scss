@@ -36,6 +36,9 @@
 
   display: grid;
 
+  overflow-x: auto;
+  overflow-y: visible;
+
   &.vertical {
     grid-template:
       "corner headers" auto
