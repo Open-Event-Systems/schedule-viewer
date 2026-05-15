@@ -274,6 +274,18 @@
     {
       "tag": "soaps",
       "title": "Soaps/Perfumes"
+    },
+    {
+      "tag": "apparel",
+      "title": "Apparel"
+    },
+    {
+      "tag": "accessories",
+      "title": "Accessories"
+    },
+    {
+      "tag": "print",
+      "title": "Print Media"
     }
   ],
   "tagIndicators": [
@@ -452,85 +464,85 @@
         "aliases": ["B 3"]
       },
       {
-        "id": "mm-1",
+        "id": "dd-1",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 1"]
       },
       {
-        "id": "mm-2",
+        "id": "dd-2",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 2"]
       },
       {
-        "id": "mm-3",
+        "id": "dd-3",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 3"]
       },
       {
-        "id": "mm-4",
+        "id": "dd-4",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 4"]
       },
       {
-        "id": "mm-5",
+        "id": "dd-5",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 5"]
       },
       {
-        "id": "mm-6",
+        "id": "dd-6",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 6"]
       },
       {
-        "id": "mm-7",
+        "id": "dd-7",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 7"]
       },
       {
-        "id": "mm-8",
+        "id": "dd-8",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 8"]
       },
       {
-        "id": "mm-9",
+        "id": "dd-9",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 9"]
       },
       {
-        "id": "mm-10",
+        "id": "dd-10",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 10"]
       },
       {
-        "id": "mm-11",
+        "id": "dd-11",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 11"]
       },
       {
-        "id": "mm-12",
+        "id": "dd-12",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 12"]
       },
       {
-        "id": "mm-13",
+        "id": "dd-13",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 13"]
       },
       {
-        "id": "mm-14",
+        "id": "dd-14",
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["MM 14"]
@@ -548,10 +560,16 @@
         "aliases": ["DD 16"]
       },
       {
-        "id": "dd-17",
+        "id": "dd-17a",
         "level": "lower",
         "zoomScale": 2,
-        "aliases": ["DD 17"]
+        "aliases": ["DD 17a"]
+      },
+      {
+        "id": "dd-17b",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 17b"]
       },
       {
         "id": "dd-18",
@@ -560,10 +578,16 @@
         "aliases": ["DD 18"]
       },
       {
-        "id": "dd-19",
+        "id": "dd-19a",
         "level": "lower",
         "zoomScale": 2,
-        "aliases": ["DD 19"]
+        "aliases": ["DD 19a"]
+      },
+      {
+        "id": "dd-19b",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["DD 19b"]
       },
       {
         "id": "dd-20",
