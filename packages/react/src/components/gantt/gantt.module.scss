@@ -17,12 +17,12 @@
 
   &.vertical {
     // cover the negative margin from bars to prevent scroll bar appearing
-    margin-bottom: calc(var(--bar-vertical-width) / 2);
+    padding-bottom: calc(var(--bar-vertical-width) / 2);
   }
 
   &.horizontal {
     // cover the negative margin from bars to prevent scroll bar appearing
-    margin-right: calc(var(--bar-horizontal-height) / 2);
+    padding-right: calc(var(--bar-horizontal-height) / 2);
   }
 }
 

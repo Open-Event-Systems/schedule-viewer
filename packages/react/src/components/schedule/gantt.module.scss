@@ -1,9 +1,10 @@
 .root {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: auto;
   grid-auto-rows: auto;
   grid-auto-flow: row;
-  justify-items: center;
+  justify-content: center;
+  justify-content: safe center;
   align-items: start;
 
   gap: var(--mantine-spacing-md);
