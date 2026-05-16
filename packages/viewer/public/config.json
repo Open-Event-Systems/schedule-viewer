@@ -20,7 +20,7 @@
       "title": "Events",
       "description": "View the schedule of events and panels.",
       "onlyType": "event",
-      "excludeTags": ["gantt"],
+      "excludeTags": ["gantt", "escape-room"],
       "views": [
         {
           "id": "daily-agenda",
@@ -198,6 +198,20 @@
             "AHF Testing"
           ],
           "showPastEvents": true
+        }
+      ]
+    },
+    {
+      "id": "escape-room",
+      "title": "Escape Room",
+      "description": "View the available Furry Logic Escape Room booking times.",
+      "requireTags": ["escape-room"],
+      "views": [
+        {
+          "id": "daily-agenda",
+          "title": "Daily Agenda",
+          "type": "daily-agenda",
+          "enableFeatures": ["past-events-filter"]
         }
       ]
     }
@@ -446,6 +460,12 @@
         "level": "5f"
       },
       {
+        "id": "tibor",
+        "title": "Alfred Tibor Room",
+        "aliases": ["Tibor", "Tibor : Escape Room", "Furry Logic"],
+        "level": "3f"
+      },
+      {
         "id": "b-1",
         "level": "lower",
         "zoomScale": 2,
@@ -494,10 +514,16 @@
         "aliases": ["MM 5"]
       },
       {
-        "id": "dd-6",
+        "id": "dd-6a",
         "level": "lower",
         "zoomScale": 2,
-        "aliases": ["MM 6"]
+        "aliases": ["MM 6a"]
+      },
+      {
+        "id": "dd-6b",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["MM 6b"]
       },
       {
         "id": "dd-7",

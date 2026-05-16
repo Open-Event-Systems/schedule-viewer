@@ -23,6 +23,14 @@ var scheduleConfig = {
   colorScheme: "dark",
   basePath: "/test-schedule-2026",
   serviceWorker: true,
-  cacheURLs: ["lower.svg", "lobby.svg", "2f.svg", "3f.svg", "4f.svg"],
+  cacheURLs: [
+    "map.css",
+    "lower.svg",
+    "lobby.svg",
+    "2f.svg",
+    "3f.svg",
+    "4f.svg",
+    "5f.svg",
+  ],
   router: "browser",
 }

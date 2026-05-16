@@ -339,6 +339,246 @@
       "tags": ["gantt"]
     },
     {
+      "id": "furry-logic-slot-1",
+      "type": "event",
+      "title": "Furry Logic - Slot 1",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T10:00:00",
+      "end": "2026-05-23T11:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-2",
+      "type": "event",
+      "title": "Furry Logic - Slot 2",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T11:30:00",
+      "end": "2026-05-23T13:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-3",
+      "type": "event",
+      "title": "Furry Logic - Slot 3",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T13:00:00",
+      "end": "2026-05-23T14:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-4",
+      "type": "event",
+      "title": "Furry Logic - Slot 4",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T14:30:00",
+      "end": "2026-05-23T16:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-5",
+      "type": "event",
+      "title": "Furry Logic - Slot 5",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T16:00:00",
+      "end": "2026-05-23T17:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-6",
+      "type": "event",
+      "title": "Furry Logic - Slot 6",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T17:30:00",
+      "end": "2026-05-23T19:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-7",
+      "type": "event",
+      "title": "Furry Logic - Slot 7",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T19:00:00",
+      "end": "2026-05-23T20:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-8",
+      "type": "event",
+      "title": "Furry Logic - Slot 8",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-23T20:30:00",
+      "end": "2026-05-23T22:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-9",
+      "type": "event",
+      "title": "Furry Logic - Slot 9",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-24T10:00:00",
+      "end": "2026-05-24T11:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-10",
+      "type": "event",
+      "title": "Furry Logic - Slot 10",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-24T11:30:00",
+      "end": "2026-05-24T13:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-11",
+      "type": "event",
+      "title": "Furry Logic - Slot 11",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-24T13:00:00",
+      "end": "2026-05-24T14:30:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
+      "id": "furry-logic-slot-12",
+      "type": "event",
+      "title": "Furry Logic - Slot 12",
+      "description": "Furry Logic is proud to bring back Cyberpunk Escape where players work together to untangle the corporate conspiracies and expose Megacorp for its wrongdoings from the inside before the jamming drones lose power! Games are 60 minutes long, tickets are $30 per person, with a portion of all tickets supporting W.A.G.S 4 Kids!",
+      "contacts": [
+        {
+          "name": "Furry Logic Bookings",
+          "url": "https://www.bookeo.com/furrylogicllc"
+        },
+        {
+          "name": "furrylogicllc@gmail.com",
+          "url": "mailto:furrylogicllc@gmail.com"
+        }
+      ],
+      "start": "2026-05-24T14:30:00",
+      "end": "2026-05-24T16:00:00",
+      "location": "Tibor : Escape Room",
+      "tags": ["escape-room", "gaming"]
+    },
+    {
       "id": "area-warn",
       "type": "map-flag",
       "end": "2026-05-23T06:00:00"
