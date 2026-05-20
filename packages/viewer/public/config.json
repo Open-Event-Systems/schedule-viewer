@@ -860,6 +860,300 @@
         "level": "lower",
         "zoomScale": 2,
         "aliases": ["DD 60"]
+      },
+      {
+        "id": "al-1",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 1", "Alcove 1"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-2",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 2", "Alcove 2"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-3",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 3", "Alcove 3"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-4",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 4", "Alcove 4"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-5",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 5", "Alcove 5"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-6",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 6", "Alcove 6"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-7",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 7", "Alcove 7"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-8",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 8", "Alcove 8"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-9",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 9", "Alcove 9"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-10",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 10", "Alcove 10"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-11",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 11", "Alcove 11"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "al-12",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AL 12", "Alcove 12"],
+        "excludeFlags": ["aa"]
+      },
+      {
+        "id": "aa-1",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 1"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-2",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 2"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-3",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 3"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-4",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 4"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-5",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 5"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-6",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 6"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-7",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 7"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-8",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 8"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-9",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 9"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-10",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 10"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-11",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 11"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-12",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 12"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-13",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 13"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-14",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 14"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-15",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 15"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-16",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 16"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-17",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 17"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-18",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 18"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-19",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 19"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-20",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 20"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-21",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 21"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-22",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 22"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-23",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 23"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-24",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 24"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-25",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 25"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-26",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 26"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-27",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 27"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-28",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 28"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-29",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 29"],
+        "requireFlags": ["aa"]
+      },
+      {
+        "id": "aa-30",
+        "level": "lower",
+        "zoomScale": 2,
+        "aliases": ["AA 30"],
+        "requireFlags": ["aa"]
       }
     ]
   }
