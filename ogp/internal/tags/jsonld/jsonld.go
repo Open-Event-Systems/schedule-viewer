@@ -20,16 +20,12 @@ func GetIndexTagActions(ctx tags.TagContext, items []schedule.Item) tags.HeadAct
 	}
 
 	for i := range items {
-
-		var eventType string
 		var url string
 
 		switch items[i].Type {
 		case "event":
-			eventType = "ConferenceEvent"
 			url = fmt.Sprintf("%s/events/%s", ctx.URL, items[i].Id)
 		case "vendor":
-			eventType = "SaleEvent"
 			url = fmt.Sprintf("%s/vendors/%s", ctx.URL, items[i].Id)
 		}
 
@@ -37,14 +33,7 @@ func GetIndexTagActions(ctx tags.TagContext, items []schedule.Item) tags.HeadAct
 			continue
 		}
 
-		entry := jsonLDEvent{
-			jsonLDObject: jsonLDObject{
-				Type: eventType,
-				Id:   url,
-			},
-		}
-
-		list.Items = append(list.Items, entry)
+		list.Items = append(list.Items, url)
 	}
 
 	encoded, err := json.Marshal(list)

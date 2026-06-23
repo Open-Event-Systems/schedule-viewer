@@ -60,11 +60,7 @@ export const JSONLDItems = ({
   const itemData = []
 
   for (const item of items ?? []) {
-    const itemURL = getItemURL(item)
-    itemData.push({
-      "@id": itemURL,
-      "@type": item.type == "vendor" ? "SaleEvent" : "ConferenceEvent",
-    })
+    itemData.push(getItemURL(item))
   }
 
   const data: Record<string, unknown> = {

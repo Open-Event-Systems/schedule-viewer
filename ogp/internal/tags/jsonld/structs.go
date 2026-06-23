@@ -13,7 +13,7 @@ type jsonLDObject struct {
 
 type jsonLDEventList struct {
 	jsonLDObject
-	Items []jsonLDEvent `json:"itemListElement"`
+	Items []string `json:"itemListElement"`
 	Order string        `json:"itemListOrder,omitempty"`
 }
 
