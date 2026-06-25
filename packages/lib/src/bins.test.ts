@@ -1,51 +1,52 @@
 import { describe, expect, test } from "vitest"
 import {
-  binByTitle,
+  binByName,
   makeDayBinFunc,
   makeTagBinFunc,
   makeTimeBinFunc,
 } from "./bins.js"
-import { isEqual, parseISO } from "date-fns"
+import { parseISO } from "./date.js"
+import dayjs from "dayjs"
 
 describe("bin by title", () => {
   test("basic sorting", () => {
     const items = [
       {
         id: "B",
-        title: "B",
+        name: "B",
       },
       {
-        title: "AB",
+        name: "AB",
       },
       {
-        title: "aa",
+        name: "aa",
       },
       {
         id: "B",
-        title: "B",
+        name: "B",
       },
     ]
 
-    expect([...binByTitle(items)]).toStrictEqual([
+    expect([...binByName(items)]).toStrictEqual([
       {
         key: "A",
-        title: "A",
+        name: "A",
         items: [
           {
-            title: "aa",
+            name: "aa",
           },
           {
-            title: "AB",
+            name: "AB",
           },
         ],
       },
       {
         key: "B",
-        title: "B",
+        name: "B",
         items: [
           {
             id: "B",
-            title: "B",
+            name: "B",
           },
         ],
       },
@@ -55,29 +56,29 @@ describe("bin by title", () => {
   test("special character handling", () => {
     const items = [
       {
-        title: "!A",
+        name: "!A",
       },
       {
-        title: "(1)",
+        name: "(1)",
       },
     ]
 
-    expect([...binByTitle(items)]).toStrictEqual([
+    expect([...binByName(items)]).toStrictEqual([
       {
         key: "#",
-        title: "#",
+        name: "#",
         items: [
           {
-            title: "(1)",
+            name: "(1)",
           },
         ],
       },
       {
         key: "A",
-        title: "A",
+        name: "A",
         items: [
           {
-            title: "!A",
+            name: "!A",
           },
         ],
       },
@@ -85,13 +86,13 @@ describe("bin by title", () => {
   })
 
   test("handles missing title", () => {
-    const items = [{}, { title: "" }]
+    const items = [{}, { name: "" }]
 
-    expect([...binByTitle(items)]).toStrictEqual([
+    expect([...binByName(items)]).toStrictEqual([
       {
         key: "Other",
-        title: "Other",
-        items: [{}, { title: "" }],
+        name: "Other",
+        items: [{}, { name: "" }],
       },
     ])
   })
@@ -126,12 +127,12 @@ describe("bin by tag", () => {
     expect([...func(items)]).toStrictEqual([
       {
         key: "tag-a",
-        title: "Tag A",
+        name: "Tag A",
         items: [{ tags: ["a"] }, { tags: ["a"] }],
       },
       {
         key: "tag-b",
-        title: "Tag B",
+        name: "Tag B",
         items: [{ id: "b", tags: ["b"] }],
       },
     ])
@@ -149,12 +150,12 @@ describe("bin by tag", () => {
     expect([...func(items)]).toStrictEqual([
       {
         key: "tag-a",
-        title: "Tag A",
+        name: "Tag A",
         items: [{ tags: ["a", "b"] }],
       },
       {
         key: "tag-b",
-        title: "Tag B",
+        name: "Tag B",
         items: [{ tags: ["a", "b"] }],
       },
     ])
@@ -172,7 +173,7 @@ describe("bin by tag", () => {
     expect([...func(items)]).toStrictEqual([
       {
         key: "tag-a",
-        title: "Tag A",
+        name: "Tag A",
         items: [{ tags: ["a", "c"] }],
       },
     ])
@@ -190,7 +191,7 @@ describe("bin by tag", () => {
     expect([...func(items)]).toStrictEqual([
       {
         key: "na",
-        title: "N/A",
+        name: "N/A",
         items: [{ tags: ["c"] }],
       },
     ])
@@ -203,16 +204,16 @@ describe("bin by time", () => {
   test("bins by time", () => {
     const items = [
       {
-        start: parseISO("2020-01-01T13:01:00"),
-        end: parseISO("2020-01-01T14:00:00"),
+        startDate: parseISO("2020-01-01T13:01:00"),
+        endDate: parseISO("2020-01-01T14:00:00"),
       },
       {
-        start: parseISO("2020-01-01T13:04:59"),
-        end: parseISO("2020-01-01T14:00:00"),
+        startDate: parseISO("2020-01-01T13:04:59"),
+        endDate: parseISO("2020-01-01T14:00:00"),
       },
       {
-        start: parseISO("2020-01-01T13:30:00"),
-        end: parseISO("2020-01-01T14:00:00"),
+        startDate: parseISO("2020-01-01T13:30:00"),
+        endDate: parseISO("2020-01-01T14:00:00"),
       },
     ]
 
@@ -220,32 +221,31 @@ describe("bin by time", () => {
     const binned = [...func(items)]
     expect(binned.length).toBe(2)
     expect(binned[0]?.key).toBe("202001011300")
-    expect(binned[0]?.title).toBe("1:00 pm")
+    expect(binned[0]?.name).toBe("1:00 pm")
     expect(
-      isEqual(
-        [...(binned[0]?.items ?? [])][0]?.start ?? new Date(),
+      ([...(binned[0]?.items ?? [])][0]?.startDate ?? dayjs()).isSame(
         parseISO("2020-01-01T13:01:00"),
       ),
     ).toBe(true)
     expect([...(binned[0]?.items ?? [])].length).toBe(2)
     expect(binned[1]?.key).toBe("202001011330")
-    expect(binned[1]?.title).toBe("1:30 pm")
+    expect(binned[1]?.name).toBe("1:30 pm")
     expect([...(binned[1]?.items ?? [])].length).toBe(1)
   })
 
   test("includes now bin", () => {
     const items = [
       {
-        start: parseISO("2020-01-01T09:00:00"),
-        end: parseISO("2020-01-01T10:00:00"),
+        startDate: parseISO("2020-01-01T09:00:00"),
+        endDate: parseISO("2020-01-01T10:00:00"),
       },
       {
-        start: parseISO("2020-01-01T11:00:00"),
-        end: parseISO("2020-01-01T12:01:00"),
+        startDate: parseISO("2020-01-01T11:00:00"),
+        endDate: parseISO("2020-01-01T12:01:00"),
       },
       {
-        start: parseISO("2020-01-01T13:00:00"),
-        end: parseISO("2020-01-01T13:30:00"),
+        startDate: parseISO("2020-01-01T13:00:00"),
+        endDate: parseISO("2020-01-01T13:30:00"),
       },
     ]
 
@@ -262,10 +262,10 @@ describe("bin by day", () => {
   test("bin by day", () => {
     const items = [
       {
-        start: parseISO("2020-01-01T23:59:59"),
+        startDate: parseISO("2020-01-01T23:59:59"),
       },
       {
-        start: parseISO("2020-01-02T00:00:00"),
+        startDate: parseISO("2020-01-02T00:00:00"),
       },
     ]
 
@@ -273,18 +273,18 @@ describe("bin by day", () => {
     const binned = [...func(items)]
     expect(binned.length).toBe(2)
     expect(binned[0]?.key).toBe("20200101")
-    expect(binned[0]?.title).toBe("Wednesday, January 1")
+    expect(binned[0]?.name).toBe("Wednesday, January 1")
     expect(binned[1]?.key).toBe("20200102")
-    expect(binned[1]?.title).toBe("Thursday, January 2")
+    expect(binned[1]?.name).toBe("Thursday, January 2")
   })
 
   test("use day change hour", () => {
     const items = [
       {
-        start: parseISO("2020-01-01T23:59:59"),
+        startDate: parseISO("2020-01-01T23:59:59"),
       },
       {
-        start: parseISO("2020-01-02T00:00:00"),
+        startDate: parseISO("2020-01-02T00:00:00"),
       },
     ]
 
@@ -292,6 +292,6 @@ describe("bin by day", () => {
     const binned = [...func(items)]
     expect(binned.length).toBe(1)
     expect(binned[0]?.key).toBe("20200101")
-    expect(binned[0]?.title).toBe("Wednesday, January 1")
+    expect(binned[0]?.name).toBe("Wednesday, January 1")
   })
 })

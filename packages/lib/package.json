@@ -19,13 +19,15 @@
   },
   "devDependencies": {
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.21",
     "typescript": "^6.0.2",
     "unplugin-dts": "^1.0.0",
     "vite": "^8.0.2",
     "vitest": "^4.1.1"
   },
   "peerDependencies": {
-    "date-fns": "^4.1.0"
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.21"
   },
   "dependencies": {
     "ical-generator": "^10.1.0",

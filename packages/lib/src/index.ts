@@ -1,9 +1,13 @@
+export * from "./parse/json.js"
 export * from "./bins.js"
+export * from "./data.js"
+export * from "./date.js"
+export * from "./filter.js"
+export * from "./ical.js"
+export * from "./ld.js"
+export * from "./schedule-api.js"
 export * from "./schema.js"
 export * from "./selections-api.js"
-export * from "./ical.js"
-export * from "./item.js"
-export * from "./schedule-api.js"
 export {
   makeSelections,
   makeLocalSessionSelections,

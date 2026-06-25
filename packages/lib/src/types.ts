@@ -1,77 +1,154 @@
+import { type Dayjs } from "dayjs"
+import type {
+  EVENT_TYPES,
+  JSONLDTypesFromHierarchy,
+  ORGANIZATION_TYPES,
+} from "./ld.js"
+
 /**
  * A time interval.
  */
 export type Interval = Readonly<{
-  start?: Date
-  end?: Date
+  startDate?: Dayjs
+  endDate?: Dayjs
 }>
 
 /**
  * An {@link Interval} with start and end.
  */
 export type Bounded<T extends Interval> = T &
-  Readonly<{ start: Date; end: Date }>
+  Readonly<{ startDate: Dayjs; endDate: Dayjs }>
 
 /**
  * An interval representing a day, subject to the day change hour.
  */
 export type Day = Readonly<{
   key: string
-  start: Date
-  end: Date
+  startDate: Dayjs
+  endDate: Dayjs
 }>
 
 /**
- * A contact related to a schedule item.
+ * Recursively transform a type to be writable.
  */
-export type Contact = Readonly<{
+export type RW<T> = T extends readonly []
+  ? []
+  : T extends readonly [infer F, ...infer R]
+    ? [RW<F>, ...RW<R>]
+    : T extends readonly (infer R)[]
+      ? RW<R>[]
+      : T extends Readonly<Record<string, unknown>>
+        ? { -readonly [K in keyof T]: RW<T[K]> }
+        : T
+
+/**
+ * An image object.
+ */
+export type ImageObject = Readonly<{
+  type: "ImageObject"
+  contentUrl?: string
+  caption?: string
+  width?: number
+  height?: number
+  encodingFormat?: string
+}>
+
+export type ScheduleItemBaseProps = Readonly<{
+  id?: string
+  identifier?: string
+  type: string
   name?: string
+  description?: string
+  image?: readonly (string | ImageObject)[]
+  sameAs?: readonly string[]
   url?: string
 }>
 
-/**
- * Something that can be in a schedule.
- */
-export type ScheduleItem = Readonly<{
-  id: string
-  type: string
-  start?: Date
-  end?: Date
+export type ScheduleEventStatus = "EventScheduled" | "EventCancelled"
+
+export type ScheduleEventProps = Readonly<{
+  type: JSONLDTypesFromHierarchy<typeof EVENT_TYPES>
+  status: ScheduleEventStatus
+  startDate?: Dayjs
+  endDate?: Dayjs
+  location?: readonly (string | Place | Address)[]
+  organizer?: readonly (string | Person | Organization)[]
+  performer?: readonly (string | Person | Organization)[]
+  keywords?: ReadonlySet<string>
+  superEvent?: string | ScheduleEvent
+  subEvent?: readonly (string | ScheduleEvent)[]
 }>
 
-/**
- * Standard schedule item details.
- */
-export type ScheduleItemDetails = Readonly<{
-  title?: string
-  description?: string
-  location?: readonly string[]
-  contacts?: readonly Contact[]
-  tags?: ReadonlySet<string>
-  icon?: string
-  image?: string
+export type ScheduleEvent = ScheduleItemBaseProps & ScheduleEventProps
+
+export type PersonProps = Readonly<{
+  type: "Person"
+  email?: string
 }>
 
-/**
- * A {@link ScheduleItem} with standard details.
- */
-export type DetailedScheduleItem = ScheduleItem & ScheduleItemDetails
+export type Person = ScheduleItemBaseProps & PersonProps
 
-export type ScheduleEvent = DetailedScheduleItem & {
-  readonly type: "event"
+export type OrganizationProps = Readonly<{
+  type: JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>
+  email?: string
+  keywords?: ReadonlySet<string>
+  logo?: readonly (string | ImageObject)[]
+}>
+
+export type Organization = ScheduleItemBaseProps & OrganizationProps
+
+export type AddressProps = Readonly<{
+  type: "PostalAddress"
+  addressCountry?: string
+  addressLocality?: string
+  addressRegion?: string
+  extendedAddress?: string
+  postOfficeBoxNumber?: string
+  postalCode?: string
+  streetAddress?: string
+}>
+
+export type Address = ScheduleItemBaseProps & AddressProps
+
+export type PlaceProps = Readonly<{
+  type: "Place"
+  address?: string | Address
+  event?: readonly (string | ScheduleEvent)[]
+}>
+
+export type Place = ScheduleItemBaseProps & PlaceProps
+
+type EventItemMap = {
+  [K in JSONLDTypesFromHierarchy<typeof EVENT_TYPES>]: ScheduleEvent
 }
 
-export type Vendor = DetailedScheduleItem & {
-  readonly type: "vendor"
+type OrganizationItemMap = {
+  [K in JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>]: Organization
 }
 
-export type MapFlag = ScheduleItem & {
-  readonly type: "map-flag"
+export interface ScheduleItemMap extends EventItemMap, OrganizationItemMap {
+  Person: Person
+  Place: Place
+  PostalAddress: Address
 }
+
+export type ScheduleItem = ScheduleItemMap[keyof ScheduleItemMap]
+
+export type ScheduleDataTypeMap = {
+  readonly [key: string]: ScheduleItem
+}
+
+export type ScheduleData<M extends ScheduleDataTypeMap> = Readonly<{
+  byId: ReadonlyMap<string, ScheduleItem>
+  byType: {
+    readonly [K in keyof M]: ReadonlyMap<string, M[K]>
+  }
+  other: readonly ScheduleItem[]
+}>
 
 export type ParseResult<T> = Readonly<
-  | { success: true; value: T }
-  | { success: false; message?: string; error?: unknown }
+  | { success: true; data: T; error?: never; message?: never }
+  | { success: false; data?: never; error?: unknown; message?: string }
 >
 
 export type Parser<T, S = unknown> = (value: S) => ParseResult<T>

@@ -2,44 +2,41 @@ import { sortIntervalsByStartDate } from "./time.js"
 import type { Bounded, Interval, ScheduleItem } from "./types.js"
 
 /**
- * Return a filter for bookmarked items.
- */
-export const makeBookmarkFilter = (
-  itemIds?: Iterable<string> | null,
-): ((e: { readonly id: string }) => boolean) => {
-  const idSet = new Set(itemIds)
-  return (e) => {
-    return idSet.has(e.id)
-  }
-}
-
-/**
- * Return a filter for unvisited items.
- */
-export const makeUnvisitedFilter = (
-  itemIds?: Iterable<string> | null,
-): ((e: { readonly id: string }) => boolean) => {
-  const idSet = new Set(itemIds)
-  return (e) => {
-    return !idSet.has(e.id)
-  }
-}
-
-/**
  * Return whether an interval has both start and end set.
  */
 export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
-  return !!t.start && !!t.end
+  return !!t.startDate && !!t.endDate
 }
 
 /**
- * Sort an array of {@link ScheduleItem} by start date, then ID, in place.
- * @param arr
+ * Return an array of {@link ScheduleItem} sorted by start date, then
+ * {@link ScheduleEvent} objects, then ID.
  */
-export const sortScheduleItems = <T extends ScheduleItem[]>(arr: T): T => {
-  arr = arr.sort((a, b) => a.id.localeCompare(b.id, "en"))
-  arr = sortIntervalsByStartDate(arr)
-  return arr
+export const sortScheduleItems = <T extends ScheduleItem>(
+  items?: Iterable<T> | null,
+): T[] => {
+  const strCompare = (a: ScheduleItem, b: ScheduleItem) => {
+    const aId = a.id ?? ""
+    const bId = b.id ?? ""
+    return aId.localeCompare(bId, "en")
+  }
+
+  const intervalsArr = []
+  const otherArr = []
+
+  for (const item of items ?? []) {
+    if ("startDate" in item) {
+      intervalsArr.push(item)
+    } else {
+      otherArr.push(item)
+    }
+  }
+
+  intervalsArr.sort(strCompare)
+  otherArr.sort(strCompare)
+
+  sortIntervalsByStartDate(intervalsArr)
+  return [...otherArr, ...intervalsArr] as T[]
 }
 
 /**
@@ -61,21 +58,27 @@ export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[] {
 // a singleton empty array is used for referential stability
 iterToArr.empty = [] as const
 
+export type OmitUndef<T> = {
+  [K in keyof T]: Exclude<T[K], undefined>
+}
+
+export type AddUndef<T extends object> = {
+  [K in keyof T]: object extends Pick<T, K> ? T[K] | undefined : T[K]
+}
+
 /**
  * Return an object with `undefined` values omitted.
  */
-export const omitUndef = <T extends Readonly<Record<string, unknown>>>(
-  obj: T,
-): T => {
-  const newObj: Partial<T> = {}
+export const omitUndef = <T extends object>(obj: T): OmitUndef<T> => {
+  const newObj = {} as { -readonly [K in keyof T]: T[K] }
+  const keys = Object.keys(obj) as (keyof T)[]
 
-  for (const k of Object.keys(obj)) {
-    const key = k as keyof T
+  for (const key of keys) {
     const value = obj[key]
     if (value !== undefined) {
       newObj[key] = value
     }
   }
 
-  return newObj as T
+  return newObj as OmitUndef<T>
 }

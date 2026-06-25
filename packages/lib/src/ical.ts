@@ -1,12 +1,13 @@
 import { RRule, RRuleSet } from "rrule"
-import type { ScheduleItem, ScheduleItemDetails } from "./types.js"
+import type { ScheduleEvent } from "./types.js"
 import ical, { type ICalEventData } from "ical-generator"
+import type { Dayjs } from "dayjs"
 
 export type CreateICSOptions = Readonly<{
   /**
-   * Calendar title.
+   * Calendar name.
    */
-  title: string
+  name: string
 
   /**
    * A prefix used to build event UIDs
@@ -26,12 +27,12 @@ export type CreateICSOptions = Readonly<{
   /**
    * The start date used for events with no explicit start date.
    */
-  defaultStart: Date
+  defaultStartDate: Dayjs
 
   /**
    * The end time used for events with no explicit end date.
    */
-  defaultEnd: Date
+  defaultEndDate: Dayjs
 }>
 
 /**
@@ -41,16 +42,13 @@ export type CreateICSOptions = Readonly<{
  * @param options - Options
  */
 export const createICS = (
-  itemOccurrences: Iterable<
-    readonly (ScheduleItem &
-      Pick<ScheduleItemDetails, "title" | "description" | "location">)[]
-  >,
+  itemOccurrences: Iterable<readonly ScheduleEvent[]>,
   options: CreateICSOptions,
 ): string => {
   const now = new Date()
 
   const calendar = ical({
-    name: options.title,
+    name: options.name,
   })
 
   for (const occs of itemOccurrences) {
@@ -64,8 +62,7 @@ export const createICS = (
 
 const processItem = (
   now: Date,
-  occurrences: readonly (ScheduleItem &
-    Pick<ScheduleItemDetails, "title" | "description" | "location">)[],
+  occurrences: readonly ScheduleEvent[],
   options: CreateICSOptions,
 ): ICalEventData[] => {
   const results: ICalEventData[] = []
@@ -87,11 +84,11 @@ const processItem = (
     )
 
     for (const extraOcc of occurrences.slice(1)) {
-      if (extraOcc.start) {
-        ruleSet.rdate(extraOcc.start)
+      if (extraOcc.startDate) {
+        ruleSet.rdate(extraOcc.startDate.toDate())
 
         const overrideAttrs = getEventAttrs(now, extraOcc, options)
-        overrideAttrs.recurrenceId = extraOcc.start
+        overrideAttrs.recurrenceId = extraOcc.startDate.toDate()
 
         results.push(overrideAttrs)
       }
@@ -105,20 +102,19 @@ const processItem = (
 
 const getEventAttrs = (
   now: Date,
-  item: ScheduleItem &
-    Pick<ScheduleItemDetails, "title" | "description" | "location">,
+  item: ScheduleEvent,
   options: CreateICSOptions,
 ): ICalEventData => {
   const attrs: ICalEventData = {
     id: `${options.prefix}-${item.id}@${options.domain}`,
-    start: item.start ?? options.defaultStart,
-    end: item.end ?? options.defaultEnd,
+    start: item.startDate ?? options.defaultStartDate,
+    end: item.startDate ?? options.defaultEndDate,
     lastModified: now,
     timezone: options.timeZone,
   }
 
-  if (item.title) {
-    attrs.summary = item.title
+  if (item.name) {
+    attrs.summary = item.name
   }
 
   if (item.description) {
@@ -127,6 +123,7 @@ const getEventAttrs = (
 
   if (item.location && item.location.length > 0) {
     attrs.location = item.location.join(", ")
+    // TODO: stringify locations properly
   }
 
   return attrs
