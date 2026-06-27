@@ -10,12 +10,12 @@ export * from "./schema.js"
 export * from "./selections-api.js"
 export {
   makeSelections,
-  makeLocalSessionSelections,
+  makeServerSelections,
+  makeTrackedSelections,
+  isServerSelections,
+  isTrackedSelections,
   parseSelections,
-  parseServerSelections,
-  parseServerSessionSelections,
-  parseLocalSessionSelections,
-  encodeLocalSessionSelections,
+  unparseSelections,
 } from "./selections.js"
 export * from "./time.js"
 export * from "./types.js"

@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest"
 import {
-  encodeLocalSessionSelections,
+  isTrackedSelections,
   makeSelections,
-  parseLocalSessionSelections,
+  parseSelections,
+  unparseSelections,
 } from "./selections.js"
-import { format, parseISO } from "date-fns"
 
 describe("selections module", () => {
   test("construct/size", () => {
@@ -52,37 +52,33 @@ describe("selections module", () => {
     expect(sel3.equals(sel)).toBe(false)
   })
 
-  test("parse local selections", () => {
+  test("parse tracked selections", () => {
     const data = {
       base: {
-        date: format(
-          parseISO("2020-01-01T12:00:00.001-05:00"),
-          "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-        ),
-        selections: {
-          id: "testsels",
-          items: ["a", "b", "c"],
-        },
+        id: "testsels",
+        items: ["a", "b", "c"],
       },
       added: ["d"],
       deleted: ["c"],
       items: ["a", "b", "d"],
-      date: format(
-        parseISO("2020-01-01T13:00:00.001-05:00"),
-        "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-      ),
     }
 
-    const parsed = parseLocalSessionSelections(data)
-    expect(parsed.equals(["d", "b", "a"])).toBe(true)
-    expect(parsed.base?.equals(["a", "b", "c"])).toBe(true)
-    expect(parsed.date).toEqual(parseISO("2020-01-01T13:00:00.001-05:00"))
+    const parsed = parseSelections(data)
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(parsed.data.equals(["d", "b", "a"])).toBe(true)
+      expect(isTrackedSelections(parsed.data)).toBe(true)
+      if (isTrackedSelections(parsed.data)) {
+        expect(parsed.data.base.equals(["a", "b", "c"])).toBe(true)
+      }
 
-    const unparsed = encodeLocalSessionSelections(parsed)
-    expect(unparsed).toStrictEqual(data)
-    const reparsed = parseLocalSessionSelections(
-      JSON.parse(JSON.stringify(unparsed)),
-    )
-    expect(reparsed.equals(parsed)).toBe(true)
+      const unparsed = unparseSelections(parsed.data)
+      expect(unparsed).toStrictEqual(data)
+      const reparsed = parseSelections(JSON.parse(JSON.stringify(unparsed)))
+      expect(reparsed.success).toBe(true)
+      if (reparsed.success) {
+        expect(reparsed.data.equals(parsed.data)).toBe(true)
+      }
+    }
   })
 })

@@ -163,7 +163,7 @@ export type ScheduleAPI = Readonly<{
 /**
  * A set of selected item IDs.
  */
-export type Selections = Readonly<{
+export type BaseSelections = Readonly<{
   /**
    * Return whether this object contains the given IDs.
    */
@@ -174,14 +174,14 @@ export type Selections = Readonly<{
   readonly size: number
 
   /**
-   * Return a {@link Selections} object with the given IDs added.
+   * Return a {@link BaseSelections} object with the given IDs added.
    */
-  add: (...itemsIds: string[]) => Selections
+  add: (...itemsIds: string[]) => BaseSelections
 
   /**
-   * Return a {@link Selections} object with the given IDs removed.
+   * Return a {@link BaseSelections} object with the given IDs removed.
    */
-  delete: (...itemsIds: string[]) => Selections
+  delete: (...itemsIds: string[]) => BaseSelections
 
   /**
    * Returns whether this object contains exactly the IDs in the given iterable.
@@ -190,154 +190,70 @@ export type Selections = Readonly<{
 }>
 
 /**
- * A {@link Selections} object with a server assigned ID.
+ * A {@link BaseSelections} object with a server assigned ID.
  */
-export type ServerSelections = Selections &
+export type ServerSelections = BaseSelections &
   Readonly<{
     id: string
   }>
 
 /**
- * An object describing the session's selections according to the server.
+ * A {@link BaseSelections} object that tracks changes.
  */
-export type ServerSessionSelections = ServerSelections &
+export type TrackedSelections = Omit<BaseSelections, "add" | "delete"> &
   Readonly<{
-    /**
-     * The date the selections were updated.
-     */
-    date?: Date
-  }>
-
-export type SelectionsType = "bookmarks" | "visited"
-
-/**
- * The locally stored session selections information.
- */
-export type LocalSessionSelections = Omit<Selections, "add" | "delete"> &
-  Readonly<{
-    /**
-     * The {@link ServerSessionSelections} object the current selections are based on.
-     */
-    base: ServerSessionSelections | null
-
-    /**
-     * The IDs added to the base.
-     */
+    base: BaseSelections | ServerSelections
     added: ReadonlySet<string>
-
-    /**
-     * The IDs deleted from the base.
-     */
     deleted: ReadonlySet<string>
 
     /**
-     * Return a {@link LocalSessionSelections} object with the given IDs added.
+     * Return a {@link TrackedSelections} object with the given IDs added.
      */
-    add: (...itemsIds: string[]) => LocalSessionSelections
+    add: (...itemsIds: string[]) => TrackedSelections
 
     /**
-     * Return a {@link LocalSessionSelections} object with the given IDs removed.
+     * Return a {@link TrackedSelections} object with the given IDs removed.
      */
-    delete: (...itemsIds: string[]) => LocalSessionSelections
-
-    /**
-     * The date the selections were last updated.
-     */
-    date: Date | null
+    delete: (...itemsIds: string[]) => TrackedSelections
   }>
 
-/**
- * Stores and maintains a current {@link LocalSessionSelections} object.
- */
-export type LocalSessionSelectionsStore = Readonly<{
+export type Selections = BaseSelections | ServerSelections | TrackedSelections
+
+export interface SelectionsTypeMap {
+  bookmarks: "bookmarks"
+  visited: "visited"
+}
+
+export type SelectionsType = SelectionsTypeMap[keyof SelectionsTypeMap]
+
+export type SelectionsStore = Readonly<{
   /**
-   * Get the current selections.
+   * Load the selections.
    */
-  get: () => LocalSessionSelections
+  load: (type: SelectionsType) => Promise<Selections>
 
   /**
-   * Add the given item IDs to the selections.
+   * Save the selections.
    */
-  add: (...itemIds: string[]) => LocalSessionSelections
-
-  /**
-   * Remove the given item IDs from the selections.
-   */
-  delete: (...itemIds: string[]) => LocalSessionSelections
-
-  /**
-   * Replace the selections with the given item IDs.
-   */
-  save: (newSelections: LocalSessionSelections) => LocalSessionSelections
-
-  /**
-   * Subscribe to changes.
-   */
-  subscribe: (callback: () => void) => () => void
+  save: (type: SelectionsType, selections: Selections) => Promise<Selections>
 }>
 
-/**
- * API to get/sync selections from a server.
- */
-export type SelectionsServiceAPI = Readonly<{
-  /**
-   * The current session token.
-   */
-  sessionToken: string | null
+export type SelectionsService = SelectionsStore &
+  Readonly<{
+    sessionToken: string | null
 
-  /**
-   * Subscribe to changes in the available state/session token.
-   */
-  subscribe: (callback: () => void) => () => void
+    /**
+     * Load the selections.
+     */
+    load: (type: SelectionsType) => Promise<ServerSelections>
 
-  /**
-   * Get the selections by ID, or null if not found.
-   */
-  getSelections: (selectionsId: string) => Promise<ServerSelections | null>
+    /**
+     * Get a {@link ServerSelections} by ID.
+     */
+    getById: (id: string) => Promise<ServerSelections | null>
 
-  /**
-   * Get item selection counts.
-   */
-  getCounts: (type: SelectionsType) => Promise<ReadonlyMap<string, number>>
-
-  /**
-   * Get the current session's selections.
-   */
-  getSessionSelections: (
-    type: SelectionsType,
-  ) => Promise<ServerSessionSelections>
-
-  /**
-   * Update the current session's selections.
-   */
-  updateSessionSelections: (
-    type: SelectionsType,
-    update?: {
-      add?: Iterable<string> | null | undefined
-      selections?: Iterable<string> | null | undefined
-      delete?: Iterable<string> | null | undefined
-    },
-  ) => Promise<ServerSessionSelections>
-}>
-
-export type SessionSelectionsAPI = Readonly<{
-  /**
-   * Get the current selections.
-   */
-  get: () => Promise<Selections>
-
-  /**
-   * Add the given item IDs to the selections.
-   */
-  add: (...itemIds: string[]) => Promise<Selections>
-
-  /**
-   * Remove the given item IDs from the selections.
-   */
-  delete: (...itemIds: string[]) => Promise<Selections>
-
-  /**
-   * Replace the selections with the given item IDs.
-   */
-  save: (itemIds: Iterable<string>) => Promise<Selections>
-}>
+    /**
+     * Get selection counts.
+     */
+    getCounts: (type: SelectionsType) => Promise<ReadonlyMap<string, number>>
+  }>
