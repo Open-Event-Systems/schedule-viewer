@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Gantt } from "./gantt.js"
+import dayjs from "dayjs"
 
 const meta: Meta<typeof Gantt> = {
   component: Gantt,
@@ -16,28 +17,28 @@ export default meta
 
 export const Default: StoryObj<typeof Gantt> = {
   args: {
-    startDate: new Date(2020, 0, 1, 9),
-    endDate: new Date(2020, 0, 1, 17),
+    startDate: dayjs(new Date(2020, 0, 1, 9)),
+    endDate: dayjs(new Date(2020, 0, 1, 17)),
     orientation: "vertical",
     tracks: [
       {
         id: "b",
-        title: "Lounge",
+        name: "Lounge",
         items: [
           {
-            start: new Date(2020, 0, 1, 11),
-            end: new Date(2020, 0, 1, 17),
+            startDate: dayjs(new Date(2020, 0, 1, 11)),
+            endDate: dayjs(new Date(2020, 0, 1, 17)),
             c: "#ffffff",
           },
         ],
       },
       {
         id: "a",
-        title: "Registration",
+        name: "Registration",
         items: [
           {
-            start: new Date(2020, 0, 1, 9),
-            end: new Date(2020, 0, 1, 14),
+            startDate: dayjs(new Date(2020, 0, 1, 9)),
+            endDate: dayjs(new Date(2020, 0, 1, 14)),
             c: "#ffffff",
             children: "Title",
           },

@@ -8,15 +8,15 @@ import { isBounded } from "./utils.js"
 import { contains } from "./time.js"
 import { iterUniqueIds } from "./filter.js"
 
-type Bin<T> = Readonly<{
+export type Bin<T> = Readonly<{
   key: string
   name: string
   items?: Iterable<T>
 }>
 
-type BinFunc<B = unknown, O = B> = <T extends B>(
+export type BinFunc<InT, OutT extends InT = InT> = <T extends InT>(
   items: Iterable<T>,
-) => Iterable<Bin<O & T>>
+) => Iterable<Bin<OutT & T>>
 
 /**
  * Return a function to bin items by name.
@@ -101,7 +101,7 @@ export function* binByName<
  */
 export const makeTagBinFunc = (
   tagEntries: Iterable<Readonly<{ tag: string; name: string }>>,
-): BinFunc<{ readonly id?: string; readonly tags?: Iterable<string> }> => {
+): BinFunc<{ readonly id?: string; readonly keywords?: Iterable<string> }> => {
   const nameByTag = new Map<string, [string, string]>()
   for (const entry of tagEntries) {
     const sortKey = toAlphaSortable(entry.name)

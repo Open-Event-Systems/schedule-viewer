@@ -12,7 +12,7 @@ import { Anchor, Button, WithHoverCard, WithIndicator } from "./pill.stories.js"
 export const Default: StoryObj<typeof meta> = {
   render() {
     return (
-      <Pills title="Pills">
+      <Pills name="Pills">
         <Pills.Pill {...Anchor.args} />
         <Pills.Pill {...Button.args} />
         <Pills.Pill {...WithHoverCard.args} />

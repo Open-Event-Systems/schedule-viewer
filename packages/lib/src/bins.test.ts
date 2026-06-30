@@ -107,18 +107,18 @@ describe("bin by tag", () => {
   test("sort and bins by tags", () => {
     const items = [
       {
-        tags: ["a"],
+        keywords: ["a"],
       },
       {
         id: "b",
-        tags: ["b"],
+        keywords: ["b"],
       },
       {
-        tags: ["a"],
+        keywords: ["a"],
       },
       {
         id: "b",
-        tags: ["b"],
+        keywords: ["b"],
       },
     ]
 
@@ -141,7 +141,7 @@ describe("bin by tag", () => {
   test("include once per tag", () => {
     const items = [
       {
-        tags: ["a", "b"],
+        keywords: ["a", "b"],
       },
     ]
 
@@ -151,12 +151,12 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ tags: ["a", "b"] }],
+        items: [{ keywords: ["a", "b"] }],
       },
       {
         key: "tag-b",
         name: "Tag B",
-        items: [{ tags: ["a", "b"] }],
+        items: [{ keywords: ["a", "b"] }],
       },
     ])
   })
@@ -164,7 +164,7 @@ describe("bin by tag", () => {
   test("omit missing tags", () => {
     const items = [
       {
-        tags: ["a", "c"],
+        keywords: ["a", "c"],
       },
     ]
 
@@ -174,7 +174,7 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ tags: ["a", "c"] }],
+        items: [{ keywords: ["a", "c"] }],
       },
     ])
   })
@@ -182,7 +182,7 @@ describe("bin by tag", () => {
   test("add n/a tag", () => {
     const items = [
       {
-        tags: ["c"],
+        keywords: ["c"],
       },
     ]
 
@@ -192,7 +192,7 @@ describe("bin by tag", () => {
       {
         key: "na",
         name: "N/A",
-        items: [{ tags: ["c"] }],
+        items: [{ keywords: ["c"] }],
       },
     ])
   })

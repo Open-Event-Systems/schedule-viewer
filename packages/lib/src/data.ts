@@ -25,11 +25,11 @@ type IndexConfigEntry<T extends ScheduleItem> = {
   getEmbedded?: (obj: T) => Iterable<ScheduleItem>
 }
 
-type IndexConfig<M extends ScheduleDataTypeMap> = {
+export type IndexConfig<M extends ScheduleDataTypeMap> = {
   readonly [K in keyof M]: IndexConfigEntry<M[K]>
 }
 
-type IndexResult<M extends ScheduleDataTypeMap> = {
+export type IndexResult<M extends ScheduleDataTypeMap> = {
   byId: Map<string, ScheduleItem>
   byType: { -readonly [K in keyof M]: Map<string, M[K]> }
   other: ScheduleItem[]

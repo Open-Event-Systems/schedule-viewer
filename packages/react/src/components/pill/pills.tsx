@@ -30,14 +30,14 @@ export type PillsProps = {
   }
 
   /**
-   * The title of the pills.
+   * The name of the pills.
    */
-  title?: ReactNode
+  name?: ReactNode
 
   /**
    * Customize how the title element is rendered.
    */
-  renderTitle?: (props: AllHTMLAttributes<HTMLElement>) => ReactNode
+  renderName?: (props: AllHTMLAttributes<HTMLElement>) => ReactNode
 
   /**
    * Customize how the content container element is rendered.
@@ -54,28 +54,28 @@ const _PillsMemo = memo((props: PillsProps) => {
   const {
     className,
     classNames,
-    title,
+    name,
     renderContent,
-    renderTitle,
+    renderName,
     children,
     ...other
   } = useProps(
     "Pills",
-    { renderTitle: defaultRenderTitle, renderContent: defaultRenderContent },
+    { renderName: defaultRenderName, renderContent: defaultRenderContent },
     props,
   )
 
   let titleContent
 
-  if (title) {
+  if (name) {
     titleContent = (
       <>
         <Title
-          renderRoot={renderTitle}
+          renderRoot={renderName}
           order={3}
           className={clsx("Pills-title", pillClasses.title, classNames?.title)}
         >
-          {title}
+          {name}
         </Title>
         <Divider
           className={clsx(
@@ -105,7 +105,7 @@ const _PillsMemo = memo((props: PillsProps) => {
   )
 })
 
-const defaultRenderTitle = (props: AllHTMLAttributes<HTMLElement>) => (
+const defaultRenderName = (props: AllHTMLAttributes<HTMLElement>) => (
   <h2 {...props} />
 )
 

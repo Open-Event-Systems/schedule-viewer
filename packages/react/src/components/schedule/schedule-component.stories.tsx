@@ -3,6 +3,7 @@ import { Schedule } from "./schedule-component.js"
 import { parsedConfig, parsedEvents } from "../../test-data.js"
 import { getDays, type Day } from "@open-event-systems/schedule-lib"
 import { useState, type ComponentPropsWithoutRef } from "react"
+import type { Dayjs } from "dayjs"
 
 const meta: Meta<typeof Schedule> = {
   component: Schedule,
@@ -24,7 +25,7 @@ const meta: Meta<typeof Schedule> = {
     items: parsedEvents,
     days: getDays(
       [...parsedEvents].filter(
-        (e): e is typeof e & { readonly start: Date } => !!e.start,
+        (e): e is typeof e & { readonly start: Dayjs } => !!e.startDate,
       ),
     ),
     tags: parsedConfig.tags,

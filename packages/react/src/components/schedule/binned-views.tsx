@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react"
 import {
-  binByTitle,
+  binByName,
   getDefaultDay,
   iterToArr,
   makeDateFilter,
@@ -15,21 +15,22 @@ import {
   makeTagBinFunc,
   makeTimeBinFunc,
   type Day,
-  type DetailedScheduleItem,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import { ItemPills, type ItemPillsProps } from "../pill/item-pills.js"
 import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
 import { Bins, type BinsProps } from "../bins/bins.js"
+import dayjs, { Dayjs } from "dayjs"
 
 type RenderItemPills = (props: ItemPillsProps) => ReactNode
 
 export type DailyAgendaViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem>
   tags?: Iterable<TagConfigEntry>
   tagIndicators?: Iterable<TagIndicatorConfigEntry>
-  now?: Date
+  now?: Dayjs
   days?: Iterable<Day>
   selectedDay?: Day
   getDayHref?: (day: Day) => string | undefined
@@ -45,7 +46,7 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
     items,
     tags,
     tagIndicators,
-    now = new Date(),
+    now,
     days,
     selectedDay,
     getDayHref,
@@ -53,7 +54,7 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
     dayFormat,
     renderItemPills,
     renderItemPillsTitle,
-  } = useProps("DailyAgendaView", null, props)
+  } = useProps("DailyAgendaView", { now: dayjs() }, props)
 
   const defaultDay = getDefaultDay(days ?? [], now)
 
@@ -61,7 +62,7 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
     const day = selectedDay ?? defaultDay
     if (day) {
       const filter = makeDateFilter(day)
-      return [...(items ?? [])].filter(filter)
+      return [...(items ?? [])].filter(hasStartDate).filter(filter)
     } else {
       return []
     }
@@ -88,7 +89,7 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
         tags={tags}
         tagIndicators={tagIndicators}
         renderItemPills={renderItemPills}
-        renderItemPillsTitle={renderItemPillsTitle}
+        renderItemPillsName={renderItemPillsTitle}
       />
     </Stack>
   )
@@ -96,15 +97,15 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
 
 export type FullAgendaViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem>
   tags?: Iterable<TagConfigEntry>
   tagIndicators?: Iterable<TagIndicatorConfigEntry>
-  now?: Date
+  now?: Dayjs
   dayChangeHour?: number
   dayFormat?: string
   renderItemPills?: RenderItemPills
-  renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
-  renderDayTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  renderItemPillsName?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  renderDayName?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 }
 
 export const FullAgendaView = (props: FullAgendaViewProps) => {
@@ -117,18 +118,18 @@ export const FullAgendaView = (props: FullAgendaViewProps) => {
     dayChangeHour,
     dayFormat,
     renderItemPills,
-    renderItemPillsTitle,
-    renderDayTitle,
-  } = useProps("DailyAgendaView", null, props)
+    renderItemPillsName,
+    renderDayName,
+  } = useProps("DailyAgendaView", { now: dayjs() }, props)
 
   const bins = useMemo(() => {
     const binFunc = makeDayBinFunc(dayChangeHour, dayFormat)
-    return binFunc(iterToArr(items))
+    return binFunc(iterToArr(items).filter(hasStartDate))
   }, [items, dayChangeHour, dayFormat])
 
   return (
     <Stack className={clsx("FullAgendaView-root", className)}>
-      <Bins<DetailedScheduleItem>
+      <Bins
         bins={bins}
         renderBin={(dayBinProps, dayBin) => (
           <FullAgendaViewDayBin
@@ -139,9 +140,9 @@ export const FullAgendaView = (props: FullAgendaViewProps) => {
             dayChangeHour={dayChangeHour}
             dayFormat={dayFormat}
             renderItemPills={renderItemPills}
-            renderItemPillsTitle={renderItemPillsTitle}
-            title={dayBin.title}
-            renderDayTitle={renderDayTitle}
+            renderItemPillsName={renderItemPillsName}
+            title={dayBin.name}
+            renderDayName={renderDayName}
             {...dayBinProps}
           />
         )}
@@ -152,27 +153,27 @@ export const FullAgendaView = (props: FullAgendaViewProps) => {
 
 const FullAgendaViewDayBin = (
   props: FullAgendaViewProps & {
-    title?: ReactNode
+    name?: ReactNode
   },
 ) => {
   const {
     items,
     tags,
     tagIndicators,
-    now = new Date(),
+    now = dayjs(),
     renderItemPills,
-    renderItemPillsTitle,
-    title,
-    renderDayTitle,
+    renderItemPillsName,
+    name,
+    renderDayName,
   } = props
 
   const binFunc = useMemo(() => makeTimeBinFunc(now), [now])
 
-  const wrappedRenderItemPillsTitle = useCallback(
+  const wrappedRenderItemPillsName = useCallback(
     (props: ComponentPropsWithoutRef<"h2">) => (
-      <Title renderRoot={renderItemPillsTitle} order={3} {...props} />
+      <Title renderRoot={renderItemPillsName} order={3} {...props} />
     ),
-    [renderItemPillsTitle],
+    [renderItemPillsName],
   )
 
   return (
@@ -182,27 +183,27 @@ const FullAgendaViewDayBin = (
       binFunc={binFunc}
       tags={tags}
       tagIndicators={tagIndicators}
-      title={title}
+      name={name}
       renderItemPills={renderItemPills}
-      renderItemPillsTitle={wrappedRenderItemPillsTitle}
-      renderTitle={renderDayTitle}
+      renderItemPillsName={wrappedRenderItemPillsName}
+      renderTitle={renderDayName}
     />
   )
 }
 
 export type DailyCatalogViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem>
   tags?: Iterable<TagConfigEntry>
   tagIndicators?: Iterable<TagIndicatorConfigEntry>
-  now?: Date
+  now?: Dayjs
   days?: Iterable<Day>
   selectedDay?: Day
   getDayHref?: (day: Day) => string | undefined
   onSelectDay?: (day: Day) => void
   dayFormat?: string
   renderItemPills?: RenderItemPills
-  renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  renderItemPillsName?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 }
 
 export const DailyCatalogView = (props: DailyCatalogViewProps) => {
@@ -211,15 +212,15 @@ export const DailyCatalogView = (props: DailyCatalogViewProps) => {
     items,
     tags,
     tagIndicators,
-    now = new Date(),
+    now,
     days,
     selectedDay,
     getDayHref,
     onSelectDay,
     dayFormat,
     renderItemPills,
-    renderItemPillsTitle,
-  } = useProps("DailyCatalogView", null, props)
+    renderItemPillsName,
+  } = useProps("DailyCatalogView", { now: dayjs() }, props)
 
   const defaultDay = getDefaultDay(days ?? [], now)
 
@@ -227,7 +228,7 @@ export const DailyCatalogView = (props: DailyCatalogViewProps) => {
     const day = selectedDay ?? defaultDay
     if (day) {
       const filter = makeDateFilter(day)
-      return iterToArr(items).filter(filter)
+      return iterToArr(items).filter(hasStartDate).filter(filter)
     } else {
       return []
     }
@@ -246,11 +247,11 @@ export const DailyCatalogView = (props: DailyCatalogViewProps) => {
       <ItemBins
         className="DailyCatalogView-bins"
         items={dayFiltered}
-        binFunc={binByTitle}
+        binFunc={binByName}
         tags={tags}
         tagIndicators={tagIndicators}
         renderItemPills={renderItemPills}
-        renderItemPillsTitle={renderItemPillsTitle}
+        renderItemPillsName={renderItemPillsName}
       />
     </Stack>
   )
@@ -258,7 +259,7 @@ export const DailyCatalogView = (props: DailyCatalogViewProps) => {
 
 export type CatalogViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem>
   tags?: Iterable<TagConfigEntry>
   tagIndicators?: Iterable<TagIndicatorConfigEntry>
   renderItemPills?: RenderItemPills
@@ -279,11 +280,11 @@ export const CatalogView = (props: CatalogViewProps) => {
     <Stack className={clsx("CatalogView-root", className)}>
       <ItemBins
         items={items}
-        binFunc={binByTitle}
+        binFunc={binByName}
         tags={tags}
         tagIndicators={tagIndicators}
         renderItemPills={renderItemPills}
-        renderItemPillsTitle={renderItemPillsTitle}
+        renderItemPillsName={renderItemPillsTitle}
       />
     </Stack>
   )
@@ -291,11 +292,11 @@ export const CatalogView = (props: CatalogViewProps) => {
 
 export type TagsViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem>
   tags?: Iterable<TagConfigEntry>
   tagIndicators?: Iterable<TagIndicatorConfigEntry>
   renderItemPills?: RenderItemPills
-  renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  renderItemPillsName?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 }
 
 export const TagsView = (props: TagsViewProps) => {
@@ -305,7 +306,7 @@ export const TagsView = (props: TagsViewProps) => {
     tags,
     tagIndicators,
     renderItemPills,
-    renderItemPillsTitle,
+    renderItemPillsName,
   } = useProps("TagsView", null, props)
 
   const binFunc = useMemo(() => makeTagBinFunc(tags ?? []), [tags])
@@ -318,25 +319,25 @@ export const TagsView = (props: TagsViewProps) => {
         tags={tags}
         tagIndicators={tagIndicators}
         renderItemPills={renderItemPills}
-        renderItemPillsTitle={renderItemPillsTitle}
+        renderItemPillsName={renderItemPillsName}
       />
     </Stack>
   )
 }
 
 const ItemBins = (
-  props: Omit<BinsProps<DetailedScheduleItem>, "renderBin"> & {
+  props: Omit<BinsProps<ScheduleItem>, "renderBin"> & {
     tags?: Iterable<TagConfigEntry>
     tagIndicators?: Iterable<TagIndicatorConfigEntry>
     renderItemPills?: (props: ItemPillsProps) => ReactNode
-    renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+    renderItemPillsName?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
   },
 ) => {
   const {
     tags,
     tagIndicators,
     renderItemPills = (props) => <ItemPills {...props} />,
-    renderItemPillsTitle,
+    renderItemPillsName,
     ...other
   } = props
 
@@ -345,20 +346,25 @@ const ItemBins = (
       props: ComponentPropsWithoutRef<"h2">,
       bin: Readonly<{
         key: string
-        title?: ReactNode
-        items?: Iterable<DetailedScheduleItem>
+        name?: ReactNode
+        items?: Iterable<ScheduleItem>
       }>,
     ) =>
       renderItemPills({
         items: iterToArr(bin.items),
         tags,
         tagIndicators,
-        title: bin.title,
-        renderTitle: renderItemPillsTitle,
+        name: bin.name,
+        renderName: renderItemPillsName,
         ...props,
       }),
-    [tags, tagIndicators, renderItemPills, renderItemPillsTitle],
+    [tags, tagIndicators, renderItemPills, renderItemPillsName],
   )
 
   return <Bins {...other} renderBin={renderBin} />
 }
+
+const hasStartDate = <T extends ScheduleItem>(
+  item: T,
+): item is T & { readonly startDate: Dayjs } =>
+  "startDate" in item && !!item.startDate

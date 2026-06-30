@@ -19,35 +19,35 @@ import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import clsx from "clsx"
 import { getItemPillClassNames } from "./item-pill-utils.js"
-import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import { Pills, type PillProps, type PillsProps } from "./pills.js"
+import { type ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemPillsProps = Omit<PillsProps, "children"> & {
   /**
-   * The {@link DetailedScheduleItem} objects to display pills for.
+   * The {@link ScheduleItem} objects to display pills for.
    */
-  items: Iterable<DetailedScheduleItem>
+  items?: Iterable<ScheduleItem> | undefined
 
   /**
    * A collection of {@link TagConfigEntry} objects which represent the displayable
    * tags.
    */
-  tags?: Iterable<TagConfigEntry>
+  tags?: Iterable<TagConfigEntry> | undefined
 
   /**
    * A collection of {@link TagIndicatorConfigEntry} to display.
    */
-  tagIndicators?: Iterable<TagIndicatorConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry> | undefined
 
   /**
    * A function to render each pill.
    */
-  renderPill?: (props: ItemPillProps) => ReactNode
+  renderPill?: ((props: ItemPillProps) => ReactNode) | undefined
 }
 
 /**
  * A {@link Pills} component that displays pills for
- * {@link DetailedScheduleItem} objects.
+ * {@link ScheduleItem} objects.
  */
 const _ItemPillsMemo = memo((props: ItemPillsProps) => {
   const { items, tags, tagIndicators, renderPill, ...other } = useProps(
@@ -66,7 +66,9 @@ const _ItemPillsMemo = memo((props: ItemPillsProps) => {
       <ItemPills.Pill
         key={props.item.id}
         tags={tags}
-        indicator={indicatorFunc(props.item.tags ?? [])}
+        indicator={indicatorFunc(
+          "keywords" in props.item ? (props.item.keywords ?? []) : [],
+        )}
         {...props}
       />
     ),
@@ -77,7 +79,7 @@ const _ItemPillsMemo = memo((props: ItemPillsProps) => {
 
   return (
     <Pills {...other}>
-      {Array.from(items, (item) => renderPillFunc({ item }))}
+      {Array.from(items ?? [], (item) => renderPillFunc({ item }))}
     </Pills>
   )
 })
@@ -90,9 +92,9 @@ _ItemPillsMemo.displayName = "ItemPills"
 
 export type ItemPillProps = {
   /**
-   * The {@link DetailedScheduleItem} to display.
+   * The {@link ScheduleItem} to display.
    */
-  item: DetailedScheduleItem
+  item: ScheduleItem
 
   /**
    * A collection of {@link TagConfigEntry} objects which represent the displayable
@@ -155,7 +157,7 @@ const _ItemPillsPillMemo = memo((props: ItemPillProps) => {
       }}
       {...other}
     >
-      {item.title}
+      {item.name}
     </Pills.Pill>
   )
 })

@@ -4,20 +4,20 @@ import {
   iterToArr,
   makeDateFilter,
   type Day,
-  type DetailedScheduleItem,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import { DayFilter } from "../filters/day-filter.js"
 import { useMemo } from "react"
 import { Gantt, type GanttBarProps, type GanttTrack } from "../gantt/gantt.js"
-import { add, isAfter, isBefore, set } from "date-fns"
 
 import classes from "./gantt.module.scss"
+import dayjs, { Dayjs } from "dayjs"
 
 export type GanttViewProps = {
   className?: string
-  items?: Iterable<DetailedScheduleItem>
-  now?: Date
+  items?: Iterable<ScheduleItem>
+  now?: Dayjs
   days?: Iterable<Day>
   selectedDay?: Day
   getDayHref?: (day: Day) => string | undefined
@@ -37,7 +37,7 @@ export const GanttView = (props: GanttViewProps) => {
     onSelectDay,
     dayFormat,
     locations,
-  } = useProps("GanttView", { now: new Date() }, props)
+  } = useProps("GanttView", { now: dayjs() }, props)
 
   const defaultDay = getDefaultDay(days ?? [], now)
 
@@ -45,7 +45,20 @@ export const GanttView = (props: GanttViewProps) => {
     const day = selectedDay ?? defaultDay
     if (day) {
       const filter = makeDateFilter(day)
-      return [...(items ?? [])].filter(filter)
+      return [...(items ?? [])]
+        .filter(
+          (
+            item,
+          ): item is ScheduleItem & {
+            readonly startDate: Dayjs
+            readonly endDate: Dayjs
+          } =>
+            "startDate" in item &&
+            !!item.startDate &&
+            "endDate" in item &&
+            !!item.endDate,
+        )
+        .filter(filter)
     } else {
       return []
     }
@@ -54,12 +67,16 @@ export const GanttView = (props: GanttViewProps) => {
   const tracks = useMemo(() => {
     const res: GanttTrack[] = []
     for (const loc of locations ?? []) {
+      // TODO: new location matching
       const items = dayFiltered
-        .filter((item) => item.location && item.location.includes(loc))
+        .filter(
+          (item) =>
+            "location" in item && item.location && item.location.includes(loc),
+        )
         .map(
           (item): GanttBarProps => ({
-            start: item.start,
-            end: item.end,
+            startDate: item.startDate,
+            endDate: item.endDate,
             children:
               "ganttTitle" in item && typeof item.ganttTitle == "string"
                 ? item.ganttTitle
@@ -92,26 +109,26 @@ export const GanttView = (props: GanttViewProps) => {
     for (const track of tracks) {
       const trackArr = iterToArr(track.items)
       const first = trackArr[0]
-      if (first?.start && (!start || isBefore(first.start, start))) {
-        start = first.start
+      if (first?.startDate && (!start || first.startDate.isBefore(start))) {
+        start = first.startDate
       }
 
       const last = trackArr[trackArr.length - 1]
-      if (last?.end && (!end || isAfter(last.end, end))) {
-        end = last.end
+      if (last?.endDate && (!end || last.endDate.isAfter(end))) {
+        end = last.endDate
       }
     }
 
     if (start) {
-      start = set(start, { minutes: 0, seconds: 0, milliseconds: 0 })
+      start = start.set("minute", 0).set("second", 0).set("millisecond", 0)
     }
 
     if (end) {
-      if (end.getMinutes() > 0) {
-        end = add(end, { hours: 1 })
+      if (end.minute() > 0 || end.second() > 0 || end.millisecond() > 0) {
+        end = end.add(1, "hour")
       }
 
-      end = set(end, { minutes: 0, seconds: 0, milliseconds: 0 })
+      end = end.set("minute", 0).set("second", 0).set("millisecond", 0)
     }
 
     return [start, end]
@@ -132,8 +149,8 @@ export const GanttView = (props: GanttViewProps) => {
       <Gantt
         className={clsx("GanttView-gantt", classes.gantt)}
         tracks={tracks}
-        startDate={start ?? day?.start}
-        endDate={end ?? day?.end}
+        startDate={start ?? day?.startDate}
+        endDate={end ?? day?.endDate}
       />
     </Box>
   )

@@ -1,6 +1,4 @@
 import {
-  isEvent,
-  isOrganization,
   iterToArr,
   makeNameFilter,
   makePastItemFilter,
@@ -51,14 +49,12 @@ export const filterItems = <T extends ScheduleItem>(
 
   if (disabledTags) {
     const tagFilter = makeTagFilter("exclude", disabledTags)
-    res = iterToArr(res).filter(
-      (it) => (!isEvent(it) && !isOrganization(it)) || tagFilter(it),
-    )
+    res = iterToArr(res).filter((it) => !("keywords" in it) || tagFilter(it))
   }
 
   if (!showPastEvents) {
     const pastFilter = makePastItemFilter(now ?? dayjs())
-    res = iterToArr(res).filter((it) => !isEvent(it) || pastFilter(it))
+    res = iterToArr(res).filter((it) => !("startDate" in it) || pastFilter(it))
   }
 
   if (text) {
@@ -99,14 +95,14 @@ export const useFilteredItems = <T extends ScheduleItem>(
     const tagFilter = makeTagFilter("exclude", disabledTags)
     return disabledTags
       ? iterToArr(bySelections).filter(
-          (it) => (!isEvent(it) && !isOrganization(it)) || tagFilter(it),
+          (it) => !("keywords" in it) || tagFilter(it),
         )
       : bySelections
   }, [bySelections, disabledTags])
   const byPast = useMemo(() => {
     const pastFilter = makePastItemFilter(now ?? dayjs())
     return !showPastEvents
-      ? iterToArr(byTag).filter((it) => !isEvent(it) || pastFilter(it))
+      ? iterToArr(byTag).filter((it) => !("startDate" in it) || pastFilter(it))
       : byTag
   }, [showPastEvents, byTag, now])
   const byName = useMemo(

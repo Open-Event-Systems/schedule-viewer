@@ -11,24 +11,22 @@ import clsx from "clsx"
 import { useMemo, type ComponentPropsWithoutRef, type ReactNode } from "react"
 
 import classes from "./bins.module.scss"
-import { iterToArr } from "@open-event-systems/schedule-lib"
+import {
+  iterToArr,
+  type Bin,
+  type BinFunc,
+} from "@open-event-systems/schedule-lib"
 
-type Bin<T> = Readonly<{
-  key: string
-  title?: ReactNode
-  items?: Iterable<T>
-}>
-
-export type BinsProps<T, InT = T> = {
+export type BinsProps<InT, OutT extends InT = InT> = {
   /**
    * The bins.
    */
-  bins?: Iterable<Bin<T>>
+  bins?: Iterable<Bin<OutT>>
 
   /**
    * A function that groups items into bins.
    */
-  binFunc?: (items: Iterable<InT>) => Iterable<Bin<T>>
+  binFunc?: BinFunc<InT, OutT>
 
   /**
    * The items to group into bins.
@@ -38,12 +36,15 @@ export type BinsProps<T, InT = T> = {
   /**
    * A function to render a bin element.
    */
-  renderBin: (props: ComponentPropsWithoutRef<"div">, bin: Bin<T>) => ReactNode
+  renderBin: (
+    props: ComponentPropsWithoutRef<"div">,
+    bin: Bin<OutT>,
+  ) => ReactNode
 
   /**
-   * The component title.
+   * The component name.
    */
-  title?: ReactNode
+  name?: ReactNode
 
   /**
    * Customize the rendering of the title element.
@@ -54,18 +55,18 @@ export type BinsProps<T, InT = T> = {
    * Customize the no items message.
    */
   renderNoItems?: (props: ComponentPropsWithoutRef<"div">) => ReactNode
-} & Omit<BinsRootProps, "title">
+} & Omit<BinsRootProps, "name">
 
 /**
  * Renders data grouped into bins.
  */
-const _Bins = <T, InT = T>(props: BinsProps<T, InT>) => {
+const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
   const {
     bins: propBins,
     binFunc,
     items,
     renderBin,
-    title,
+    name,
     renderTitle,
     renderNoItems,
     ...other
@@ -78,7 +79,7 @@ const _Bins = <T, InT = T>(props: BinsProps<T, InT>) => {
   )
 
   const binEls = useMemo(() => {
-    let bins: readonly Bin<T>[]
+    let bins: readonly Bin<OutT>[]
 
     if (propBins) {
       bins = iterToArr(propBins)
@@ -95,7 +96,7 @@ const _Bins = <T, InT = T>(props: BinsProps<T, InT>) => {
 
   return (
     <Bins.Root {...other}>
-      {title && <Bins.Title renderRoot={renderTitle}>{title}</Bins.Title>}
+      {name && <Bins.Title renderRoot={renderTitle}>{name}</Bins.Title>}
       {binEls.length > 0 ? binEls : <Bins.NoItems renderRoot={renderNoItems} />}
     </Bins.Root>
   )

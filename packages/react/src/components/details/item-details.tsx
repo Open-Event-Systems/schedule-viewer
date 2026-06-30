@@ -20,7 +20,6 @@ import {
   IconUser,
 } from "@tabler/icons-react"
 import clsx from "clsx"
-import { add, differenceInSeconds, format } from "date-fns"
 import {
   Fragment,
   memo,
@@ -32,10 +31,18 @@ import { makeTagFormatter, makeValidTagsFilter } from "../../config.js"
 import { ShareButton } from "../share-button/share-button.js"
 import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import { IconText, type IconTextProps } from "../icon-text/icon-text.js"
-import { iterToArr, type Contact } from "@open-event-systems/schedule-lib"
+import {
+  iterToArr,
+  type Address,
+  type Organization,
+  type Person,
+  type Place,
+} from "@open-event-systems/schedule-lib"
 import type { TagConfigEntry } from "../../types.js"
 
 import classes from "./item-details.module.scss"
+import type { Dayjs } from "dayjs"
+import { formatAddress } from "../../utils.js"
 
 export const itemDetailsButtonOptions = [
   "share",
@@ -46,30 +53,39 @@ export const itemDetailsButtonOptions = [
 export type ItemDetailsButtonOption = (typeof itemDetailsButtonOptions)[number]
 
 export type ItemDetailsOccurrence = Readonly<{
-  location?: Iterable<string>
-  start?: Date
-  end?: Date
+  location?: Iterable<string | Place | Address> | undefined
+  startDate?: Dayjs | undefined
+  endDate?: Dayjs | undefined
 }>
 
 export type ItemDetailsProps = {
-  itemId: string
-  title?: ReactNode
-  occurrences?: Iterable<ItemDetailsOccurrence>
-  contacts?: Iterable<Contact>
-  description?: string
-  tags?: Iterable<string>
-  buttonOptions?: Iterable<ItemDetailsButtonOption>
-  bookmarked?: boolean
-  visited?: boolean
-  bookmarkCount?: number | null
-  shareURL?: string
-  onSelectOption?: (option: ItemDetailsButtonOption) => void
-  getLocationProps?: (
-    location: string,
-  ) => { href?: string; onClick?: (e: MouseEvent) => void } | undefined
-  tagEntries?: Iterable<TagConfigEntry>
-  large?: boolean
-  renderTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  itemId?: string | undefined
+  name?: ReactNode | undefined
+  occurrences?: Iterable<ItemDetailsOccurrence> | undefined
+  performer?: Iterable<string | Person | Organization> | undefined
+  organizer?: Iterable<string | Person | Organization> | undefined
+  description?: string | undefined
+  keywords?: Iterable<string> | undefined
+  buttonOptions?: Iterable<ItemDetailsButtonOption> | undefined
+  bookmarked?: boolean | undefined
+  visited?: boolean | undefined
+  bookmarkCount?: number | null | undefined
+  shareURL?: string | undefined
+  onSelectOption?: (option: ItemDetailsButtonOption) => void | undefined
+  getLocationProps?:
+    | ((location: string | Place | Address) =>
+        | {
+            href?: string
+            children?: ReactNode
+            onClick?: (e: MouseEvent) => void
+          }
+        | undefined)
+    | undefined
+  tagEntries?: Iterable<TagConfigEntry> | undefined
+  large?: boolean | undefined
+  renderName?:
+    | ((props: ComponentPropsWithoutRef<"h2">) => ReactNode)
+    | undefined
 } & ItemDetailsRootProps
 
 const _ItemDetails = memo((props: ItemDetailsProps) => {
@@ -77,11 +93,12 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     className,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     itemId,
-    title,
+    name,
     occurrences,
-    contacts,
+    performer,
+    organizer,
     description,
-    tags,
+    keywords,
     buttonOptions,
     bookmarked,
     visited,
@@ -91,15 +108,13 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     getLocationProps,
     tagEntries,
     large,
-    renderTitle,
+    renderName,
     ...other
   } = useProps("ItemDetails", null, props)
 
   const validTagsFilter = makeValidTagsFilter(tagEntries)
   const tagFormatter = makeTagFormatter(tagEntries)
-  const itemTags = iterToArr(tags).filter(validTagsFilter)
-
-  const contactArr = iterToArr(contacts)
+  const itemTags = iterToArr(keywords).filter(validTagsFilter)
 
   const allOccEls = []
   let occIdx = 0
@@ -107,17 +122,20 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     const occEls = []
 
     const locEls = iterToArr(occ.location).map((loc, i) => {
-      const locProps = getLocationProps && getLocationProps(loc)
-      return (
-        <ItemDetails.Location key={i} {...locProps}>
-          {loc}
-        </ItemDetails.Location>
-      )
+      const locProps = (getLocationProps ?? defaultGetLocationProps)(loc)
+      console.log(locProps)
+      return locProps ? (
+        <ItemDetails.Location key={i} {...locProps} />
+      ) : undefined
     })
 
-    if (occ.start || occ.end) {
+    if (occ.startDate || occ.endDate) {
       occEls.push(
-        <ItemDetails.Time key="time" start={occ.start} end={occ.end} />,
+        <ItemDetails.Time
+          key="time"
+          startDate={occ.startDate}
+          endDate={occ.endDate}
+        />,
       )
     }
 
@@ -135,23 +153,29 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     occIdx++
   }
 
+  const contacts = [...iterToArr(organizer), ...iterToArr(performer)]
+
   return (
     <ItemDetails.Root className={className} large={large} {...other}>
       <ItemDetails.Header>
         <Title
-          renderRoot={renderTitle}
+          renderRoot={renderName}
           className={"ItemDetails-title"}
           order={large ? 2 : 4}
         >
-          {title}
+          {name}
         </Title>
         {allOccEls}
         {allOccEls.length > 1 && <ItemDetails.Divider />}
-        {contactArr && contactArr.length > 0 && (
+        {contacts.length > 0 && (
           <ItemDetails.Contacts>
-            {contactArr.map((c, i) => (
-              <ItemDetails.Contact key={i} name={c.name} url={c.url} />
-            ))}
+            {contacts.map((c, i) =>
+              typeof c == "string" ? (
+                <ItemDetails.Contact key={i} name={c} />
+              ) : (
+                <ItemDetails.Contact key={i} name={c.name} url={c.url} />
+              ),
+            )}
           </ItemDetails.Contacts>
         )}
       </ItemDetails.Header>
@@ -400,47 +424,59 @@ const ItemDetailsContact = memo(({ name, url }: ItemDetailsContactProps) => {
 
 ItemDetailsContact.displayName = "ItemDetails.Contact"
 
-export type ItemDetailsTimeProps = { start?: Date; end?: Date } & IconTextProps
+export type ItemDetailsTimeProps = {
+  startDate?: Dayjs
+  endDate?: Dayjs
+} & IconTextProps
 
 export const ItemDetailsTime = memo(
-  ({ start, end, ...other }: ItemDetailsTimeProps) => {
+  ({ startDate, endDate, ...other }: ItemDetailsTimeProps) => {
     let content: ReactNode
 
-    if (start && end) {
-      const offsetStart = add(start, { hours: -6 })
-      const offsetEnd = add(end, { hours: -6 })
+    if (startDate && endDate) {
+      // TODO: configurable day offset
+      const offsetStart = startDate.subtract(6, "hour")
+      const offsetEnd = endDate.subtract(6, "hour")
       const multiDay =
-        offsetStart.getDate() != offsetEnd.getDate() ||
-        differenceInSeconds(offsetEnd, offsetStart) >= 86400
-      const startStr = format(start, "EEE MMM d, h:mm aaa")
+        offsetStart.date() != offsetEnd.date() ||
+        offsetEnd.unix() - offsetStart.unix() >= 86400
+      const startStr = startDate.format("ddd MMM D, h:mm a")
       const endStr = multiDay
-        ? format(end, "EEE MMM d, h:mm aaa")
-        : format(end, "h:mm aaa")
+        ? endDate.format("ddd MMM D, h:mm a")
+        : endDate.format("h:mm a")
 
       content = (
         <>
-          <Text component="time" className="start" dateTime={noTZFormat(start)}>
+          <Text
+            component="time"
+            className="start"
+            dateTime={noTZFormat(startDate)}
+          >
             {startStr}
           </Text>{" "}
           &ndash;{" "}
-          <Text component="time" className="end" dateTime={noTZFormat(end)}>
+          <Text component="time" className="end" dateTime={noTZFormat(endDate)}>
             {endStr}
           </Text>
         </>
       )
-    } else if (start) {
-      const startStr = format(start, "EEE MMM d, h:mm aaa")
+    } else if (startDate) {
+      const startStr = startDate.format("ddd MMM D, h:mm a")
       content = (
-        <Text component="time" className="start" dateTime={noTZFormat(start)}>
+        <Text
+          component="time"
+          className="start"
+          dateTime={noTZFormat(startDate)}
+        >
           {startStr}
         </Text>
       )
-    } else if (end) {
-      const endStr = format(end, "EEE MMM d, h:mm aaa")
+    } else if (endDate) {
+      const endStr = endDate.format("ddd MMM D, h:mm a")
       content = (
         <>
           Ends{" "}
-          <Text component="time" className="end" dateTime={noTZFormat(end)}>
+          <Text component="time" className="end" dateTime={noTZFormat(endDate)}>
             {endStr}
           </Text>
         </>
@@ -463,9 +499,9 @@ export const ItemDetailsTime = memo(
   },
 )
 
-const noTZFormat = (date: Date): string => format(date, "yyyy-MM-dd'T'HH:mm:ss")
-
 ItemDetailsTime.displayName = "ItemDetails.Time"
+
+const noTZFormat = (date: Dayjs): string => date.format("YYYY-MM-DD[T]HH:mm:ss")
 
 export type ItemDetailsLocationsProps = IconTextProps &
   ComponentPropsWithoutRef<"ul">
@@ -493,6 +529,26 @@ export const ItemDetailsLocations = memo((props: ItemDetailsLocationsProps) => {
 })
 
 ItemDetailsLocations.displayName = "ItemDetails.Locations"
+
+const defaultGetLocationProps = (loc: string | Place | Address) => {
+  if (typeof loc == "string") {
+    return { children: loc }
+  } else if (loc.type == "Place" && loc.name) {
+    return { children: loc.name }
+  } else {
+    const addr =
+      loc.type == "Place" && loc.address
+        ? loc.address
+        : loc.type == "PostalAddress"
+          ? loc
+          : undefined
+    if (typeof addr == "string") {
+      return { children: addr }
+    } else if (addr) {
+      return { children: formatAddress(addr) }
+    }
+  }
+}
 
 export type ItemDetailsLocationProps = {
   children?: ReactNode

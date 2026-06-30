@@ -31,6 +31,7 @@ import { TextFilter } from "../filters/text-filter.js"
 import { PastEventsFilter } from "../filters/past-events-filter.js"
 import { ShareMenu } from "../share-menu/share-menu.js"
 import { Schedule } from "../schedule/schedule-component.js"
+import dayjs from "dayjs"
 
 const meta: Meta<typeof SchedulePage> = {
   component: SchedulePage,
@@ -105,13 +106,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
       () =>
         getDays(
           [...parsedEvents].filter(
-            (e): e is typeof e & { readonly start: Date } => !!e.start,
+            (e): e is typeof e & { readonly startDate: Date } => !!e.startDate,
           ),
         ),
       [],
     )
     const selectedDay = days.find((d) => d.key == selectedDayKey)
-    const defaultDay = getDefaultDay(days, new Date())
+    const defaultDay = getDefaultDay(days, dayjs())
 
     const renderDetails = useCallback(
       (props: ItemDetailsProps) => {
@@ -119,30 +120,41 @@ export const Default: StoryObj<typeof SchedulePage> = {
           <ItemDetails
             {...props}
             buttonOptions={["bookmark", "visited", "share"]}
-            bookmarked={bookmarks.has(props.itemId)}
-            visited={visited.has(props.itemId)}
+            bookmarked={!!props.itemId && bookmarks.has(props.itemId)}
+            visited={!!props.itemId && visited.has(props.itemId)}
             shareURL={`#${props.itemId}`}
-            getLocationProps={() => ({
+            getLocationProps={(loc) => ({
               href: "#",
               onClick: (e) => e.preventDefault(),
+              children: String(loc),
             })}
             tagEntries={parsedConfig.tags}
-            bookmarkCount={bookmarks.has(props.itemId) ? 1 : undefined}
+            bookmarkCount={
+              !!props.itemId && bookmarks.has(props.itemId) ? 1 : undefined
+            }
             onSelectOption={(opt) => {
               if (opt == "bookmark") {
                 setBookmarks((cur) => {
-                  if (!bookmarks.has(props.itemId)) {
-                    return cur.add(props.itemId)
+                  if (props.itemId) {
+                    if (!bookmarks.has(props.itemId)) {
+                      return cur.add(props.itemId)
+                    } else {
+                      return cur.delete(props.itemId)
+                    }
                   } else {
-                    return cur.delete(props.itemId)
+                    return cur
                   }
                 })
               } else if (opt == "visited") {
                 setVisited((cur) => {
-                  if (!visited.has(props.itemId)) {
-                    return cur.add(props.itemId)
+                  if (props.itemId) {
+                    if (!visited.has(props.itemId)) {
+                      return cur.add(props.itemId)
+                    } else {
+                      return cur.delete(props.itemId)
+                    }
                   } else {
-                    return cur.delete(props.itemId)
+                    return cur
                   }
                 })
               }
@@ -163,7 +175,9 @@ export const Default: StoryObj<typeof SchedulePage> = {
         return (
           <ItemPills.Pill
             {...props}
-            indicator={tagIndicatorFunc(props.item.tags ?? [])}
+            indicator={tagIndicatorFunc(
+              "keywords" in props.item ? (props.item.keywords ?? []) : [],
+            )}
             ItemHoverCardProps={{ renderItemDetails: renderDetails }}
           />
         )

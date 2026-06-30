@@ -1,5 +1,6 @@
 import {
   type Selections,
+  type SelectionsService,
   type SelectionsType,
   type ServerSelections,
 } from "@open-event-systems/schedule-lib"
@@ -15,26 +16,16 @@ import {
 import { createContext, use, useCallback, useEffect, useState } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
 
-export const SelectionsServiceAPIContext = createContext<
-  SelectionsServiceAPI | undefined
+export const SelectionsServiceContext = createContext<
+  SelectionsService | undefined
 >(undefined)
 
-export const useSelectionsServiceAPI = (): SelectionsServiceAPI | undefined =>
-  use(SelectionsServiceAPIContext)
-
-export const SessionSelectionsAPIContext = createContext<{
-  readonly [key in SelectionsType]?: SessionSelectionsAPI
-}>({})
-
-export const useSessionSelectionsAPI = (
-  type: SelectionsType,
-): SessionSelectionsAPI => {
-  const ctx = use(SessionSelectionsAPIContext)[type]
-  if (!ctx) {
-    throw new Error(`no context for selections type ${type} provided`)
+export const useSelectionsService = (): SelectionsService => {
+  const res = use(SelectionsServiceContext)
+  if (!res) {
+    throw new Error("SelectionsService not provided")
   }
-
-  return ctx
+  return res
 }
 
 /**
@@ -42,7 +33,7 @@ export const useSessionSelectionsAPI = (
  */
 export const selectionsQueryOptions = {
   selections: (
-    api: SelectionsServiceAPI | undefined | null,
+    api: SelectionsService | null | undefined,
     scheduleId: string,
     id: string,
   ) =>
@@ -53,12 +44,12 @@ export const selectionsQueryOptions = {
         id,
       ] as const,
       queryFn: async () => {
-        return api ? await api.getSelections(id) : null
+        return api ? await api.getById(id) : null
       },
       staleTime: Infinity,
     }),
   counts: (
-    api: SelectionsServiceAPI | undefined | null,
+    api: SelectionsService | null | undefined,
     scheduleId: string,
     type: SelectionsType,
   ) =>
@@ -81,7 +72,7 @@ export const selectionsQueryOptions = {
 
 export const sessionSelectionsQueryOptions = {
   sessionSelections: (
-    api: SessionSelectionsAPI,
+    api: SelectionsService,
     scheduleId: string,
     type: SelectionsType,
   ) =>
@@ -92,7 +83,7 @@ export const sessionSelectionsQueryOptions = {
         { type },
       ],
       queryFn: async () => {
-        return await api.get()
+        return await api.load(type)
       },
       staleTime: 120000,
     }),
@@ -103,7 +94,7 @@ export const sessionSelectionsQueryOptions = {
  */
 export const selectionsMutationOptions = {
   setItemSelected: (
-    api: SessionSelectionsAPI,
+    api: SelectionsService,
     queryClient: QueryClient,
     scheduleId: string,
     type: SelectionsType,
@@ -116,13 +107,22 @@ export const selectionsMutationOptions = {
           type,
         ).queryKey,
       ] as const,
-      mutationFn: async (args: { itemId: string; selected: boolean }) => {
-        const { itemId, selected } = args
+      mutationFn: async ({
+        itemId,
+        selected,
+      }: {
+        itemId: string
+        selected: boolean
+      }) => {
+        const cur = await api.load(type)
+        let updated
         if (selected) {
-          return await api.add(itemId)
+          updated = cur.add(itemId)
         } else {
-          return await api.delete(itemId)
+          updated = cur.delete(itemId)
         }
+
+        return api.save(type, updated)
       },
       onSuccess: (updated) => {
         queryClient.setQueryData(
@@ -141,7 +141,7 @@ export const useSessionSelections = (
   type: SelectionsType,
 ): UseQueryResult<Selections> => {
   const config = useScheduleConfig()
-  const api = useSessionSelectionsAPI(type)
+  const api = useSelectionsService()
   const query = useQuery(
     sessionSelectionsQueryOptions.sessionSelections(api, config.id, type),
   )
@@ -156,7 +156,7 @@ export const useIsSelected = (
   id: string,
 ): UseQueryResult<boolean> => {
   const config = useScheduleConfig()
-  const api = useSessionSelectionsAPI(type)
+  const api = useSelectionsService()
 
   const selectFn = useCallback(
     (ssels: Selections) => {
@@ -181,7 +181,7 @@ export const useSetSelected = (
 ): ((itemId: string, selected: boolean) => Promise<Selections>) => {
   const config = useScheduleConfig()
   const queryClient = useQueryClient()
-  const api = useSessionSelectionsAPI(type)
+  const api = useSelectionsService()
   const mutation = useMutation(
     selectionsMutationOptions.setItemSelected(
       api,
@@ -206,7 +206,7 @@ export const useSelections = (
   id: string,
 ): UseQueryResult<ServerSelections | null> => {
   const config = useScheduleConfig()
-  const api = useSelectionsServiceAPI()
+  const api = useSelectionsService()
   return useQuery(selectionsQueryOptions.selections(api, config.id, id))
 }
 
@@ -217,7 +217,7 @@ export const useSelectionCounts = (
   type: SelectionsType,
 ): UseQueryResult<ReadonlyMap<string, number>> => {
   const config = useScheduleConfig()
-  const api = useSelectionsServiceAPI()
+  const api = useSelectionsService()
   return useQuery(selectionsQueryOptions.counts(api, config.id, type))
 }
 
@@ -229,7 +229,7 @@ export const useSelectionCount = (
   itemId: string,
 ): UseQueryResult<number | undefined> => {
   const config = useScheduleConfig()
-  const api = useSelectionsServiceAPI()
+  const api = useSelectionsService()
   const selectFn = useCallback(
     (res: ReadonlyMap<string, number>) => {
       return res.get(itemId)
@@ -248,7 +248,7 @@ export const useSelectionCount = (
  * network is available.
  */
 export const useSelectionsServiceAvailable = (): boolean => {
-  const api = useSelectionsServiceAPI()
+  const api = useSelectionsService()
   const [available, setAvailable] = useState(getIsOnline())
 
   useEffect(() => {
@@ -258,7 +258,7 @@ export const useSelectionsServiceAvailable = (): boolean => {
 
     window.addEventListener("online", handler)
     window.addEventListener("offline", handler)
-    const unsub = api?.subscribe(handler) ?? (() => {})
+    const unsub = api.subscribe(handler)
 
     handler()
 

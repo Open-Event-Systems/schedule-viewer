@@ -12,16 +12,16 @@ export default meta
 
 export const Default: StoryObj<typeof Bins<string>> = {
   args: {
-    title: "Bins Title",
+    name: "Bins Title",
     bins: [
       {
         key: "1",
-        title: "Bin 1",
+        name: "Bin 1",
         items: ["A", "B", "C"],
       },
       {
         key: "2",
-        title: "Bin 2",
+        name: "Bin 2",
         items: ["D", "E", "F"],
       },
     ],
@@ -29,7 +29,7 @@ export const Default: StoryObj<typeof Bins<string>> = {
     renderBin: (props, bin) => {
       return (
         <Box {...props}>
-          <Title order={4}>{bin.title}</Title>
+          <Title order={4}>{bin.name}</Title>
           <List>
             {iterToArr(bin.items).map((i) => (
               <List.Item key={i}>{i}</List.Item>

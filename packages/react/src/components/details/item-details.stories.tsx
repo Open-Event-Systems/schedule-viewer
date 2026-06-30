@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemDetails, type ItemDetailsButtonOption } from "./item-details.js"
 import { events, tagConfigEntries } from "../../test-data.js"
 import { useCallback, useState } from "react"
-import { add } from "date-fns"
+import type { Address, Place } from "@open-event-systems/schedule-lib"
 
 const item = events[1]
 
@@ -10,24 +10,34 @@ const meta: Meta<typeof ItemDetails> = {
   component: ItemDetails,
   args: {
     id: "test",
-    title: item.title,
+    name: item.name,
     description: item.description,
-    contacts: [
-      ...item.contacts,
+    performer: [
+      ...item.performer,
       {
+        type: "Person",
         name: "Person 2",
       },
     ],
-    tags: item.tags,
+    keywords: item.keywords,
     h: 300,
     w: 500,
     large: true,
     buttonOptions: ["share", "bookmark", "visited"],
     tagEntries: tagConfigEntries,
-    getLocationProps: () => ({
-      href: "#",
-      onClick: (e) => e.preventDefault(),
-    }),
+    getLocationProps: (loc: string | Place | Address) => {
+      let children
+
+      if (typeof loc == "string") {
+        children = loc
+      }
+
+      return {
+        href: "#",
+        onClick: (e) => e.preventDefault(),
+        children,
+      }
+    },
   },
   decorators: [
     (Story, { args }) => {
@@ -66,8 +76,8 @@ export const Default: StoryObj<typeof ItemDetails> = {
   args: {
     occurrences: [
       {
-        start: item.start,
-        end: item.end,
+        startDate: item.startDate,
+        endDate: item.endDate,
         location: item.location,
       },
     ],
@@ -81,8 +91,8 @@ export const MultiLocation: StoryObj<typeof ItemDetails> = {
   args: {
     occurrences: [
       {
-        start: item.start,
-        end: item.end,
+        startDate: item.startDate,
+        endDate: item.endDate,
         location: [...item.location, "Panel Room 2"],
       },
     ],
@@ -96,13 +106,13 @@ export const MultiOccurrence: StoryObj<typeof ItemDetails> = {
   args: {
     occurrences: [
       {
-        start: item.start,
-        end: item.end,
+        startDate: item.startDate,
+        endDate: item.endDate,
         location: item.location,
       },
       {
-        start: add(item.start, { days: 1 }),
-        end: add(item.end, { days: 1 }),
+        startDate: item.startDate.add(1, "day"),
+        endDate: item.endDate.add(1, "day"),
         location: [...item.location, "Panel Room 2"],
       },
     ],

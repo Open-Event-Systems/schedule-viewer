@@ -256,4 +256,9 @@ export type SelectionsService = SelectionsStore &
      * Get selection counts.
      */
     getCounts: (type: SelectionsType) => Promise<ReadonlyMap<string, number>>
+
+    /**
+     * Subscribe to session token updates.
+     */
+    subscribe: (callback: () => void) => () => void
   }>

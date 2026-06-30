@@ -1,9 +1,8 @@
 import { ActionIcon, Box, type BoxProps, Select, useProps } from "@mantine/core"
 import clsx from "clsx"
-import { format } from "date-fns"
 import { useMemo, type MouseEvent } from "react"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
-import type { Day } from "@open-event-systems/schedule-lib"
+import { iterToArr, type Day } from "@open-event-systems/schedule-lib"
 
 import classes from "./day-filter.module.scss"
 
@@ -15,33 +14,33 @@ export type DayFilterProps = {
   onSelectDay?: ((day: Day) => void) | undefined
 } & BoxProps
 
-const defaultDayFormat = "EEEE, MMM d"
+const defaultDayFormat = "dddd, MMM D"
 
 export const DayFilter = (props: DayFilterProps) => {
   const {
     className,
     days,
-    dayFormat = defaultDayFormat,
+    dayFormat,
     selectedDay,
     getHref,
     onSelectDay,
     ...other
-  } = useProps("DayFilter", { days: [] }, props)
+  } = useProps("DayFilter", { dayFormat: defaultDayFormat }, props)
+
+  const daysArr = iterToArr(days)
 
   const { daysByKey, dayData } = useMemo(() => {
     const daysByKey = new Map<string, Day>()
     const dayData = []
 
-    for (const day of days) {
-      const label = format(day.start, dayFormat)
+    for (const day of daysArr) {
+      const label = day.startDate.format(dayFormat)
       daysByKey.set(day.key, day)
       dayData.push({ value: day.key, label })
     }
 
     return { daysByKey, dayData }
-  }, [days, dayFormat])
-
-  const daysArr = [...days]
+  }, [daysArr, dayFormat])
 
   const selectedIdx = dayData.findIndex((o) => o.value == selectedDay)
 

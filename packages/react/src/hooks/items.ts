@@ -1,6 +1,11 @@
 import {
+  indexData,
   makeParsedScheduleItemsAPI,
+  type IndexConfig,
+  type IndexResult,
   type ScheduleAPI,
+  type ScheduleDataTypeMap,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import type { TagConfigEntry } from "../types.js"
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
@@ -18,10 +23,10 @@ export const useScheduleAPI = (): ScheduleAPI => useContext(ScheduleAPIContext)
  * Query options factory for schedule items.
  */
 export const itemQueryOptions = {
-  items: <M extends ItemTypeMap>(
+  items: <M extends ScheduleDataTypeMap>(
     api: ScheduleAPI,
     scheduleId: string,
-    parsers: ItemParserMap<M>,
+    parsers: IndexConfig<M>,
   ) =>
     queryOptions({
       queryKey: [
@@ -31,7 +36,7 @@ export const itemQueryOptions = {
       ] as const,
       queryFn: async () => {
         const res = await api.getItems()
-        return parseItems(parsers, res)
+        return indexData(parsers, res)
       },
       staleTime: 300000,
     }),
@@ -40,9 +45,9 @@ export const itemQueryOptions = {
 /**
  * Hook to use the configured schedule's items.
  */
-export const useItems = <M extends ItemTypeMap>(
-  parsers: ItemParserMap<M>,
-): Readonly<ParseItemsResult<M>> => {
+export const useItems = <M extends ScheduleDataTypeMap>(
+  parsers: IndexConfig<M>,
+): Readonly<IndexResult<M>> => {
   const config = useScheduleConfig()
   const api = useScheduleAPI()
   const res = useSuspenseQuery(itemQueryOptions.items(api, config.id, parsers))
@@ -55,12 +60,12 @@ export const useItems = <M extends ItemTypeMap>(
  */
 export const getRelevantTags = (
   tags: Iterable<TagConfigEntry>,
-  items: Iterable<Pick<ScheduleItemDetails, "tags">>,
+  items?: Iterable<{ readonly keywords?: Iterable<string> }> | null,
 ): TagConfigEntry[] => {
   const seen = new Set<string>()
 
-  for (const item of items) {
-    for (const tag of item.tags ?? []) {
+  for (const item of items ?? []) {
+    for (const tag of item.keywords ?? []) {
       seen.add(tag)
     }
   }
@@ -74,7 +79,7 @@ export const getRelevantTags = (
  */
 export const useRelevantTags = (
   tags: Iterable<TagConfigEntry>,
-  items?: Iterable<Pick<ScheduleItemDetails, "tags">>,
+  items?: Iterable<{ readonly keywords?: Iterable<string> }>,
 ): TagConfigEntry[] => {
   return useMemo(() => {
     return items ? getRelevantTags(tags, items) : []
@@ -85,25 +90,30 @@ export const useRelevantTags = (
  * Get {@link ItemDetailsProps} from item entries.
  */
 export const getItemDetailsProps = (
-  item: DetailedScheduleItem,
-  ...otherItems: DetailedScheduleItem[]
+  item: ScheduleItem,
+  ...otherItems: ScheduleItem[]
 ): ItemDetailsProps => {
   const occurrences = []
 
   for (const itemOcc of [item, ...otherItems]) {
     occurrences.push({
-      start: item.start,
-      end: item.end,
-      location: itemOcc.location,
+      startDate: "startDate" in itemOcc ? itemOcc.startDate : undefined,
+      endDate: "endDate" in itemOcc ? itemOcc.endDate : undefined,
+      location: "location" in itemOcc ? itemOcc.location : undefined,
     })
   }
+
+  const organizer = "organizer" in item ? item.organizer : undefined
+  const performer = "performer" in item ? item.performer : undefined
+  const keywords = "keywords" in item ? item.keywords : undefined
 
   return {
     itemId: item.id,
     occurrences,
-    title: item.title,
+    name: item.name,
     description: item.description,
-    contacts: item.contacts,
-    tags: item.tags,
+    organizer,
+    performer,
+    keywords,
   }
 }

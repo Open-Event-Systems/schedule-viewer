@@ -18,7 +18,7 @@ import type { TrackItemProps } from "../calendar/track.js"
 
 export type GanttTrack = Readonly<{
   id: string
-  title?: ReactNode
+  name?: ReactNode
   items?: Iterable<CalendarItemProps>
 }>
 
@@ -37,7 +37,8 @@ const _Gantt = (props: GanttProps) => {
     ...other
   } = useProps("Gantt", null, props)
 
-  const [defaultStart, defaultEnd] = useDefaultCalendarRange(dayChangeHour)
+  const { startDate: defaultStart, endDate: defaultEnd } =
+    useDefaultCalendarRange(dayChangeHour)
 
   const start = startProp ?? defaultStart
   const end = endProp ?? defaultEnd
@@ -56,7 +57,7 @@ const _Gantt = (props: GanttProps) => {
 
   for (const track of tracks ?? []) {
     backgroundEls.push(<Gantt.Background key={track.id} />)
-    headers.push(<Gantt.Header key={track.id}>{track.title}</Gantt.Header>)
+    headers.push(<Gantt.Header key={track.id}>{track.name}</Gantt.Header>)
     const trackItems = []
 
     let idx = 0

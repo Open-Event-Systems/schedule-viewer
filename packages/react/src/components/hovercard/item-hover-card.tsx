@@ -1,21 +1,26 @@
 import { HoverCard, type HoverCardProps, useProps } from "@mantine/core"
 import { memo, type ReactNode } from "react"
 import { ItemDetails, type ItemDetailsProps } from "../details/item-details.js"
-import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 
 import classes from "./item-hover-card.module.scss"
 import { getItemDetailsProps } from "../../hooks/items.js"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
 export type ItemHoverCardProps = HoverCardProps & {
-  item?: DetailedScheduleItem
+  item?: ScheduleItem | undefined
   children?: ReactNode
-  hideDetails?: boolean
-  ItemDetailsProps?: Partial<ItemDetailsProps>
-  classNames?: {
-    dropdown?: string
-  }
-  renderItemDetails?: (props: ItemDetailsProps) => ReactNode
+  hideDetails?: boolean | undefined
+  ItemDetailsProps?: Partial<ItemDetailsProps> | undefined
+  classNames?:
+    | {
+        dropdown?: string | undefined
+      }
+    | undefined
+  renderItemDetails?:
+    | ((props: ItemDetailsProps) => ReactNode)
+    | undefined
+    | undefined
 }
 
 export const ItemHoverCard = memo((props: ItemHoverCardProps) => {

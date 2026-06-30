@@ -12,7 +12,7 @@ export const Default: StoryObj<typeof meta> = {
   render() {
     return (
       <ItemPills
-        title="Item Pill Bin"
+        name="Item Pill Bin"
         items={parsedEvents}
         tags={parsedConfig.tags}
         tagIndicators={parsedConfig.tagIndicators}

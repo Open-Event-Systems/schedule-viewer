@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { DayFilter } from "./day-filter.js"
 import { useState } from "react"
+import dayjs from "dayjs"
 
 const meta: Meta<typeof DayFilter> = {
   component: DayFilter,
@@ -16,18 +17,18 @@ export const Default: StoryObj<typeof DayFilter> = {
     days: [
       {
         key: "2025-01-01",
-        start: new Date(2025, 0, 1, 6),
-        end: new Date(2025, 0, 2, 6),
+        startDate: dayjs(new Date(2025, 0, 1, 6)),
+        endDate: dayjs(new Date(2025, 0, 2, 6)),
       },
       {
         key: "2025-01-02",
-        start: new Date(2025, 0, 2, 6),
-        end: new Date(2025, 0, 3, 6),
+        startDate: dayjs(new Date(2025, 0, 2, 6)),
+        endDate: dayjs(new Date(2025, 0, 3, 6)),
       },
       {
         key: "2025-01-03",
-        start: new Date(2025, 0, 3, 6),
-        end: new Date(2025, 0, 4, 6),
+        startDate: dayjs(new Date(2025, 0, 3, 6)),
+        endDate: dayjs(new Date(2025, 0, 4, 6)),
       },
     ],
   },

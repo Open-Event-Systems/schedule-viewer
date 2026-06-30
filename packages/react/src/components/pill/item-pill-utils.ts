@@ -1,12 +1,12 @@
-import type { DetailedScheduleItem } from "@open-event-systems/schedule-lib"
+import type { ScheduleItem } from "@open-event-systems/schedule-lib"
 
-export const getItemPillClassNames = (
-  item: DetailedScheduleItem,
-): readonly string[] => {
+export const getItemPillClassNames = (item: ScheduleItem): string[] => {
   return [
-    getItemPillIdClassName(item.id),
-    ...Array.from(item.tags ?? [], (t) => getItemPillTagClassName(t)),
-  ]
+    item.id ? getItemPillIdClassName(item.id) : "",
+    ...Array.from("keywords" in item ? (item.keywords ?? []) : [], (t) =>
+      getItemPillTagClassName(t),
+    ),
+  ].filter((v) => !!v)
 }
 
 export const getItemPillTagClassName = (tag: string): string =>

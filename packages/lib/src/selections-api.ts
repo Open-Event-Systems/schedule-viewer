@@ -172,8 +172,15 @@ export const makeRemoteSelectionsService = (
 
   const baseWretch = wretch(baseURL).url(`/schedules/${scheduleId}`)
 
+  const observers = new Set<() => void>()
+
   const getSessionToken = () => api.sessionToken
-  const setSessionToken = (token: string | null) => (api.sessionToken = token)
+  const setSessionToken = (token: string | null) => {
+    api.sessionToken = token
+    for (const observer of observers) {
+      observer()
+    }
+  }
 
   const authWretch = baseWretch.middlewares([
     makeSessionSetupMiddleware(
@@ -263,6 +270,13 @@ export const makeRemoteSelectionsService = (
     handleStorageEvent: (e) => {
       if (e.storageArea == storage && e.key == localStorageKey) {
         setSessionToken(e.newValue)
+      }
+    },
+    subscribe: (callback) => {
+      observers.add(callback)
+
+      return () => {
+        observers.delete(callback)
       }
     },
   }
