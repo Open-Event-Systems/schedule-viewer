@@ -296,7 +296,9 @@ export const ORGANIZATION_TYPES = {
           VeterinaryCare: {},
         },
       },
-      NGO: {},
+      NGO: {
+        name: "NGO",
+      },
       NewsMediaOrganization: {},
       OnlineBusiness: {
         subtypes: {

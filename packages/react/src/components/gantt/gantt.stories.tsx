@@ -16,8 +16,8 @@ export default meta
 
 export const Default: StoryObj<typeof Gantt> = {
   args: {
-    start: new Date(2020, 0, 1, 9),
-    end: new Date(2020, 0, 1, 17),
+    startDate: new Date(2020, 0, 1, 9),
+    endDate: new Date(2020, 0, 1, 17),
     orientation: "vertical",
     tracks: [
       {

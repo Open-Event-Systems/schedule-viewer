@@ -1,27 +1,30 @@
 import {
+  isEvent,
+  isOrganization,
   iterToArr,
-  makeBookmarkFilter,
+  makeNameFilter,
   makePastItemFilter,
+  makeSelectionsFilter,
   makeTagFilter,
-  makeTitleFilter,
-  makeUnvisitedFilter,
-  type DetailedScheduleItem,
+  type ScheduleItem,
 } from "@open-event-systems/schedule-lib"
 import { useMemo } from "react"
 import type { SelectionsFilterOption } from "../components/index.js"
+import type { Dayjs } from "dayjs"
+import dayjs from "dayjs"
 
 export type FilterOptions = Readonly<{
-  disabledTags?: Iterable<string> | null
-  text?: string | null
-  showPastEvents?: boolean | null
-  selectionsFilterOptions?: Iterable<SelectionsFilterOption> | null
-  now?: Date | null
-  bookmarked?: Iterable<string> | null
-  visited?: Iterable<string> | null
+  disabledTags?: Iterable<string> | undefined | null
+  text?: string | undefined | null
+  showPastEvents?: boolean | undefined | null
+  selectionsFilterOptions?: Iterable<SelectionsFilterOption> | undefined | null
+  now?: Dayjs | undefined | null
+  bookmarked?: Iterable<string> | undefined | null
+  visited?: Iterable<string> | undefined | null
 }>
 
-export const filterItems = <T extends DetailedScheduleItem>(
-  items?: Iterable<T>,
+export const filterItems = <T extends ScheduleItem>(
+  items?: Iterable<T> | null,
   options?: FilterOptions,
 ): Iterable<T> => {
   const {
@@ -39,30 +42,34 @@ export const filterItems = <T extends DetailedScheduleItem>(
   let res = items
 
   if (optsArr.includes("bookmarked")) {
-    res = iterToArr(res).filter(makeBookmarkFilter(bookmarked))
+    res = iterToArr(res).filter(makeSelectionsFilter("include", bookmarked))
   }
 
   if (optsArr.includes("unvisited")) {
-    res = iterToArr(res).filter(makeUnvisitedFilter(visited))
+    res = iterToArr(res).filter(makeSelectionsFilter("exclude", visited))
   }
 
   if (disabledTags) {
-    res = iterToArr(res).filter(makeTagFilter(disabledTags))
+    const tagFilter = makeTagFilter("exclude", disabledTags)
+    res = iterToArr(res).filter(
+      (it) => (!isEvent(it) && !isOrganization(it)) || tagFilter(it),
+    )
   }
 
   if (!showPastEvents) {
-    res = iterToArr(res).filter(makePastItemFilter(now ?? new Date()))
+    const pastFilter = makePastItemFilter(now ?? dayjs())
+    res = iterToArr(res).filter((it) => !isEvent(it) || pastFilter(it))
   }
 
   if (text) {
-    res = iterToArr(res).filter(makeTitleFilter(text))
+    res = iterToArr(res).filter(makeNameFilter(text))
   }
 
   return iterToArr(res)
 }
 
-export const useFilteredItems = <T extends DetailedScheduleItem>(
-  items?: Iterable<T>,
+export const useFilteredItems = <T extends ScheduleItem>(
+  items?: Iterable<T> | null,
   options?: FilterOptions,
 ): Iterable<T> => {
   const {
@@ -79,33 +86,33 @@ export const useFilteredItems = <T extends DetailedScheduleItem>(
     let res = items
 
     if (optsArr.includes("bookmarked")) {
-      res = iterToArr(res).filter(makeBookmarkFilter(bookmarked))
+      res = iterToArr(res).filter(makeSelectionsFilter("include", bookmarked))
     }
 
     if (optsArr.includes("unvisited")) {
-      res = iterToArr(res).filter(makeUnvisitedFilter(visited))
+      res = iterToArr(res).filter(makeSelectionsFilter("exclude", visited))
     }
 
     return res
   }, [selectionsFilterOptions, items, bookmarked, visited])
-  const byTag = useMemo(
-    () =>
-      disabledTags
-        ? iterToArr(bySelections).filter(makeTagFilter(disabledTags))
-        : bySelections,
-    [bySelections, disabledTags],
-  )
-  const byPast = useMemo(
-    () =>
-      !showPastEvents
-        ? iterToArr(byTag).filter(makePastItemFilter(now ?? new Date()))
-        : byTag,
-    [showPastEvents, byTag, now],
-  )
-  const byTitle = useMemo(
-    () => (text ? iterToArr(byPast).filter(makeTitleFilter(text)) : byPast),
+  const byTag = useMemo(() => {
+    const tagFilter = makeTagFilter("exclude", disabledTags)
+    return disabledTags
+      ? iterToArr(bySelections).filter(
+          (it) => (!isEvent(it) && !isOrganization(it)) || tagFilter(it),
+        )
+      : bySelections
+  }, [bySelections, disabledTags])
+  const byPast = useMemo(() => {
+    const pastFilter = makePastItemFilter(now ?? dayjs())
+    return !showPastEvents
+      ? iterToArr(byTag).filter((it) => !isEvent(it) || pastFilter(it))
+      : byTag
+  }, [showPastEvents, byTag, now])
+  const byName = useMemo(
+    () => (text ? iterToArr(byPast).filter(makeNameFilter(text)) : byPast),
     [text, byPast],
   )
 
-  return iterToArr(byTitle)
+  return iterToArr(byName)
 }

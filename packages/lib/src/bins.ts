@@ -24,8 +24,8 @@ type BinFunc<B = unknown, O = B> = <T extends B>(
 export function* binByName<
   T extends { readonly id?: string; readonly name?: string },
 >(items: Iterable<T>): Generator<Bin<T>, void, void> {
-  const getBin = (normTitle: string) => {
-    const c = normTitle.charAt(0)
+  const getBin = (normName: string) => {
+    const c = normName.charAt(0)
     if (c == "") {
       return "Other"
     } else if (numPattern.test(c)) {
@@ -55,22 +55,22 @@ export function* binByName<
     }
   }
 
-  // first sort by title
+  // first sort by name
 
   const mapped = []
   for (const item of iterUniqueIds(items)) {
-    const normTitle = toAlphaSortable(item.name)
-    const binKey = getBin(normTitle)
+    const normName = toAlphaSortable(item.name)
+    const binKey = getBin(normName)
     mapped.push({
-      normTitle,
+      normName: normName,
       binKey,
       item: item,
     })
   }
 
-  // Sort by (bin key, normTitle)
+  // Sort by (bin key, normName)
 
-  mapped.sort((a, b) => a.normTitle.localeCompare(b.normTitle))
+  mapped.sort((a, b) => a.normName.localeCompare(b.normName))
   mapped.sort((a, b) => compareBinKey(a.binKey, b.binKey))
 
   let curBin: { key: string; name: string; items: T[] } | undefined
@@ -100,13 +100,13 @@ export function* binByName<
  * Return a function to bin items by tags.
  */
 export const makeTagBinFunc = (
-  tagEntries: Iterable<Readonly<{ tag: string; title: string }>>,
+  tagEntries: Iterable<Readonly<{ tag: string; name: string }>>,
 ): BinFunc<{ readonly id?: string; readonly tags?: Iterable<string> }> => {
-  const titleByTag = new Map<string, [string, string]>()
+  const nameByTag = new Map<string, [string, string]>()
   for (const entry of tagEntries) {
-    const sortKey = toAlphaSortable(entry.title)
+    const sortKey = toAlphaSortable(entry.name)
     if (sortKey) {
-      titleByTag.set(entry.tag, [entry.title, sortKey])
+      nameByTag.set(entry.tag, [entry.name, sortKey])
     }
   }
 
@@ -128,13 +128,13 @@ export const makeTagBinFunc = (
     for (const item of iterUniqueIds(items)) {
       const validTags = Array.from(
         item.tags ?? [],
-        (t) => [t, titleByTag.get(t)] as const,
+        (t) => [t, nameByTag.get(t)] as const,
       ).filter((t): t is readonly [string, [string, string]] => !!t[1])
-      for (const [tag, [title, sortKey]] of validTags) {
+      for (const [tag, [name, sortKey]] of validTags) {
         allItems.push({
           key: `tag-${tag}`,
           sortKey,
-          binTitle: title,
+          binName: name,
           item: item,
         })
       }
@@ -142,7 +142,7 @@ export const makeTagBinFunc = (
         allItems.push({
           key: "na",
           sortKey: "N/A",
-          binTitle: "N/A",
+          binName: "N/A",
           item: item,
         })
       }
@@ -160,7 +160,7 @@ export const makeTagBinFunc = (
         }
         curBin = {
           key: item.key,
-          name: item.binTitle,
+          name: item.binName,
           items: [],
         }
       }

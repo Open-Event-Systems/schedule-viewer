@@ -24,7 +24,7 @@ import {
 } from "../filters/past-events-filter.js"
 import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
-import type { TagEntry } from "../../types.js"
+import type { TagConfigEntry } from "../../types.js"
 import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export const schedulePageFeatures = [
@@ -41,7 +41,7 @@ export type SchedulePageFeature = (typeof schedulePageFeatures)[number]
 export type SchedulePageProps = {
   viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
   enableFeatures?: Iterable<SchedulePageFeature>
-  tags?: Iterable<TagEntry>
+  tags?: Iterable<TagConfigEntry>
   renderSelectionsFilter?: (props: SelectionsFilterProps) => ReactNode
   renderViewSelect?: (props: ViewSelectProps) => ReactNode
   renderTextFilter?: (props: TextFilterProps) => ReactNode

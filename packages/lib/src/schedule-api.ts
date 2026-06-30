@@ -2,7 +2,7 @@ import z from "zod"
 import wretch from "wretch"
 import type { ScheduleAPI, ScheduleItem } from "./types.js"
 import { sortScheduleItems } from "./utils.js"
-import { parseScheduleItem } from "./item.js"
+import { parseScheduleItem } from "./parse/json.js"
 
 const itemsSchema = z.object({
   items: z.array(z.record(z.string(), z.unknown())),
@@ -21,7 +21,7 @@ export const makeParsedScheduleItemsAPI = (
         .map(parseScheduleItem)
         .map((parsed) => {
           if (parsed.success) {
-            return parsed.value
+            return parsed.data
           } else {
             console.error(
               `failed to parse schedule item:\n${parsed.message}`,

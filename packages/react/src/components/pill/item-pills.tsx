@@ -15,7 +15,7 @@ import {
   ItemHoverCard,
   type ItemHoverCardProps,
 } from "../hovercard/item-hover-card.js"
-import type { TagEntry, TagIndicatorEntry } from "../../types.js"
+import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import clsx from "clsx"
 import { getItemPillClassNames } from "./item-pill-utils.js"
@@ -29,15 +29,15 @@ export type ItemPillsProps = Omit<PillsProps, "children"> & {
   items: Iterable<DetailedScheduleItem>
 
   /**
-   * A collection of {@link TagEntry} objects which represent the displayable
+   * A collection of {@link TagConfigEntry} objects which represent the displayable
    * tags.
    */
-  tags?: Iterable<TagEntry>
+  tags?: Iterable<TagConfigEntry>
 
   /**
-   * A collection of {@link TagIndicatorEntry} to display.
+   * A collection of {@link TagIndicatorConfigEntry} to display.
    */
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
 
   /**
    * A function to render each pill.
@@ -95,10 +95,10 @@ export type ItemPillProps = {
   item: DetailedScheduleItem
 
   /**
-   * A collection of {@link TagEntry} objects which represent the displayable
+   * A collection of {@link TagConfigEntry} objects which represent the displayable
    * tags.
    */
-  tags?: Iterable<TagEntry>
+  tags?: Iterable<TagConfigEntry>
 
   /**
    * Default props for the {@link ItemHoverCard}.

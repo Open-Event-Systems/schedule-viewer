@@ -69,6 +69,32 @@ export const omitUndefSchema = <OutT extends object, InT>(
   })
 
 /**
+ * Convert between a scalar and array.
+ */
+export const scalarToArraySchema = <OutT, InT>(
+  ofSchema: z.ZodType<OutT, InT>,
+): z.ZodOptional<
+  z.ZodCodec<
+    z.ZodType<OutT | undefined, InT | undefined>,
+    z.ZodType<OutT[] | undefined, OutT[] | undefined>
+  >
+> =>
+  z
+    .codec(ofSchema.optional(), z.array(z.custom<OutT>()).optional(), {
+      decode: (v) => {
+        if (v !== undefined) {
+          return [v]
+        }
+      },
+      encode: (v) => {
+        if (v != undefined && v.length > 0) {
+          return v[0]
+        }
+      },
+    })
+    .optional()
+
+/**
  * Schema for a set of a type.
  */
 export const setSchema = <OutT, InT>(
@@ -78,3 +104,39 @@ export const setSchema = <OutT, InT>(
     decode: (v) => new Set(v),
     encode: (v) => [...v],
   })
+
+/**
+ * Preprocesses strings by calling .trim().
+ */
+export const trimStrSchema = <OutT, InT>(
+  ofType: z.ZodType<OutT, InT>,
+): z.ZodType<OutT, InT> =>
+  z.codec(z.custom<InT>(), ofType, {
+    decode: (v) => {
+      if (typeof v == "string") {
+        return v.trim() as InT
+      } else {
+        return v
+      }
+    },
+    encode: (v) => {
+      if (typeof v == "string") {
+        return v.trim() as InT
+      } else {
+        return v
+      }
+    },
+  })
+
+/**
+ * Preprocesses strings by replacing empty strings with undefined.
+ */
+export const optStrSchema = <OutT, InT>(
+  ofType: z.ZodType<OutT, InT>,
+): z.ZodOptional<z.ZodType<OutT | undefined, InT>> =>
+  z
+    .codec(trimStrSchema(z.custom<InT>()), optional(ofType), {
+      decode: (v) => (typeof v == "string" && v ? v : (undefined as InT)),
+      encode: (v) => (typeof v == "string" && v ? v : (undefined as InT)),
+    })
+    .optional()

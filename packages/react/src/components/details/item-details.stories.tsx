@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemDetails, type ItemDetailsButtonOption } from "./item-details.js"
-import { events, tagEntries } from "../../test-data.js"
+import { events, tagConfigEntries } from "../../test-data.js"
 import { useCallback, useState } from "react"
 import { add } from "date-fns"
 
@@ -23,7 +23,7 @@ const meta: Meta<typeof ItemDetails> = {
     w: 500,
     large: true,
     buttonOptions: ["share", "bookmark", "visited"],
-    tagEntries,
+    tagEntries: tagConfigEntries,
     getLocationProps: () => ({
       href: "#",
       onClick: (e) => e.preventDefault(),

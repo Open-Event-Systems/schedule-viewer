@@ -7,25 +7,30 @@ import {
   optional,
   omitUndef,
   iterToArr,
-  isoDate,
+  isoDateTimeSchema,
 } from "@open-event-systems/schedule-lib"
 import z from "zod"
-import type { ScheduleConfig, TagEntry, TagIndicatorEntry } from "./types.js"
+import type {
+  ScheduleConfig,
+  TagConfigEntry,
+  TagIndicatorConfigEntry,
+} from "./types.js"
+import dayjs from "dayjs"
 
-const tagEntrySchema = z.codec(
+const tagConfigEntrySchema = z.codec(
   z.union([
     z.tuple([z.string(), z.string()]),
     z.looseObject({
       tag: z.string(),
-      title: z.string(),
+      name: z.string(),
     }),
   ]),
-  z.custom<TagEntry>(),
+  z.custom<TagConfigEntry>(),
   {
     decode: (v) => {
       if (Array.isArray(v)) {
-        const [tag, title] = v
-        return { tag, title }
+        const [tag, name] = v
+        return { tag, name }
       } else {
         return v
       }
@@ -34,7 +39,7 @@ const tagEntrySchema = z.codec(
   },
 )
 
-const tagIndicatorSchema = z.codec(
+const tagIndicatorConfigSchema = z.codec(
   z.union([
     z.tuple([z.union([z.string(), z.array(z.string())]), z.string()]),
     z.looseObject({
@@ -42,7 +47,7 @@ const tagIndicatorSchema = z.codec(
       label: z.string(),
     }),
   ]),
-  z.custom<TagIndicatorEntry>(),
+  z.custom<TagIndicatorConfigEntry>(),
   {
     decode: (v) => {
       if (Array.isArray(v)) {
@@ -62,16 +67,17 @@ const tagIndicatorSchema = z.codec(
 
 const configSchema = z.looseObject({
   id: z.string(),
+  identifier: z.string(),
   items: optional(z.array(z.union([z.string(), z.looseObject({})]))),
-  start: isoDate,
-  end: isoDate,
-  title: optional(z.string()),
+  startDate: isoDateTimeSchema,
+  endDate: isoDateTimeSchema,
+  name: optional(z.string()),
   description: optional(z.string()),
   dayChangeHour: optional(z.number()),
   dayFormat: optional(z.string()),
   timeZone: optional(z.string()),
-  tags: optional(z.array(tagEntrySchema)),
-  tagIndicators: optional(z.array(tagIndicatorSchema)),
+  tags: optional(z.array(tagConfigEntrySchema)),
+  tagIndicators: optional(z.array(tagIndicatorConfigSchema)),
   bookmarks: optional(z.string()),
   selectionsService: optional(z.string()),
   icalPrefix: optional(z.string()),
@@ -90,10 +96,11 @@ const getDefaultTZ = (): string => {
 
 export const DEFAULT_SCHEDULE_CONFIG = {
   id: "schedule",
+  identifier: "schedule",
   items: [],
-  start: new Date(0),
-  end: new Date(4102444800),
-  title: "Schedule",
+  startDate: dayjs(new Date(0)),
+  endDate: dayjs(new Date(4102444800)),
+  name: "Schedule",
   timeZone: getDefaultTZ(),
   dayChangeHour: 6,
   dayFormat: "EEEE, MMM d",
@@ -137,7 +144,7 @@ export const makeScheduleAPIFromConfig = (
 }
 
 export const makeValidTagsFilter = (
-  tags?: Iterable<TagEntry>,
+  tags?: Iterable<TagConfigEntry>,
 ): ((t: string) => boolean) => {
   const tagSet = new Set(iterToArr(tags).map((t) => t.tag))
   const filter = (t: string) => {
@@ -147,11 +154,11 @@ export const makeValidTagsFilter = (
 }
 
 export const makeTagFormatter = (
-  tags?: Iterable<TagEntry>,
+  tags?: Iterable<TagConfigEntry>,
 ): ((t: string) => string) => {
   const map = new Map<string, string>()
   for (const entry of tags ?? []) {
-    map.set(entry.tag, entry.title)
+    map.set(entry.tag, entry.name)
   }
   const formatter = (t: string) => {
     return map.get(t) ?? t
@@ -160,7 +167,7 @@ export const makeTagFormatter = (
 }
 
 export const makeTagIndicatorFunc = (
-  entries: Iterable<TagIndicatorEntry>,
+  entries: Iterable<TagIndicatorConfigEntry>,
 ): ((tags: Iterable<string>) => string | undefined) => {
   const entryArr = Array.from(entries)
   const func = (tags: Iterable<string>) => {
@@ -173,7 +180,7 @@ export const makeTagIndicatorFunc = (
 
 const indicatorEntryMatches = (
   tags: readonly string[],
-  entry: TagIndicatorEntry,
+  entry: TagIndicatorConfigEntry,
 ): boolean => {
   return entry.tags.every((k) => tags.includes(k))
 }

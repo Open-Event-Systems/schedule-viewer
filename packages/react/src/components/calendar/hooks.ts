@@ -1,70 +1,79 @@
-import { getDay } from "@open-event-systems/schedule-lib"
-import { add, format, isAfter, isEqual } from "date-fns"
+import {
+  getDay,
+  type Bounded,
+  type Interval,
+} from "@open-event-systems/schedule-lib"
 import { useState } from "react"
 import type { CalendarMarkProps } from "./calendar.js"
+import dayjs, { Dayjs } from "dayjs"
 
-export const useDefaultCalendarRange = (dayChangeHour = 0): [Date, Date] => {
-  return useState((): [Date, Date] => {
-    const now = new Date()
+export const useDefaultCalendarRange = (
+  dayChangeHour = 0,
+): Bounded<Interval> => {
+  return useState((): Bounded<Interval> => {
+    const now = dayjs()
 
     const day = getDay(now, dayChangeHour)
-    return [day.start, day.end]
+    return { startDate: day.startDate, endDate: day.endDate }
   })[0]
 }
 
 export const useCalendarTrackInsets = (
-  trackStart: Date,
-  trackEnd: Date,
-  start?: Date | null,
-  end?: Date | null,
+  trackStart: Dayjs,
+  trackEnd: Dayjs,
+  startDate?: Dayjs | null,
+  endDate?: Dayjs | null,
 ): [string, string] => {
-  const trackStartTime = trackStart.getTime()
-  const trackRange = trackEnd.getTime() - trackStartTime
+  const trackStartTime = trackStart.unix()
+  const trackRange = trackEnd.unix() - trackStartTime
 
   let startPct = 0
   let endPct = 0
 
-  if (start != null) {
-    startPct = Math.max((start.getTime() - trackStartTime) / trackRange, 0)
+  if (startDate != null) {
+    startPct = Math.max((startDate.unix() - trackStartTime) / trackRange, 0)
   }
 
-  if (end != null) {
-    endPct = Math.max(1 - (end.getTime() - trackStartTime) / trackRange, 0)
+  if (endDate != null) {
+    endPct = Math.max(1 - (endDate.unix() - trackStartTime) / trackRange, 0)
   }
 
   return [`${100 * startPct}%`, `${100 * endPct}%`]
 }
 
-export const useCalendarTimes = (start: Date, end: Date): string[] => {
+export const useCalendarTimes = (
+  startDate: Dayjs,
+  endDate: Dayjs,
+): string[] => {
   const res = []
-  let cur = start
+  let cur = startDate
 
-  while (!isAfter(cur, end)) {
-    res.push(format(cur, "h aaa"))
-    cur = add(cur, { hours: 1 })
+  while (!cur.isAfter(endDate)) {
+    res.push(cur.format("h a"))
+    cur = cur.add(1, "hour")
   }
 
   return res
 }
 
 export const useCalendarMarks = (
-  start: Date,
-  end: Date,
+  startDate: Dayjs,
+  endDate: Dayjs,
   minorDivisions = 1,
 ): Partial<CalendarMarkProps>[] => {
   const res = []
 
-  let cur = start
-  while (!isAfter(cur, end)) {
+  let cur = startDate
+  while (!cur.isAfter(endDate)) {
     res.push({})
 
-    if (!isEqual(cur, end)) {
+    if (!cur.isSame(endDate)) {
       for (let i = 0; i < minorDivisions; ++i) {
         res.push({})
       }
     }
 
-    cur = add(cur, { hours: 1 })
+    cur = cur.add(1, "hour")
   }
 
   return res

@@ -1,9 +1,7 @@
 import {
   type Selections,
-  type SelectionsServiceAPI,
   type SelectionsType,
   type ServerSelections,
-  type SessionSelectionsAPI,
 } from "@open-event-systems/schedule-lib"
 import {
   mutationOptions,

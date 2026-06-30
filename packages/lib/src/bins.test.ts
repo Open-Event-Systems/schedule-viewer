@@ -8,7 +8,7 @@ import {
 import { parseISO } from "./date.js"
 import dayjs from "dayjs"
 
-describe("bin by title", () => {
+describe("bin by name", () => {
   test("basic sorting", () => {
     const items = [
       {
@@ -85,7 +85,7 @@ describe("bin by title", () => {
     ])
   })
 
-  test("handles missing title", () => {
+  test("handles missing name", () => {
     const items = [{}, { name: "" }]
 
     expect([...binByName(items)]).toStrictEqual([
@@ -100,8 +100,8 @@ describe("bin by title", () => {
 
 describe("bin by tag", () => {
   const tagEntries = [
-    { tag: "a", title: "Tag A" },
-    { tag: "b", title: "Tag B" },
+    { tag: "a", name: "Tag A" },
+    { tag: "b", name: "Tag B" },
   ]
 
   test("sort and bins by tags", () => {

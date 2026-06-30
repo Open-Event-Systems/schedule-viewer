@@ -9,8 +9,8 @@ import type {
  * A time interval.
  */
 export type Interval = Readonly<{
-  startDate?: Dayjs
-  endDate?: Dayjs
+  startDate?: Dayjs | null | undefined
+  endDate?: Dayjs | null | undefined
 }>
 
 /**

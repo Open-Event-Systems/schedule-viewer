@@ -4,7 +4,12 @@
  */
 
 import z from "zod"
-import { isoDateTimeSchema, optional, setSchema } from "../schema.js"
+import {
+  isoDateTimeSchema,
+  omitUndefSchema,
+  optional,
+  setSchema,
+} from "../schema.js"
 import {
   type ParseResult,
   type RW,
@@ -41,14 +46,16 @@ export const ldArray = <OutT, InT>(
     },
   })
 
-export const imageObjectSchema = z.looseObject({
-  type: z.literal("ImageObject"),
-  contentUrl: optional(z.string()),
-  caption: optional(z.string()),
-  width: optional(z.number()),
-  height: optional(z.number()),
-  encodingFormat: optional(z.string()),
-})
+export const imageObjectSchema = omitUndefSchema(
+  z.looseObject({
+    type: z.literal("ImageObject"),
+    contentUrl: optional(z.string()),
+    caption: optional(z.string()),
+    width: optional(z.number()),
+    height: optional(z.number()),
+    encodingFormat: optional(z.string()),
+  }),
+)
 
 export const baseScheduleItemPropsSchema = z.looseObject({
   id: optional(z.string()),
@@ -61,40 +68,50 @@ export const baseScheduleItemPropsSchema = z.looseObject({
   url: optional(z.string()),
 })
 
-export const personSchema = z.looseObject({
-  ...baseScheduleItemPropsSchema.shape,
-  type: z.literal("Person"),
-  email: optional(z.string()),
-})
+export const personSchema = omitUndefSchema(
+  z.looseObject({
+    ...baseScheduleItemPropsSchema.shape,
+    type: z.literal("Person"),
+    email: optional(z.string()),
+    keywords: optional(setSchema(z.string())),
+    logo: optional(ldArray(z.union([z.string(), imageObjectSchema]))),
+  }),
+)
 
-export const organizationSchema = z.looseObject({
-  ...baseScheduleItemPropsSchema.shape,
-  type: z.literal(getJSONLDTypesFromHierarchy(ORGANIZATION_TYPES)),
-  email: optional(z.string()),
-  keywords: optional(setSchema(z.string())),
-  logo: optional(ldArray(z.union([z.string(), imageObjectSchema]))),
-})
+export const organizationSchema = omitUndefSchema(
+  z.looseObject({
+    ...baseScheduleItemPropsSchema.shape,
+    type: z.literal(getJSONLDTypesFromHierarchy(ORGANIZATION_TYPES)),
+    email: optional(z.string()),
+    keywords: optional(setSchema(z.string())),
+    logo: optional(ldArray(z.union([z.string(), imageObjectSchema]))),
+  }),
+)
 
-export const addressSchema = z.looseObject({
-  ...baseScheduleItemPropsSchema.shape,
-  type: z.literal("PostalAddress"),
-  addressCountry: optional(z.string()),
-  addressLocality: optional(z.string()),
-  addressRegion: optional(z.string()),
-  extendedAddress: optional(z.string()),
-  postOfficeBoxNumber: optional(z.string()),
-  postalCode: optional(z.string()),
-  streetAddress: optional(z.string()),
-})
+export const addressSchema = omitUndefSchema(
+  z.looseObject({
+    ...baseScheduleItemPropsSchema.shape,
+    type: z.literal("PostalAddress"),
+    addressCountry: optional(z.string()),
+    addressLocality: optional(z.string()),
+    addressRegion: optional(z.string()),
+    extendedAddress: optional(z.string()),
+    postOfficeBoxNumber: optional(z.string()),
+    postalCode: optional(z.string()),
+    streetAddress: optional(z.string()),
+  }),
+)
 
 const lazyEvent = z.lazy((): z.ZodType<RW<ScheduleEvent>> => eventSchema)
 
-export const placeSchema = z.looseObject({
-  ...baseScheduleItemPropsSchema.shape,
-  type: z.literal("Place"),
-  address: optional(z.union([z.string(), addressSchema])),
-  event: optional(ldArray(z.union([z.string(), lazyEvent]))),
-})
+export const placeSchema = omitUndefSchema(
+  z.looseObject({
+    ...baseScheduleItemPropsSchema.shape,
+    type: z.literal("Place"),
+    address: optional(z.union([z.string(), addressSchema])),
+    event: optional(ldArray(z.union([z.string(), lazyEvent]))),
+  }),
+)
 
 export const eventStatusSchema = z.codec(
   z.literal([
@@ -120,20 +137,22 @@ export const eventStatusSchema = z.codec(
   },
 )
 
-export const eventSchema = z.looseObject({
-  type: z.literal(getJSONLDTypesFromHierarchy(EVENT_TYPES)),
-  status: optional(eventStatusSchema).default("EventScheduled"),
-  startDate: optional(isoDateTimeSchema),
-  endDate: optional(isoDateTimeSchema),
-  location: optional(
-    ldArray(z.union([z.string(), placeSchema, addressSchema])),
-  ),
-  organizer: optional(ldArray(z.union([personSchema, organizationSchema]))),
-  performer: optional(ldArray(z.union([personSchema, organizationSchema]))),
-  keywords: optional(setSchema(z.string())),
-  superEvent: optional(z.union([z.string(), lazyEvent])),
-  subEvent: optional(ldArray(z.union([z.string(), lazyEvent]))),
-})
+export const eventSchema = omitUndefSchema(
+  z.looseObject({
+    type: z.literal(getJSONLDTypesFromHierarchy(EVENT_TYPES)),
+    status: optional(eventStatusSchema).default("EventScheduled"),
+    startDate: optional(isoDateTimeSchema),
+    endDate: optional(isoDateTimeSchema),
+    location: optional(
+      ldArray(z.union([z.string(), placeSchema, addressSchema])),
+    ),
+    organizer: optional(ldArray(z.union([personSchema, organizationSchema]))),
+    performer: optional(ldArray(z.union([personSchema, organizationSchema]))),
+    keywords: optional(setSchema(z.string())),
+    superEvent: optional(z.union([z.string(), lazyEvent])),
+    subEvent: optional(ldArray(z.union([z.string(), lazyEvent]))),
+  }),
+)
 
 export const scheduleItemSchema = z.union([
   eventSchema,

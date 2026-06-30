@@ -9,27 +9,32 @@ import { useCalendarTrackInsets, useDefaultCalendarRange } from "./hooks.js"
 import clsx from "clsx"
 
 import classes from "./track.module.scss"
+import type { Dayjs } from "dayjs"
 
 const TrackContext = createContext<
-  | Readonly<{ start: Date; end: Date; orientation: "horizontal" | "vertical" }>
+  | Readonly<{
+      startDate: Dayjs
+      endDate: Dayjs
+      orientation: "horizontal" | "vertical"
+    }>
   | undefined
 >(undefined)
 
 export type TrackProps = BoxProps & {
   classNames?: {
-    root?: string
-    horizontal?: string
-    vertical?: string
+    root?: string | undefined
+    horizontal?: string | undefined
+    vertical?: string | undefined
   }
-  start?: Date | null
-  end?: Date | null
-  dayChangeHour?: number
-  orientation?: "horizontal" | "vertical"
+  startDate?: Dayjs | undefined | null
+  endDate?: Dayjs | undefined | null
+  dayChangeHour?: number | undefined
+  orientation?: "horizontal" | "vertical" | undefined
   children?: ReactNode
-  renderRoot?: (
-    props: Omit<AllHTMLAttributes<HTMLElement>, "start">,
-  ) => ReactNode
-} & Omit<AllHTMLAttributes<HTMLElement>, "start">
+  renderRoot?:
+    | ((props: AllHTMLAttributes<HTMLElement>) => ReactNode)
+    | undefined
+} & AllHTMLAttributes<HTMLElement>
 
 /**
  * Displays items positioned by date along a track.
@@ -38,8 +43,8 @@ const _Track = (props: TrackProps) => {
   const {
     className,
     classNames,
-    start: startProp,
-    end: endProp,
+    startDate: startProp,
+    endDate: endProp,
     dayChangeHour,
     orientation: orientationProp,
     children,
@@ -47,8 +52,9 @@ const _Track = (props: TrackProps) => {
     ...other
   } = useProps("Track", null, props)
 
-  const [defautStart, defaultEnd] = useDefaultCalendarRange(dayChangeHour)
-  const start = startProp ?? defautStart
+  const { startDate: defaultStart, endDate: defaultEnd } =
+    useDefaultCalendarRange(dayChangeHour)
+  const start = startProp ?? defaultStart
   const end = endProp ?? defaultEnd
   const orientation = orientationProp ?? "vertical"
 
@@ -66,7 +72,9 @@ const _Track = (props: TrackProps) => {
       renderRoot={renderRoot}
       {...other}
     >
-      <TrackContext.Provider value={{ start, end, orientation }}>
+      <TrackContext.Provider
+        value={{ startDate: start, endDate: end, orientation }}
+      >
         {children}
       </TrackContext.Provider>
     </Box>
@@ -74,33 +82,30 @@ const _Track = (props: TrackProps) => {
 }
 
 export type TrackItemProps = BoxProps & {
-  start?: Date | null
-  end?: Date | null
+  startDate?: Dayjs | undefined | null
+  endDate?: Dayjs | undefined | null
   children?: ReactNode
-  renderRoot?: (
-    props: Omit<AllHTMLAttributes<HTMLElement>, "start">,
-  ) => ReactNode
+  renderRoot?:
+    | ((props: Omit<AllHTMLAttributes<HTMLElement>, "start">) => ReactNode)
+    | undefined
 } & Omit<AllHTMLAttributes<HTMLElement>, "start">
 
 export const TrackItem = (props: TrackItemProps) => {
-  const { className, start, end, children, renderRoot, ...other } = useProps(
-    "TrackItem",
-    null,
-    props,
-  )
+  const { className, startDate, endDate, children, renderRoot, ...other } =
+    useProps("TrackItem", null, props)
 
   const ctx = use(TrackContext)
 
   if (!ctx) {
     throw new Error("Track.Item used outside of Track")
   }
-  const { start: trackStart, end: trackEnd } = ctx
+  const { startDate: trackStart, endDate: trackEnd } = ctx
 
   const [startInset, endInset] = useCalendarTrackInsets(
     trackStart,
     trackEnd,
-    start,
-    end,
+    startDate,
+    endDate,
   )
 
   return (

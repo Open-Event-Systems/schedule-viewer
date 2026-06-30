@@ -11,15 +11,15 @@ import { contains } from "./time.js"
  * Return a filter for items matching the given search string.
  */
 export const makeNameFilter = (
-  title: string,
+  name: string,
 ): (<T extends { readonly name?: string }>(
   item: T,
 ) => item is T & { readonly name: string }) => {
-  const lowerTitle = title.trim().toLowerCase()
+  const lowerName = name.trim().toLowerCase()
   return <T extends { readonly name?: string }>(
     item: T,
   ): item is T & { readonly name: string } =>
-    !!item.name && item.name.toLowerCase().includes(lowerTitle)
+    !!item.name && item.name.toLowerCase().includes(lowerName)
 }
 
 /**
@@ -28,16 +28,16 @@ export const makeNameFilter = (
 export const makeTagFilter = (
   mode: "include" | "exclude",
   tags?: Iterable<string> | null,
-): ((item: { readonly tags?: Iterable<string> }) => boolean) => {
+): ((item: { readonly keywords?: Iterable<string> }) => boolean) => {
   const tagsArr = [...(tags ?? [])]
 
   if (mode == "include") {
     return (item) => {
-      return tagsArr.some((inclTag) => iterHas(inclTag, item.tags))
+      return tagsArr.some((inclTag) => iterHas(inclTag, item.keywords))
     }
   } else {
     return (item) => {
-      return tagsArr.every((exclTag) => !iterHas(exclTag, item.tags))
+      return tagsArr.every((exclTag) => !iterHas(exclTag, item.keywords))
     }
   }
 }

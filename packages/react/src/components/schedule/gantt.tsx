@@ -132,8 +132,8 @@ export const GanttView = (props: GanttViewProps) => {
       <Gantt
         className={clsx("GanttView-gantt", classes.gantt)}
         tracks={tracks}
-        start={start ?? day?.start}
-        end={end ?? day?.end}
+        startDate={start ?? day?.start}
+        endDate={end ?? day?.end}
       />
     </Box>
   )

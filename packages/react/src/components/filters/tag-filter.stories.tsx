@@ -8,15 +8,15 @@ const meta: Meta<typeof TagFilter> = {
     tags: [
       {
         tag: "art",
-        title: "Art",
+        name: "Art",
       },
       {
         tag: "photography",
-        title: "Photography",
+        name: "Photography",
       },
       {
         tag: "mature",
-        title: "Mature",
+        name: "Mature",
       },
     ],
     tagIndicators: [

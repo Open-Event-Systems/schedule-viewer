@@ -7,7 +7,7 @@ import {
   type ComponentPropsWithoutRef,
   type ReactNode,
 } from "react"
-import type { TagEntry, TagIndicatorEntry } from "../../types.js"
+import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
 import { getItemPillTagClassName } from "../pill/item-pill-utils.js"
 import { makeTagIndicatorFunc } from "../../config.js"
 import { Pills, type PillProps, type PillsProps } from "../pill/pills.js"
@@ -28,14 +28,14 @@ export type TagFilterProps = {
   disabledTags?: Iterable<string>
 
   /**
-   * A collection of {@link TagEntry} objects representing the displayable tags.
+   * A collection of {@link TagConfigEntry} objects representing the displayable tags.
    */
-  tags?: Iterable<TagEntry>
+  tags?: Iterable<TagConfigEntry>
 
   /**
-   * A collection of {@link TagIndicatorEntry} objects.
+   * A collection of {@link TagIndicatorConfigEntry} objects.
    */
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
 
   /**
    * Handler to set a tag disabled/enabled.
@@ -98,7 +98,7 @@ TagFilter.displayName = "TagFilter"
 
 type TagFilterTagsProps = {
   disabledTags?: Iterable<string>
-  tags?: Iterable<TagEntry>
+  tags?: Iterable<TagConfigEntry>
   getIndicator?: (tags: Iterable<string>) => string | undefined
   onSetDisabled?: (tag: string, enabled: boolean) => void
   renderTag?: (props: TagFilterTagProps) => ReactNode
@@ -147,7 +147,7 @@ const TagFilterTags = memo((props: TagFilterTagsProps) => {
       {Array.from(tags ?? [], (t) =>
         renderTagFunc({
           tag: t.tag,
-          title: t.title,
+          title: t.name,
           ...(getIndicator && {
             indicator: getIndicator([t.tag]),
           }),

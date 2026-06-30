@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ItemHoverCard } from "./item-hover-card.js"
 import { Button } from "@mantine/core"
 
-import { events, tagEntries } from "../../test-data.js"
+import { events, tagConfigEntries } from "../../test-data.js"
 
 const meta: Meta<typeof ItemHoverCard> = {
   component: ItemHoverCard,
@@ -16,7 +16,7 @@ export const Default: StoryObj<typeof ItemHoverCard> = {
       <ItemHoverCard
         {...args}
         item={events[2]}
-        ItemDetailsProps={{ tagEntries }}
+        ItemDetailsProps={{ tagEntries: tagConfigEntries }}
       >
         <Button>Open</Button>
       </ItemHoverCard>

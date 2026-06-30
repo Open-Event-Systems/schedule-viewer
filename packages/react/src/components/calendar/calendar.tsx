@@ -11,25 +11,29 @@ import { useDefaultCalendarRange } from "./hooks.js"
 
 import classes from "./calendar.module.scss"
 import { Track, type TrackItemProps, type TrackProps } from "./track.js"
+import type { Dayjs } from "dayjs"
 
-const CalendarContext =
-  createContext<
-    Readonly<
-      | { start: Date; end: Date; orientation: "horizontal" | "vertical" }
-      | undefined
-    >
-  >(undefined)
+const CalendarContext = createContext<
+  Readonly<
+    | {
+        startDate: Dayjs
+        endDate: Dayjs
+        orientation: "horizontal" | "vertical"
+      }
+    | undefined
+  >
+>(undefined)
 
 export type CalendarProps = BoxProps & {
   classNames?: {
-    root?: string
-    vertical?: string
-    horizontal?: string
+    root?: string | undefined
+    vertical?: string | undefined
+    horizontal?: string | undefined
   }
-  start?: Date | null
-  end?: Date | null
-  orientation?: "horizontal" | "vertical"
-  dayChangeHour?: number
+  startDate?: Dayjs | undefined
+  endDate?: Dayjs | undefined
+  orientation?: "horizontal" | "vertical" | undefined
+  dayChangeHour?: number | undefined
   children?: ReactNode
 }
 
@@ -40,17 +44,18 @@ const _Calendar = (props: CalendarProps) => {
   const {
     className,
     classNames,
-    start: startProp,
-    end: endProp,
+    startDate: startProp,
+    endDate: endProp,
     orientation: orientationProp,
     dayChangeHour,
     children,
     ...other
   } = useProps("Calendar", null, props)
 
-  const [defaultStart, defaultEnd] = useDefaultCalendarRange(dayChangeHour)
-  const start = startProp ?? defaultStart
-  const end = endProp ?? defaultEnd
+  const { startDate: defaultStart, endDate: defaultEnd } =
+    useDefaultCalendarRange(dayChangeHour)
+  const startDate = startProp ?? defaultStart
+  const endDate = endProp ?? defaultEnd
   const orientation = orientationProp ?? "vertical"
 
   return (
@@ -66,7 +71,9 @@ const _Calendar = (props: CalendarProps) => {
       )}
       {...other}
     >
-      <CalendarContext.Provider value={{ start, end, orientation }}>
+      <CalendarContext.Provider
+        value={{ startDate: startDate, endDate: endDate, orientation }}
+      >
         {children}
       </CalendarContext.Provider>
     </Box>
@@ -195,7 +202,7 @@ export const CalendarTracks = (props: CalendarTracksProps) => {
 
 export type CalendarTrackProps = Omit<
   TrackProps,
-  "start" | "end" | "orientation"
+  "startDate" | "endDate" | "orientation"
 >
 
 export const CalendarTrack = (props: CalendarTrackProps) => {
@@ -205,12 +212,12 @@ export const CalendarTrack = (props: CalendarTrackProps) => {
   if (!ctx) {
     throw new Error("Calendar.Track used outside of Calendar")
   }
-  const { start, end, orientation } = ctx
+  const { startDate: start, endDate: end, orientation } = ctx
 
   return (
     <Track
-      start={start}
-      end={end}
+      startDate={start}
+      endDate={end}
       orientation={orientation}
       className={clsx("Calendar-track", classes.track, className)}
       {...other}

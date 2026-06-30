@@ -21,8 +21,8 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "@mantine/core": "^9.0.2",
-    "@mantine/hooks": "^9.0.2",
+    "@mantine/core": "^9.4.0",
+    "@mantine/hooks": "^9.4.0",
     "@open-event-systems/schedule-lib": "workspace:",
     "@rolldown/plugin-babel": "^0.2.2",
     "@storybook/addon-docs": "^10.3.3",
@@ -32,7 +32,7 @@
     "@types/react": "^19.2.14",
     "@vitejs/plugin-react": "^6.0.1",
     "babel-plugin-react-compiler": "^1.0.0",
-    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.21",
     "react": "^19.2.4",
     "storybook": "^10.3.3",
     "typescript": "^6.0.2",
@@ -44,7 +44,7 @@
     "@mantine/hooks": "^9.0.2",
     "@open-event-systems/schedule-lib": "workspace:",
     "@tanstack/react-query": "^5.84.2",
-    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.21",
     "react": "^19.1.0"
   },
   "dependencies": {

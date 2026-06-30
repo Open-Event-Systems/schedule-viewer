@@ -19,7 +19,7 @@ import {
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import { ItemPills, type ItemPillsProps } from "../pill/item-pills.js"
-import type { TagEntry, TagIndicatorEntry } from "../../types.js"
+import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
 import { Bins, type BinsProps } from "../bins/bins.js"
 
 type RenderItemPills = (props: ItemPillsProps) => ReactNode
@@ -27,8 +27,8 @@ type RenderItemPills = (props: ItemPillsProps) => ReactNode
 export type DailyAgendaViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tags?: Iterable<TagConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
   now?: Date
   days?: Iterable<Day>
   selectedDay?: Day
@@ -97,8 +97,8 @@ export const DailyAgendaView = (props: DailyAgendaViewProps) => {
 export type FullAgendaViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tags?: Iterable<TagConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
   now?: Date
   dayChangeHour?: number
   dayFormat?: string
@@ -193,8 +193,8 @@ const FullAgendaViewDayBin = (
 export type DailyCatalogViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tags?: Iterable<TagConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
   now?: Date
   days?: Iterable<Day>
   selectedDay?: Day
@@ -259,8 +259,8 @@ export const DailyCatalogView = (props: DailyCatalogViewProps) => {
 export type CatalogViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tags?: Iterable<TagConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
   renderItemPills?: RenderItemPills
   renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 }
@@ -292,8 +292,8 @@ export const CatalogView = (props: CatalogViewProps) => {
 export type TagsViewProps = {
   className?: string
   items?: Iterable<DetailedScheduleItem>
-  tags?: Iterable<TagEntry>
-  tagIndicators?: Iterable<TagIndicatorEntry>
+  tags?: Iterable<TagConfigEntry>
+  tagIndicators?: Iterable<TagIndicatorConfigEntry>
   renderItemPills?: RenderItemPills
   renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 }
@@ -326,8 +326,8 @@ export const TagsView = (props: TagsViewProps) => {
 
 const ItemBins = (
   props: Omit<BinsProps<DetailedScheduleItem>, "renderBin"> & {
-    tags?: Iterable<TagEntry>
-    tagIndicators?: Iterable<TagIndicatorEntry>
+    tags?: Iterable<TagConfigEntry>
+    tagIndicators?: Iterable<TagIndicatorConfigEntry>
     renderItemPills?: (props: ItemPillsProps) => ReactNode
     renderItemPillsTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
   },

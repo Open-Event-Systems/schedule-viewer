@@ -33,7 +33,7 @@ import { ShareButton } from "../share-button/share-button.js"
 import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import { IconText, type IconTextProps } from "../icon-text/icon-text.js"
 import { iterToArr, type Contact } from "@open-event-systems/schedule-lib"
-import type { TagEntry } from "../../types.js"
+import type { TagConfigEntry } from "../../types.js"
 
 import classes from "./item-details.module.scss"
 
@@ -67,7 +67,7 @@ export type ItemDetailsProps = {
   getLocationProps?: (
     location: string,
   ) => { href?: string; onClick?: (e: MouseEvent) => void } | undefined
-  tagEntries?: Iterable<TagEntry>
+  tagEntries?: Iterable<TagConfigEntry>
   large?: boolean
   renderTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
 } & ItemDetailsRootProps

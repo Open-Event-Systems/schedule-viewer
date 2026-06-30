@@ -1,9 +1,17 @@
-export type TagEntry = Readonly<{
+import type { Dayjs } from "dayjs"
+
+/**
+ * Tag display configuration entry.
+ */
+export type TagConfigEntry = Readonly<{
   tag: string
-  title: string
+  name: string
 }>
 
-export type TagIndicatorEntry = Readonly<{
+/**
+ * Configuration for an indicator to display with certain tags.
+ */
+export type TagIndicatorConfigEntry = Readonly<{
   tags: readonly string[]
   label: string
 }>
@@ -12,29 +20,44 @@ export type TagIndicatorEntry = Readonly<{
  * Schedule configuration object.
  */
 export type ScheduleConfig = Readonly<{
+  /**
+   * The ID of the schedule.
+   */
   id: string
+
+  /**
+   * The schedule slug.
+   */
+  identifier: string
 
   items: readonly (string | Readonly<Record<string, unknown>>)[]
 
   /**
    * The start of the overall event schedule.
    */
-  start: Date
+  startDate: Dayjs
 
   /**
    * The end of the overall event schedule.
    */
-  end: Date
+  endDate: Dayjs
 
-  title?: string
+  /**
+   * The schedule name.
+   */
+  name?: string
+
+  /**
+   * The schedule description.
+   */
   description?: string
 
   dayChangeHour: number
   dayFormat: string
   timeZone: string
 
-  tags: readonly TagEntry[]
-  tagIndicators: readonly TagIndicatorEntry[]
+  tags: readonly TagConfigEntry[]
+  tagIndicators: readonly TagIndicatorConfigEntry[]
 
   /**
    * @deprecated

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Calendar } from "./calendar.js"
 import { Box } from "@mantine/core"
 import { useCalendarMarks, useCalendarTimes } from "./hooks.js"
+import dayjs from "dayjs"
 
 const meta: Meta<typeof Calendar> = {
   component: Calendar,
@@ -11,8 +12,8 @@ export default meta
 
 export const Default: StoryObj<typeof Calendar> = {
   render(args) {
-    const start = new Date(2020, 0, 1, 9)
-    const end = new Date(2020, 0, 1, 12)
+    const start = dayjs(new Date(2020, 0, 1, 9))
+    const end = dayjs(new Date(2020, 0, 1, 12))
 
     const times = useCalendarTimes(start, end)
     const timeEls = times.map((t, i) => (
@@ -23,7 +24,7 @@ export const Default: StoryObj<typeof Calendar> = {
     const markEls = marks.map((p, i) => <Calendar.Mark key={i} {...p} />)
 
     return (
-      <Calendar mih={400} start={start} end={end} {...args}>
+      <Calendar mih={400} startDate={start} endDate={end} {...args}>
         <Calendar.Backgrounds>
           <Calendar.Background />
           <Calendar.Background />
@@ -39,8 +40,8 @@ export const Default: StoryObj<typeof Calendar> = {
         <Calendar.Tracks>
           <Calendar.Track>
             <Calendar.Item
-              start={new Date(2020, 0, 1, 11)}
-              end={new Date(2020, 0, 1, 12)}
+              startDate={dayjs(new Date(2020, 0, 1, 11))}
+              endDate={dayjs(new Date(2020, 0, 1, 12))}
               renderRoot={(props) => (
                 <Box bg="#1f711f" c="#ffffff" {...props} />
               )}
@@ -50,8 +51,8 @@ export const Default: StoryObj<typeof Calendar> = {
           </Calendar.Track>
           <Calendar.Track>
             <Calendar.Item
-              start={new Date(2020, 0, 1, 9)}
-              end={new Date(2020, 0, 1, 10, 30)}
+              startDate={dayjs(new Date(2020, 0, 1, 9))}
+              endDate={dayjs(new Date(2020, 0, 1, 10, 30))}
               renderRoot={(props) => (
                 <Box bg="#2c1766" c="#ffffff" {...props} />
               )}
@@ -61,8 +62,8 @@ export const Default: StoryObj<typeof Calendar> = {
           </Calendar.Track>
           <Calendar.Track>
             <Calendar.Item
-              start={new Date(2020, 0, 1, 10, 30)}
-              end={new Date(2020, 0, 1, 11, 30)}
+              startDate={dayjs(new Date(2020, 0, 1, 10, 30))}
+              endDate={dayjs(new Date(2020, 0, 1, 11, 30))}
               renderRoot={(props) => (
                 <Box bg="#641414" c="#ffffff" {...props} />
               )}

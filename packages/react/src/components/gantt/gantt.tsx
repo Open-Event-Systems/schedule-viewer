@@ -30,8 +30,8 @@ export type GanttProps = Omit<GanttRootProps, "children"> & {
 const _Gantt = (props: GanttProps) => {
   const {
     tracks,
-    start: startProp,
-    end: endProp,
+    startDate: startProp,
+    endDate: endProp,
     dayChangeHour,
     renderBar,
     ...other
@@ -70,8 +70,8 @@ const _Gantt = (props: GanttProps) => {
 
   return (
     <Gantt.Root
-      start={start}
-      end={end}
+      startDate={start}
+      endDate={end}
       {...other}
       style={{
         "--num-times": times.length,

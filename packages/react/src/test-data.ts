@@ -1,61 +1,61 @@
-import {
-  parseScheduleEvent,
-  type ScheduleEvent,
-} from "@open-event-systems/schedule-lib"
+import { type ScheduleEvent } from "@open-event-systems/schedule-lib"
 import { parseConfig, type ScheduleConfigInput } from "./config.js"
+import dayjs from "dayjs"
+import type { TagConfigEntry } from "./types.js"
 
 const timeZone = "America/New_York"
 
 export const events = [
   {
     id: "opening-ceremonies",
-    type: "event",
-    title: "Opening Ceremonies",
+    type: "Event",
+    status: "EventScheduled",
+    name: "Opening Ceremonies",
     description: "Join us as we kick off another year of our annual event.",
-    start: new Date(2025, 0, 17, 11),
-    end: new Date(2025, 0, 17, 12),
+    startDate: dayjs(new Date(2025, 0, 17, 11)),
+    endDate: dayjs(new Date(2025, 0, 17, 12)),
     location: ["Main Ballroom"],
-    tags: new Set(["main-event"]),
-    contacts: [{ name: "Events Team" }],
+    keywords: new Set(["main-event"]),
+    performer: [{ type: "Organization", name: "Events Team" }],
   },
   {
     id: "photography-meetup",
-    type: "event",
-    title: "Photography Meetup",
+    type: "Event",
+    status: "EventScheduled",
+    name: "Photography Meetup",
     description: "A meetup for amateur and professional photographers.",
-    start: new Date(2025, 0, 18, 12),
-    end: new Date(2025, 0, 18, 13),
+    startDate: dayjs(new Date(2025, 0, 18, 12)),
+    endDate: dayjs(new Date(2025, 0, 18, 13)),
     location: ["Panel Room 1"],
-    tags: new Set(["photography", "hobby"]),
-    contacts: [{ name: "Person", url: "https://example.net" }],
+    keywords: new Set(["photography", "hobby"]),
+    performer: [{ type: "Person", name: "Person", url: "https://example.net" }],
   },
   {
     id: "figure-drawing",
-    type: "event",
-    title: "Figure Drawing",
+    type: "Event",
+    status: "EventScheduled",
+    name: "Figure Drawing",
     description: "A live figure drawing demonstration.",
-    start: new Date(2025, 0, 18, 14),
-    end: new Date(2025, 0, 18, 16, 30),
+    startDate: dayjs(new Date(2025, 0, 18, 14)),
+    endDate: dayjs(new Date(2025, 0, 18, 16, 30)),
     location: ["Panel Room 2"],
-    tags: new Set(["art", "mature"]),
-    contacts: [
-      { name: "Artist", url: "https://example.net" },
-      { name: "Model", url: "https://example.net" },
+    keywords: new Set(["art", "mature"]),
+    performer: [
+      { type: "Person", name: "Artist", url: "https://example.net" },
+      { type: "Person", name: "Model", url: "https://example.net" },
     ],
   },
 ] as const satisfies readonly ScheduleEvent[]
 
 export const parsedEvents = events
-  .map(parseScheduleEvent)
-  .filter((r) => r.success)
-  .map((r) => r.value)
 
 export const config = {
   id: "example-event",
-  title: "Example Event",
+  identifier: "example-event",
+  name: "Example Event",
   dayChangeHour: 6,
-  start: "2025-01-17T08:00:00-05:00",
-  end: "2025-01-18T00:00:00-05:00",
+  startDate: "2025-01-17T08:00:00-05:00",
+  endDate: "2025-01-18T00:00:00-05:00",
   tags: [
     ["main-event", "Main Event"],
     ["hobby", "Hobby"],
@@ -69,10 +69,10 @@ export const config = {
 
 export const parsedConfig = parseConfig(config)
 
-export const tagEntries = [
-  { tag: "main-event", title: "Main Event" },
-  { tag: "hobby", title: "Hobby" },
-  { tag: "photography", title: "Photography" },
-  { tag: "art", title: "Art" },
-  { tag: "mature", title: "Mature" },
-] as const
+export const tagConfigEntries = [
+  { tag: "main-event", name: "Main Event" },
+  { tag: "hobby", name: "Hobby" },
+  { tag: "photography", name: "Photography" },
+  { tag: "art", name: "Art" },
+  { tag: "mature", name: "Mature" },
+] as const satisfies TagConfigEntry[]

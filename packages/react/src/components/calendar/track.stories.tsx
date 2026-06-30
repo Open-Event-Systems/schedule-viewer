@@ -1,20 +1,21 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Track, type TrackItemProps, type TrackProps } from "./track.js"
+import dayjs, { Dayjs } from "dayjs"
 
 type Props = TrackProps & {
-  item1Start?: Date
-  item1End?: Date
-  item2Start?: Date
-  item2End?: Date
+  item1Start?: Dayjs
+  item1End?: Dayjs
+  item2Start?: Dayjs
+  item2End?: Dayjs
 }
 
 const meta: Meta<Props> = {
   component: Track,
   argTypes: {
-    start: {
+    startDate: {
       control: "date",
     },
-    end: {
+    endDate: {
       control: "date",
     },
     item1Start: {
@@ -36,15 +37,23 @@ export default meta
 
 export const Default: StoryObj<Props> = {
   args: {
-    start: new Date(2020, 0, 1, 9),
-    end: new Date(2020, 0, 1, 17),
-    item1Start: new Date(2020, 0, 1, 10),
-    item1End: new Date(2020, 0, 1, 12, 30),
-    item2Start: new Date(2020, 0, 1, 14),
-    item2End: new Date(2020, 0, 1, 16),
+    startDate: dayjs(new Date(2020, 0, 1, 9)),
+    endDate: dayjs(new Date(2020, 0, 1, 17)),
+    item1Start: dayjs(new Date(2020, 0, 1, 10)),
+    item1End: dayjs(new Date(2020, 0, 1, 12, 30)),
+    item2Start: dayjs(new Date(2020, 0, 1, 14)),
+    item2End: dayjs(new Date(2020, 0, 1, 16)),
     orientation: "vertical",
   },
-  render({ start, end, item1Start, item1End, item2Start, item2End, ...args }) {
+  render({
+    startDate: start,
+    endDate: end,
+    item1Start,
+    item1End,
+    item2Start,
+    item2End,
+    ...args
+  }) {
     const trackProps: Partial<TrackProps> = {}
     const itemProps: Partial<TrackItemProps> = {}
 
@@ -63,16 +72,16 @@ export const Default: StoryObj<Props> = {
       <Track
         {...trackProps}
         bd="#000 solid 1px"
-        start={fixDate(start)}
-        end={fixDate(end)}
+        startDate={fixDate(start)}
+        endDate={fixDate(end)}
         {...args}
       >
         <Track.Item
           {...itemProps}
           bg="#2f42ac"
           c="#ffffff"
-          start={fixDate(item1Start)}
-          end={fixDate(item1End)}
+          startDate={fixDate(item1Start)}
+          endDate={fixDate(item1End)}
         >
           A
         </Track.Item>
@@ -80,8 +89,8 @@ export const Default: StoryObj<Props> = {
           {...itemProps}
           bg="#337c31"
           c="#ffffff"
-          start={fixDate(item2Start)}
-          end={fixDate(item2End)}
+          startDate={fixDate(item2Start)}
+          endDate={fixDate(item2End)}
         >
           B
         </Track.Item>
@@ -90,9 +99,9 @@ export const Default: StoryObj<Props> = {
   },
 }
 
-const fixDate = (d?: Date | null | number): Date | null | undefined => {
+const fixDate = (d?: Dayjs | null | number): Dayjs | null | undefined => {
   if (typeof d == "number") {
-    return new Date(d)
+    return dayjs(new Date(d))
   } else {
     return d
   }

@@ -1,14 +1,8 @@
 import {
   makeParsedScheduleItemsAPI,
-  parseItems,
-  type DetailedScheduleItem,
-  type ItemParserMap,
-  type ItemTypeMap,
-  type ParseItemsResult,
   type ScheduleAPI,
-  type ScheduleItemDetails,
 } from "@open-event-systems/schedule-lib"
-import type { TagEntry } from "../types.js"
+import type { TagConfigEntry } from "../types.js"
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
 import { scheduleQueryOptions, useScheduleConfig } from "./config.js"
@@ -56,13 +50,13 @@ export const useItems = <M extends ItemTypeMap>(
 }
 
 /**
- * Filter a collection of {@link TagEntry} to only include those that are
+ * Filter a collection of {@link TagConfigEntry} to only include those that are
  * referenced in `items`.
  */
 export const getRelevantTags = (
-  tags: Iterable<TagEntry>,
+  tags: Iterable<TagConfigEntry>,
   items: Iterable<Pick<ScheduleItemDetails, "tags">>,
-): TagEntry[] => {
+): TagConfigEntry[] => {
   const seen = new Set<string>()
 
   for (const item of items) {
@@ -75,13 +69,13 @@ export const getRelevantTags = (
 }
 
 /**
- * Hook that filters a collection of {@link TagEntry} to only include those that
+ * Hook that filters a collection of {@link TagConfigEntry} to only include those that
  * are referenced in `items`.
  */
 export const useRelevantTags = (
-  tags: Iterable<TagEntry>,
+  tags: Iterable<TagConfigEntry>,
   items?: Iterable<Pick<ScheduleItemDetails, "tags">>,
-): TagEntry[] => {
+): TagConfigEntry[] => {
   return useMemo(() => {
     return items ? getRelevantTags(tags, items) : []
   }, [tags, items])
