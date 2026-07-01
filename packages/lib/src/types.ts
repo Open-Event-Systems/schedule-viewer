@@ -53,70 +53,78 @@ export type ImageObject = Readonly<{
   encodingFormat?: string
 }>
 
-export type ScheduleItemBaseProps = Readonly<{
-  id?: string
-  identifier?: string
-  type: string
-  name?: string
-  description?: string
-  image?: readonly (string | ImageObject)[]
-  sameAs?: readonly string[]
-  url?: string
-}>
+export interface ScheduleItemBaseProps {
+  readonly id?: string
+  readonly identifier?: string
+  readonly type: string
+  readonly name?: string
+  readonly description?: string
+  readonly image?: readonly (string | ImageObject)[]
+  readonly sameAs?: readonly string[]
+  readonly url?: string
+}
 
 export type ScheduleEventStatus = "EventScheduled" | "EventCancelled"
 
-export type ScheduleEventProps = Readonly<{
-  type: JSONLDTypesFromHierarchy<typeof EVENT_TYPES>
-  status: ScheduleEventStatus
-  startDate?: Dayjs
-  endDate?: Dayjs
-  location?: readonly (string | Place | Address)[]
-  organizer?: readonly (string | Person | Organization)[]
-  performer?: readonly (string | Person | Organization)[]
-  keywords?: ReadonlySet<string>
-  superEvent?: string | ScheduleEvent
-  subEvent?: readonly (string | ScheduleEvent)[]
-}>
+export interface ScheduleEventProps {
+  readonly type: JSONLDTypesFromHierarchy<typeof EVENT_TYPES>
+  readonly status: ScheduleEventStatus
+  readonly startDate?: Dayjs
+  readonly endDate?: Dayjs
+  readonly location?: readonly (string | Place | Address)[]
+  readonly organizer?: readonly (string | Person | Organization)[]
+  readonly performer?: readonly (string | Person | Organization)[]
+  readonly keywords?: ReadonlySet<string>
+  readonly superEvent?: string | ScheduleEvent
+  readonly subEvent?: readonly (string | ScheduleEvent)[]
+}
 
 export type ScheduleEvent = ScheduleItemBaseProps & ScheduleEventProps
 
-export type PersonProps = Readonly<{
-  type: "Person"
-  email?: string
-}>
+export interface PersonProps {
+  readonly type: "Person"
+  readonly email?: string
+}
 
 export type Person = ScheduleItemBaseProps & PersonProps
 
-export type OrganizationProps = Readonly<{
-  type: JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>
-  email?: string
-  keywords?: ReadonlySet<string>
-  logo?: readonly (string | ImageObject)[]
-}>
+export interface OrganizationProps {
+  readonly type: JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>
+  readonly email?: string
+  readonly keywords?: ReadonlySet<string>
+  readonly logo?: readonly (string | ImageObject)[]
+}
 
 export type Organization = ScheduleItemBaseProps & OrganizationProps
 
-export type AddressProps = Readonly<{
-  type: "PostalAddress"
-  addressCountry?: string
-  addressLocality?: string
-  addressRegion?: string
-  extendedAddress?: string
-  postOfficeBoxNumber?: string
-  postalCode?: string
-  streetAddress?: string
-}>
+export interface AddressProps {
+  readonly type: "PostalAddress"
+  readonly addressCountry?: string
+  readonly addressLocality?: string
+  readonly addressRegion?: string
+  readonly extendedAddress?: string
+  readonly postOfficeBoxNumber?: string
+  readonly postalCode?: string
+  readonly streetAddress?: string
+}
 
 export type Address = ScheduleItemBaseProps & AddressProps
 
-export type PlaceProps = Readonly<{
-  type: "Place"
-  address?: string | Address
-  event?: readonly (string | ScheduleEvent)[]
-}>
+export interface PlaceProps {
+  readonly type: "Place"
+  readonly address?: string | Address
+  readonly event?: readonly (string | ScheduleEvent)[]
+}
 
-export type Place = ScheduleItemBaseProps & PlaceProps
+export interface MapLocationProps {
+  readonly level?: string
+  readonly aliases?: readonly string[]
+  readonly zoomScale?: number
+  readonly requireFlags?: readonly string[]
+  readonly excludeFlags?: readonly string[]
+}
+
+export type Place = ScheduleItemBaseProps & PlaceProps & MapLocationProps
 
 type EventItemMap = {
   [K in JSONLDTypesFromHierarchy<typeof EVENT_TYPES>]: ScheduleEvent
@@ -139,9 +147,13 @@ export type ScheduleDataTypeMap = {
 }
 
 export type ScheduleData<M extends ScheduleDataTypeMap> = Readonly<{
+  items: readonly ScheduleItem[]
   byId: ReadonlyMap<string, ScheduleItem>
   byType: {
-    readonly [K in keyof M]: ReadonlyMap<string, M[K]>
+    readonly [K in keyof M]: {
+      readonly items: readonly M[K][]
+      readonly byId: ReadonlyMap<string, M[K]>
+    }
   }
   other: readonly ScheduleItem[]
 }>

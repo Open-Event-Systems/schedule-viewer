@@ -19,10 +19,64 @@ import type {
   ScheduleItem,
 } from "./types.js"
 
+export type GetEmbeddedItemsFunc = (
+  item: ScheduleItem,
+) => Iterable<ScheduleItem>
+
+/**
+ * Get embedded items from a {@link ScheduleItem}.
+ */
+export const getEmbeddedItems = function* (
+  item: ScheduleItem,
+): Generator<ScheduleItem, void, unknown> {
+  if ("organizer" in item) {
+    yield* yieldItems(item.organizer)
+  }
+
+  if ("performer" in item) {
+    yield* yieldItems(item.performer)
+  }
+
+  if (
+    "superEvent" in item &&
+    item.superEvent &&
+    typeof item.superEvent != "string"
+  ) {
+    yield item.superEvent
+  }
+
+  if ("subEvent" in item) {
+    yield* yieldItems(item.subEvent)
+  }
+
+  if ("location" in item) {
+    yield* yieldItems(item.location)
+  }
+
+  if ("address" in item && item.address && typeof item.address != "string") {
+    yield item.address
+  }
+}
+
+function yieldItems(gen?: null): Generator<never, void, unknown>
+function yieldItems<T>(gen: Iterable<T | string>): Generator<T, void, unknown>
+function* yieldItems<T>(
+  gen: Iterable<T | string> | null | undefined,
+): Generator<T, void, unknown> {
+  if (!gen) {
+    return
+  }
+
+  for (const item of gen) {
+    if (typeof item != "string") {
+      yield item
+    }
+  }
+}
+
 type IndexConfigEntry<T extends ScheduleItem> = {
   test: (obj: ScheduleItem) => obj is T
   getIds: (obj: T) => Iterable<string>
-  getEmbedded?: (obj: T) => Iterable<ScheduleItem>
 }
 
 export type IndexConfig<M extends ScheduleDataTypeMap> = {
@@ -30,8 +84,14 @@ export type IndexConfig<M extends ScheduleDataTypeMap> = {
 }
 
 export type IndexResult<M extends ScheduleDataTypeMap> = {
+  items: ScheduleItem[]
   byId: Map<string, ScheduleItem>
-  byType: { -readonly [K in keyof M]: Map<string, M[K]> }
+  byType: {
+    -readonly [K in keyof M]: {
+      items: M[K][]
+      byId: Map<string, M[K]>
+    }
+  }
   other: ScheduleItem[]
 }
 
@@ -43,6 +103,7 @@ export const indexData = <M extends ScheduleDataTypeMap>(
   items?: Iterable<ScheduleItem>,
 ): IndexResult<M> => {
   const result = {
+    items: new Array<ScheduleItem>(),
     byId: new Map(),
     byType: {},
     other: new Array<ScheduleItem>(),
@@ -50,23 +111,9 @@ export const indexData = <M extends ScheduleDataTypeMap>(
 
   let key: keyof M
   for (key of Object.keys(config)) {
-    result.byType[key] = new Map()
-  }
-
-  const addToMap = <T extends M[keyof M]>(
-    map: Map<string, T>,
-    entry: IndexConfigEntry<T>,
-    item: T,
-  ) => {
-    for (const id of entry.getIds(item)) {
-      result.byId.set(id, item)
-      map.set(id, item)
-    }
-
-    if (entry.getEmbedded) {
-      for (const embeddedItem of entry.getEmbedded(item)) {
-        add(embeddedItem)
-      }
+    result.byType[key] = {
+      items: [],
+      byId: new Map(),
     }
   }
 
@@ -76,14 +123,20 @@ export const indexData = <M extends ScheduleDataTypeMap>(
     for (key of Object.keys(config)) {
       const entry = config[key]
       if (entry.test(item)) {
-        const map = result.byType[key]
-        addToMap(map, entry, item)
+        const res = result.byType[key]
+        res.items.push(item)
+        for (const id of entry.getIds(item)) {
+          result.byId.set(id, item)
+          res.byId.set(id, item)
+        }
         matched = true
       }
     }
 
     if (!matched) {
       result.other.push(item)
+    } else {
+      result.items.push(item)
     }
   }
 
@@ -137,43 +190,6 @@ export const defaultIndexConfig = {
   events: {
     test: isEvent,
     getIds,
-    getEmbedded: function* (item: ScheduleEvent) {
-      if (item.organizer) {
-        for (const p of item.organizer) {
-          if (typeof p == "object") {
-            yield p
-          }
-        }
-      }
-
-      if (item.performer) {
-        for (const p of item.performer) {
-          if (typeof p == "object") {
-            yield p
-          }
-        }
-      }
-
-      if (item.location) {
-        for (const loc of item.location) {
-          if (typeof loc == "object") {
-            yield loc
-          }
-        }
-      }
-
-      if (typeof item.superEvent == "object") {
-        yield item.superEvent
-      }
-
-      if (item.subEvent) {
-        for (const subEvent of item.subEvent) {
-          if (typeof subEvent == "object") {
-            yield subEvent
-          }
-        }
-      }
-    },
   },
   people: {
     test: isPerson,
@@ -186,19 +202,6 @@ export const defaultIndexConfig = {
   places: {
     test: isPlace,
     getIds,
-    getEmbedded: function* (item: Place) {
-      if (typeof item.address == "object") {
-        yield item.address
-      }
-
-      if (item.event) {
-        for (const event of item.event) {
-          if (typeof event == "object") {
-            yield event
-          }
-        }
-      }
-    },
   },
   addresses: {
     test: isAddress,

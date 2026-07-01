@@ -3,6 +3,8 @@ import wretch from "wretch"
 import type { ScheduleAPI, ScheduleItem } from "./types.js"
 import { sortScheduleItems } from "./utils.js"
 import { parseScheduleItem } from "./parse/json.js"
+import { intervalToTz } from "./date.js"
+import { getEmbeddedItems } from "./data.js"
 
 const itemsSchema = z.object({
   items: z.array(z.record(z.string(), z.unknown())),
@@ -17,7 +19,7 @@ export const makeParsedScheduleItemsAPI = (
   const itemsArr = [...items]
   return {
     async getItems() {
-      return itemsArr
+      const parsedItems = itemsArr
         .map(parseScheduleItem)
         .map((parsed) => {
           if (parsed.success) {
@@ -31,6 +33,14 @@ export const makeParsedScheduleItemsAPI = (
           }
         })
         .filter((v) => !!v)
+
+      const withEmbedded = []
+
+      for (const item of parsedItems) {
+        withEmbedded.push(item, ...getEmbeddedItems(item))
+      }
+
+      return withEmbedded
     },
   }
 }
@@ -45,6 +55,31 @@ export const makeScheduleFetchAPI = (url: string) => {
       const respBody = itemsSchema.parse(res)
       const arrAPI = makeParsedScheduleItemsAPI(respBody.items)
       return await arrAPI.getItems()
+    },
+  }
+}
+
+/**
+ * Wrap a {@link ScheduleAPI} to change all dates to the given time zone.
+ */
+export const makeZonedScheduleAPI = (
+  api: ScheduleAPI,
+  timeZone: string,
+): ScheduleAPI => {
+  return {
+    async getItems() {
+      const results = await api.getItems()
+      const zoned = []
+
+      for (const item of results) {
+        if ("startDate" in item || "endDate" in item) {
+          zoned.push(intervalToTz(timeZone, item))
+        } else {
+          zoned.push(item)
+        }
+      }
+
+      return zoned
     },
   }
 }

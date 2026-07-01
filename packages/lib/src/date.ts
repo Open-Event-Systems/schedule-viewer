@@ -5,8 +5,11 @@
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc.js"
+import tzPlugin from "dayjs/plugin/timezone.js"
+import type { Interval } from "./types.js"
 
 dayjs.extend(utcPlugin)
+dayjs.extend(tzPlugin)
 
 /**
  * Parse an ISO 8601 datetime string, preserving UTC offset.
@@ -30,6 +33,30 @@ export const formatISO = (d: dayjs.Dayjs): string => {
     return d.format("YYYY-MM-DDTHH:mm:ss.SSSZ")
   } else {
     return d.format("YYYY-MM-DDTHH:mm:ssZ")
+  }
+}
+
+/**
+ * Changes an {@link Interval} to be in a specific time zone.
+ */
+export const intervalToTz = <T extends Interval>(
+  timeZone: string,
+  interval: T,
+): T => {
+  let { startDate, endDate } = interval
+
+  if (startDate) {
+    startDate = startDate.tz(timeZone)
+  }
+
+  if (endDate) {
+    endDate = endDate.tz(timeZone)
+  }
+
+  return {
+    ...interval,
+    startDate,
+    endDate,
   }
 }
 

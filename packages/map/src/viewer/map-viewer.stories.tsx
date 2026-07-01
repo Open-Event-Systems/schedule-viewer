@@ -54,7 +54,7 @@ export const Default: StoryObj<typeof MapViewer> = {
       locationItemInfo: [
         {
           id: "room-1",
-          title: "Event 1",
+          name: "Event 1",
         },
       ],
       locations: mapCfg.locations,
@@ -135,25 +135,25 @@ export const Default: StoryObj<typeof MapViewer> = {
 
 const mapCfgInput = {
   objects: [
-    { type: "level", id: "lobby", title: "Lobby", url: lobbySvg },
-    { type: "level", id: "2f", title: "2F", url: f2Svg },
+    { type: "level", id: "lobby", name: "Lobby", url: lobbySvg },
+    { type: "level", id: "2f", name: "2F", url: f2Svg },
     { type: "logo", url: logoSvg, noIsometricTransform: true },
   ],
   defaultLevel: "lobby",
   layers: [
-    { id: "text", title: "Text" },
-    { id: "detail", title: "Detail" },
+    { id: "text", name: "Text" },
+    { id: "detail", name: "Detail" },
   ],
   locations: [
     {
       id: "room-1",
-      title: "Room 1",
+      name: "Room 1",
       description: "Room 1",
       level: "lobby",
     },
     {
       id: "room-2",
-      title: "Room 2",
+      name: "Room 2",
       description: "Room 2",
       level: "2f",
     },

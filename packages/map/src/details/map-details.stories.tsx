@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { MapDetails } from "./map-details.js"
 import { ItemDetails } from "@open-event-systems/schedule-react"
+import dayjs from "dayjs"
 
 const meta: Meta<typeof MapDetails> = {
   component: MapDetails,
@@ -8,7 +9,7 @@ const meta: Meta<typeof MapDetails> = {
     layout: "fullscreen",
   },
   args: {
-    title: "Panel Room",
+    name: "Panel Room",
     description: "Markdown location description.",
   },
 }
@@ -27,14 +28,14 @@ export const Default: StoryObj<typeof MapDetails> = {
             description="Event happening now."
             occurrences={[
               {
-                start: new Date(2020, 0, 1, 12),
-                end: new Date(2020, 0, 1, 13),
+                startDate: dayjs(new Date(2020, 0, 1, 12)),
+                endDate: dayjs(new Date(2020, 0, 1, 13)),
               },
             ]}
-            tags={new Set(["main-event", "performance"])}
+            keywords={new Set(["main-event", "performance"])}
             tagEntries={[
-              { tag: "main-event", title: "Main Event" },
-              { tag: "performance", title: "Performance" },
+              { tag: "main-event", name: "Main Event" },
+              { tag: "performance", name: "Performance" },
             ]}
           />
         }
@@ -45,14 +46,14 @@ export const Default: StoryObj<typeof MapDetails> = {
             description="Event happening later."
             occurrences={[
               {
-                start: new Date(2020, 0, 1, 13),
-                end: new Date(2020, 0, 1, 14),
+                startDate: dayjs(new Date(2020, 0, 1, 13)),
+                endDate: dayjs(new Date(2020, 0, 1, 14)),
               },
             ]}
-            tags={new Set(["main-event", "performance"])}
+            keywords={new Set(["main-event", "performance"])}
             tagEntries={[
-              { tag: "main-event", title: "Main Event" },
-              { tag: "performance", title: "Performance" },
+              { tag: "main-event", name: "Main Event" },
+              { tag: "performance", name: "Performance" },
             ]}
           />
         }
@@ -73,14 +74,14 @@ export const Now_Only: StoryObj<typeof MapDetails> = {
             description="Event happening now."
             occurrences={[
               {
-                start: new Date(2020, 0, 1, 12),
-                end: new Date(2020, 0, 1, 13),
+                startDate: dayjs(new Date(2020, 0, 1, 12)),
+                endDate: dayjs(new Date(2020, 0, 1, 13)),
               },
             ]}
-            tags={new Set(["main-event", "performance"])}
+            keywords={new Set(["main-event", "performance"])}
             tagEntries={[
-              { tag: "main-event", title: "Main Event" },
-              { tag: "performance", title: "Performance" },
+              { tag: "main-event", name: "Main Event" },
+              { tag: "performance", name: "Performance" },
             ]}
           />
         }
@@ -101,14 +102,14 @@ export const Later_Only: StoryObj<typeof MapDetails> = {
             description="Event happening later."
             occurrences={[
               {
-                start: new Date(2020, 0, 1, 13),
-                end: new Date(2020, 0, 1, 14),
+                startDate: dayjs(new Date(2020, 0, 1, 13)),
+                endDate: dayjs(new Date(2020, 0, 1, 14)),
               },
             ]}
-            tags={new Set(["main-event", "performance"])}
+            keywords={new Set(["main-event", "performance"])}
             tagEntries={[
-              { tag: "main-event", title: "Main Event" },
-              { tag: "performance", title: "Performance" },
+              { tag: "main-event", name: "Main Event" },
+              { tag: "performance", name: "Performance" },
             ]}
           />
         }
@@ -130,14 +131,14 @@ export const Drawer: StoryObj<typeof MapDetails> = {
               description="Event happening now."
               occurrences={[
                 {
-                  start: new Date(2020, 0, 1, 12),
-                  end: new Date(2020, 0, 1, 13),
+                  startDate: dayjs(new Date(2020, 0, 1, 12)),
+                  endDate: dayjs(new Date(2020, 0, 1, 13)),
                 },
               ]}
-              tags={new Set(["main-event", "performance"])}
+              keywords={new Set(["main-event", "performance"])}
               tagEntries={[
-                { tag: "main-event", title: "Main Event" },
-                { tag: "performance", title: "Performance" },
+                { tag: "main-event", name: "Main Event" },
+                { tag: "performance", name: "Performance" },
               ]}
             />
           }
@@ -148,14 +149,14 @@ export const Drawer: StoryObj<typeof MapDetails> = {
               description="Event happening later."
               occurrences={[
                 {
-                  start: new Date(2020, 0, 1, 13),
-                  end: new Date(2020, 0, 1, 14),
+                  startDate: dayjs(new Date(2020, 0, 1, 13)),
+                  endDate: dayjs(new Date(2020, 0, 1, 14)),
                 },
               ]}
-              tags={new Set(["main-event", "performance"])}
+              keywords={new Set(["main-event", "performance"])}
               tagEntries={[
-                { tag: "main-event", title: "Main Event" },
-                { tag: "performance", title: "Performance" },
+                { tag: "main-event", name: "Main Event" },
+                { tag: "performance", name: "Performance" },
               ]}
             />
           }
@@ -178,14 +179,14 @@ export const Drawer_Only_Now: StoryObj<typeof MapDetails> = {
               description="Event happening now."
               occurrences={[
                 {
-                  start: new Date(2020, 0, 1, 12),
-                  end: new Date(2020, 0, 1, 13),
+                  startDate: dayjs(new Date(2020, 0, 1, 12)),
+                  endDate: dayjs(new Date(2020, 0, 1, 13)),
                 },
               ]}
-              tags={new Set(["main-event", "performance"])}
+              keywords={new Set(["main-event", "performance"])}
               tagEntries={[
-                { tag: "main-event", title: "Main Event" },
-                { tag: "performance", title: "Performance" },
+                { tag: "main-event", name: "Main Event" },
+                { tag: "performance", name: "Performance" },
               ]}
             />
           }
@@ -197,7 +198,7 @@ export const Drawer_Only_Now: StoryObj<typeof MapDetails> = {
 
 export const Drawer_Only_Now_No_Title: StoryObj<typeof MapDetails> = {
   args: {
-    title: null,
+    name: null,
     description: "",
   },
   render(args) {
@@ -212,14 +213,14 @@ export const Drawer_Only_Now_No_Title: StoryObj<typeof MapDetails> = {
               description="Event happening now."
               occurrences={[
                 {
-                  start: new Date(2020, 0, 1, 12),
-                  end: new Date(2020, 0, 1, 13),
+                  startDate: dayjs(new Date(2020, 0, 1, 12)),
+                  endDate: dayjs(new Date(2020, 0, 1, 13)),
                 },
               ]}
-              tags={new Set(["main-event", "performance"])}
+              keywords={new Set(["main-event", "performance"])}
               tagEntries={[
-                { tag: "main-event", title: "Main Event" },
-                { tag: "performance", title: "Performance" },
+                { tag: "main-event", name: "Main Event" },
+                { tag: "performance", name: "Performance" },
               ]}
             />
           }

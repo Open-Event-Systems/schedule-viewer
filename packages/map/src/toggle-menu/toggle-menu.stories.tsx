@@ -16,21 +16,21 @@ export const Default: StoryObj<typeof ToggleMenu> = {
     layers: [
       {
         id: "text",
-        title: "Text",
+        name: "Text",
       },
       {
         id: "detail",
-        title: "Detail",
+        name: "Detail",
       },
       {
         id: "landmarks",
-        title: "Landmarks",
+        name: "Landmarks",
       },
     ],
     flagToggles: [
       {
         id: "toggle",
-        title: "Enable Feature",
+        name: "Enable Feature",
       },
     ],
   },

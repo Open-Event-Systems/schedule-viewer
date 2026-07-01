@@ -69,7 +69,7 @@ export const ToggleMenu = (props: ToggleMenuProps) => {
         >
           <IconCaretDown />
         </Button>
-        {layersArr.map(({ id, title }) => (
+        {layersArr.map(({ id, name: title }) => (
           <Checkbox
             key={`layer-${id}`}
             size="xs"
@@ -82,7 +82,7 @@ export const ToggleMenu = (props: ToggleMenuProps) => {
             }}
           />
         ))}
-        {togglesArr.map(({ id, title }) => (
+        {togglesArr.map(({ id, name: title }) => (
           <Checkbox
             key={`toggle-${id}`}
             size="xs"

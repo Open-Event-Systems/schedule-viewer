@@ -1,41 +1,58 @@
 import { useMemo } from "react"
 import type { MapLocation } from "./types.js"
-import { contains, iterToArr } from "@open-event-systems/schedule-lib"
-import { add, isAfter, isBefore } from "date-fns"
+import {
+  contains,
+  isPlace,
+  iterToArr,
+  type Address,
+  type Place,
+  type ScheduleItem,
+} from "@open-event-systems/schedule-lib"
 import type { MapViewerLocationItemInfo } from "./viewer/map-viewer.js"
+import type { Dayjs } from "dayjs"
 
-export type MapLocationMatchFunc = (locName: string) => MapLocation | undefined
+/**
+ * Maps an event location value to a {@link Place}.
+ */
+export type MapLocationMatchFunc = (
+  location: string | Place | Address,
+) => Place | null | undefined
 
 /**
  * Get a function to match a location name to a {@link MapLocation} object.
  */
 export const makeMapLocationMatchFunc = (
-  locations?: Iterable<MapLocation>,
+  places?: Iterable<Place> | null,
+  placesById?: ReadonlyMap<string, Place> | null,
 ): MapLocationMatchFunc => {
-  const byId = new Map<string, MapLocation>()
-  const byAlias = new Map<string, MapLocation>()
+  const placesByAlias = new Map<string, Place>()
+  placesById = placesById ?? new Map()
 
-  for (const loc of locations ?? []) {
-    byId.set(loc.id, loc)
-
-    if (loc.title) {
-      byAlias.set(loc.title, loc)
+  for (const place of places ?? []) {
+    if (place.name) {
+      placesByAlias.set(place.name, place)
     }
 
-    for (const alias of loc.aliases ?? []) {
-      if (alias) {
-        byAlias.set(alias, loc)
-      }
+    for (const alias of place.aliases ?? []) {
+      placesByAlias.set(alias, place)
     }
   }
 
-  return (locName) => {
-    const loc = byId.get(locName)
-    if (loc) {
+  return (loc) => {
+    if (typeof loc == "string") {
+      const byId = placesById.get(loc)
+      if (byId) {
+        return byId
+      }
+      const byAlias = placesByAlias.get(loc)
+      if (byAlias) {
+        return byAlias
+      }
+    } else if (isPlace(loc)) {
       return loc
+    } else {
+      // TODO: match by address
     }
-
-    return byAlias.get(locName)
   }
 }
 
@@ -43,35 +60,33 @@ export const makeMapLocationMatchFunc = (
  * A hook that provides a function to map location names to {@link MapLocation} objects.
  */
 export const useMapLocationMatchFunc = (
-  locations?: Iterable<MapLocation>,
+  places?: Iterable<Place> | null,
+  placesById?: ReadonlyMap<string, Place> | null,
 ): MapLocationMatchFunc => {
   const matchFunc = useMemo(() => {
-    return makeMapLocationMatchFunc(locations)
-  }, [locations])
+    return makeMapLocationMatchFunc(places, placesById)
+  }, [places, placesById])
   return matchFunc
 }
 
 /**
  * Get a map of location ids to currently occurring schedule items.
  */
-export const getCurrentMapLocationItems = <
-  T extends Readonly<{
-    location?: readonly string[]
-    start?: Date
-    end?: Date
-  }>,
->(
-  items: Iterable<T> | undefined,
+export const getCurrentMapLocationItems = (
+  items: Iterable<ScheduleItem> | null | undefined,
   matchFunc: MapLocationMatchFunc,
-  now: Date,
-): Map<string, T> => {
-  const nowMap = new Map<string, T>()
+  now: Dayjs,
+): Map<string, ScheduleItem> => {
+  const nowMap = new Map<string, ScheduleItem>()
 
-  const currentItems = iterToArr(items).filter((it) => contains(it, now))
+  const currentItems = iterToArr(items).filter(
+    (it) => !("startDate" in it && "endDate" in it) || contains(it, now),
+  )
 
   for (const item of currentItems) {
-    for (const locName of item.location ?? []) {
-      const loc = matchFunc(locName)
+    const itemLocs = "location" in item ? (item.location ?? []) : []
+    for (const locEntry of itemLocs) {
+      const loc = matchFunc(locEntry)
 
       if (loc && !nowMap.has(loc.id)) {
         nowMap.set(loc.id, item)
@@ -85,25 +100,27 @@ export const getCurrentMapLocationItems = <
 /**
  * Get a map of location ids to schedule items that will begin soon.
  */
-export const getLaterMapLocationItems = <
-  T extends Readonly<{ location?: readonly string[]; start?: Date }>,
->(
-  items: Iterable<T> | undefined,
+export const getLaterMapLocationItems = (
+  items: Iterable<ScheduleItem> | null | undefined,
   matchFunc: MapLocationMatchFunc,
-  now: Date,
-  maxLaterHours?: number,
-): Map<string, T> => {
-  const laterMap = new Map<string, T>()
-  const maxLater = add(now, { hours: maxLaterHours || 2 })
+  now: Dayjs,
+  maxLaterHours = 2,
+): Map<string, ScheduleItem> => {
+  const laterMap = new Map<string, ScheduleItem>()
+  const maxLater = now.add(maxLaterHours, "hour")
 
   const laterItems = iterToArr(items).filter(
     (it) =>
-      !!it.start && isAfter(it.start, now) && isBefore(it.start, maxLater),
+      "startDate" in it &&
+      !!it.startDate &&
+      it.startDate.isAfter(now) &&
+      it.startDate.isBefore(maxLater),
   )
 
   for (const item of laterItems) {
-    for (const locName of item.location ?? []) {
-      const loc = matchFunc(locName)
+    const itemLocs = "location" in item ? (item.location ?? []) : []
+    for (const locEntry of itemLocs) {
+      const loc = matchFunc(locEntry)
 
       if (loc && !laterMap.has(loc.id)) {
         laterMap.set(loc.id, item)
@@ -118,31 +135,37 @@ export const getLaterMapLocationItems = <
  * Get location details for the map.
  */
 export const getMapLocationInfo = (
-  items:
-    | Iterable<
-        Readonly<{
-          location?: readonly string[]
-          icon?: string
-          title?: string
-        }>
-      >
-    | undefined,
+  items: Iterable<ScheduleItem> | null | undefined,
   matchFunc: MapLocationMatchFunc,
 ): readonly MapViewerLocationItemInfo[] => {
   const info: MapViewerLocationItemInfo[] = []
 
   for (const item of items ?? []) {
-    for (const locName of item.location ?? []) {
-      const loc = matchFunc(locName)
+    const itemLocs = "location" in item ? (item.location ?? []) : []
+    for (const locEntry of itemLocs) {
+      const loc = matchFunc(locEntry)
       if (loc) {
         info.push({
           id: loc.id,
-          icon: item.icon,
-          title: item.title,
+          icon: getIcon(item),
+          name: item.name,
         })
       }
     }
   }
 
   return info
+}
+
+const getIcon = (item: ScheduleItem) => {
+  const image = "image" in item ? (item.image ?? []) : []
+
+  // TODO: better logic
+  for (const entry of image ?? []) {
+    if (typeof entry == "string") {
+      return entry
+    } else {
+      return entry.contentUrl
+    }
+  }
 }

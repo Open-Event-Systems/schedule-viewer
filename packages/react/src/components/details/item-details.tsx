@@ -58,6 +58,27 @@ export type ItemDetailsOccurrence = Readonly<{
   endDate?: Dayjs | undefined
 }>
 
+export type GetContactPropsFunc = (
+  type: "organizer" | "performer",
+  contact: string | Person | Organization,
+) =>
+  | {
+      href?: string | undefined
+      onClick?: ((e: MouseEvent) => void) | undefined
+      children?: ReactNode
+    }
+  | null
+  | undefined
+
+export type GetLocationPropsFunc = (location: string | Place | Address) =>
+  | {
+      href?: string | undefined
+      onClick?: ((e: MouseEvent) => void) | undefined
+      children?: ReactNode
+    }
+  | null
+  | undefined
+
 export type ItemDetailsProps = {
   itemId?: string | undefined
   name?: ReactNode | undefined
@@ -72,15 +93,8 @@ export type ItemDetailsProps = {
   bookmarkCount?: number | null | undefined
   shareURL?: string | undefined
   onSelectOption?: (option: ItemDetailsButtonOption) => void | undefined
-  getLocationProps?:
-    | ((location: string | Place | Address) =>
-        | {
-            href?: string
-            children?: ReactNode
-            onClick?: (e: MouseEvent) => void
-          }
-        | undefined)
-    | undefined
+  getContactProps?: GetContactPropsFunc | undefined
+  getLocationProps?: GetLocationPropsFunc | undefined
   tagEntries?: Iterable<TagConfigEntry> | undefined
   large?: boolean | undefined
   renderName?:
@@ -105,6 +119,7 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     bookmarkCount,
     shareURL,
     onSelectOption,
+    getContactProps,
     getLocationProps,
     tagEntries,
     large,
@@ -121,13 +136,14 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
   for (const occ of occurrences ?? []) {
     const occEls = []
 
-    const locEls = iterToArr(occ.location).map((loc, i) => {
-      const locProps = (getLocationProps ?? defaultGetLocationProps)(loc)
-      console.log(locProps)
-      return locProps ? (
-        <ItemDetails.Location key={i} {...locProps} />
-      ) : undefined
-    })
+    const locEls = iterToArr(occ.location)
+      .map((loc, i) => {
+        const locProps = (getLocationProps ?? defaultGetLocationProps)(loc)
+        return locProps ? (
+          <ItemDetails.Location key={i} {...locProps} />
+        ) : undefined
+      })
+      .filter((n) => !!n)
 
     if (occ.startDate || occ.endDate) {
       occEls.push(
@@ -153,7 +169,25 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
     occIdx++
   }
 
-  const contacts = [...iterToArr(organizer), ...iterToArr(performer)]
+  const organizerEls = iterToArr(organizer)
+    .map((c, i) => {
+      const props = (getContactProps ?? defaultGetContactProps)("organizer", c)
+      if (props) {
+        return <ItemDetails.Contact key={`org-${i}`} {...props} />
+      }
+    })
+    .filter((n) => !!n)
+
+  const performerEls = iterToArr(performer)
+    .map((c, i) => {
+      const props = (getContactProps ?? defaultGetContactProps)("performer", c)
+      if (props) {
+        return <ItemDetails.Contact key={`per-${i}`} {...props} />
+      }
+    })
+    .filter((n) => !!n)
+
+  const contactEls = [...organizerEls, performerEls]
 
   return (
     <ItemDetails.Root className={className} large={large} {...other}>
@@ -167,16 +201,8 @@ const _ItemDetails = memo((props: ItemDetailsProps) => {
         </Title>
         {allOccEls}
         {allOccEls.length > 1 && <ItemDetails.Divider />}
-        {contacts.length > 0 && (
-          <ItemDetails.Contacts>
-            {contacts.map((c, i) =>
-              typeof c == "string" ? (
-                <ItemDetails.Contact key={i} name={c} />
-              ) : (
-                <ItemDetails.Contact key={i} name={c.name} url={c.url} />
-              ),
-            )}
-          </ItemDetails.Contacts>
+        {contactEls.length > 0 && (
+          <ItemDetails.Contacts>{contactEls}</ItemDetails.Contacts>
         )}
       </ItemDetails.Header>
       <ItemDetails.Body>
@@ -393,36 +419,67 @@ export const ItemDetailsContacts = memo((props: ItemDetailsContactsProps) => {
 ItemDetailsContacts.displayName = "ItemDetails.Contacts"
 
 export type ItemDetailsContactProps = {
-  name?: string
-  url?: string
-}
+  href?: string | undefined
+  onClick?: ((e: MouseEvent) => void) | undefined
+  children?: ReactNode
+} & TextProps
 
-const ItemDetailsContact = memo(({ name, url }: ItemDetailsContactProps) => {
-  let content: ReactNode = name || url
+const ItemDetailsContact = memo(
+  ({
+    href,
+    onClick,
+    children,
+    className,
+    ...other
+  }: ItemDetailsContactProps) => {
+    let content: ReactNode = children || href
 
-  if (url) {
-    content = (
-      <Anchor
-        className={clsx("ItemDetails-contactLink", classes.contactLink)}
-        href={url}
-        target="_blank"
+    if (href) {
+      content = (
+        <Anchor
+          className={clsx("ItemDetails-contactLink", classes.contactLink)}
+          href={href}
+          onClick={onClick}
+          target="_blank"
+        >
+          {children || href}
+        </Anchor>
+      )
+    }
+
+    return (
+      <Text
+        component="li"
+        className={clsx("ItemDetails-contact", classes.contact, className)}
+        {...other}
       >
-        {name || url}
-      </Anchor>
+        {content}
+      </Text>
     )
-  }
-
-  return (
-    <Text
-      component="li"
-      className={clsx("ItemDetails-contact", classes.contact)}
-    >
-      {content}
-    </Text>
-  )
-})
+  },
+)
 
 ItemDetailsContact.displayName = "ItemDetails.Contact"
+
+const defaultGetContactProps = (
+  _type: "organizer" | "performer",
+  contact: string | Person | Organization,
+) => {
+  if (typeof contact == "string") {
+    return { children: contact }
+  } else if (contact.name) {
+    let props
+    props = { children: contact.name }
+
+    const url = contact.url ? contact.url[0] : undefined
+
+    if (url) {
+      props = { url, ...props }
+    }
+
+    return props
+  }
+}
 
 export type ItemDetailsTimeProps = {
   startDate?: Dayjs
@@ -557,7 +614,13 @@ export type ItemDetailsLocationProps = {
 } & TextProps
 
 export const ItemDetailsLocation = memo(
-  ({ children, href, onClick, ...other }: ItemDetailsLocationProps) => {
+  ({
+    children,
+    href,
+    onClick,
+    className,
+    ...other
+  }: ItemDetailsLocationProps) => {
     let content = children
 
     if (href) {
@@ -575,7 +638,7 @@ export const ItemDetailsLocation = memo(
     return (
       <Text
         component="li"
-        className={clsx("ItemDetails-location", classes.location)}
+        className={clsx("ItemDetails-location", classes.location, className)}
         {...other}
       >
         {content}

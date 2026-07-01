@@ -4,7 +4,7 @@ import clsx from "clsx"
 import classes from "./level-menu.module.scss"
 
 export type LevelMenuProps = {
-  levels?: Iterable<Readonly<{ id: string; title: string }>>
+  levels?: Iterable<Readonly<{ id: string; name: string }>>
   selectedLevel?: string
   onSelectLevel?: (id: string) => void
 } & StackProps
@@ -54,7 +54,7 @@ export const LevelMenu = (props: LevelMenuProps) => {
           }
         }}
       >
-        {lvl.title}
+        {lvl.name}
       </Button>
     )
   })

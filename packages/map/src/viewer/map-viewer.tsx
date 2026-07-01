@@ -47,7 +47,7 @@ import type { SVGData } from "../svg/svg.js"
 
 export type MapViewerLocationItemInfo = Readonly<{
   id: string
-  title?: string
+  name?: string
   icon?: string
 }>
 
@@ -193,7 +193,7 @@ const _MapViewer = memo((props: MapViewerProps) => {
         MapDetailsProps={
           detailsLocation
             ? {
-                title: detailsLocation?.title,
+                name: detailsLocation?.name,
                 description: detailsLocation?.description,
                 nowChildren: nowDetails,
                 laterChildren: laterDetails,

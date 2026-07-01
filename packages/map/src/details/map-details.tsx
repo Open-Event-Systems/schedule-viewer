@@ -15,21 +15,15 @@ import { type ReactNode } from "react"
 import classes from "./map-details.module.scss"
 
 export type MapDetailsProps = {
-  title?: ReactNode
+  name?: ReactNode
   description?: string
   nowChildren?: ReactNode
   laterChildren?: ReactNode
 } & BoxProps
 
 export const MapDetails = (props: MapDetailsProps) => {
-  const {
-    className,
-    title,
-    description,
-    nowChildren,
-    laterChildren,
-    ...other
-  } = props
+  const { className, name, description, nowChildren, laterChildren, ...other } =
+    props
 
   const defaultValue = nowChildren ? "now" : "later"
 
@@ -38,13 +32,13 @@ export const MapDetails = (props: MapDetailsProps) => {
       className={clsx("MapDetails-root", classes.root, className)}
       {...other}
     >
-      {title && (
+      {name && (
         <Title
           className={clsx("MapDetails-title", classes.title)}
           order={4}
           component="h2"
         >
-          {title}
+          {name}
         </Title>
       )}
       {description && (

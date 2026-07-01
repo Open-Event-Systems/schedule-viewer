@@ -12,26 +12,26 @@ const levelSchema = z.looseObject({
   ...objectSchema.shape,
   id: z.string(),
   type: z.literal("level"),
-  title: z.string(),
+  name: z.string(),
 })
 
 const levelOrObjectSchema = z.union([levelSchema, objectSchema])
 
 const layerSchema = z.looseObject({
   id: z.string(),
-  title: z.string(),
+  name: z.string(),
 })
 
 const flagToggleSchema = z.looseObject({
   id: z.string(),
-  title: z.string(),
+  name: z.string(),
 })
 
 const locationSchema = z.codec(
   z.looseObject({
     id: z.string(),
     level: z.string(),
-    title: optional(z.string()),
+    name: optional(z.string()),
     description: optional(z.string()),
     aliases: optional(z.array(z.string())),
     zoomScale: optional(z.number()),

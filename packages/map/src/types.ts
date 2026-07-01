@@ -8,23 +8,23 @@ export type MapLevel = MapObject &
   Readonly<{
     id: string
     type: "level"
-    title: string
+    name: string
   }>
 
 export type MapLayer = Readonly<{
   id: string
-  title: string
+  name: string
 }>
 
 export type MapFlagToggle = Readonly<{
   id: string
-  title: string
+  name: string
 }>
 
 export type MapLocation = Readonly<{
   id: string
   level: string
-  title?: string
+  name?: string
   description?: string
   aliases?: readonly string[]
   zoomScale?: number
