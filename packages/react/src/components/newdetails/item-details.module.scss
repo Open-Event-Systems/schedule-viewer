@@ -1,0 +1,228 @@
+.root {
+  --item-details-padding-xs: 0.25rem;
+  --item-details-padding-sm: 0.25rem;
+  --item-details-padding-md: 0.25rem;
+  --item-details-padding-lg: 0.5rem;
+  --item-details-padding-xl: 0.5rem;
+  --item-details-padding: var(--item-details-padding-md);
+
+  --item-details-min-image-height-xs: 50px;
+  --item-details-min-image-height-sm: 65px;
+  --item-details-min-image-height-md: 100px;
+  --item-details-min-image-height-lg: 135px;
+  --item-details-min-image-height-xl: 150px;
+  --item-details-min-image-height: var(--item-details-min-image-height-md);
+
+  display: grid;
+  grid-template:
+    "header" auto
+    "details" auto
+    "description" minmax(auto, 1fr)
+    "buttons" auto
+    / minmax(1rem, 1fr);
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --item-details-min-image-height: var(
+        --item-details-min-image-height-#{$size}
+      );
+      --item-details-padding: var(--item-details-padding-#{$size});
+    }
+  }
+}
+
+.header {
+  grid-area: header;
+
+  display: grid;
+  grid-template:
+    "title count" auto
+    / minmax(1rem, 1fr) auto;
+
+  align-items: end;
+
+  padding: var(--item-details-padding);
+
+  &.hasImage {
+    min-height: var(--item-details-min-image-height);
+    background-image:
+      linear-gradient(0deg, rgb(128, 128, 128) 0%, rgb(255, 255, 255) 8px),
+      var(--image-url);
+    background-blend-mode: multiply;
+    background-position: center;
+    background-size: cover;
+  }
+}
+
+.title {
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.375rem;
+
+  --font-size: var(--font-size-md);
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --font-size: var(--font-size-#{$size});
+    }
+  }
+
+  font-size: var(--font-size);
+
+  .header.hasImage & {
+    text-shadow:
+      #000000 0px 0px 4px,
+      #000000 2px 2px 4px;
+  }
+
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.bookmarkCount {
+  --font-size: var(--mantine-font-size-md);
+  --line-height: var(--mantine-line-height-md);
+  --icon-size: calc(var(--font-size) * var(--line-height));
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --font-size: var(--mantine-font-size-#{$size});
+      --line-height: var(--mantine-line-height-#{$size});
+    }
+  }
+
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  color: var(--color);
+
+  display: grid;
+  grid-template:
+    "icon number" auto
+    / auto auto;
+  justify-content: start;
+  justify-items: start;
+  align-items: start;
+
+  .header.hasImage & {
+    text-shadow:
+      #000000 0px 0px 4px,
+      #000000 2px 2px 4px;
+  }
+}
+
+.bookmarkCountIcon {
+  font-size: var(--icon-size);
+  line-height: 1;
+
+  .header.hasImage & {
+    filter: drop-shadow(2px 2px 4px #000000) drop-shadow(0px 0px 4px #000000);
+  }
+}
+
+.details {
+  grid-area: details;
+  display: grid;
+  grid-template-columns: minmax(1rem, 1fr);
+  grid-auto-rows: auto;
+  padding: var(--item-details-padding);
+}
+
+.contactsIcon {
+  --avatar-size-xs: calc(1rem * var(--mantine-scale));
+  --avatar-size-sm: calc(1.625rem * var(--mantine-scale));
+  --avatar-size-md: calc(2.375rem * var(--mantine-scale));
+  --avatar-size-lg: calc(3.5rem * var(--mantine-scale));
+  --avatar-size-xl: calc(5.25rem * var(--mantine-scale));
+  --line-height: var(--avatar-size-md);
+
+  display: flex;
+  height: var(--line-height);
+  align-items: center;
+
+  line-height: var(--line-height);
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    .contacts[data-size="#{$size}"] & {
+      --line-height: var(--avatar-size-#{$size});
+    }
+  }
+}
+
+.contactsList {
+  --gap: 0.5rem;
+}
+
+.description {
+  --font-size: var(--mantine-font-size-md);
+  --line-height: var(--mantine-line-height-md);
+
+  grid-area: description;
+
+  min-height: 4rem;
+  overflow: auto;
+  padding: var(--item-details-padding);
+
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --font-size: var(--mantine-font-size-#{$size});
+      --line-height: var(--mantine-line-height-#{$size});
+    }
+  }
+}
+
+.buttons {
+  grid-area: buttons;
+
+  display: grid;
+  grid-template: auto / auto auto;
+  justify-content: start;
+  justify-items: start;
+  gap: 0.25rem;
+
+  @each $size in "xs", "sm" {
+    &[data-size="#{$size}"] {
+      grid-template:
+        "auto" auto
+        "auto" auto
+        / auto;
+      justify-content: stretch;
+      justify-items: stretch;
+    }
+  }
+}
+
+.toggleButton {
+  --min-width-xs: 10rem;
+  --min-width-sm: 11rem;
+  --min-width: var(--min-width-sm);
+
+  --font-size: var(--mantine-font-size-md);
+  --line-height: var(--mantine-line-height-md);
+  --icon-size: calc(var(--font-size) * var(--line-height));
+
+  @each $size in "xs", "sm" {
+    &[data-size="#{$size}"] {
+      --min-width: var(--min-width-#{$size});
+    }
+  }
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --font-size: var(--mantine-font-size-#{$size});
+      --line-height: var(--mantine-line-height-#{$size});
+    }
+  }
+
+  min-width: var(--min-width);
+}
+
+.buttonIcon {
+  font-size: var(--icon-size);
+  line-height: 1;
+}

@@ -34,12 +34,12 @@ export type Day = Readonly<{
 export type RW<T> = T extends readonly []
   ? []
   : T extends readonly [infer F, ...infer R]
-    ? [RW<F>, ...RW<R>]
-    : T extends readonly (infer R)[]
-      ? RW<R>[]
-      : T extends Readonly<Record<string, unknown>>
-        ? { -readonly [K in keyof T]: RW<T[K]> }
-        : T
+  ? [RW<F>, ...RW<R>]
+  : T extends readonly (infer R)[]
+  ? RW<R>[]
+  : T extends Readonly<Record<string, unknown>>
+  ? { -readonly [K in keyof T]: RW<T[K]> }
+  : T
 
 /**
  * An image object.
@@ -53,28 +53,48 @@ export type ImageObject = Readonly<{
   encodingFormat?: string
 }>
 
+/**
+ * Base properties for all schedule items.
+ */
 export interface ScheduleItemBaseProps {
+  /**
+   * The id (URI) of the object.
+   */
   readonly id?: string
+
+  /**
+   * The per-schedule id, usually a slug.
+   */
   readonly identifier?: string
+
+  /**
+   * The object type.
+   */
   readonly type: string
+
   readonly name?: string
   readonly description?: string
   readonly image?: readonly (string | ImageObject)[]
   readonly sameAs?: readonly string[]
   readonly url?: string
+
+  readonly startDate?: Dayjs
+  readonly endDate?: Dayjs
+  readonly location?: readonly (string | Place | Address)[]
+
+  readonly keywords?: ReadonlySet<string>
 }
 
 export type ScheduleEventStatus = "EventScheduled" | "EventCancelled"
 
 export interface ScheduleEventProps {
   readonly type: JSONLDTypesFromHierarchy<typeof EVENT_TYPES>
+
   readonly status: ScheduleEventStatus
-  readonly startDate?: Dayjs
-  readonly endDate?: Dayjs
-  readonly location?: readonly (string | Place | Address)[]
+
   readonly organizer?: readonly (string | Person | Organization)[]
   readonly performer?: readonly (string | Person | Organization)[]
-  readonly keywords?: ReadonlySet<string>
+
   readonly superEvent?: string | ScheduleEvent
   readonly subEvent?: readonly (string | ScheduleEvent)[]
 }
@@ -91,7 +111,6 @@ export type Person = ScheduleItemBaseProps & PersonProps
 export interface OrganizationProps {
   readonly type: JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>
   readonly email?: string
-  readonly keywords?: ReadonlySet<string>
   readonly logo?: readonly (string | ImageObject)[]
 }
 

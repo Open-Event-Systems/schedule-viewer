@@ -1,0 +1,29 @@
+.root {
+  --gap: 0.25rem;
+  --after: none;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  margin: 0;
+  padding: 0;
+
+  margin-left: calc(-1 * var(--gap));
+  margin-bottom: calc(-1 * var(--gap));
+}
+
+.item {
+  list-style: none;
+
+  margin: 0;
+  margin-left: var(--gap);
+  margin-bottom: var(--gap);
+
+  &::after {
+    content: var(--after);
+  }
+
+  &:last-child::after {
+    content: none;
+  }
+}

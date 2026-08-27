@@ -1,0 +1,100 @@
+.root {
+  --pill-border: #000000 solid 1px;
+  --pill-background-color: #ffffff;
+  --pill-background-gradient: none;
+  --pill-text-color: #000000;
+  --pill-box-shadow: #aaaaaa 1px 1px 1px;
+  --pill-radius: 0.25rem;
+  --pill-padding: 0.125rem;
+  --pill-font-size: var(--mantine-font-size-sm);
+  --pill-line-height: var(--mantine-line-height-sm);
+  --pill-before-margin: 0.25rem;
+  --pill-after-margin: 0.25rem;
+  --pill-indicator-margin: 0.75rem;
+  --pill-indicator-font-size: 0.7rem;
+  
+  display: block;
+  text-decoration: none;
+
+  &.hasIndicator {
+    margin-right: var(--pill-indicator-margin);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+// Removes button styling
+button.root {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.body {
+  border: var(--pill-border);
+  background-color: var(--pill-background-color);
+  background-image: var(--pill-background-gradient);
+  color: var(--pill-text-color);
+
+  box-shadow: var(--pill-box-shadow);
+  border-radius: var(--pill-radius);
+  padding: var(--pill-padding);
+
+  font-size: var(--pill-font-size);
+  line-height: var(--pill-line-height);
+
+  &.hasBefore::before {
+    content: var(--pill-before);
+    margin-right: var(--pill-before-margin);
+  }
+
+  &.hasAfter::after {
+    content: var(--pill-after);
+    margin-left: var(--pill-after-margin);
+  }
+}
+
+.indicatorBody {
+  font-size: var(--pill-indicator-font-size);
+}
+
+.box {
+  --pill-box-gap: 0.375rem;
+  --pill-box-item-gap: 0.5rem;
+  --pill-box-title-font-size: 1rem;
+  --pill-box-title-line-height: 1;
+  display: grid;
+  gap: var(--pill-box-gap);
+}
+
+.boxTitle {
+  margin: 0;
+  padding: 0;
+  font-size: var(--pill-box-title-font-size);
+  line-height: var(--pill-box-title-line-height);
+}
+
+.boxContent {
+  margin: 0;
+  padding: 0;
+
+  margin-bottom: calc(-1 * var(--pill-box-item-gap));
+  margin-left: calc(-1 * var(--pill-box-item-gap));
+
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.boxItem {
+  list-style: none;
+  display: block;
+
+  margin-bottom: var(--pill-box-item-gap);
+  margin-left: var(--pill-box-item-gap);
+}

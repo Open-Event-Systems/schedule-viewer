@@ -1,0 +1,12 @@
+.root {
+  --gap: 0.25rem;
+  display: grid;
+  grid-template:
+    "icon text" auto
+    / auto auto;
+  justify-content: start;
+  justify-items: start;
+  align-items: center;
+
+  gap: var(--gap);
+}
