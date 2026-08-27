@@ -22,26 +22,7 @@ export const Default: StoryObj<typeof Pill.Box> = {
         <Pill {...PillStories.AsLink.args} />
         <Pill {...PillStories.AsButton.args} />
         <Pill {...PillStories.WithColor.args} />
-        <Pill {...PillStories.Disabled.args} />
-        <Pill {...PillStories.WithMultiColors.args} />
-      </Pill.Box>
-    )
-  },
-}
-
-export const WithTitle: StoryObj<typeof Pill.Box> = {
-  args: {
-    title: "3:00 pm",
-  },
-  render(args) {
-    return (
-      <Pill.Box {...args}>
-        <Pill {...PillStories.Default.args} />
-        <Pill {...PillStories.WithIndicator.args} />
-        <Pill {...PillStories.WithBeforeAndAfter.args} />
-        <Pill {...PillStories.AsLink.args} />
-        <Pill {...PillStories.AsButton.args} />
-        <Pill {...PillStories.WithColor.args} />
+        <Pill {...PillStories.Highlighted.args} />
         <Pill {...PillStories.Disabled.args} />
         <Pill {...PillStories.WithMultiColors.args} />
       </Pill.Box>

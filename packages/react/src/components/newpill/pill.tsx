@@ -1,6 +1,5 @@
 import {
   Box,
-  Divider,
   Indicator,
   useProps,
   type CSSProperties,
@@ -21,6 +20,7 @@ export type PillProps = Omit<PillRootProps, "color"> & {
   }
   before?: string
   after?: string
+  highlighted?: boolean
   indicator?: ReactNode
   indicatorColor?: string
   color?: string | Iterable<string>
@@ -38,6 +38,7 @@ const _Pill = (props: PillProps) => {
     classNames,
     before,
     after,
+    highlighted,
     indicator,
     indicatorColor,
     color,
@@ -55,6 +56,7 @@ const _Pill = (props: PillProps) => {
       className={classNames?.body}
       before={before}
       after={after}
+      highlighted={highlighted}
       color={color}
       textColor={textColor}
       renderRoot={renderBody}
@@ -139,11 +141,20 @@ export type PillBodyProps = Omit<DefaultBoxProps, "color"> & {
   textColor?: string
   before?: string
   after?: string
+  highlighted?: boolean
 }
 
 export const PillBody = (props: PillBodyProps) => {
-  const { className, color, textColor, before, after, style, ...other } =
-    useProps("PillBody", null, props)
+  const {
+    className,
+    color,
+    textColor,
+    before,
+    after,
+    highlighted,
+    style,
+    ...other
+  } = useProps("PillBody", null, props)
 
   const fullStyle: CSSProperties = {
     ...style,
@@ -179,6 +190,7 @@ export const PillBody = (props: PillBodyProps) => {
         classes.body,
         before && classes.hasBefore,
         after && classes.hasAfter,
+        highlighted && ["Pill-highlighted", classes.isHighlighted],
         className,
       )}
       style={fullStyle}
@@ -190,9 +202,6 @@ export const PillBody = (props: PillBodyProps) => {
 export type PillBoxProps = PillBoxRootProps & {
   classNames?: {
     root?: string
-    title?: string
-    divider?: string
-    content?: string
     item?: string
   }
   renderItem?: RenderRootFunc
@@ -224,77 +233,23 @@ const _PillBox = (props: PillBoxProps) => {
   })
 
   return (
-    <Pill.Box.Root classNames={classNames} {...other}>
+    <Pill.Box.Root className={classNames?.root} {...other}>
       {mappedChildren}
     </Pill.Box.Root>
   )
 }
 
-export type PillBoxRootProps = Omit<DefaultBoxProps, "title"> & {
-  classNames?: {
-    root?: string
-    title?: string
-    divider?: string
-    content?: string
-  }
-  title?: ReactNode
-  renderTitle?: RenderRootFunc
-  renderContent?: RenderRootFunc
-  TitleProps?: DefaultBoxProps
-  ContentProps?: DefaultBoxProps
-}
+export type PillBoxRootProps = DefaultBoxProps
 
 export const PillBoxRoot = (props: PillBoxRootProps) => {
-  const {
-    className,
-    classNames,
-    title,
-    renderTitle,
-    renderContent,
-    TitleProps,
-    ContentProps,
-    children,
-    ...other
-  } = useProps("PillBoxRoot", null, props)
+  const { className, ...other } = useProps("PillBoxRoot", null, props)
 
   return (
     <Box
-      component="section"
-      className={clsx("Pill-box", classes.box, className, classNames?.root)}
+      component="ul"
+      className={clsx("Pill-box", classes.box, className)}
       {...other}
-    >
-      {title && (
-        <Box
-          component="h3"
-          className={clsx("Pill-boxTitle", classes.boxTitle, classNames?.title)}
-          renderRoot={renderTitle}
-          {...TitleProps}
-        >
-          {title}
-        </Box>
-      )}
-      {title && (
-        <Divider
-          className={clsx(
-            "Pill-boxDivider",
-            classes.boxDivider,
-            classNames?.divider,
-          )}
-        />
-      )}
-      <Box
-        component="ul"
-        className={clsx(
-          "Pill-boxContent",
-          classes.boxContent,
-          classNames?.content,
-        )}
-        renderRoot={renderContent}
-        {...ContentProps}
-      >
-        {children}
-      </Box>
-    </Box>
+    />
   )
 }
 
@@ -315,8 +270,6 @@ export const PillBoxItem = (props: PillBoxItemProps) => {
   )
 }
 
-const defaultRenderPillBoxTitle: RenderRootFunc = (props) => <h3 {...props} />
-const defaultRenderPillBoxContent: RenderRootFunc = (props) => <ul {...props} />
 const defaultRenderPillBoxItem: RenderRootFunc = (props) => <li {...props} />
 
 export const PillBox = Object.assign(_PillBox, {
@@ -331,8 +284,6 @@ export const Pill = Object.assign(_Pill, {
   Box: PillBox,
   BoxRoot: PillBoxRoot,
   BoxItem: PillBoxItem,
-  defaultRenderPillBoxTitle,
-  defaultRenderPillBoxContent,
   defaultRenderPillBoxItem,
 })
 

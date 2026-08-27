@@ -62,6 +62,15 @@ export const WithColor: StoryObj<typeof Pill> = {
   },
 }
 
+export const Highlighted: StoryObj<typeof Pill> = {
+  args: {
+    children: "Highlighted",
+    color: "#006c2e",
+    textColor: "#ffffff",
+    highlighted: true,
+  },
+}
+
 export const Disabled: StoryObj<typeof Pill> = {
   args: {
     children: "Disabled",
