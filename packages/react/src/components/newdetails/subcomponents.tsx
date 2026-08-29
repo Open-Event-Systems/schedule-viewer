@@ -34,6 +34,7 @@ import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import type { DefaultBoxProps } from "../types.js"
 import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
 import { EyeIcon } from "@phosphor-icons/react/dist/icons/Eye"
+import { ShareButton } from "../share-button/share-button.js"
 
 const DEFAULT_COLOR = "gray.7"
 
@@ -293,6 +294,35 @@ export const ItemDetailsLocation = (props: ItemDetailsLocationProps) => {
   )
 }
 
+export type ItemDetailsOccurrencesProps = { size?: MantineSize } & Omit<
+  DefaultBoxProps,
+  "size"
+>
+
+export const ItemDetailsOccurrences = (props: ItemDetailsOccurrencesProps) => {
+  const { className, color, size, children, ...other } = useProps(
+    "ItemDetailsOccurrences",
+    { color: DEFAULT_COLOR },
+    props,
+  )
+
+  return (
+    <Box
+      className={clsx(
+        "ItemDetails-occurrences",
+        classes.occurrences,
+        className,
+      )}
+      {...other}
+    >
+      <Text span c={color} size={size}>
+        Multiple sessions:
+      </Text>
+      <Box className={classes.occurrencesContent}>{children}</Box>
+    </Box>
+  )
+}
+
 export type ItemDetailsContactsProps = IconSectionProps
 
 export const ItemDetailsContacts = (props: ItemDetailsContactsProps) => {
@@ -385,6 +415,8 @@ export type ItemDetailsButtonsProps = {
   isVisited?: boolean
   allowBookmark?: boolean
   allowVisited?: boolean
+  allowShare?: boolean
+  url?: string
   onSetBookmarked?: (bookmarked: boolean) => void
   onSetVisited?: (visited: boolean) => void
   size?: MantineSize
@@ -398,6 +430,8 @@ export const ItemDetailsButtons = (props: ItemDetailsButtonsProps) => {
     isVisited,
     allowBookmark,
     allowVisited,
+    allowShare,
+    url,
     onSetBookmarked,
     onSetVisited,
     ...other
@@ -405,7 +439,12 @@ export const ItemDetailsButtons = (props: ItemDetailsButtonsProps) => {
 
   return (
     <Box
-      className={clsx("ItemDetails-buttons", classes.buttons, className)}
+      className={clsx(
+        "ItemDetails-buttons",
+        classes.buttons,
+        !allowShare && classes.noShareButton,
+        className,
+      )}
       data-size={size}
       {...other}
     >
@@ -432,6 +471,13 @@ export const ItemDetailsButtons = (props: ItemDetailsButtonsProps) => {
         >
           {isVisited ? "Mark Unvisited" : "Mark Visited"}
         </ToggleButton>
+      )}
+      {allowShare && (
+        <ShareButton
+          className={classes.shareButton}
+          url={url}
+          size={size == "xs" || size == "sm" ? "input-xs" : "input-sm"}
+        />
       )}
     </Box>
   )

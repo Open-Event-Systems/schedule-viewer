@@ -1,69 +1,82 @@
 import {
-  ActionIcon,
-  type ActionIconProps,
+  Button,
+  type ButtonProps,
   Menu,
   type MenuProps,
   useProps,
 } from "@mantine/core"
-import { iterToArr } from "@open-event-systems/schedule-lib"
-import {
-  IconCalendarDown,
-  IconShare,
-  IconShare3,
-  IconTransfer,
-} from "@tabler/icons-react"
+import { iterToSet } from "@open-event-systems/schedule-lib"
+import { CalendarBlankIcon } from "@phosphor-icons/react/dist/icons/CalendarBlank"
+import { CloudArrowUpIcon } from "@phosphor-icons/react/dist/icons/CloudArrowUp"
+import { ShareFatIcon } from "@phosphor-icons/react/dist/icons/ShareFat"
+import { ShareNetworkIcon } from "@phosphor-icons/react/dist/icons/ShareNetwork"
 
-export const shareMenuOptions = ["export", "share", "sync"] as const
-export type ShareMenuOption = (typeof shareMenuOptions)[number]
+export const ShareMenuOption = {
+  export: "export",
+  share: "share",
+  sync: "sync",
+} as const
+
+export type ShareMenuOption =
+  (typeof ShareMenuOption)[keyof typeof ShareMenuOption]
+
+export const ShareMenuOptionNames = {
+  export: "Export calendar",
+  share: "Share selections",
+  sync: "Sync selections",
+} as const satisfies {
+  readonly [K in ShareMenuOption]: string
+}
 
 export type ShareMenuProps = {
   enabledOptions?: Iterable<ShareMenuOption>
   onSelect?: (option: ShareMenuOption) => void
-  ButtonProps?: Partial<ActionIconProps>
+  small?: boolean
+  ButtonProps?: Partial<ButtonProps>
 } & MenuProps
 
 export const ShareMenu = (props: ShareMenuProps) => {
-  const { enabledOptions, onSelect, ButtonProps, ...other } = useProps(
+  const { enabledOptions, onSelect, small, ButtonProps, ...other } = useProps(
     "ShareMenu",
-    { enabledOptions: [] },
+    null,
     props,
   )
 
-  const opts = iterToArr(enabledOptions)
+  const opts = iterToSet(enabledOptions)
 
   return (
     <Menu {...other}>
       <Menu.Target>
-        <ActionIcon
-          title="Sharing Options"
+        <Button
+          leftSection={<ShareNetworkIcon size={20} />}
+          size={small ? "xs" : "sm"}
           variant="subtle"
-          size="input-sm"
           {...ButtonProps}
         >
-          <IconShare />
-        </ActionIcon>
+          Share
+        </Button>
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Import/Export</Menu.Label>
-        {opts.includes("share") && (
+        {opts.has("share") && (
           <Menu.Item
-            leftSection={<IconShare3 />}
+            leftSection={<ShareFatIcon size={24} />}
             onClick={() => onSelect && onSelect("share")}
           >
             Share My Schedule
           </Menu.Item>
         )}
-        {opts.includes("sync") && (
+        {opts.has("sync") && (
           <Menu.Item
-            leftSection={<IconTransfer />}
+            leftSection={<CloudArrowUpIcon size={24} />}
             onClick={() => onSelect && onSelect("sync")}
           >
             Sync Device
           </Menu.Item>
         )}
-        {opts.includes("export") && (
+        {opts.has("export") && (
           <Menu.Item
-            leftSection={<IconCalendarDown />}
+            leftSection={<CalendarBlankIcon size={24} />}
             onClick={() => onSelect && onSelect("export")}
           >
             Export Calendar

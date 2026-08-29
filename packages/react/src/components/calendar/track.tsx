@@ -32,8 +32,7 @@ export type TrackProps = BoxProps & {
   orientation?: "horizontal" | "vertical" | undefined
   children?: ReactNode
   renderRoot?:
-    | ((props: AllHTMLAttributes<HTMLElement>) => ReactNode)
-    | undefined
+    ((props: AllHTMLAttributes<HTMLElement>) => ReactNode) | undefined
 } & AllHTMLAttributes<HTMLElement>
 
 /**

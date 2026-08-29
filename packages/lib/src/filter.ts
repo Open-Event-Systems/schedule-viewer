@@ -28,16 +28,16 @@ export const makeNameFilter = (
 export const makeTagFilter = (
   mode: "include" | "exclude",
   tags?: Iterable<string> | null,
-): ((item: { readonly keywords?: Iterable<string> }) => boolean) => {
+): ((item: { readonly tags?: Iterable<string> }) => boolean) => {
   const tagsArr = [...(tags ?? [])]
 
   if (mode == "include") {
     return (item) => {
-      return tagsArr.some((inclTag) => iterHas(inclTag, item.keywords))
+      return tagsArr.some((inclTag) => iterHas(inclTag, item.tags))
     }
   } else {
     return (item) => {
-      return tagsArr.every((exclTag) => !iterHas(exclTag, item.keywords))
+      return tagsArr.every((exclTag) => !iterHas(exclTag, item.tags))
     }
   }
 }
@@ -81,6 +81,15 @@ export const makeDateFilter = (
       return false
     }
     return contains(range, item.startDate)
+  }
+}
+
+/**
+ * Modify a filter function to work on schedule object occurrences.
+ */
+export const toOccurrenceFilter = <T,>(f: (item: T) => boolean): (item: { readonly object: T }) => boolean => {
+  return (item: { readonly object: T }) => {
+    return f(item.object)
   }
 }
 

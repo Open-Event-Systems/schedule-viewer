@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest"
-import { formatISO, parseISO } from "./date.js"
+import { formatDuration, formatISO, parseDuration, parseISO } from "./date.js"
+import dayjs from "dayjs"
 
 describe("date parsing/formatting", () => {
   test("parses ISO date", () => {
@@ -20,5 +21,15 @@ describe("date parsing/formatting", () => {
     const date = parseISO("2020-01-01T12:00:00-06:00")
     const result = formatISO(date)
     expect(result).toBe("2020-01-01T12:00:00-06:00")
+  })
+
+  test("parses durations", () => {
+    const d = parseDuration("PT1H30M")
+    expect(d.asSeconds()).toBe(5400)
+  })
+
+  test("formats durations", () => {
+    const d = dayjs.duration(100, "minutes")
+    expect(formatDuration(d)).toBe("PT1H40M")
   })
 })

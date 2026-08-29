@@ -1,14 +1,14 @@
 import {
   Box,
+  Divider,
   Text,
   Title,
   useProps,
-  type BoxProps,
-  type TextProps,
+  type DividerProps,
   type TitleProps,
 } from "@mantine/core"
 import clsx from "clsx"
-import { useMemo, type ComponentPropsWithoutRef, type ReactNode } from "react"
+import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
 
 import classes from "./bins.module.scss"
 import {
@@ -16,6 +16,7 @@ import {
   type Bin,
   type BinFunc,
 } from "@open-event-systems/schedule-lib"
+import type { DefaultBoxProps } from "../types.js"
 
 export type BinsProps<InT, OutT extends InT = InT> = {
   /**
@@ -37,24 +38,22 @@ export type BinsProps<InT, OutT extends InT = InT> = {
    * A function to render a bin element.
    */
   renderBin: (
-    props: ComponentPropsWithoutRef<"div">,
+    props: AllHTMLAttributes<HTMLElement>,
     bin: Bin<OutT>,
   ) => ReactNode
 
   /**
-   * The component name.
+   * Customize the rendering of the bin title element.
    */
-  name?: ReactNode
-
-  /**
-   * Customize the rendering of the title element.
-   */
-  renderTitle?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
+  renderBinTitle?: (
+    props: AllHTMLAttributes<HTMLHeadingElement>,
+    bin: Bin<OutT>,
+  ) => ReactNode
 
   /**
    * Customize the no items message.
    */
-  renderNoItems?: (props: ComponentPropsWithoutRef<"div">) => ReactNode
+  renderNoItems?: (props: AllHTMLAttributes<HTMLElement>) => ReactNode
 } & Omit<BinsRootProps, "name">
 
 /**
@@ -66,14 +65,13 @@ const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
     binFunc,
     items,
     renderBin,
-    name,
-    renderTitle,
+    renderBinTitle,
     renderNoItems,
     ...other
   } = useProps(
     "Bins",
     {
-      renderTitle: (props: ComponentPropsWithoutRef<"h2">) => <h2 {...props} />,
+      renderBinTitle: Bins.defaultRenderBinTitle,
     },
     props,
   )
@@ -90,13 +88,24 @@ const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
     }
 
     return bins.map((b) => (
-      <Bins.Bin key={b.key} renderRoot={(props) => renderBin(props, b)} />
+      <Bins.Bin key={b.key}>
+        {b.name && (
+          <Bins.BinTitle
+            renderRoot={(props) =>
+              (renderBinTitle || defaultRenderBinTitle)(props, b)
+            }
+          >
+            {b.name}
+          </Bins.BinTitle>
+        )}
+        {b.name && <Bins.Divider />}
+        <Bins.BinContent renderRoot={(props) => renderBin(props, b)} />
+      </Bins.Bin>
     ))
-  }, [propBins, items, binFunc])
+  }, [propBins, items, binFunc, renderBinTitle])
 
   return (
     <Bins.Root {...other}>
-      {name && <Bins.Title renderRoot={renderTitle}>{name}</Bins.Title>}
       {binEls.length > 0 ? binEls : <Bins.NoItems renderRoot={renderNoItems} />}
     </Bins.Root>
   )
@@ -104,10 +113,7 @@ const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
 
 _Bins.displayName = "Bins"
 
-export type BinsRootProps = {
-  renderRoot?: (props: ComponentPropsWithoutRef<"div">) => ReactNode
-} & BoxProps &
-  ComponentPropsWithoutRef<"div">
+export type BinsRootProps = DefaultBoxProps
 
 export const BinsRoot = (props: BinsRootProps) => {
   const { className, ...other } = useProps("BinsRoot", null, props)
@@ -117,33 +123,64 @@ export const BinsRoot = (props: BinsRootProps) => {
   )
 }
 
-export type BinsTitleProps = {
-  renderRoot?: (props: ComponentPropsWithoutRef<"h2">) => ReactNode
-} & TitleProps
+export type BinsDividerProps = DividerProps &
+  Omit<DefaultBoxProps<HTMLHRElement>, "children">
 
-export const BinsTitle = (props: BinsTitleProps) => {
-  const { className, ...other } = useProps("BinsTitle", null, props)
+export const BinsDivider = (props: BinsDividerProps) => {
+  const { className, ...other } = useProps("BinsDivider", null, props)
 
   return (
-    <Title className={clsx("Bins-title", className)} order={2} {...other} />
+    <Divider
+      className={clsx("Bins-divider", classes.binDivider, className)}
+      {...other}
+    />
   )
 }
 
-export type BinsBinProps = {
-  renderRoot?: (props: ComponentPropsWithoutRef<"div">) => ReactNode
-} & BoxProps &
-  ComponentPropsWithoutRef<"div">
+export type BinsBinProps = DefaultBoxProps
 
 export const BinsBin = (props: BinsBinProps) => {
   const { className, ...other } = useProps("BinsBin", null, props)
 
-  return <Box className={clsx("Bins-bin", className)} {...other} />
+  return (
+    <Box
+      component="section"
+      className={clsx("Bins-bin", classes.bin, className)}
+      {...other}
+    />
+  )
 }
 
-export type BinsNoItemsProps = {
-  renderRoot?: (props: ComponentPropsWithoutRef<"p">) => ReactNode
-} & TextProps &
-  ComponentPropsWithoutRef<"p">
+export type BinsBinTitleProps = TitleProps & DefaultBoxProps<HTMLHeadingElement>
+
+export const BinsBinTitle = (props: BinsBinTitleProps) => {
+  const { className, ...other } = useProps("BinsBinTitle", null, props)
+
+  return (
+    <Title
+      className={clsx("Bins-binTitle", classes.binTitle, className)}
+      order={3}
+      {...other}
+    />
+  )
+}
+
+export type BinsBinContentProps = DefaultBoxProps
+
+export const BinsBinContent = (props: BinsBinContentProps) => {
+  const { className, ...other } = useProps("BinsBinContent", null, props)
+
+  return (
+    <Box
+      className={clsx("BinsBin-content", classes.binContent, className)}
+      {...other}
+    />
+  )
+}
+export type BinsNoItemsProps = Omit<
+  DefaultBoxProps,
+  "children" | "size" | "span"
+>
 
 export const BinsNoItems = (props: BinsNoItemsProps) => {
   const { className, ...other } = useProps("BinsNoItems", null, props)
@@ -160,9 +197,16 @@ export const BinsNoItems = (props: BinsNoItemsProps) => {
   )
 }
 
+const defaultRenderBinTitle = (
+  props: AllHTMLAttributes<HTMLHeadingElement>,
+) => <h2 {...props} />
+
 export const Bins = Object.assign(_Bins, {
   Root: BinsRoot,
-  Title: BinsTitle,
   Bin: BinsBin,
+  BinTitle: BinsBinTitle,
+  Divider: BinsDivider,
+  BinContent: BinsBinContent,
   NoItems: BinsNoItems,
+  defaultRenderBinTitle,
 })

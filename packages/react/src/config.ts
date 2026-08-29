@@ -2,7 +2,6 @@ import {
   composeScheduleAPIs,
   makeScheduleFetchAPI,
   makeParsedScheduleItemsAPI,
-  makeSortedScheduleAPI,
   type ScheduleAPI,
   optional,
   omitUndef,
@@ -139,8 +138,7 @@ export const makeScheduleAPIFromConfig = (
   const allAPIs = [parsedAPI, ...urlAPIs]
 
   const composed = composeScheduleAPIs(...allAPIs)
-  const sorted = makeSortedScheduleAPI(composed)
-  return sorted
+  return composed
 }
 
 export const makeValidTagsFilter = (

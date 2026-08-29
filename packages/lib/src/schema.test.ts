@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { dayJSSchema, omitUndefSchema, optional, setSchema } from "./schema.js"
+import { dayJSSchema, durationSchema, omitUndefSchema, optional, setSchema } from "./schema.js"
 import dayjs from "dayjs"
 import z from "zod"
 
@@ -13,6 +13,12 @@ describe("date schemas", () => {
   test("dayjs schema checks valid dates", () => {
     const invalid = dayjs("bad")
     const invalidParsed = dayJSSchema.safeParse(invalid)
+    expect(invalidParsed.success).toBe(false)
+  })
+
+  test("duration schema checks valid durations", () => {
+    const invalid = dayjs.duration("bad")
+    const invalidParsed = durationSchema.safeParse(invalid)
     expect(invalidParsed.success).toBe(false)
   })
 

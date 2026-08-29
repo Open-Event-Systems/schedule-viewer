@@ -9,7 +9,7 @@ export const PastEventsFilter = (props: PastEventsFilterProps) => {
   return (
     <Switch
       className={clsx("PastEventsFilter-root", className)}
-      label="Show past events"
+      label="Hide past events"
       {...other}
     />
   )

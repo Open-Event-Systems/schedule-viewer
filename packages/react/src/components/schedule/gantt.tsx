@@ -73,22 +73,20 @@ export const GanttView = (props: GanttViewProps) => {
           (item) =>
             "location" in item && item.location && item.location.includes(loc),
         )
-        .map(
-          (item): GanttBarProps => ({
-            startDate: item.startDate,
-            endDate: item.endDate,
-            children:
-              "ganttTitle" in item && typeof item.ganttTitle == "string"
-                ? item.ganttTitle
-                : undefined,
-            renderRoot: (props) => (
-              <div
-                {...props}
-                className={clsx(props.className, `Gantt-bar-id-${item.id}`)}
-              />
-            ),
-          }),
-        )
+        .map((item): GanttBarProps => ({
+          startDate: item.startDate,
+          endDate: item.endDate,
+          children:
+            "ganttTitle" in item && typeof item.ganttTitle == "string"
+              ? item.ganttTitle
+              : undefined,
+          renderRoot: (props) => (
+            <div
+              {...props}
+              className={clsx(props.className, `Gantt-bar-id-${item.id}`)}
+            />
+          ),
+        }))
 
       const track = {
         id: loc,

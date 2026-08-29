@@ -1,5 +1,5 @@
 import { sortIntervalsByStartDate } from "./time.js"
-import type { Bounded, Interval, ScheduleItem } from "./types.js"
+import type { Bounded, Interval, ScheduleObject } from "./types.js"
 
 /**
  * Return whether an interval has both start and end set.
@@ -9,34 +9,23 @@ export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
 }
 
 /**
- * Return an array of {@link ScheduleItem} sorted by start date, then
- * {@link ScheduleEvent} objects, then ID.
+ * Return an array of {@link ScheduleObject} sorted by start date, then ID.
  */
-export const sortScheduleItems = <T extends ScheduleItem>(
+export const sortScheduleObjects = <T extends ScheduleObject>(
   items?: Iterable<T> | null,
 ): T[] => {
-  const strCompare = (a: ScheduleItem, b: ScheduleItem) => {
-    const aId = a.id ?? ""
-    const bId = b.id ?? ""
-    return aId.localeCompare(bId, "en")
-  }
+  const arr = [...(items ?? [])]
 
-  const intervalsArr = []
-  const otherArr = []
+  arr.sort(strCompare)
 
-  for (const item of items ?? []) {
-    if ("startDate" in item) {
-      intervalsArr.push(item)
-    } else {
-      otherArr.push(item)
-    }
-  }
+  sortIntervalsByStartDate(arr)
+  return arr
+}
 
-  intervalsArr.sort(strCompare)
-  otherArr.sort(strCompare)
-
-  sortIntervalsByStartDate(intervalsArr)
-  return [...otherArr, ...intervalsArr] as T[]
+const strCompare = (a: ScheduleObject, b: ScheduleObject) => {
+  const aId = a.id ?? ""
+  const bId = b.id ?? ""
+  return aId.localeCompare(bId, "en")
 }
 
 /**
@@ -57,6 +46,25 @@ export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[] {
 
 // a singleton empty array is used for referential stability
 iterToArr.empty = [] as const
+
+
+/**
+ * Return an iterable as a set.
+ */
+export function iterToSet(iterable?: null): ReadonlySet<never>
+export function iterToSet<T>(iterable?: Iterable<T> | null): ReadonlySet<T>
+export function iterToSet<T>(iterable?: Iterable<T> | null): ReadonlySet<T> {
+  if (iterable == null) {
+    return iterToSet.empty
+  } else if (iterable instanceof Set) {
+    return iterable
+  } else {
+    return new Set(iterable)
+  }
+}
+
+// a singleton empty set is used for referential stability
+iterToSet.empty = new Set() as ReadonlySet<never>
 
 export type OmitUndef<T> = {
   [K in keyof T]: Exclude<T[K], undefined>

@@ -4,10 +4,12 @@
  */
 
 import dayjs from "dayjs"
+import durationPlugin from "dayjs/plugin/duration.js"
 import utcPlugin from "dayjs/plugin/utc.js"
 import tzPlugin from "dayjs/plugin/timezone.js"
 import type { Interval } from "./types.js"
 
+dayjs.extend(durationPlugin)
 dayjs.extend(utcPlugin)
 dayjs.extend(tzPlugin)
 
@@ -34,6 +36,20 @@ export const formatISO = (d: dayjs.Dayjs): string => {
   } else {
     return d.format("YYYY-MM-DDTHH:mm:ssZ")
   }
+}
+
+/**
+ * Parse an ISO 8601 duration string.
+ */
+export const parseDuration = (isoStr: string): durationPlugin.Duration => {
+  return dayjs.duration(isoStr)
+}
+
+/**
+ * Format a duration as an ISO 8601 string.
+ */
+export const formatDuration = (d: durationPlugin.Duration): string => {
+  return d.toISOString()
 }
 
 /**

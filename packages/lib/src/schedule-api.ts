@@ -1,85 +1,57 @@
 import z from "zod"
 import wretch from "wretch"
-import type { ScheduleAPI, ScheduleItem } from "./types.js"
-import { sortScheduleItems } from "./utils.js"
-import { parseScheduleItem } from "./parse/json.js"
-import { intervalToTz } from "./date.js"
-import { getEmbeddedItems } from "./data.js"
+import type { Parser, ScheduleAPI, ScheduleObject } from "./types.js"
 
-const itemsSchema = z.object({
-  items: z.array(z.record(z.string(), z.unknown())),
+const itemsSchema = z.looseObject({
+  items: z.array(z.unknown()),
 })
 
 /**
  * Make a {@link ScheduleAPI} that returns items parsed from an iterable.
  */
 export const makeParsedScheduleItemsAPI = (
-  items: Iterable<unknown>,
+  parser: Parser<ScheduleObject>,
+  items?: Iterable<unknown> | null,
+  options?: {
+    name?: string
+  }
 ): ScheduleAPI => {
-  const itemsArr = [...items]
+  const name = options?.name || "data source"
   return {
     async getItems() {
-      const parsedItems = itemsArr
-        .map(parseScheduleItem)
-        .map((parsed) => {
-          if (parsed.success) {
-            return parsed.data
-          } else {
-            console.error(
-              `failed to parse schedule item:\n${parsed.message}`,
-              parsed,
-            )
-            return undefined
-          }
-        })
-        .filter((v) => !!v)
+      const parsed: ScheduleObject[] = []
 
-      const withEmbedded = []
+      let i = 0
 
-      for (const item of parsedItems) {
-        withEmbedded.push(item, ...getEmbeddedItems(item))
+      for (const obj of items ?? []) {
+        const parseResult = parser(obj)
+        if (parseResult.success) {
+          parsed.push(parseResult.data)
+        } else {
+          console.error(
+            `failed to parse item ${i} from ${name}:\n` +
+            `${parseResult.message}`,
+            obj
+          )
+        }
+        i++
       }
 
-      return withEmbedded
-    },
+      return parsed
+    }
   }
 }
 
 /**
  * Make a {@link ScheduleAPI} that returns items from a URL.
  */
-export const makeScheduleFetchAPI = (url: string) => {
+export const makeScheduleFetchAPI = (parser: Parser<ScheduleObject>, url: string) => {
   return {
     async getItems() {
       const res = await wretch(url).get().json()
       const respBody = itemsSchema.parse(res)
-      const arrAPI = makeParsedScheduleItemsAPI(respBody.items)
+      const arrAPI = makeParsedScheduleItemsAPI(parser, respBody.items, { name: url })
       return await arrAPI.getItems()
-    },
-  }
-}
-
-/**
- * Wrap a {@link ScheduleAPI} to change all dates to the given time zone.
- */
-export const makeZonedScheduleAPI = (
-  api: ScheduleAPI,
-  timeZone: string,
-): ScheduleAPI => {
-  return {
-    async getItems() {
-      const results = await api.getItems()
-      const zoned = []
-
-      for (const item of results) {
-        if ("startDate" in item || "endDate" in item) {
-          zoned.push(intervalToTz(timeZone, item))
-        } else {
-          zoned.push(item)
-        }
-      }
-
-      return zoned
     },
   }
 }
@@ -91,24 +63,11 @@ export const composeScheduleAPIs = (...objs: ScheduleAPI[]): ScheduleAPI => {
   return {
     async getItems() {
       const results = await Promise.all(objs.map((o) => o.getItems()))
-      const concat: ScheduleItem[] = []
+      const concat: ScheduleObject[] = []
       results.forEach((res) => {
         concat.push(...res)
       })
       return concat
-    },
-  }
-}
-
-/**
- * Wrap a {@link ScheduleAPI} to sort the items.
- */
-export const makeSortedScheduleAPI = (api: ScheduleAPI): ScheduleAPI => {
-  return {
-    async getItems() {
-      const res = await api.getItems()
-      const arr = [...res]
-      return sortScheduleItems(arr)
     },
   }
 }

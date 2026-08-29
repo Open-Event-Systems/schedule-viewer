@@ -6,8 +6,9 @@
 import z from "zod"
 
 import dayjs, { type Dayjs } from "dayjs"
-import { formatISO, parseISO } from "./date.js"
+import { formatDuration, formatISO, parseDuration, parseISO } from "./date.js"
 import { omitUndef, type OmitUndef } from "./utils.js"
+import { type Duration } from "dayjs/plugin/duration.js"
 
 /**
  * Schema for a {@link Dayjs} instance.
@@ -24,11 +25,33 @@ export const dayJSSchema = z
   })
 
 /**
+ * Schema for a {@link Duration} instance.
+ */
+export const durationSchema = z
+  .custom<Duration>((v) => dayjs.isDuration(v), "Invalid duration")
+  .superRefine((arg, ctx) => {
+    if (isNaN(arg.asSeconds())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid duration"
+      })
+    }
+  })
+
+/**
  * Codec that parses a {@link Dayjs} instance from an ISO string.
  */
 export const isoDateTimeSchema = z.codec(z.string(), dayJSSchema, {
   decode: (v) => parseISO(v),
   encode: (v) => formatISO(v),
+})
+
+/**
+ * Codec that parses a {@link Duration} instance from an ISO string.
+ */
+export const isoDurationSchema = z.codec(z.string(), durationSchema, {
+  decode: (v) => parseDuration(v),
+  encode: (v) => formatDuration(v),
 })
 
 /**

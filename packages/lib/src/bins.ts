@@ -3,64 +3,31 @@
  * @module
  */
 
-import dayjs, { type Dayjs } from "dayjs"
+import { type Dayjs } from "dayjs"
 import { isBounded } from "./utils.js"
 import { contains } from "./time.js"
-import { iterUniqueIds } from "./filter.js"
 
 export type Bin<T> = Readonly<{
   key: string
   name: string
-  items?: Iterable<T>
+  items: Iterable<T>
 }>
 
 export type BinFunc<InT, OutT extends InT = InT> = <T extends InT>(
-  items: Iterable<T>,
+  items?: Iterable<T> | null,
 ) => Iterable<Bin<OutT & T>>
 
 /**
- * Return a function to bin items by name.
+ * A function to bin items by name.
  */
 export function* binByName<
-  T extends { readonly id?: string; readonly name?: string },
->(items: Iterable<T>): Generator<Bin<T>, void, void> {
-  const getBin = (normName: string) => {
-    const c = normName.charAt(0)
-    if (c == "") {
-      return "Other"
-    } else if (numPattern.test(c)) {
-      return "#"
-    } else {
-      return c
-    }
-  }
-
-  const getBinSortValue = (c: string) => {
-    if (c == "" || c == "Other") {
-      return 2
-    } else if (c == "#") {
-      return 0
-    } else {
-      return 1
-    }
-  }
-
-  const compareBinKey = (a: string, b: string) => {
-    const aVal = getBinSortValue(a)
-    const bVal = getBinSortValue(b)
-    if (aVal == bVal) {
-      return a.localeCompare(b)
-    } else {
-      return aVal - bVal
-    }
-  }
-
+  T extends { readonly name?: string },
+>(items?: Iterable<T> | null): Generator<Bin<T>, void, void> {
   // first sort by name
-
   const mapped = []
-  for (const item of iterUniqueIds(items)) {
+  for (const item of items ?? []) {
     const normName = toAlphaSortable(item.name)
-    const binKey = getBin(normName)
+    const binKey = getNameBinKey(normName)
     mapped.push({
       normName: normName,
       binKey,
@@ -71,7 +38,7 @@ export function* binByName<
   // Sort by (bin key, normName)
 
   mapped.sort((a, b) => a.normName.localeCompare(b.normName))
-  mapped.sort((a, b) => compareBinKey(a.binKey, b.binKey))
+  mapped.sort((a, b) => compareNameBinKey(a.binKey, b.binKey))
 
   let curBin: { key: string; name: string; items: T[] } | undefined
 
@@ -96,36 +63,59 @@ export function* binByName<
   }
 }
 
+const getNameBinKey = (normName: string) => {
+  const c = normName.charAt(0)
+  if (c == "") {
+    return "Other"
+  } else if (numPattern.test(c)) {
+    return "#"
+  } else {
+    return c
+  }
+}
+
+const getNameBinSortValue = (c: string) => {
+  if (c == "" || c == "Other") {
+    return 2
+  } else if (c == "#") {
+    return 0
+  } else {
+    return 1
+  }
+}
+
+const compareNameBinKey = (a: string, b: string) => {
+  const aVal = getNameBinSortValue(a)
+  const bVal = getNameBinSortValue(b)
+  if (aVal == bVal) {
+    return a.localeCompare(b)
+  } else {
+    return aVal - bVal
+  }
+}
+
 /**
  * Return a function to bin items by tags.
  */
 export const makeTagBinFunc = (
-  tagEntries: Iterable<Readonly<{ tag: string; name: string }>>,
-): BinFunc<{ readonly id?: string; readonly keywords?: Iterable<string> }> => {
+  tagData: Iterable<string | Readonly<{ value: string, label?: string }>>,
+): BinFunc<{ readonly tags?: Iterable<string> }> => {
   const nameByTag = new Map<string, [string, string]>()
-  for (const entry of tagEntries) {
-    const sortKey = toAlphaSortable(entry.name)
+  for (const entry of tagData) {
+    const { value, label } = typeof entry == "string" ? { value: entry } : entry
+    const name = label || value
+    const sortKey = toAlphaSortable(name)
     if (sortKey) {
-      nameByTag.set(entry.tag, [entry.name, sortKey])
-    }
-  }
-
-  const compareTags = (a: string, b: string) => {
-    const aVal = a == "N/A" ? 1 : 0
-    const bVal = b == "N/A" ? 1 : 0
-    if (aVal == bVal) {
-      return a.localeCompare(b)
-    } else {
-      return aVal - bVal
+      nameByTag.set(value, [name, sortKey])
     }
   }
 
   return function* <
-    T extends { readonly id?: string; readonly tags?: Iterable<string> },
-  >(items: Iterable<T>) {
+    T extends { readonly tags?: Iterable<string> },
+  >(items?: Iterable<T> | null) {
     const allItems = []
 
-    for (const item of iterUniqueIds(items)) {
+    for (const item of items ?? []) {
       const validTags = Array.from(
         item.tags ?? [],
         (t) => [t, nameByTag.get(t)] as const,
@@ -174,20 +164,29 @@ export const makeTagBinFunc = (
   }
 }
 
+const compareTags = (a: string, b: string) => {
+  const aVal = a == "N/A" ? 1 : 0
+  const bVal = b == "N/A" ? 1 : 0
+  if (aVal == bVal) {
+    return a.localeCompare(b)
+  } else {
+    return aVal - bVal
+  }
+}
+
 /**
  * Return a function to bin items by start time.
  *
  * The items must be sorted by start date.
  */
 export const makeTimeBinFunc = (
-  now?: Dayjs,
+  now: Dayjs,
 ): BinFunc<
   Readonly<{ startDate?: Dayjs; endDate?: Dayjs }>,
   Readonly<{ startDate: Dayjs; endDate: Dayjs }>
 > => {
-  now = now ?? dayjs()
   return function* <T extends Readonly<{ startDate?: Dayjs; endDate?: Dayjs }>>(
-    items: Iterable<T>,
+    items?: Iterable<T> | null,
   ) {
     const nonNowItems = []
     const nowBin = {
@@ -196,7 +195,7 @@ export const makeTimeBinFunc = (
       items: new Array<T & { startDate: Dayjs; endDate: Dayjs }>(),
     }
 
-    for (const item of items) {
+    for (const item of items ?? []) {
       if (!isBounded(item)) {
         continue
       }
@@ -215,12 +214,13 @@ export const makeTimeBinFunc = (
 
     let curBin:
       | {
-          key: string
-          keyTime: number
-          name: string
-          items: (T & { startDate: Dayjs; endDate: Dayjs })[]
-        }
+        key: string
+        keyTime: number
+        name: string
+        items: (T & { startDate: Dayjs; endDate: Dayjs })[]
+      }
       | undefined
+
     for (const item of nonNowItems) {
       if (!isBounded(item)) {
         continue
@@ -263,18 +263,18 @@ export const makeDayBinFunc = (
   dateFormat = "dddd, MMMM D",
 ): BinFunc<Readonly<{ startDate?: Dayjs }>, Readonly<{ startDate: Dayjs }>> => {
   return function* <T extends Readonly<{ startDate?: Dayjs }>>(
-    items: Iterable<T>,
+    items?: Iterable<T> | null,
   ) {
     let curBin:
       | {
-          key: string
-          endTime: number
-          name: string
-          items: (T & { startDate: Dayjs })[]
-        }
+        key: string
+        endTime: number
+        name: string
+        items: (T & { startDate: Dayjs })[]
+      }
       | undefined
 
-    for (const item of items) {
+    for (const item of items ?? []) {
       if (!hasStart(item)) {
         continue
       }

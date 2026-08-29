@@ -98,8 +98,7 @@ export type ItemDetailsProps = {
   tagEntries?: Iterable<TagConfigEntry> | undefined
   large?: boolean | undefined
   renderName?:
-    | ((props: ComponentPropsWithoutRef<"h2">) => ReactNode)
-    | undefined
+    ((props: ComponentPropsWithoutRef<"h2">) => ReactNode) | undefined
 } & ItemDetailsRootProps
 
 const _ItemDetails = memo((props: ItemDetailsProps) => {

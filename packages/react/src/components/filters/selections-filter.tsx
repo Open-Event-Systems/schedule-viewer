@@ -1,11 +1,12 @@
 import { Button, type ButtonGroupProps, useProps } from "@mantine/core"
 import clsx from "clsx"
 
-import { iterToArr } from "@open-event-systems/schedule-lib"
-import type { AllHTMLAttributes, ReactNode } from "react"
-import { IconBookmark, IconEye } from "@tabler/icons-react"
+import { iterToSet } from "@open-event-systems/schedule-lib"
 
 import classes from "./selections-filter.module.scss"
+import type { MouseEvent } from "react"
+import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
+import { EyeIcon } from "@phosphor-icons/react/dist/icons/Eye"
 
 export const selectionsFilterOptions = ["bookmarked", "unvisited"] as const
 
@@ -14,52 +15,54 @@ export type SelectionsFilterOption = (typeof selectionsFilterOptions)[number]
 export type SelectionsFilterProps = {
   enableOptions?: Iterable<SelectionsFilterOption>
   value?: Iterable<SelectionsFilterOption>
-  onChange?: (value: SelectionsFilterOption[]) => void
-  renderButton?: (
-    props: AllHTMLAttributes<HTMLElement>,
-    option: SelectionsFilterOption,
-    enabled: boolean,
-  ) => ReactNode
+  onChange?: (value: ReadonlySet<SelectionsFilterOption>) => void
+  getHref?: (value: ReadonlySet<SelectionsFilterOption>) => string
+  small?: boolean
 } & ButtonGroupProps
 
 export const SelectionsFilter = (props: SelectionsFilterProps) => {
-  const { className, enableOptions, value, onChange, renderButton, ...other } =
-    useProps(
-      "SelectionsFilter",
-      { enableOptions: selectionsFilterOptions },
-      props,
-    )
+  const {
+    className,
+    enableOptions,
+    value,
+    onChange,
+    getHref,
+    small,
+    ...other
+  } = useProps(
+    "SelectionsFilter",
+    { enableOptions: selectionsFilterOptions },
+    props,
+  )
 
-  const optsArr = iterToArr(enableOptions)
-  const valArr = iterToArr(value)
+  const optsSet = iterToSet(enableOptions)
+  const valSet = iterToSet(value)
 
   const els = []
 
-  if (optsArr.includes("bookmarked")) {
-    const render = renderButton
-      ? (props: AllHTMLAttributes<HTMLElement>) => {
-          return renderButton(
-            props,
-            "bookmarked",
-            !valArr.includes("bookmarked"),
-          )
-        }
-      : undefined
+  if (optsSet.has("bookmarked")) {
+    const newValue = new Set(valSet)
+    if (valSet.has("bookmarked")) {
+      newValue.delete("bookmarked")
+    } else {
+      newValue.add("bookmarked")
+    }
+
+    const newHref = getHref && getHref(newValue)
 
     els.push(
       <Button
         key="bookmarked"
-        renderRoot={render}
+        component={getHref ? "a" : "button"}
         className={clsx(classes.button)}
-        leftSection={<IconBookmark />}
-        variant={valArr.includes("bookmarked") ? "filled" : "default"}
-        onClick={() => {
+        leftSection={<BookmarkIcon size={20} />}
+        variant={valSet.has("bookmarked") ? "filled" : "default"}
+        href={newHref}
+        size={small ? "xs" : "sm"}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           if (onChange) {
-            if (valArr.includes("bookmarked")) {
-              onChange([...valArr].filter((v) => v != "bookmarked"))
-            } else {
-              onChange([...valArr, "bookmarked"])
-            }
+            onChange(newValue)
           }
         }}
       >
@@ -67,26 +70,29 @@ export const SelectionsFilter = (props: SelectionsFilterProps) => {
       </Button>,
     )
   }
-  if (optsArr.includes("unvisited")) {
-    const render = renderButton
-      ? (props: AllHTMLAttributes<HTMLElement>) => {
-          return renderButton(props, "unvisited", !valArr.includes("unvisited"))
-        }
-      : undefined
+  if (optsSet.has("unvisited")) {
+    const newValue = new Set(valSet)
+    if (valSet.has("unvisited")) {
+      newValue.delete("unvisited")
+    } else {
+      newValue.add("unvisited")
+    }
+
+    const newHref = getHref && getHref(newValue)
+
     els.push(
       <Button
         key="unvisited"
-        renderRoot={render}
+        component={getHref ? "a" : "button"}
         className={clsx(classes.button)}
-        leftSection={<IconEye />}
-        variant={valArr.includes("unvisited") ? "filled" : "default"}
-        onClick={() => {
+        leftSection={<EyeIcon size={20} />}
+        variant={valSet.has("unvisited") ? "filled" : "default"}
+        href={newHref}
+        size={small ? "xs" : "sm"}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           if (onChange) {
-            if (valArr.includes("unvisited")) {
-              onChange([...valArr].filter((v) => v != "unvisited"))
-            } else {
-              onChange([...valArr, "unvisited"])
-            }
+            onChange(newValue)
           }
         }}
       >

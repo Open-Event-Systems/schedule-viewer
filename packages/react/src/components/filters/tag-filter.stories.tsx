@@ -1,30 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { TagFilter } from "./tag-filter.js"
+import { TagFilter, type TagFilterMode } from "./tag-filter.js"
 import { useCallback, useState } from "react"
+import { tagData } from "../../test-data-new.js"
 
 const meta: Meta<typeof TagFilter> = {
   component: TagFilter,
   args: {
-    tags: [
-      {
-        tag: "art",
-        name: "Art",
-      },
-      {
-        tag: "photography",
-        name: "Photography",
-      },
-      {
-        tag: "mature",
-        name: "Mature",
-      },
-    ],
-    tagIndicators: [
-      {
-        tags: ["mature"],
-        label: "18+",
-      },
-    ],
+    label: "Filter Tags",
+    tags: [...tagData, "Other"],
   },
 }
 
@@ -35,6 +18,8 @@ export const Default: StoryObj<typeof meta> = {
     const [disabledTags, setDisabledTags] = useState<ReadonlySet<string>>(
       new Set(),
     )
+
+    const [mode, setMode] = useState<TagFilterMode>("exclude")
 
     const onSetDisabled = useCallback(
       (tag: string, disabled: boolean) => {
@@ -54,8 +39,10 @@ export const Default: StoryObj<typeof meta> = {
     return (
       <TagFilter
         {...args}
+        mode={mode}
         disabledTags={disabledTags}
         onSetDisabled={onSetDisabled}
+        onSetMode={setMode}
       />
     )
   },

@@ -3,111 +3,45 @@
  * @module
  */
 
-import {
-  EVENT_TYPES,
-  getJSONLDTypesFromHierarchy,
-  ORGANIZATION_TYPES,
-  type JSONLDTypesFromHierarchy,
-} from "./ld.js"
-import type {
-  Address,
-  Organization,
-  Person,
-  Place,
-  ScheduleDataTypeMap,
-  ScheduleEvent,
-  ScheduleItem,
-} from "./types.js"
+import { type ScheduleObjectBaseProps, type ScheduleDataTypeMap, type ScheduleEvent, type Vendor, type Amenity, type Profile, type Location, type ScheduleObject, type ScheduleObjectOccurrence } from "./types.js"
+import { omitUndef } from "./utils.js"
 
-export type GetEmbeddedItemsFunc = (
-  item: ScheduleItem,
-) => Iterable<ScheduleItem>
+type IndexTestFunc<D extends ScheduleObjectBaseProps, T extends D> = (obj: D) => obj is T
 
-/**
- * Get embedded items from a {@link ScheduleItem}.
- */
-export const getEmbeddedItems = function* (
-  item: ScheduleItem,
-): Generator<ScheduleItem, void, unknown> {
-  if ("organizer" in item) {
-    yield* yieldItems(item.organizer)
-  }
-
-  if ("performer" in item) {
-    yield* yieldItems(item.performer)
-  }
-
-  if (
-    "superEvent" in item &&
-    item.superEvent &&
-    typeof item.superEvent != "string"
-  ) {
-    yield item.superEvent
-  }
-
-  if ("subEvent" in item) {
-    yield* yieldItems(item.subEvent)
-  }
-
-  if ("location" in item) {
-    yield* yieldItems(item.location)
-  }
-
-  if ("address" in item && item.address && typeof item.address != "string") {
-    yield item.address
-  }
+export type IndexConfig<D extends ScheduleObjectBaseProps, M extends ScheduleDataTypeMap<D>> = {
+  readonly [K in keyof M]: IndexTestFunc<D, M[K]>
 }
 
-function yieldItems(gen?: null): Generator<never, void, unknown>
-function yieldItems<T>(gen: Iterable<T | string>): Generator<T, void, unknown>
-function* yieldItems<T>(
-  gen: Iterable<T | string> | null | undefined,
-): Generator<T, void, unknown> {
-  if (!gen) {
-    return
-  }
-
-  for (const item of gen) {
-    if (typeof item != "string") {
-      yield item
-    }
-  }
-}
-
-type IndexConfigEntry<T extends ScheduleItem> = {
-  test: (obj: ScheduleItem) => obj is T
-  getIds: (obj: T) => Iterable<string>
-}
-
-export type IndexConfig<M extends ScheduleDataTypeMap> = {
-  readonly [K in keyof M]: IndexConfigEntry<M[K]>
-}
-
-export type IndexResult<M extends ScheduleDataTypeMap> = {
-  items: ScheduleItem[]
-  byId: Map<string, ScheduleItem>
+export type IndexResult<D extends ScheduleObjectBaseProps, M extends ScheduleDataTypeMap<D>> = {
+  items: M[keyof M][]
+  byId: Map<string, M[keyof M]>
   byType: {
     -readonly [K in keyof M]: {
       items: M[K][]
       byId: Map<string, M[K]>
     }
   }
-  other: ScheduleItem[]
+  other: readonly D[]
 }
 
 /**
  * Index items by ID and type.
  */
-export const indexData = <M extends ScheduleDataTypeMap>(
-  config: IndexConfig<M>,
-  items?: Iterable<ScheduleItem>,
-): IndexResult<M> => {
+export const indexData = <D extends ScheduleObjectBaseProps, M extends ScheduleDataTypeMap<D>>(
+  config: IndexConfig<D, M>,
+  items?: Iterable<D>,
+): IndexResult<D, M> => {
   const result = {
-    items: new Array<ScheduleItem>(),
-    byId: new Map(),
-    byType: {},
-    other: new Array<ScheduleItem>(),
-  } as IndexResult<M>
+    items: new Array<M[keyof M]>(),
+    byId: new Map<string, M[keyof M]>(),
+    byType: {} as {
+      [K in keyof M]: {
+        items: M[K][]
+        byId: Map<string, M[K]>
+      }
+    },
+    other: new Array<D>(),
+  }
 
   let key: keyof M
   for (key of Object.keys(config)) {
@@ -117,26 +51,25 @@ export const indexData = <M extends ScheduleDataTypeMap>(
     }
   }
 
-  const add = (item: ScheduleItem) => {
+  const add = (item: D) => {
     let key: keyof M
-    let matched = false
+    let matchedItem
+
     for (key of Object.keys(config)) {
       const entry = config[key]
-      if (entry.test(item)) {
+      if (entry(item)) {
         const res = result.byType[key]
         res.items.push(item)
-        for (const id of entry.getIds(item)) {
-          result.byId.set(id, item)
-          res.byId.set(id, item)
-        }
-        matched = true
+        res.byId.set(item.id, item)
+        matchedItem = item
       }
     }
 
-    if (!matched) {
-      result.other.push(item)
+    if (matchedItem) {
+      result.items.push(matchedItem)
+      result.byId.set(matchedItem.id, matchedItem)
     } else {
-      result.items.push(item)
+      result.other.push(item)
     }
   }
 
@@ -147,64 +80,41 @@ export const indexData = <M extends ScheduleDataTypeMap>(
   return result
 }
 
-const eventTypeSet: ReadonlySet<JSONLDTypesFromHierarchy<typeof EVENT_TYPES>> =
-  new Set(getJSONLDTypesFromHierarchy(EVENT_TYPES))
-const orgTypeSet: ReadonlySet<
-  JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>
-> = new Set(getJSONLDTypesFromHierarchy(ORGANIZATION_TYPES))
-
-export const isEvent = <T extends ScheduleItem>(
-  obj: T,
-): obj is T & ScheduleEvent =>
-  eventTypeSet.has(obj.type as JSONLDTypesFromHierarchy<typeof EVENT_TYPES>)
-export const isPerson = <T extends ScheduleItem>(obj: T): obj is T & Person =>
-  obj.type == "Person"
-export const isOrganization = <T extends ScheduleItem>(
-  obj: T,
-): obj is T & Organization =>
-  orgTypeSet.has(
-    obj.type as JSONLDTypesFromHierarchy<typeof ORGANIZATION_TYPES>,
-  )
-export const isPlace = <T extends ScheduleItem>(obj: T): obj is T & Place =>
-  obj.type == "Place"
-export const isAddress = <T extends ScheduleItem>(obj: T): obj is T & Address =>
-  obj.type == "PostalAddress"
-
-const getIds = function* (
-  item: ScheduleItem,
-): Generator<string, void, unknown> {
-  if (item.id) {
-    yield item.id
-  }
-
-  if (item.identifier) {
-    yield item.identifier
-  }
-
-  if (item.sameAs) {
-    yield* item.sameAs
-  }
-}
-
 export const defaultIndexConfig = {
-  events: {
-    test: isEvent,
-    getIds,
-  },
-  people: {
-    test: isPerson,
-    getIds,
-  },
-  organizations: {
-    test: isOrganization,
-    getIds,
-  },
-  places: {
-    test: isPlace,
-    getIds,
-  },
-  addresses: {
-    test: isAddress,
-    getIds,
-  },
+  events: (obj: ScheduleObject): obj is ScheduleEvent => obj.type == "event",
+  vendors: (obj: ScheduleObject): obj is Vendor => obj.type == "vendor",
+  amenities: (obj: ScheduleObject): obj is Amenity => obj.type == "amenity",
+  profiles: (obj: ScheduleObject): obj is Profile => obj.type == "profile",
+  locations: (obj: ScheduleObject): obj is Location => obj.type == "location",
 } as const
+
+/**
+ * Transform a {@link ScheduleObject} into an array of {@link ScheduleObjectOccurrence}.
+ */
+export const toOccurrences = <T extends ScheduleObject = ScheduleObject>(obj: T): ScheduleObjectOccurrence<T>[] => {
+  const occs: ScheduleObjectOccurrence<T>[] = []
+
+  if (obj.occurrences && obj.occurrences.length > 0) {
+    for (const occ of obj.occurrences) {
+      occs.push(omitUndef({
+        id: occ.id,
+        object: obj,
+        startDate: occ.startDate,
+        endDate: occ.endDate,
+        duration: occ.duration,
+        locations: occ.locations,
+      }))
+    }
+  } else {
+    occs.push(omitUndef({
+      id: obj.id,
+      object: obj,
+      startDate: obj.startDate,
+      endDate: obj.endDate,
+      duration: obj.duration,
+      locations: obj.locations,
+    }))
+  }
+
+  return occs
+}

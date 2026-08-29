@@ -21,10 +21,6 @@ describe("bin by name", () => {
       {
         name: "aa",
       },
-      {
-        id: "B",
-        name: "B",
-      },
     ]
 
     expect([...binByName(items)]).toStrictEqual([
@@ -100,25 +96,21 @@ describe("bin by name", () => {
 
 describe("bin by tag", () => {
   const tagEntries = [
-    { tag: "a", name: "Tag A" },
-    { tag: "b", name: "Tag B" },
+    { value: "a", label: "Tag A" },
+    { value: "b", label: "Tag B" },
   ]
 
   test("sort and bins by tags", () => {
     const items = [
       {
-        keywords: ["a"],
+        tags: ["a"],
       },
       {
         id: "b",
-        keywords: ["b"],
+        tags: ["b"],
       },
       {
-        keywords: ["a"],
-      },
-      {
-        id: "b",
-        keywords: ["b"],
+        tags: ["a"],
       },
     ]
 
@@ -141,7 +133,7 @@ describe("bin by tag", () => {
   test("include once per tag", () => {
     const items = [
       {
-        keywords: ["a", "b"],
+        tags: ["a", "b"],
       },
     ]
 
@@ -151,12 +143,12 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ keywords: ["a", "b"] }],
+        items: [{ tags: ["a", "b"] }],
       },
       {
         key: "tag-b",
         name: "Tag B",
-        items: [{ keywords: ["a", "b"] }],
+        items: [{ tags: ["a", "b"] }],
       },
     ])
   })
@@ -164,7 +156,7 @@ describe("bin by tag", () => {
   test("omit missing tags", () => {
     const items = [
       {
-        keywords: ["a", "c"],
+        tags: ["a", "c"],
       },
     ]
 
@@ -174,7 +166,7 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ keywords: ["a", "c"] }],
+        items: [{ tags: ["a", "c"] }],
       },
     ])
   })
@@ -182,7 +174,7 @@ describe("bin by tag", () => {
   test("add n/a tag", () => {
     const items = [
       {
-        keywords: ["c"],
+        tags: ["c"],
       },
     ]
 
@@ -192,7 +184,7 @@ describe("bin by tag", () => {
       {
         key: "na",
         name: "N/A",
-        items: [{ keywords: ["c"] }],
+        items: [{ tags: ["c"] }],
       },
     ])
   })

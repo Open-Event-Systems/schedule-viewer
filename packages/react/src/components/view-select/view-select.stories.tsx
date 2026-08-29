@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ViewSelect } from "./view-select.js"
+import { viewSelectOptions } from "../../test-data-new.js"
 
 const meta: Meta<typeof ViewSelect> = {
   component: ViewSelect,
@@ -7,4 +8,9 @@ const meta: Meta<typeof ViewSelect> = {
 
 export default meta
 
-export const Default: StoryObj<typeof ViewSelect> = {}
+export const Default: StoryObj<typeof ViewSelect> = {
+  args: {
+    data: viewSelectOptions,
+    defaultValue: "daily-agenda",
+  },
+}

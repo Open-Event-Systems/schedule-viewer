@@ -18,9 +18,7 @@ export type ItemHoverCardProps = HoverCardProps & {
       }
     | undefined
   renderItemDetails?:
-    | ((props: ItemDetailsProps) => ReactNode)
-    | undefined
-    | undefined
+    ((props: ItemDetailsProps) => ReactNode) | undefined | undefined
 }
 
 export const ItemHoverCard = memo((props: ItemHoverCardProps) => {

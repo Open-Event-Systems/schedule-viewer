@@ -1,10 +1,12 @@
-import { ActionIcon, Box, type BoxProps, Select, useProps } from "@mantine/core"
+import { ActionIcon, Box, Select, useProps } from "@mantine/core"
 import clsx from "clsx"
 import { useMemo, type MouseEvent } from "react"
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import { iterToArr, type Day } from "@open-event-systems/schedule-lib"
 
 import classes from "./day-filter.module.scss"
+import { CaretLeftIcon } from "@phosphor-icons/react/dist/icons/CaretLeft"
+import { CaretRightIcon } from "@phosphor-icons/react/dist/icons/CaretRight"
+import type { DefaultBoxProps } from "../types.js"
 
 export type DayFilterProps = {
   days?: Iterable<Day> | undefined
@@ -12,7 +14,7 @@ export type DayFilterProps = {
   selectedDay?: string | undefined
   getHref?: (day: Day) => string | undefined
   onSelectDay?: ((day: Day) => void) | undefined
-} & BoxProps
+} & DefaultBoxProps
 
 const defaultDayFormat = "dddd, MMM D"
 
@@ -79,7 +81,7 @@ export const DayFilter = (props: DayFilterProps) => {
           prevDay && onSelectDay && onSelectDay(prevDay)
         }}
       >
-        <IconChevronLeft />
+        <CaretLeftIcon />
       </ActionIcon>
       <Select
         title="Select Day"
@@ -119,7 +121,7 @@ export const DayFilter = (props: DayFilterProps) => {
           nextDay && onSelectDay && onSelectDay(nextDay)
         }}
       >
-        <IconChevronRight />
+        <CaretRightIcon />
       </ActionIcon>
     </Box>
   )

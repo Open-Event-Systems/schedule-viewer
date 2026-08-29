@@ -1,0 +1,9 @@
+.root {
+  --width-fixed: 12rem;
+}
+
+.input {
+  &.fixedWidth {
+    width: var(--width-fixed);
+  }
+}

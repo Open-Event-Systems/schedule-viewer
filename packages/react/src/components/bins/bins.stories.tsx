@@ -1,18 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Bins } from "./bins.js"
-import { Box, List, Title } from "@mantine/core"
-import { iterToArr } from "@open-event-systems/schedule-lib"
+import { List } from "@mantine/core"
+import { iterToArr, type Bin } from "@open-event-systems/schedule-lib"
 
 const meta: Meta<typeof Bins> = {
   component: Bins,
-  subcomponents: { Root: Bins.Root, Title: Bins.Title, Bin: Bins.Bin },
 }
 
 export default meta
 
 export const Default: StoryObj<typeof Bins<string>> = {
   args: {
-    name: "Bins Title",
     bins: [
       {
         key: "1",
@@ -25,17 +23,77 @@ export const Default: StoryObj<typeof Bins<string>> = {
         items: ["D", "E", "F"],
       },
     ],
-    renderTitle: (props) => <Title {...props} style={{}} order={3} />,
     renderBin: (props, bin) => {
       return (
-        <Box {...props}>
-          <Title order={4}>{bin.name}</Title>
-          <List>
-            {iterToArr(bin.items).map((i) => (
-              <List.Item key={i}>{i}</List.Item>
-            ))}
-          </List>
-        </Box>
+        <List renderRoot={(listProps) => <ul {...props} {...listProps} />}>
+          {iterToArr(bin.items).map((i) => (
+            <List.Item key={i}>{i}</List.Item>
+          ))}
+        </List>
+      )
+    },
+  },
+}
+
+export const Nested: StoryObj<typeof Bins<Bin<string>>> = {
+  args: {
+    bins: [
+      {
+        key: "1",
+        name: "Bin 1",
+        items: [
+          {
+            key: "1",
+            name: "Sub Bin 1",
+            items: ["A", "B"],
+          },
+        ],
+      },
+      {
+        key: "2",
+        name: "Bin 2",
+        items: [
+          {
+            key: "1",
+            name: "Sub Bin 2",
+            items: ["C", "D"],
+          },
+        ],
+      },
+    ],
+    renderBin: (props, bin) => {
+      return (
+        <Bins
+          {...props}
+          bins={bin.items}
+          renderBinTitle={(props) => <h3 {...props} />}
+          renderBin={(props, bin) => {
+            return (
+              <List
+                renderRoot={(listProps) => <ul {...props} {...listProps} />}
+              >
+                {iterToArr(bin.items).map((i) => (
+                  <List.Item key={i}>{i}</List.Item>
+                ))}
+              </List>
+            )
+          }}
+        />
+      )
+    },
+  },
+}
+
+export const Empty: StoryObj<typeof Bins<string>> = {
+  args: {
+    bins: [],
+    renderBin: (props, bin) => {
+      return (
+        <List renderRoot={(listProps) => <ul {...props} {...listProps} />}>
+          {iterToArr(bin.items).map((i) => (
+            <List.Item key={i}>{i}</List.Item>
+          ))}
+        </List>
       )
     },
   },

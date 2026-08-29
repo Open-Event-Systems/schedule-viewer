@@ -127,7 +127,23 @@
   display: grid;
   grid-template-columns: minmax(1rem, 1fr);
   grid-auto-rows: auto;
+
   padding: var(--item-details-padding);
+  gap: 0.25rem;
+}
+
+.occurrences {
+  display: grid;
+  grid-template-columns: minmax(1rem, 1fr);
+  grid-template-rows: auto minmax(1rem, 1fr);
+  gap: 0.25rem;
+}
+
+.occurrencesContent {
+  display: grid;
+  grid-template-columns: minmax(1rem, 1fr);
+  grid-auto-rows: auto;
+  gap: 0.25rem;
 }
 
 .contactsIcon {
@@ -180,19 +196,25 @@
   grid-area: buttons;
 
   display: grid;
-  grid-template: auto / auto auto;
-  justify-content: start;
+  grid-template: auto / auto auto minmax(auto, 1fr);
+  grid-auto-flow: column;
   justify-items: start;
   gap: 0.25rem;
 
+  padding: var(--item-details-padding);
+
+  &.noShareButton {
+    grid-template: auto / auto minmax(auto, 1fr);
+  }
+
   @each $size in "xs", "sm" {
     &[data-size="#{$size}"] {
-      grid-template:
-        "auto" auto
-        "auto" auto
-        / auto;
-      justify-content: stretch;
+      grid-template: auto auto / minmax(auto, 1fr) auto;
       justify-items: stretch;
+
+      &.noShareButton {
+        grid-template: auto auto / minmax(auto, 1fr);
+      }
     }
   }
 }
@@ -225,4 +247,9 @@
 .buttonIcon {
   font-size: var(--icon-size);
   line-height: 1;
+}
+
+.shareButton {
+  grid-column: -2 / span 1;
+  justify-self: end;
 }

@@ -4,7 +4,7 @@ import {
   Tooltip,
   useProps,
 } from "@mantine/core"
-import { IconShare3 } from "@tabler/icons-react"
+import { ShareFatIcon } from "@phosphor-icons/react/dist/icons/ShareFat"
 import clsx from "clsx"
 import { useEffect, useMemo, useState } from "react"
 
@@ -55,7 +55,7 @@ export const ShareButton = (props: ShareButtonProps) => {
           }}
           {...other}
         >
-          <IconShare3 />
+          <ShareFatIcon size={20} />
         </ActionIcon>
       </Tooltip>
     </>

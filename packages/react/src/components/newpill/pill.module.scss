@@ -25,7 +25,7 @@
   }
 
   &.disabled {
-    opacity: 0.5;
+    filter: brightness(50%);
   }
 }
 
@@ -65,6 +65,10 @@ button.root {
 
   &.isHighlighted {
     box-shadow: var(--pill-highlighted-box-shadow);
+  }
+
+  .root.disabled & {
+    border-style: dotted;
   }
 }
 

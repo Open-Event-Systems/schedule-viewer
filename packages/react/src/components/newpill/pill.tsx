@@ -105,6 +105,12 @@ export const PillRoot = (props: PillRootProps) => {
     props,
   )
 
+  const dataProps: Record<string, unknown> = {}
+
+  if (disabled) {
+    dataProps["data-disabled"] = "true"
+  }
+
   return (
     <Box
       className={clsx(
@@ -114,6 +120,7 @@ export const PillRoot = (props: PillRootProps) => {
         disabled && classes.disabled,
         className,
       )}
+      {...dataProps}
       {...other}
     />
   )

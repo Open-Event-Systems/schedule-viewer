@@ -1,7 +1,56 @@
-.disabled {
-  filter: brightness(50%);
+.root {
+  display: grid;
+  gap: 0.25rem;
+}
 
-  & .pillBody {
-    border-style: dotted;
+.modeSelect {
+  display: grid;
+  grid-template: auto / auto auto auto 1fr;
+  justify-items: start;
+  gap: 0.25rem;
+}
+
+.modeSelectLabel {
+  font-size: var(--mantine-font-size-xs);
+  line-height: var(--mantine-line-height-xs);
+}
+
+.textButton {
+  -webkit-appearance: none;
+  border-radius: 0;
+  text-align: inherit;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  color: inherit;
+  font: inherit;
+}
+
+.modeSelectButton {
+  font-size: var(--mantine-font-size-xs);
+  line-height: var(--mantine-line-height-xs);
+
+  color: var(--mantine-primary-color-filled);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &.checked {
+    font-weight: var(--mantine-font-weight-bold);
+  }
+}
+
+.selectAllButton {
+  justify-self: end;
+  font-size: var(--mantine-font-size-xs);
+  line-height: var(--mantine-line-height-xs);
+
+  color: var(--mantine-primary-color-filled);
+
+  &:hover {
+    text-decoration: underline;
   }
 }

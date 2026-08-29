@@ -1,26 +1,43 @@
-import { Stack, Text, useProps, type StackProps } from "@mantine/core"
+import { Box, Button, Text, useProps, type TextProps } from "@mantine/core"
 import clsx from "clsx"
 import {
-  memo,
   useCallback,
+  useId,
   useMemo,
-  type ComponentPropsWithoutRef,
+  useRef,
+  type AllHTMLAttributes,
+  type KeyboardEvent,
   type ReactNode,
 } from "react"
-import type { TagConfigEntry, TagIndicatorConfigEntry } from "../../types.js"
-import { getItemPillTagClassName } from "../pill/item-pill-utils.js"
-import { makeTagIndicatorFunc } from "../../config.js"
-import { Pills, type PillProps, type PillsProps } from "../pill/pills.js"
 
 import classes from "./tag-filter.module.scss"
-import { useId } from "@mantine/hooks"
+import { Pill, type PillBoxProps, type PillProps } from "../newpill/pill.js"
+import type { DefaultBoxProps } from "../types.js"
+import { iterToArr } from "@open-event-systems/schedule-lib"
+
+export type TagFilterTagData = Readonly<{
+  value: string
+  label?: string
+  color?: string
+  indicator?: ReactNode
+  indicatorColor?: string
+  textColor?: string
+  before?: string
+  after?: string
+}>
+
+export type TagFilterMode = "exclude" | "include"
 
 export type TagFilterProps = {
-  classNames?: {
-    root?: string
-    tags?: string
-    tag?: string
-  }
+  /**
+   * The label.
+   */
+  label?: ReactNode
+
+  /**
+   * The filter mode.
+   */
+  mode?: TagFilterMode
 
   /**
    * The set of tags that have been disabled.
@@ -28,14 +45,9 @@ export type TagFilterProps = {
   disabledTags?: Iterable<string>
 
   /**
-   * A collection of {@link TagConfigEntry} objects representing the displayable tags.
+   * A collection of {@link TagFilterTagData} objects representing the displayable tags.
    */
-  tags?: Iterable<TagConfigEntry>
-
-  /**
-   * A collection of {@link TagIndicatorConfigEntry} objects.
-   */
-  tagIndicators?: Iterable<TagIndicatorConfigEntry>
+  tags?: Iterable<string | TagFilterTagData>
 
   /**
    * Handler to set a tag disabled/enabled.
@@ -43,77 +55,24 @@ export type TagFilterProps = {
   onSetDisabled?: (tag: string, disabled: boolean) => void
 
   /**
-   * Function to render a tag.
+   * Handler to set the tag filter mode.
    */
-  renderTag?: (props: TagFilterTagProps) => ReactNode
-} & StackProps &
-  ComponentPropsWithoutRef<"section">
+  onSetMode?: (mode: TagFilterMode) => void
+} & TagFilterRootProps
 
 /**
  * Tag filter component.
  */
-export const TagFilter = memo((props: TagFilterProps) => {
+const _TagFilter = (props: TagFilterProps) => {
   const {
-    className,
-    classNames,
+    label,
     disabledTags,
+    mode,
     tags,
-    tagIndicators,
     onSetDisabled,
-    renderTag,
+    onSetMode,
     ...other
   } = useProps("TagFilter", {}, props)
-
-  const tagIndicatorFunc = useMemo(
-    () => makeTagIndicatorFunc(tagIndicators ?? []),
-    [tagIndicators],
-  )
-
-  const textId = useId()
-
-  return (
-    <Stack
-      component="section"
-      className={clsx("TagFilter-root", classNames?.root, className)}
-      gap={4}
-      aria-labelledby={textId}
-      {...other}
-    >
-      <Text span id={textId} size="xs" c="dimmed">
-        Filter Tags
-      </Text>
-      <TagFilterTags
-        className={classNames?.tags}
-        tags={tags}
-        disabledTags={disabledTags}
-        onSetDisabled={onSetDisabled}
-        getIndicator={tagIndicatorFunc}
-        renderTag={renderTag}
-      />
-    </Stack>
-  )
-})
-
-TagFilter.displayName = "TagFilter"
-
-type TagFilterTagsProps = {
-  disabledTags?: Iterable<string>
-  tags?: Iterable<TagConfigEntry>
-  getIndicator?: (tags: Iterable<string>) => string | undefined
-  onSetDisabled?: (tag: string, enabled: boolean) => void
-  renderTag?: (props: TagFilterTagProps) => ReactNode
-} & PillsProps
-
-const TagFilterTags = memo((props: TagFilterTagsProps) => {
-  const {
-    disabledTags,
-    tags,
-    getIndicator,
-    onSetDisabled,
-    className,
-    renderTag,
-    ...other
-  } = useProps("TagFilterTags", {}, props)
 
   const disabledTagsSet = useMemo(() => {
     if (disabledTags instanceof Set) {
@@ -123,93 +82,279 @@ const TagFilterTags = memo((props: TagFilterTagsProps) => {
     }
   }, [disabledTags])
 
-  const defaultRenderTag = useCallback(
-    (props: TagFilterTagProps) => {
+  const tagEls = useMemo(() => {
+    return iterToArr(tags).map((tag) => {
+      const {
+        value,
+        label,
+        color,
+        before,
+        after,
+        indicator,
+        indicatorColor,
+        textColor,
+      } = typeof tag == "string" ? { value: tag } : tag
+
       return (
-        <TagFilterTag
-          key={props.tag}
-          disabled={disabledTagsSet.has(props.tag)}
-          {...props}
+        <TagFilter.Tag
+          key={value}
+          tag={value}
+          label={label || value}
+          color={color}
+          before={before}
+          after={after}
+          indicator={indicator}
+          indicatorColor={indicatorColor}
+          textColor={textColor}
+          disabled={disabledTagsSet.has(value)}
+          onSetDisabled={onSetDisabled}
         />
       )
-    },
-    [disabledTagsSet],
-  )
+    })
+  }, [tags, disabledTagsSet, onSetDisabled])
 
-  const renderTagFunc = renderTag ?? defaultRenderTag
+  const labelId = useId()
 
   return (
-    <Pills
-      className={clsx("TagFilter-tags", className)}
-      renderContent={(props) => <menu {...props} />}
-      {...other}
-    >
-      {Array.from(tags ?? [], (t) =>
-        renderTagFunc({
-          tag: t.tag,
-          title: t.name,
-          ...(getIndicator && {
-            indicator: getIndicator([t.tag]),
-          }),
-          ...(onSetDisabled && {
-            onSetDisabled: (d) => onSetDisabled(t.tag, d),
-          }),
-        }),
+    <TagFilter.Root role="group" aria-labelledby={label && labelId} {...other}>
+      {label && (
+        <TagFilter.Label id={labelId} size="xs">
+          {label}
+        </TagFilter.Label>
       )}
-    </Pills>
+      <TagFilter.Tags>{tagEls}</TagFilter.Tags>
+      <TagFilter.ModeSelect
+        mode={mode}
+        tags={tags}
+        disabledTags={disabledTags}
+        onSetMode={onSetMode}
+        onSetDisabled={onSetDisabled}
+      />
+    </TagFilter.Root>
   )
-})
+}
 
-TagFilterTags.displayName = "TagFilter.Tags"
+export type TagFilterRootProps = DefaultBoxProps
 
-type TagFilterTagProps = {
+export const TagFilterRoot = (props: TagFilterRootProps) => {
+  const { className, ...other } = useProps("TagFilterRoot", null, props)
+
+  return (
+    <Box
+      className={clsx("TagFilter-root", classes.root, className)}
+      {...other}
+    />
+  )
+}
+
+export type TagFilterLabelProps = TextProps & Omit<DefaultBoxProps, "size">
+
+export const TagFilterLabel = (props: TagFilterLabelProps) => {
+  const { className, ...other } = useProps("TagFilterLabel", null, props)
+
+  return (
+    <Text
+      span
+      className={clsx("TagFilter-label", classes.label, className)}
+      {...other}
+    />
+  )
+}
+
+export type TagFilterTagsProps = PillBoxProps
+
+export const TagFilterTags = (props: TagFilterTagsProps) => {
+  const { className, ...other } = useProps("TagFilterTags", null, props)
+
+  return (
+    <Pill.Box
+      className={clsx("TagFilter-tags", className)}
+      renderRoot={(props) => <menu {...props} />}
+      {...other}
+    />
+  )
+}
+
+export type TagFilterTagProps = {
   tag: string
-  title?: string
-  disabled?: boolean
-  indicator?: string
-  onSetDisabled?: (disabled: boolean) => void
-} & PillProps
+  label?: ReactNode
+  onSetDisabled?: (tag: string, enabled: boolean) => void
+} & Omit<PillProps, "label" | "children">
 
-const TagFilterTag = memo((props: TagFilterTagProps) => {
+export const TagFilterTag = (props: TagFilterTagProps) => {
   const {
     tag,
-    title,
+    label,
     disabled,
     onSetDisabled,
     className,
     classNames,
+    renderRoot,
     ...other
   } = useProps("TagFilterTag", {}, props)
 
+  const wrappedRenderRoot = useCallback(
+    (props: AllHTMLAttributes<HTMLElement>) => {
+      const innerRender = renderRoot || defaultRenderTag
+
+      return innerRender({
+        role: "switch",
+        "aria-checked": !disabled,
+        onClick: () => onSetDisabled && onSetDisabled(tag, !disabled),
+        ...props,
+      })
+    },
+    [renderRoot, disabled, onSetDisabled],
+  )
+
   return (
-    <Pills.Pill
-      className={clsx(
-        "TagFilter-tag",
-        classes.tag,
-        disabled && ["TagFilter-disabled", classes.disabled],
-        getItemPillTagClassName(tag),
-        className,
-      )}
+    <Pill
+      className={clsx("TagFilter-tag", classes.tag, className)}
       classNames={{
         ...classNames,
-        body: clsx("TagFilter-pillBody", classes.pillBody, classNames?.body),
+        body: clsx("TagFilter-tagBody", classNames?.body),
       }}
-      onClickBody={() => {
-        onSetDisabled && onSetDisabled(!disabled)
-      }}
-      renderBody={(props) => (
-        <button
-          role="switch"
-          aria-checked={!disabled}
-          {...props}
-          type="button"
-        />
-      )}
+      renderRoot={wrappedRenderRoot}
+      disabled={disabled}
+      data-tag={tag}
       {...other}
     >
-      {title || tag}
-    </Pills.Pill>
+      {label}
+    </Pill>
   )
-})
+}
 
-TagFilterTag.displayName = "TagFilter.Tag"
+export type TagFilterModeSelectProps = {
+  mode?: TagFilterMode
+  tags?: Iterable<string | TagFilterTagData>
+  disabledTags?: Iterable<string>
+  onSetMode?: (mode: TagFilterMode) => void
+  onSetDisabled?: (tag: string, enabled: boolean) => void
+} & Omit<DefaultBoxProps, "children">
+
+export const TagFilterModeSelect = (props: TagFilterModeSelectProps) => {
+  const {
+    className,
+    mode,
+    tags,
+    disabledTags,
+    onSetMode,
+    onSetDisabled,
+    ...other
+  } = useProps("TagFilterModeSelect", { mode: "exclude" } as const, props)
+
+  const labelId = useId()
+
+  const excludeRef = useRef<HTMLButtonElement | null>(null)
+  const includeRef = useRef<HTMLButtonElement | null>(null)
+
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.key == "ArrowUp" ||
+        e.key == "ArrowRight" ||
+        e.key == "ArrowDown" ||
+        e.key == "ArrowLeft"
+      ) {
+        e.preventDefault()
+        const newMode = mode == "exclude" ? "include" : "exclude"
+        onSetMode && onSetMode(newMode)
+
+        if (newMode == "exclude") {
+          excludeRef.current?.focus()
+        } else {
+          includeRef.current?.focus()
+        }
+      }
+    },
+    [mode, onSetMode, includeRef, excludeRef],
+  )
+
+  let allEnabled = true
+  if (disabledTags instanceof Set) {
+    allEnabled = disabledTags.size == 0
+  } else {
+    const arr = iterToArr(disabledTags)
+    allEnabled = arr.length == 0
+  }
+
+  return (
+    <Box
+      className={clsx("TagFilter-modeSelect", classes.modeSelect, className)}
+      role="radiogroup"
+      aria-labelledby={labelId}
+      {...other}
+    >
+      <Text
+        id={labelId}
+        span
+        className={clsx("TagFilter-modeSelectLabel", classes.modeSelectLabel)}
+      >
+        Mode:
+      </Text>
+      <Button
+        ref={excludeRef}
+        unstyled
+        role="radio"
+        aria-checked={mode == "exclude"}
+        className={clsx(
+          classes.textButton,
+          classes.modeSelectButton,
+          mode == "exclude" && classes.checked,
+        )}
+        tabIndex={mode == "exclude" ? 0 : -1}
+        onKeyDown={onKeyDown}
+        onClick={() => onSetMode && onSetMode("exclude")}
+      >
+        Exclude
+      </Button>
+      <Button
+        ref={includeRef}
+        unstyled
+        role="radio"
+        aria-checked={mode == "include"}
+        className={clsx(
+          classes.textButton,
+          classes.modeSelectButton,
+          mode == "include" && classes.checked,
+        )}
+        tabIndex={mode == "include" ? 0 : -1}
+        onKeyDown={onKeyDown}
+        onClick={() => onSetMode && onSetMode("include")}
+      >
+        Include
+      </Button>
+      <Button
+        unstyled
+        className={clsx(classes.textButton, classes.selectAllButton)}
+        onClick={() => {
+          if (onSetDisabled) {
+            if (allEnabled) {
+              for (const tag of tags ?? []) {
+                onSetDisabled(typeof tag == "string" ? tag : tag.value, true)
+              }
+            } else {
+              for (const tag of disabledTags ?? []) {
+                onSetDisabled(tag, false)
+              }
+            }
+          }
+        }}
+      >
+        Select {allEnabled ? "None" : "All"}
+      </Button>
+    </Box>
+  )
+}
+
+const defaultRenderTag = (props: AllHTMLAttributes<HTMLElement>) => (
+  <button {...props} type="button" />
+)
+
+export const TagFilter = Object.assign(_TagFilter, {
+  Root: TagFilterRoot,
+  Label: TagFilterLabel,
+  Tags: TagFilterTags,
+  Tag: TagFilterTag,
+  ModeSelect: TagFilterModeSelect,
+})
