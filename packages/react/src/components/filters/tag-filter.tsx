@@ -116,7 +116,7 @@ const _TagFilter = (props: TagFilterProps) => {
   const labelId = useId()
 
   return (
-    <TagFilter.Root role="group" aria-labelledby={label && labelId} {...other}>
+    <TagFilter.Root role="group" aria-labelledby={label ? labelId : undefined} {...other}>
       {label && (
         <TagFilter.Label id={labelId} size="xs">
           {label}

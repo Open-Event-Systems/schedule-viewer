@@ -124,7 +124,7 @@ export const BinsRoot = (props: BinsRootProps) => {
 }
 
 export type BinsDividerProps = DividerProps &
-  Omit<DefaultBoxProps<HTMLHRElement>, "children">
+  Omit<DefaultBoxProps<"hr">, "children">
 
 export const BinsDivider = (props: BinsDividerProps) => {
   const { className, ...other } = useProps("BinsDivider", null, props)
@@ -151,7 +151,7 @@ export const BinsBin = (props: BinsBinProps) => {
   )
 }
 
-export type BinsBinTitleProps = TitleProps & DefaultBoxProps<HTMLHeadingElement>
+export type BinsBinTitleProps = TitleProps & DefaultBoxProps<"h3">
 
 export const BinsBinTitle = (props: BinsBinTitleProps) => {
   const { className, ...other } = useProps("BinsBinTitle", null, props)

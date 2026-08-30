@@ -4,9 +4,7 @@ import clsx from "clsx"
 
 import classes from "./inline-list.module.scss"
 
-export type InlineListProps = DefaultBoxProps & {
-  after?: string | null
-}
+export type InlineListProps = InlineListRootProps
 
 const _InlineList = (props: InlineListProps) => {
   const { className, after, children, ...other } = useProps(
@@ -22,7 +20,7 @@ const _InlineList = (props: InlineListProps) => {
   )
 }
 
-export type InlineListRootProps = DefaultBoxProps & {
+export type InlineListRootProps = DefaultBoxProps<"ul"> & {
   after?: string | null
 }
 
@@ -52,7 +50,7 @@ export const InlineListRoot = (props: InlineListRootProps) => {
   )
 }
 
-export type InlineListItemProps = DefaultBoxProps
+export type InlineListItemProps = DefaultBoxProps<"li">
 
 export const InlineListItem = (props: InlineListItemProps) => {
   const { className, ...other } = useProps("InlineListItem", null, props)

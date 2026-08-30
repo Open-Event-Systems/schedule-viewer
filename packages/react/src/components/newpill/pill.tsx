@@ -211,7 +211,7 @@ export type PillBoxProps = PillBoxRootProps & {
     root?: string
     item?: string
   }
-  renderItem?: RenderRootFunc
+  renderItem?: RenderRootFunc<"li">
 }
 
 const _PillBox = (props: PillBoxProps) => {
@@ -246,7 +246,7 @@ const _PillBox = (props: PillBoxProps) => {
   )
 }
 
-export type PillBoxRootProps = DefaultBoxProps
+export type PillBoxRootProps = DefaultBoxProps<"ul">
 
 export const PillBoxRoot = (props: PillBoxRootProps) => {
   const { className, ...other } = useProps("PillBoxRoot", null, props)
@@ -260,7 +260,7 @@ export const PillBoxRoot = (props: PillBoxRootProps) => {
   )
 }
 
-export type PillBoxItemProps = DefaultBoxProps
+export type PillBoxItemProps = DefaultBoxProps<"li">
 
 export const PillBoxItem = (props: PillBoxItemProps) => {
   const { className, ...other } = useProps(
@@ -271,13 +271,16 @@ export const PillBoxItem = (props: PillBoxItemProps) => {
 
   return (
     <Box
+      component="li"
       className={clsx("Pill-boxItem", classes.boxItem, className)}
       {...other}
     />
   )
 }
 
-const defaultRenderPillBoxItem: RenderRootFunc = (props) => <li {...props} />
+const defaultRenderPillBoxItem: RenderRootFunc<"li"> = (props) => (
+  <li {...props} />
+)
 
 export const PillBox = Object.assign(_PillBox, {
   Root: PillBoxRoot,

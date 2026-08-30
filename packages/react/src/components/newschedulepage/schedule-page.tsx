@@ -269,7 +269,7 @@ export const SchedulePageToolbarRow = (props: SchedulePageToolbarRowProps) => {
 export type SchedulePageFilterButtonProps = {
   filterCount?: number
 } & ButtonProps &
-  Omit<DefaultBoxProps<HTMLButtonElement>, "type">
+  DefaultBoxProps<"button">
 
 export const SchedulePageFilterButton = (
   props: SchedulePageFilterButtonProps,

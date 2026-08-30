@@ -12,19 +12,20 @@ import clsx from "clsx"
 
 import classes from "./contact.module.scss"
 
-export type ContactProps = Omit<DefaultBoxProps, "size"> & {
-  classNames?: {
-    root?: string
-    icon?: string
-    text?: string
+export type ContactProps = DefaultBoxProps<"div"> &
+  DefaultBoxProps<"a"> & {
+    classNames?: {
+      root?: string
+      icon?: string
+      text?: string
+    }
+    name?: string
+    iconURL?: string
+    href?: string
+    size?: MantineSize
+    color?: string
+    onClickLink?: (e: MouseEvent<HTMLAnchorElement>) => void
   }
-  name?: string
-  iconURL?: string
-  href?: string
-  size?: MantineSize
-  color?: string
-  onClickLink?: (e: MouseEvent<HTMLAnchorElement>) => void
-}
 
 export const Contact = (props: ContactProps) => {
   const {
