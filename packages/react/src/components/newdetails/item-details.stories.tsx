@@ -15,8 +15,14 @@ const meta: Meta<typeof ItemDetails> = {
   ],
   argTypes: {
     size: {
-      options: ["xs", "sm", "md", "lg", "xl"],
-      control: "radio",
+      options: ["sm", "lg"],
+      control: {
+        type: "radio",
+        labels: {
+          sm: "Small",
+          lg: "Large",
+        },
+      },
     },
   },
 }
@@ -28,11 +34,23 @@ export const Default: StoryObj<typeof ItemDetails> = {
     name: "Example Event",
     description: "An example event.\n\n**Markdown** is supported.",
     tags: ["Main Event", "Photography"],
-    startDate: dayjs("2027-01-15T12:00:00-05:00"),
-    endDate: dayjs("2027-01-15T13:00:00-05:00"),
-    locations: [
-      { name: "Panel Room 1A", href: "#", onClick: (e) => e.preventDefault() },
-      { name: "Panel Room 1B", href: "#", onClick: (e) => e.preventDefault() },
+    occurrences: [
+      {
+        startDate: dayjs("2027-01-15T12:00:00-05:00"),
+        endDate: dayjs("2027-01-15T13:00:00-05:00"),
+        locations: [
+          {
+            name: "Panel Room 1A",
+            href: "#",
+            onClick: (e) => e.preventDefault(),
+          },
+          {
+            name: "Panel Room 1B",
+            href: "#",
+            onClick: (e) => e.preventDefault(),
+          },
+        ],
+      },
     ],
     contacts: [
       {

@@ -1,6 +1,5 @@
 import {
   Box,
-  Divider,
   Title,
   useProps,
   type CSSProperties,
@@ -9,10 +8,9 @@ import {
 import type { DefaultBoxProps, RenderRootFunc } from "../types.js"
 import clsx from "clsx"
 
-import { Fragment, useMemo, type MouseEvent, type ReactNode } from "react"
+import { useMemo, type MouseEvent, type ReactNode } from "react"
 import type { Dayjs } from "dayjs"
 
-import classes from "./item-details.module.scss"
 import {
   ItemDetailsBookmarkCount,
   ItemDetailsButtons,
@@ -21,11 +19,14 @@ import {
   ItemDetailsDescription,
   ItemDetailsLocation,
   ItemDetailsLocations,
+  ItemDetailsOccurrence,
   ItemDetailsOccurrences,
   ItemDetailsTags,
   ItemDetailsTime,
 } from "./subcomponents.js"
 import { iterToArr } from "@open-event-systems/schedule-lib"
+
+import classes from "./item-details.module.scss"
 
 export type ItemDetailsLocationData = Readonly<{
   readonly name?: ReactNode
@@ -33,20 +34,19 @@ export type ItemDetailsLocationData = Readonly<{
   readonly onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }>
 
-export type ItemDetailsOccurrence = Readonly<{
+export type ItemDetailsOccurrenceData = Readonly<{
   startDate?: Dayjs
   endDate?: Dayjs
   locations?: Iterable<string | ItemDetailsLocationData>
 }>
 
+export type ItemDetailsSize = "sm" | "lg"
+
 export type ItemDetailsProps = {
-  size?: MantineSize
+  size?: ItemDetailsSize
   name?: ReactNode
   description?: string
-  startDate?: Dayjs
-  endDate?: Dayjs
-  locations?: Iterable<string | ItemDetailsLocationData>
-  occurrences?: Iterable<ItemDetailsOccurrence>
+  occurrences?: Iterable<ItemDetailsOccurrenceData>
   contacts?: Iterable<
     | string
     | {
@@ -75,9 +75,6 @@ const _ItemDetails = (props: ItemDetailsProps) => {
     size,
     name,
     description,
-    startDate,
-    endDate,
-    locations,
     occurrences,
     contacts,
     tags,
@@ -119,7 +116,7 @@ const _ItemDetails = (props: ItemDetailsProps) => {
         }
 
         return (
-          <Fragment key={i}>
+          <ItemDetails.Occurrence key={i}>
             {(occ.startDate || occ.endDate) && (
               <ItemDetails.Time
                 size={size}
@@ -132,8 +129,7 @@ const _ItemDetails = (props: ItemDetailsProps) => {
                 {locEls}
               </ItemDetails.Locations>
             )}
-            <Divider />
-          </Fragment>
+          </ItemDetails.Occurrence>
         )
       })
       .filter((el) => !!el)
@@ -144,24 +140,6 @@ const _ItemDetails = (props: ItemDetailsProps) => {
       )
     }
   }, [occurrences, size])
-
-  const locationEls = useMemo(() => {
-    return iterToArr(locations).map((loc, i) => {
-      const { name, href, onClick } =
-        typeof loc == "string" ? { name: loc } : loc
-
-      return (
-        <ItemDetails.Location
-          key={i}
-          href={href}
-          size={size}
-          onClickLink={onClick}
-        >
-          {name}
-        </ItemDetails.Location>
-      )
-    })
-  }, [locations, size])
 
   const contactEls = useMemo(() => {
     return iterToArr(contacts).map((contact, i) => {
@@ -215,18 +193,6 @@ const _ItemDetails = (props: ItemDetailsProps) => {
         )}
       </ItemDetails.Header>
       <ItemDetails.Details>
-        {!occurrencesEl && (startDate || endDate) && (
-          <ItemDetails.Time
-            size={size}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        )}
-        {!occurrencesEl && locationEls.length > 0 && (
-          <ItemDetails.Locations size={size}>
-            {locationEls}
-          </ItemDetails.Locations>
-        )}
         {occurrencesEl}
         {contactEls.length > 0 && (
           <ItemDetails.Contacts size={size}>{contactEls}</ItemDetails.Contacts>
@@ -319,11 +285,12 @@ export const ItemDetails = Object.assign(_ItemDetails, {
   Header: ItemDetailsHeader,
   BookmarkCount: ItemDetailsBookmarkCount,
   Details: ItemDetailsDetails,
-  Time: ItemDetailsTime,
   Tags: ItemDetailsTags,
+  Occurrences: ItemDetailsOccurrences,
+  Occurrence: ItemDetailsOccurrence,
+  Time: ItemDetailsTime,
   Locations: ItemDetailsLocations,
   Location: ItemDetailsLocation,
-  Occurrences: ItemDetailsOccurrences,
   Contacts: ItemDetailsContacts,
   Contact: ItemDetailsContact,
   Description: ItemDetailsDescription,

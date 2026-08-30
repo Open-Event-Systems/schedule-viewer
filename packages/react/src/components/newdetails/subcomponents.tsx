@@ -2,6 +2,7 @@ import {
   Anchor,
   Box,
   Button,
+  Divider,
   parseThemeColor,
   Text,
   useMantineColorScheme,
@@ -21,10 +22,15 @@ import {
 } from "../icon-section/icon-section.js"
 import { TagIcon } from "@phosphor-icons/react/dist/icons/Tag"
 
-import classes from "./item-details.module.scss"
 import clsx from "clsx"
 import { MapPinIcon } from "@phosphor-icons/react/dist/icons/MapPin"
-import type { AllHTMLAttributes, MouseEvent } from "react"
+import {
+  Children,
+  Fragment,
+  type AllHTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from "react"
 import { UserCircleIcon } from "@phosphor-icons/react/dist/icons/UserCircle"
 import { Contact } from "../contact/contact.js"
 import type { Dayjs } from "dayjs"
@@ -36,13 +42,16 @@ import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
 import { EyeIcon } from "@phosphor-icons/react/dist/icons/Eye"
 import { ShareButton } from "../share-button/share-button.js"
 
+import classes from "./item-details.module.scss"
+import type { ItemDetailsSize } from "./item-details.js"
+
 const DEFAULT_COLOR = "gray.7"
 
 export type ItemDetailsBookmarkCountProps = Omit<
   DefaultBoxProps,
   "children" | "size"
 > & {
-  size?: MantineSize
+  size?: ItemDetailsSize
   color?: string
   count?: number
 }
@@ -94,6 +103,113 @@ export const ItemDetailsBookmarkCount = (
         {count}
       </Text>
     </Box>
+  )
+}
+
+export type ItemDetailsTagsProps = Omit<IconSectionProps, "children"> & {
+  color?: string
+  tags?: Iterable<string>
+}
+
+export const ItemDetailsTags = (props: ItemDetailsTagsProps) => {
+  const { className, size, color, tags, ...other } = useProps(
+    "ItemDetailsTags",
+    { color: DEFAULT_COLOR },
+    props,
+  )
+
+  const tagEls = []
+
+  let i = 0
+  for (const tag of tags ?? []) {
+    tagEls.push(
+      <InlineList.Item key={i++}>
+        <Text span size={size}>
+          {tag}
+        </Text>
+      </InlineList.Item>,
+    )
+  }
+
+  return (
+    <IconSection
+      className={clsx("ItemDetails-tags", classes.tags, className)}
+      icon={<TagIcon />}
+      size={size}
+      color={color}
+      {...other}
+    >
+      <InlineList>{tagEls}</InlineList>
+    </IconSection>
+  )
+}
+
+export type ItemDetailsOccurrencesProps = { size?: MantineSize } & Omit<
+  DefaultBoxProps,
+  "size"
+>
+
+export const ItemDetailsOccurrences = (props: ItemDetailsOccurrencesProps) => {
+  const { className, color, size, children, ...other } = useProps(
+    "ItemDetailsOccurrences",
+    { color: DEFAULT_COLOR },
+    props,
+  )
+
+  const newChildren: ReactNode[] = []
+
+  let multi = false
+
+  Children.forEach(children, (el, i) => {
+    if (i > 0) {
+      multi = true
+    }
+
+    newChildren.push(
+      <Fragment key={i}>
+        {i > 0 && <Divider />}
+        {el}
+      </Fragment>,
+    )
+  })
+
+  if (newChildren.length > 1) {
+    newChildren.push(<Divider key="endDivider" />)
+  }
+
+  return (
+    <Box
+      className={clsx(
+        "ItemDetails-occurrences",
+        classes.occurrences,
+        className,
+      )}
+      {...other}
+    >
+      {multi && (
+        <Text span c={color} size={size}>
+          Multiple sessions:
+        </Text>
+      )}
+      <Box className={classes.occurrencesContent}>{newChildren}</Box>
+    </Box>
+  )
+}
+
+export type ItemDetailsOccurrenceProps = DefaultBoxProps
+
+export const ItemDetailsOccurrence = (props: ItemDetailsOccurrenceProps) => {
+  const { className, ...other } = useProps("ItemDetailsOccurrence", null, props)
+
+  return (
+    <Box
+      className={clsx(
+        "ItemDetailsOccurrence-root",
+        classes.occurrence,
+        className,
+      )}
+      {...other}
+    />
   )
 }
 
@@ -189,44 +305,6 @@ export const ItemDetailsTime = (props: ItemDetailsTimeProps) => {
   )
 }
 
-export type ItemDetailsTagsProps = Omit<IconSectionProps, "children"> & {
-  color?: string
-  tags?: Iterable<string>
-}
-
-export const ItemDetailsTags = (props: ItemDetailsTagsProps) => {
-  const { className, size, color, tags, ...other } = useProps(
-    "ItemDetailsTags",
-    { color: DEFAULT_COLOR },
-    props,
-  )
-
-  const tagEls = []
-
-  let i = 0
-  for (const tag of tags ?? []) {
-    tagEls.push(
-      <InlineList.Item key={i++}>
-        <Text span size={size}>
-          {tag}
-        </Text>
-      </InlineList.Item>,
-    )
-  }
-
-  return (
-    <IconSection
-      className={clsx("ItemDetails-tags", classes.tags, className)}
-      icon={<TagIcon />}
-      size={size}
-      color={color}
-      {...other}
-    >
-      <InlineList>{tagEls}</InlineList>
-    </IconSection>
-  )
-}
-
 export type ItemDetailsLocationsProps = IconSectionProps & {
   color?: string
 }
@@ -291,35 +369,6 @@ export const ItemDetailsLocation = (props: ItemDetailsLocationProps) => {
     >
       {content}
     </InlineList.Item>
-  )
-}
-
-export type ItemDetailsOccurrencesProps = { size?: MantineSize } & Omit<
-  DefaultBoxProps,
-  "size"
->
-
-export const ItemDetailsOccurrences = (props: ItemDetailsOccurrencesProps) => {
-  const { className, color, size, children, ...other } = useProps(
-    "ItemDetailsOccurrences",
-    { color: DEFAULT_COLOR },
-    props,
-  )
-
-  return (
-    <Box
-      className={clsx(
-        "ItemDetails-occurrences",
-        classes.occurrences,
-        className,
-      )}
-      {...other}
-    >
-      <Text span c={color} size={size}>
-        Multiple sessions:
-      </Text>
-      <Box className={classes.occurrencesContent}>{children}</Box>
-    </Box>
   )
 }
 

@@ -19,7 +19,7 @@
     "details" auto
     "description" minmax(auto, 1fr)
     "buttons" auto
-    / minmax(1rem, 1fr);
+    / auto;
 
   @each $size in "xs", "sm", "md", "lg", "xl" {
     &[data-size="#{$size}"] {
@@ -125,8 +125,6 @@
 .details {
   grid-area: details;
   display: grid;
-  grid-template-columns: minmax(1rem, 1fr);
-  grid-auto-rows: auto;
 
   padding: var(--item-details-padding);
   gap: 0.25rem;
@@ -134,15 +132,11 @@
 
 .occurrences {
   display: grid;
-  grid-template-columns: minmax(1rem, 1fr);
-  grid-template-rows: auto minmax(1rem, 1fr);
   gap: 0.25rem;
 }
 
 .occurrencesContent {
   display: grid;
-  grid-template-columns: minmax(1rem, 1fr);
-  grid-auto-rows: auto;
   gap: 0.25rem;
 }
 

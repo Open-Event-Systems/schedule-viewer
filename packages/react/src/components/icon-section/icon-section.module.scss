@@ -7,36 +7,18 @@
   display: grid;
   grid-template:
     "icon content" auto
-    / auto minmax(1rem, 1fr);
+    / var(--icon-size) auto;
   gap: var(--gap);
 
   align-items: start;
 
   color: var(--color);
 
-  &[data-size="xs"] {
-    --font-size: var(--mantine-font-size-xs);
-    --line-height: var(--mantine-line-height-xs);
-  }
-
-  &[data-size="sm"] {
-    --font-size: var(--mantine-font-size-sm);
-    --line-height: var(--mantine-line-height-sm);
-  }
-
-  &[data-size="md"] {
-    --font-size: var(--mantine-font-size-md);
-    --line-height: var(--mantine-line-height-md);
-  }
-
-  &[data-size="lg"] {
-    --font-size: var(--mantine-font-size-lg);
-    --line-height: var(--mantine-line-height-lg);
-  }
-
-  &[data-size="xl"] {
-    --font-size: var(--mantine-font-size-xl);
-    --line-height: var(--mantine-line-height-xl);
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --font-size: var(--mantine-font-size-#{$size});
+      --line-height: var(--mantine-line-height-#{$size});
+    }
   }
 }
 
