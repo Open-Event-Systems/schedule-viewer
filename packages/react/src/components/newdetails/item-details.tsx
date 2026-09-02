@@ -1,37 +1,39 @@
 import {
   Box,
-  Title,
+  parseThemeColor,
+  useMantineColorScheme,
+  useMantineTheme,
   useProps,
   type CSSProperties,
-  type MantineSize,
 } from "@mantine/core"
-import type { DefaultBoxProps, RenderRootFunc } from "../types.js"
+import type { DefaultBoxProps } from "../types.js"
 import clsx from "clsx"
 
-import { useMemo, type MouseEvent, type ReactNode } from "react"
-import type { Dayjs } from "dayjs"
-
 import {
-  ItemDetailsBookmarkCount,
-  ItemDetailsButtons,
   ItemDetailsContact,
   ItemDetailsContacts,
-  ItemDetailsDescription,
   ItemDetailsLocation,
   ItemDetailsLocations,
   ItemDetailsOccurrence,
   ItemDetailsOccurrences,
+  ItemDetailsTag,
   ItemDetailsTags,
   ItemDetailsTime,
-} from "./subcomponents.js"
+} from "./detail-components.js"
+import type { Dayjs } from "dayjs"
+import { useMemo, type MouseEvent, type ReactNode } from "react"
 import { iterToArr } from "@open-event-systems/schedule-lib"
 
 import classes from "./item-details.module.scss"
 
+const DEFAULT_COLOR = "gray.8"
+
+export type ItemDetailsSize = "sm" | "md" | "lg"
+
 export type ItemDetailsLocationData = Readonly<{
-  readonly name?: ReactNode
-  readonly href?: string
-  readonly onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
+  name?: ReactNode
+  href?: string
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }>
 
 export type ItemDetailsOccurrenceData = Readonly<{
@@ -40,116 +42,63 @@ export type ItemDetailsOccurrenceData = Readonly<{
   locations?: Iterable<string | ItemDetailsLocationData>
 }>
 
-export type ItemDetailsSize = "sm" | "lg"
+export type ItemDetailsContactData = Readonly<{
+  name?: string
+  iconURL?: string
+  href?: string
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
+}>
 
-export type ItemDetailsProps = {
-  size?: ItemDetailsSize
-  name?: ReactNode
-  description?: string
+export type ItemDetailsProps = ItemDetailsRootProps & {
   occurrences?: Iterable<ItemDetailsOccurrenceData>
-  contacts?: Iterable<
-    | string
-    | {
-        readonly name?: string
-        readonly href?: string
-        readonly iconURL?: string
-        readonly onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
-      }
-  >
+  contacts?: Iterable<string | ItemDetailsContactData>
   tags?: Iterable<string>
-  isBookmarked?: boolean
-  isVisited?: boolean
-  allowBookmark?: boolean
-  allowVisited?: boolean
-  allowShare?: boolean
-  url?: string
-  bookmarkCount?: number
-  headerImageURL?: string
-  onSetBookmarked?: (bookmarked: boolean) => void
-  onSetVisited?: (visited: boolean) => void
-  renderTitle?: RenderRootFunc
-} & ItemDetailsRootProps
+}
 
 const _ItemDetails = (props: ItemDetailsProps) => {
-  const {
-    size,
-    name,
-    description,
-    occurrences,
-    contacts,
-    tags,
-    headerImageURL,
-    isBookmarked,
-    isVisited,
-    allowBookmark,
-    allowVisited,
-    allowShare,
-    url,
-    bookmarkCount,
-    onSetBookmarked,
-    onSetVisited,
-    renderTitle,
-    ...other
-  } = useProps("ItemDetails", null, props)
+  const { occurrences, contacts, tags, size, color, style, ...other } =
+    useProps("ItemDetails", { color: DEFAULT_COLOR }, props)
 
-  const occurrencesEl = useMemo(() => {
-    const occEls = iterToArr(occurrences)
-      .map((occ, i) => {
-        const locEls = iterToArr(occ.locations).map((loc, i) => {
-          const { name, href, onClick } =
-            typeof loc == "string" ? { name: loc } : loc
-
-          return (
-            <ItemDetails.Location
-              key={i}
-              href={href}
-              size={size}
-              onClickLink={onClick}
-            >
-              {name}
-            </ItemDetails.Location>
-          )
-        })
-
-        if (!occ.startDate && !occ.endDate && locEls.length == 0) {
-          return
-        }
+  const occurrenceEls = useMemo(() => {
+    return iterToArr(occurrences).map((occ, i) => {
+      const locEls = iterToArr(occ.locations).map((loc, i) => {
+        const { name, href, onClick } =
+          typeof loc == "string" ? { name: loc } : loc
 
         return (
-          <ItemDetails.Occurrence key={i}>
-            {(occ.startDate || occ.endDate) && (
-              <ItemDetails.Time
-                size={size}
-                startDate={occ.startDate}
-                endDate={occ.endDate}
-              />
-            )}
-            {locEls.length > 0 && (
-              <ItemDetails.Locations size={size}>
-                {locEls}
-              </ItemDetails.Locations>
-            )}
-          </ItemDetails.Occurrence>
+          <ItemDetails.Location key={i} href={href} onClickLink={onClick}>
+            {name}
+          </ItemDetails.Location>
         )
       })
-      .filter((el) => !!el)
 
-    if (occEls.length > 0) {
-      return (
-        <ItemDetails.Occurrences size={size}>{occEls}</ItemDetails.Occurrences>
+      const locEl = locEls.length > 0 && (
+        <ItemDetails.Locations>{locEls}</ItemDetails.Locations>
       )
-    }
-  }, [occurrences, size])
+
+      return (
+        <ItemDetails.Occurrence key={i}>
+          {occ.startDate && occ.endDate && (
+            <ItemDetails.Time startDate={occ.startDate} endDate={occ.endDate} />
+          )}
+          {locEl}
+        </ItemDetails.Occurrence>
+      )
+    })
+  }, [occurrences])
+
+  const occurrenceEl = occurrenceEls.length > 0 && (
+    <ItemDetails.Occurrences>{occurrenceEls}</ItemDetails.Occurrences>
+  )
 
   const contactEls = useMemo(() => {
-    return iterToArr(contacts).map((contact, i) => {
+    return iterToArr(contacts).map((c, i) => {
       const { name, iconURL, href, onClick } =
-        typeof contact == "string" ? { name: contact } : contact
+        typeof c == "string" ? { name: c } : c
 
       return (
         <ItemDetails.Contact
           key={i}
-          size={size}
           name={name}
           iconURL={iconURL}
           href={href}
@@ -157,68 +106,47 @@ const _ItemDetails = (props: ItemDetailsProps) => {
         />
       )
     })
-  }, [contacts, size])
+  }, [contacts])
 
-  const tagsEl = useMemo(() => {
-    const tagsArr = iterToArr(tags)
-    if (tagsArr.length > 0) {
-      return <ItemDetails.Tags tags={tagsArr} size={size} />
-    }
-  }, [tags, size])
+  const contactEl = contactEls.length > 0 && (
+    <ItemDetails.Contacts>{contactEls}</ItemDetails.Contacts>
+  )
 
-  let headerColor
+  const tagEls = useMemo(() => {
+    return iterToArr(tags).map((t, i) => {
+      return <ItemDetails.Tag key={i}>{t}</ItemDetails.Tag>
+    })
+  }, [tags])
 
-  if (headerImageURL) {
-    headerColor = "white"
+  const tagEl = tagEls.length > 0 && (
+    <ItemDetails.Tags>{tagEls}</ItemDetails.Tags>
+  )
+
+  const theme = useMantineTheme()
+  const colorScheme = useMantineColorScheme()
+
+  const cssVars: CSSProperties = {}
+
+  if (color) {
+    const colorVal = parseThemeColor({
+      color,
+      theme,
+      colorScheme: colorScheme.colorScheme,
+    })
+    cssVars["--color"] = colorVal.value
   }
 
   return (
-    <ItemDetails.Root size={size} {...other}>
-      <ItemDetails.Header headerImageURL={headerImageURL}>
-        <Title
-          className={clsx("ItemDetails-title", classes.title)}
-          order={3}
-          c={headerColor}
-          size={size}
-          renderRoot={renderTitle}
-        >
-          {name}
-        </Title>
-        {bookmarkCount && (
-          <ItemDetails.BookmarkCount
-            size={size}
-            color={headerColor}
-            count={bookmarkCount}
-          />
-        )}
-      </ItemDetails.Header>
-      <ItemDetails.Details>
-        {occurrencesEl}
-        {contactEls.length > 0 && (
-          <ItemDetails.Contacts size={size}>{contactEls}</ItemDetails.Contacts>
-        )}
-        {tagsEl}
-      </ItemDetails.Details>
-      <ItemDetails.Description size={size}>
-        {description}
-      </ItemDetails.Description>
-      <ItemDetails.Buttons
-        size={size}
-        allowBookmark={allowBookmark}
-        allowVisited={allowVisited}
-        allowShare={allowShare}
-        isBookmarked={isBookmarked}
-        isVisited={isVisited}
-        url={url}
-        onSetBookmarked={onSetBookmarked}
-        onSetVisited={onSetVisited}
-      />
+    <ItemDetails.Root size={size} style={{ ...cssVars, ...style }} {...other}>
+      {occurrenceEl}
+      {contactEl}
+      {tagEl}
     </ItemDetails.Root>
   )
 }
 
-export type ItemDetailsRootProps = Omit<DefaultBoxProps, "size"> & {
-  size?: MantineSize
+export type ItemDetailsRootProps = DefaultBoxProps & {
+  size?: ItemDetailsSize
 }
 
 export const ItemDetailsRoot = (props: ItemDetailsRootProps) => {
@@ -233,59 +161,8 @@ export const ItemDetailsRoot = (props: ItemDetailsRootProps) => {
   )
 }
 
-export type ItemDetailsHeaderProps = DefaultBoxProps & {
-  headerImageURL?: string
-}
-
-export const ItemDetailsHeader = (props: ItemDetailsHeaderProps) => {
-  const { className, headerImageURL, style, ...other } = useProps(
-    "ItemDetailsHeader",
-    null,
-    props,
-  )
-
-  const cssVars: CSSProperties = {}
-
-  if (headerImageURL) {
-    cssVars["--image-url"] = `url("${headerImageURL}")`
-  }
-
-  return (
-    <Box
-      className={clsx(
-        "ItemDetails-header",
-        classes.header,
-        !!headerImageURL && classes.hasImage,
-        className,
-      )}
-      style={{
-        ...cssVars,
-        ...style,
-      }}
-      {...other}
-    />
-  )
-}
-
-export type ItemDetailsDetailsProps = DefaultBoxProps
-
-export const ItemDetailsDetails = (props: ItemDetailsDetailsProps) => {
-  const { className, ...other } = useProps("ItemDetailsDetails", null, props)
-
-  return (
-    <Box
-      className={clsx("ItemDetails-details", classes.details, className)}
-      {...other}
-    />
-  )
-}
-
 export const ItemDetails = Object.assign(_ItemDetails, {
   Root: ItemDetailsRoot,
-  Header: ItemDetailsHeader,
-  BookmarkCount: ItemDetailsBookmarkCount,
-  Details: ItemDetailsDetails,
-  Tags: ItemDetailsTags,
   Occurrences: ItemDetailsOccurrences,
   Occurrence: ItemDetailsOccurrence,
   Time: ItemDetailsTime,
@@ -293,6 +170,6 @@ export const ItemDetails = Object.assign(_ItemDetails, {
   Location: ItemDetailsLocation,
   Contacts: ItemDetailsContacts,
   Contact: ItemDetailsContact,
-  Description: ItemDetailsDescription,
-  Buttons: ItemDetailsButtons,
+  Tags: ItemDetailsTags,
+  Tag: ItemDetailsTag,
 })

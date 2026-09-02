@@ -1,0 +1,12 @@
+@use "../icon/icon.module.scss";
+
+.root {
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --icon-size: var(--ule-action-icon-size-#{$size});
+    }
+  }
+
+  font-size: var(--icon-size);
+  line-height: 1;
+}

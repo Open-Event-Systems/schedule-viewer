@@ -1,0 +1,58 @@
+@use "../icon/icon.module.scss";
+
+.root {
+  --gap: calc(var(--mantine-spacing-xs) / 2);
+  --icon-size: var(--ule-action-icon-size-md);
+
+  @each $size in "xs", "sm", "md", "lg", "xl" {
+    &[data-size="#{$size}"] {
+      --icon-size: var(--ule-action-icon-size-#{$size});
+    }
+  }
+
+  display: grid;
+
+  grid-auto-flow: column;
+  justify-content: start;
+  align-items: center;
+  gap: var(--gap);
+
+  &[data-variant="vertical"] {
+    grid-auto-flow: row;
+    justify-content: stretch;
+    justify-items: center;
+    align-content: start;
+  }
+}
+
+.button {
+  font-size: var(--icon-size);
+  line-height: 1;
+}
+
+.bookmarkCount {
+  display: grid;
+  grid-template: auto / auto auto;
+  gap: 2px;
+
+  justify-content: start;
+  align-items: center;
+
+  .root[data-variant="vertical"] & {
+    grid-template: auto auto / auto;
+    justify-content: stretch;
+    justify-items: center;
+    align-content: start;
+  }
+}
+
+.bookmarkCountIcon {
+  font-size: calc(1 * var(--icon-size));
+  line-height: 1;
+  height: calc(1 * var(--icon-size));
+}
+
+.bookmarkCountNumber {
+  font-size: calc(0.75 * var(--icon-size));
+  line-height: 1;
+}

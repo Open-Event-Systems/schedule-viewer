@@ -3,29 +3,34 @@ import type { DefaultBoxProps } from "../types.js"
 import clsx from "clsx"
 
 import classes from "./inline-list.module.scss"
+import { Children, isValidElement } from "react"
 
 export type InlineListProps = InlineListRootProps
 
 const _InlineList = (props: InlineListProps) => {
-  const { className, after, children, ...other } = useProps(
-    "InlineList",
-    null,
-    props,
-  )
+  const { className, children, ...other } = useProps("InlineList", null, props)
+
+  const mappedChildren = Children.map(children, (el, i) => {
+    if (isValidElement(el)) {
+      return <InlineList.Item key={el.key ?? i}>{el}</InlineList.Item>
+    }
+    return el
+  })
 
   return (
-    <InlineList.Root className={clsx(className)} after={after} {...other}>
-      {children}
+    <InlineList.Root className={clsx(className)} {...other}>
+      {mappedChildren}
     </InlineList.Root>
   )
 }
 
 export type InlineListRootProps = DefaultBoxProps<"ul"> & {
   after?: string | null
+  gap?: string | number
 }
 
 export const InlineListRoot = (props: InlineListRootProps) => {
-  const { className, after, style, ...other } = useProps(
+  const { className, after, gap, style, ...other } = useProps(
     "InlineListRoot",
     { after: "," },
     props,
@@ -35,6 +40,10 @@ export const InlineListRoot = (props: InlineListRootProps) => {
 
   if (after) {
     cssVars["--after"] = `"${after}"`
+  }
+
+  if (gap != null) {
+    cssVars["--gap"] = typeof gap == "number" ? `${gap}px` : gap
   }
 
   return (

@@ -11,9 +11,9 @@ export const Default: StoryObj<typeof InlineList> = {
   render(args) {
     return (
       <InlineList {...args}>
-        <InlineList.Item>Item 1</InlineList.Item>
-        <InlineList.Item>Item 2</InlineList.Item>
-        <InlineList.Item>Item 3</InlineList.Item>
+        <>Item 1</>
+        <>Item 2</>
+        <>Item 3</>
       </InlineList>
     )
   },

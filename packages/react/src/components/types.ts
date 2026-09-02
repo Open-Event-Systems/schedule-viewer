@@ -1,11 +1,11 @@
 import type { BoxProps } from "@mantine/core"
-import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react"
+import type { AllHTMLAttributes, ComponentPropsWithoutRef, ElementType, ReactNode } from "react"
 
-export type RenderRootFunc<E extends ElementType = "div"> = (
-  props: ComponentPropsWithoutRef<E>,
+export type RenderRootFunc = (
+  props: AllHTMLAttributes<HTMLElement>,
 ) => ReactNode
 
 export type DefaultBoxProps<E extends ElementType = "div"> = BoxProps &
   ComponentPropsWithoutRef<E> & {
-    renderRoot?: RenderRootFunc<E>
+    renderRoot?: RenderRootFunc
   }

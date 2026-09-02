@@ -1,7 +1,7 @@
 .root {
   --gap: 0.25rem;
-  --font-size: var(--mantine-font-size-md);
-  --line-height: var(--mantine-line-height-md);
+  --font-size: var(--text-fz, var(--mantine-font-size-md));
+  --line-height: var(--text-lh, var(--mantine-line-height-md));
   --icon-size: calc(var(--font-size) * var(--line-height));
 
   display: grid;
@@ -11,8 +11,6 @@
   gap: var(--gap);
 
   align-items: start;
-
-  color: var(--color);
 
   @each $size in "xs", "sm", "md", "lg", "xl" {
     &[data-size="#{$size}"] {

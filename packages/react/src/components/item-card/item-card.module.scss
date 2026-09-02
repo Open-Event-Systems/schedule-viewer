@@ -1,0 +1,148 @@
+.root {
+  --gap: calc(var(--mantine-spacing-xs) / 2);
+  --card-padding: var(--gap);
+  --title-text-color: var(--mantine-color-text);
+  --title-background-text-color: var(--mantine-color-white);
+  --title-font-size-md: var(--mantine-font-size-lg);
+  --title-font-size-sm: var(--mantine-font-size-lg);
+  --title-font-size: var(--title-font-size-md);
+  --title-line-height-md: var(--mantine-line-height-lg);
+  --title-line-height-sm: var(--mantine-line-height-lg);
+  --title-line-height: var(--title-line-height-md);
+
+  --header-min-height-sm: 4rem;
+  --header-min-height-md: 6rem;
+  --header-min-height: var(--header-min-height-md);
+
+  display: grid;
+  grid-template:
+    "header header" auto
+    "body buttons" minmax(4rem, 1fr)
+    / minmax(auto, 1fr) auto;
+  gap: var(--gap);
+
+  @each $size in "sm", "md" {
+    &[data-size="#{$size}"] {
+      --header-min-height: var(--header-min-height-#{$size});
+      --title-font-size: var(--title-font-size-#{$size});
+      --title-line-height: var(--title-line-height-#{$size});
+    }
+  }
+
+  &.hasClose {
+    grid-template:
+      "header close" auto
+      "body buttons" minmax(4rem, 1fr)
+      / minmax(auto, 1fr) auto;
+  }
+}
+
+.header {
+  grid-area: header;
+  grid-column-end: -1;
+  display: grid;
+
+  align-content: end;
+  align-items: center;
+
+  padding: var(--gap);
+  padding-bottom: 0;
+  color: var(--title-text-color);
+
+  &.hasHeaderImage {
+    background-image:
+      linear-gradient(0deg, #cccccc 0%, #ffffff 10%), var(--header-image-url);
+    background-blend-mode: multiply, normal;
+    background-size: cover;
+    background-position: center;
+    min-height: var(--header-min-height);
+
+    color: var(--title-background-text-color);
+    text-shadow:
+      #000 0px 0px 2px,
+      #000 0px 0px 2px,
+      #000 2px 2px 5px;
+  }
+}
+
+.title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  font-size: var(--title-font-size);
+  line-height: var(--title-line-height);
+}
+
+.bookmarkCount {
+  display: grid;
+  grid-template: auto auto / auto;
+  justify-items: center;
+
+  --text-fz: var(--mantine-font-size-sm);
+  --text-lh: var(--mantine-line-height-sm);
+}
+
+.bookmarkCountIcon {
+  --icon-size: calc(var(--text-fz) * var(--text-lh));
+  font-size: var(--icon-size);
+  line-height: 1;
+  height: var(--icon-size);
+}
+
+.bookmarkCountNumber {
+  font-weight: bold;
+}
+
+.body {
+  grid-area: body;
+
+  grid-template:
+    "details" auto
+    "description" auto
+    / auto;
+
+  gap: var(--gap);
+
+  overflow: auto;
+}
+
+.details {
+  grid-area: details;
+
+  display: grid;
+  gap: var(--gap);
+}
+
+.description {
+  grid-area: description;
+}
+
+.closeButton {
+  grid-area: close;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 1) 25%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.buttons {
+  grid-area: buttons;
+
+  display: grid;
+  gap: var(--gap);
+  justify-items: center;
+  align-content: start;
+}
+
+.modalHeader {
+  padding: calc(var(--mantine-spacing-xs) / 2);
+  min-height: var(--mantine-line-height-md);
+  border-bottom: #ccc solid 1px;
+}
+
+.modalBody {
+  --mb-padding: 0px;
+  grid-area: body;
+}
