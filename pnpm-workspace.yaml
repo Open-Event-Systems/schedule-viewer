@@ -2,4 +2,4 @@ packages:
   - packages/lib
   - packages/map
   - packages/react
-  - packages/viewer
+  - packages/viewer3

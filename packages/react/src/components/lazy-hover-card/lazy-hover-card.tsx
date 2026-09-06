@@ -18,9 +18,10 @@ import {
 } from "react"
 
 export type LazyHoverCardProps = {
-  target?: ReactNode
+  target?: ReactNode | (() => ReactNode)
+  children?: ReactNode | (() => ReactNode)
   DropdownProps?: Partial<HoverCardDropdownProps>
-} & HoverCardProps
+} & Omit<HoverCardProps, "children">
 
 export const LazyHoverCard = (props: LazyHoverCardProps) => {
   const { children, target, DropdownProps, ...other } = useProps(
@@ -29,54 +30,50 @@ export const LazyHoverCard = (props: LazyHoverCardProps) => {
     props,
   )
 
-  const prevEvent = useRef<MouseEvent<HTMLDivElement> | null>(null)
+  const [enterEvent, setEnterEvent] =
+    useState<MouseEvent<HTMLDivElement> | null>(null)
 
-  const [enabled, setEnabled] = useState(false)
-
-  const onMouseEnter = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    if (!prevEvent.current) {
-      prevEvent.current = e
-      setEnabled(true)
-    }
-  }, [])
-
-  if (!enabled) {
-    return <Wrapper onMouseEnter={onMouseEnter}>{target}</Wrapper>
-  }
-
-  return (
-    <HoverCard withArrow position="top" {...other}>
-      <HoverCard.Target>
-        <Wrapper enabled={enabled} prevEvent={prevEvent.current}>
-          {target}
-        </Wrapper>
-      </HoverCard.Target>
-      <HoverCard.Dropdown {...DropdownProps}>{children}</HoverCard.Dropdown>
-    </HoverCard>
+  const onMouseEnter = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      setEnterEvent((prev) => prev ?? e)
+    },
+    [setEnterEvent],
   )
+
+  const targetEl = typeof target == "function" ? target() : target
+
+  if (!enterEvent) {
+    return <Wrapper onMouseEnter={onMouseEnter}>{targetEl}</Wrapper>
+  } else {
+    const childEl = typeof children == "function" ? children() : children
+    return (
+      <HoverCard withArrow position="top" {...other}>
+        <HoverCard.Target>
+          <Wrapper enterEvent={enterEvent}>{targetEl}</Wrapper>
+        </HoverCard.Target>
+        <HoverCard.Dropdown {...DropdownProps}>{childEl}</HoverCard.Dropdown>
+      </HoverCard>
+    )
+  }
 }
 
 const Wrapper = (
   props: {
-    enabled?: boolean
-    prevEvent?: MouseEvent<HTMLDivElement> | null
+    enterEvent?: MouseEvent<HTMLDivElement> | null
   } & ComponentPropsWithRef<"div">,
 ) => {
-  const { children, enabled, prevEvent, onMouseEnter, ...other } = props
+  const { children, enterEvent, onMouseEnter, ...other } = props
 
-  const prevEnabled = useRef(false)
+  const initialEnterEvent = useRef<MouseEvent<HTMLDivElement> | null>(null)
 
   useEffect(() => {
-    if (enabled && !prevEnabled.current) {
-      prevEnabled.current = enabled
-
-      if (onMouseEnter && prevEvent) {
-        window.setTimeout(() => {
-          onMouseEnter(prevEvent)
-        }, 1)
-      }
+    if (enterEvent && onMouseEnter && !initialEnterEvent.current) {
+      initialEnterEvent.current = enterEvent
+      window.setTimeout(() => {
+        onMouseEnter(enterEvent)
+      }, 1)
     }
-  }, [enabled, prevEvent, onMouseEnter])
+  }, [enterEvent, onMouseEnter, initialEnterEvent])
 
   let finalChild
 

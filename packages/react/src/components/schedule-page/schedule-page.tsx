@@ -3,8 +3,7 @@ import clsx from "clsx"
 import { type ReactNode } from "@tabler/icons-react"
 import {
   ShareMenu,
-  shareMenuOptions,
-  type ShareMenuOption,
+  ShareMenuOption,
   type ShareMenuProps,
 } from "../share-menu/share-menu.js"
 import {
@@ -24,11 +23,11 @@ import {
 } from "../filters/past-events-filter.js"
 import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
 import { useMediaQuery } from "@mantine/hooks"
-import type { TagConfigEntry } from "../../types.js"
+import type { TagViewProps } from "../../types.js"
 import { iterToArr } from "@open-event-systems/schedule-lib"
 
 export const schedulePageFeatures = [
-  ...shareMenuOptions,
+  ...Object.values(ShareMenuOption),
   "search",
   "tag-filter",
   "bookmarked-filter",
@@ -41,7 +40,7 @@ export type SchedulePageFeature = (typeof schedulePageFeatures)[number]
 export type SchedulePageProps = {
   viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
   enableFeatures?: Iterable<SchedulePageFeature>
-  tags?: Iterable<TagConfigEntry>
+  tags?: Iterable<TagViewProps>
   renderSelectionsFilter?: (props: SelectionsFilterProps) => ReactNode
   renderViewSelect?: (props: ViewSelectProps) => ReactNode
   renderTextFilter?: (props: TextFilterProps) => ReactNode

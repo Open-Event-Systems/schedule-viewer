@@ -1,11 +1,11 @@
 :root {
   @each $size in "xs", "sm", "md", "lg", "xl" {
-    --ule-icon-size-#{$size}: var(--mantine-font-size-#{$size});
+    --ule-icon-size-#{$size}: calc(var(--mantine-font-size-#{$size}) * var(--mantine-line-height-#{$size}));
   }
 
-  --ule-action-icon-size-xs: calc(1 * var(--ule-icon-size-xs));
-  --ule-action-icon-size-sm: calc(1.125 * var(--ule-icon-size-sm));
-  --ule-action-icon-size-md: calc(1.25 * var(--ule-icon-size-md));
-  --ule-action-icon-size-lg: calc(1.25 * var(--ule-icon-size-lg));
-  --ule-action-icon-size-xl: calc(1.25 * var(--ule-icon-size-xl));
+  --ule-action-icon-size-xs: calc(0.8 * var(--ule-icon-size-xs));
+  --ule-action-icon-size-sm: calc(0.8 * var(--ule-icon-size-sm));
+  --ule-action-icon-size-md: calc(0.8 * var(--ule-icon-size-md));
+  --ule-action-icon-size-lg: calc(0.8 * var(--ule-icon-size-lg));
+  --ule-action-icon-size-xl: calc(0.8 * var(--ule-icon-size-xl));
 }

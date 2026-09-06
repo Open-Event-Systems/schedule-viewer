@@ -108,13 +108,13 @@ export const Default: StoryObj<typeof SchedulePage> = {
           label="Filter Tags"
           mode={state.tagsMode}
           disabledTags={state.disabledTags}
-          onSetDisabled={(tag, disabled) => {
+          onSetDisabled={(tags, disabled) => {
             setState((prev) => {
               const newSet = new Set(prev.disabledTags)
               if (disabled) {
-                newSet.add(tag)
+                tags.forEach((t) => newSet.add(t))
               } else {
-                newSet.delete(tag)
+                tags.forEach((t) => newSet.delete(t))
               }
 
               return { ...prev, disabledTags: newSet }

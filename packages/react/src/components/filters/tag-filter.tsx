@@ -14,17 +14,12 @@ import classes from "./tag-filter.module.scss"
 import { Pill, type PillBoxProps, type PillProps } from "../newpill/pill.js"
 import type { DefaultBoxProps } from "../types.js"
 import { iterToArr } from "@open-event-systems/schedule-lib"
+import type { TagViewProps } from "../../types.js"
 
 export type TagFilterTagData = Readonly<{
   value: string
-  label?: string
-  color?: string
-  indicator?: ReactNode
-  indicatorColor?: string
-  textColor?: string
-  before?: string
-  after?: string
-}>
+}> &
+  TagViewProps
 
 export type TagFilterMode = "exclude" | "include"
 
@@ -50,9 +45,9 @@ export type TagFilterProps = {
   tags?: Iterable<string | TagFilterTagData>
 
   /**
-   * Handler to set a tag disabled/enabled.
+   * Handler to set tags disabled/enabled.
    */
-  onSetDisabled?: (tag: string, disabled: boolean) => void
+  onSetDisabled?: (tags: string[], disabled: boolean) => void
 
   /**
    * Handler to set the tag filter mode.
@@ -116,7 +111,11 @@ const _TagFilter = (props: TagFilterProps) => {
   const labelId = useId()
 
   return (
-    <TagFilter.Root role="group" aria-labelledby={label ? labelId : undefined} {...other}>
+    <TagFilter.Root
+      role="group"
+      aria-labelledby={label ? labelId : undefined}
+      {...other}
+    >
       {label && (
         <TagFilter.Label id={labelId} size="xs">
           {label}
@@ -178,7 +177,7 @@ export const TagFilterTags = (props: TagFilterTagsProps) => {
 export type TagFilterTagProps = {
   tag: string
   label?: ReactNode
-  onSetDisabled?: (tag: string, enabled: boolean) => void
+  onSetDisabled?: (tags: string[], enabled: boolean) => void
 } & Omit<PillProps, "label" | "children">
 
 export const TagFilterTag = (props: TagFilterTagProps) => {
@@ -200,7 +199,7 @@ export const TagFilterTag = (props: TagFilterTagProps) => {
       return innerRender({
         role: "switch",
         "aria-checked": !disabled,
-        onClick: () => onSetDisabled && onSetDisabled(tag, !disabled),
+        onClick: () => onSetDisabled && onSetDisabled([tag], !disabled),
         ...props,
       })
     },
@@ -229,7 +228,7 @@ export type TagFilterModeSelectProps = {
   tags?: Iterable<string | TagFilterTagData>
   disabledTags?: Iterable<string>
   onSetMode?: (mode: TagFilterMode) => void
-  onSetDisabled?: (tag: string, enabled: boolean) => void
+  onSetDisabled?: (tags: string[], enabled: boolean) => void
 } & Omit<DefaultBoxProps, "children">
 
 export const TagFilterModeSelect = (props: TagFilterModeSelectProps) => {
@@ -330,13 +329,12 @@ export const TagFilterModeSelect = (props: TagFilterModeSelectProps) => {
         onClick={() => {
           if (onSetDisabled) {
             if (allEnabled) {
-              for (const tag of tags ?? []) {
-                onSetDisabled(typeof tag == "string" ? tag : tag.value, true)
-              }
+              const toDisable = iterToArr(tags).map((t) =>
+                typeof t == "string" ? t : t.value,
+              )
+              onSetDisabled(toDisable, true)
             } else {
-              for (const tag of disabledTags ?? []) {
-                onSetDisabled(tag, false)
-              }
+              onSetDisabled([...(disabledTags ?? [])], false)
             }
           }
         }}

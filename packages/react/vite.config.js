@@ -28,7 +28,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
+    react({}),
     babel({
       presets: [reactCompilerPreset()],
     }),

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { defaultIndexConfig, indexData, toOccurrences } from "./data.js"
-import type { ScheduleObject } from "./types.js"
+import type { ScheduleItem } from "./types.js"
 import dayjs, { duration } from "dayjs"
 import durationPlugin from "dayjs/plugin/duration.js"
 
@@ -8,7 +8,7 @@ dayjs.extend(durationPlugin)
 
 describe("data indexing", () => {
   test("indexing works", () => {
-    const items: ScheduleObject[] = [
+    const items: ScheduleItem[] = [
       {
         id: "e1",
         type: "event",
@@ -27,7 +27,7 @@ describe("data indexing", () => {
       {
         id: "o1",
         type: "misc",
-      } as ScheduleObject
+      } as ScheduleItem
     ]
     const index = indexData(defaultIndexConfig, items)
 
@@ -41,7 +41,7 @@ describe("data indexing", () => {
   })
 
   test("toOccurrences works", () => {
-    const obj: ScheduleObject = {
+    const obj: ScheduleItem = {
       id: "e1",
       type: "event",
       occurrences: [
@@ -63,13 +63,13 @@ describe("data indexing", () => {
     const occs = toOccurrences(obj)
     expect(occs.length).toBe(2)
     expect(occs[0]?.id).toBe("e1-o1")
-    expect(occs[0]?.object).toBe(obj)
+    expect(occs[0]?.item).toBe(obj)
     expect(occs[1]?.id).toBe("e1-o2")
-    expect(occs[1]?.object).toBe(obj)
+    expect(occs[1]?.item).toBe(obj)
   })
 
   test("toOccurrences works (implicit occurrence)", () => {
-    const obj: ScheduleObject = {
+    const obj: ScheduleItem = {
       id: "e1",
       type: "event",
       startDate: dayjs("2027-01-01T12:00:00-05:00"),
@@ -80,6 +80,6 @@ describe("data indexing", () => {
     const occs = toOccurrences(obj)
     expect(occs.length).toBe(1)
     expect(occs[0]?.id).toBe("e1")
-    expect(occs[0]?.object).toBe(obj)
+    expect(occs[0]?.item).toBe(obj)
   })
 })

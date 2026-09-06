@@ -20,38 +20,19 @@ import {
   ItemDetailsTags,
   ItemDetailsTime,
 } from "./detail-components.js"
-import type { Dayjs } from "dayjs"
-import { useMemo, type MouseEvent, type ReactNode } from "react"
+import { useMemo } from "react"
 import { iterToArr } from "@open-event-systems/schedule-lib"
 
 import classes from "./item-details.module.scss"
+import type { ContactViewProps, OccurrenceViewProps } from "../../types.js"
 
 const DEFAULT_COLOR = "gray.8"
 
 export type ItemDetailsSize = "sm" | "md" | "lg"
 
-export type ItemDetailsLocationData = Readonly<{
-  name?: ReactNode
-  href?: string
-  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
-}>
-
-export type ItemDetailsOccurrenceData = Readonly<{
-  startDate?: Dayjs
-  endDate?: Dayjs
-  locations?: Iterable<string | ItemDetailsLocationData>
-}>
-
-export type ItemDetailsContactData = Readonly<{
-  name?: string
-  iconURL?: string
-  href?: string
-  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
-}>
-
 export type ItemDetailsProps = ItemDetailsRootProps & {
-  occurrences?: Iterable<ItemDetailsOccurrenceData>
-  contacts?: Iterable<string | ItemDetailsContactData>
+  occurrences?: Iterable<OccurrenceViewProps>
+  contacts?: Iterable<string | ContactViewProps>
   tags?: Iterable<string>
 }
 

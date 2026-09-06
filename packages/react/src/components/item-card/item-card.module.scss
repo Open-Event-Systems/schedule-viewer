@@ -74,26 +74,6 @@
   line-height: var(--title-line-height);
 }
 
-.bookmarkCount {
-  display: grid;
-  grid-template: auto auto / auto;
-  justify-items: center;
-
-  --text-fz: var(--mantine-font-size-sm);
-  --text-lh: var(--mantine-line-height-sm);
-}
-
-.bookmarkCountIcon {
-  --icon-size: calc(var(--text-fz) * var(--text-lh));
-  font-size: var(--icon-size);
-  line-height: 1;
-  height: var(--icon-size);
-}
-
-.bookmarkCountNumber {
-  font-weight: bold;
-}
-
 .body {
   grid-area: body;
 

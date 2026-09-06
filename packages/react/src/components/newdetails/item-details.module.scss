@@ -23,6 +23,7 @@
     &[data-size="#{$size}"] {
       --text-fz: var(--text-fz-#{$size});
       --text-lh: var(--text-lh-#{$size});
+      --icon-size: calc(var(--text-fz) * var(--text-lh));
       --contact-avatar-size: var(--contact-avatar-size-#{$size});
     }
   }
@@ -42,11 +43,6 @@
 
 .contactIcon {
   --avatar-size: var(--contact-avatar-size);
-  // --avatar-size-xs: var(--contact-avatar-size-sm);
-  // --avatar-size-sm: var(--contact-avatar-size-sm);
-  // --avatar-size-md: var(--contact-avatar-size-md);
-  // --avatar-size-lg: var(--contact-avatar-size-lg);
-  // --avatar-size-xl: var(--contact-avatar-size-lg);
 }
 
 .contactsIcon {

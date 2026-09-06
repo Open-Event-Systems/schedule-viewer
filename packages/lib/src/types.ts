@@ -69,7 +69,7 @@ export const ScheduleEventStatus = {
 
 export type ScheduleEventStatus = (typeof ScheduleEventStatus)[keyof typeof ScheduleEventStatus]
 
-export type ScheduleObjectBaseProps = Readonly<{
+export type ScheduleItemBaseProps = Readonly<{
   id: string
   type: string
 
@@ -94,7 +94,7 @@ export type Occurrence = Readonly<{
   locations?: readonly string[]
 }>
 
-export type ScheduleEvent = ScheduleObjectBaseProps & Readonly<{
+export type ScheduleEvent = ScheduleItemBaseProps & Readonly<{
   type: "event"
   eventStatus?: ScheduleEventStatus
 
@@ -102,21 +102,21 @@ export type ScheduleEvent = ScheduleObjectBaseProps & Readonly<{
   performers?: readonly string[]
 }>
 
-export type Vendor = ScheduleObjectBaseProps & Readonly<{
+export type Vendor = ScheduleItemBaseProps & Readonly<{
   type: "vendor"
   email?: string
   logo?: Image
   urls?: readonly string[]
 }>
 
-export type Profile = ScheduleObjectBaseProps & Readonly<{
+export type Profile = ScheduleItemBaseProps & Readonly<{
   type: "profile"
   email?: string
   logo?: Image
   urls?: readonly string[]
 }>
 
-export type Amenity = ScheduleObjectBaseProps & Readonly<{
+export type Amenity = ScheduleItemBaseProps & Readonly<{
   type: "amenity",
 }>
 
@@ -130,12 +130,12 @@ export type Address = Readonly<{
   postalCode?: string
 }>
 
-export type Location = ScheduleObjectBaseProps & Readonly<{
+export type Location = ScheduleItemBaseProps & Readonly<{
   type: "location",
   address?: Address
 }>
 
-export interface ScheduleObjectTypeMap {
+export interface ScheduleItemTypeMap {
   event: ScheduleEvent
   vendor: Vendor
   amenity: Amenity
@@ -143,13 +143,13 @@ export interface ScheduleObjectTypeMap {
   location: Location
 }
 
-export type ScheduleObjectType = keyof ScheduleObjectTypeMap
+export type ScheduleItemType = keyof ScheduleItemTypeMap
 
-export type ScheduleObject = ScheduleObjectTypeMap[keyof ScheduleObjectTypeMap]
+export type ScheduleItem = ScheduleItemTypeMap[keyof ScheduleItemTypeMap]
 
-export type ScheduleObjectOccurrence<T extends ScheduleObject = ScheduleObject> = Readonly<{
+export type ScheduleItemOccurrence<T extends ScheduleItem = ScheduleItem> = Readonly<{
   id: string
-  object: T
+  item: T
   startDate?: Dayjs
   endDate?: Dayjs
   duration?: Duration
@@ -157,11 +157,11 @@ export type ScheduleObjectOccurrence<T extends ScheduleObject = ScheduleObject> 
 }>
 
 
-export type ScheduleDataTypeMap<D extends ScheduleObjectBaseProps> = {
+export type ScheduleDataTypeMap<D extends ScheduleItemBaseProps> = {
   readonly [key: string]: D
 }
 
-export type ScheduleData<D extends ScheduleObjectBaseProps, M extends ScheduleDataTypeMap<D>> = Readonly<{
+export type ScheduleData<D extends ScheduleItemBaseProps, M extends ScheduleDataTypeMap<D>> = Readonly<{
   items: readonly M[keyof M][]
   byId: ReadonlyMap<string, M[keyof M]>
   byType: {
@@ -184,7 +184,7 @@ export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
  * Fetches schedule items.
  */
 export type ScheduleAPI = Readonly<{
-  getItems(): Promise<readonly ScheduleObject[]>
+  getItems(): Promise<readonly ScheduleItem[]>
 }>
 
 /**

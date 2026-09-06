@@ -1,0 +1,32 @@
+{
+  "name": "viewer3",
+  "version": "0.3.0-alpha",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build --mode=production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.102.8",
+    "@tanstack/react-router-devtools": "^1.167.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.1"
+  },
+  "dependencies": {
+    "@mantine/core": "^9.6.0",
+    "@mantine/hooks": "^9.6.0",
+    "@open-event-systems/schedule-lib": "workspace:",
+    "@open-event-systems/schedule-react": "workspace:",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-router": "^1.170.32",
+    "clsx": "^2.1.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.15"
+  }
+}

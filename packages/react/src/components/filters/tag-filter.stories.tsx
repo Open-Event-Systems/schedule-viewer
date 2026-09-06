@@ -22,13 +22,13 @@ export const Default: StoryObj<typeof meta> = {
     const [mode, setMode] = useState<TagFilterMode>("exclude")
 
     const onSetDisabled = useCallback(
-      (tag: string, disabled: boolean) => {
+      (tags: string[], disabled: boolean) => {
         setDisabledTags((cur: ReadonlySet<string>) => {
           const newSet = new Set(cur)
           if (disabled) {
-            newSet.add(tag)
+            tags.forEach((t) => newSet.add(t))
           } else {
-            newSet.delete(tag)
+            tags.forEach((t) => newSet.delete(t))
           }
           return newSet
         })

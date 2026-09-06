@@ -1,5 +1,5 @@
 import { sortIntervalsByStartDate } from "./time.js"
-import type { Bounded, Interval, ScheduleObject } from "./types.js"
+import type { Bounded, Interval, ScheduleItem } from "./types.js"
 
 /**
  * Return whether an interval has both start and end set.
@@ -9,9 +9,9 @@ export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
 }
 
 /**
- * Return an array of {@link ScheduleObject} sorted by start date, then ID.
+ * Return an array of {@link ScheduleItem} sorted by start date, then ID.
  */
-export const sortScheduleObjects = <T extends ScheduleObject>(
+export const sortScheduleObjects = <T extends ScheduleItem>(
   items?: Iterable<T> | null,
 ): T[] => {
   const arr = [...(items ?? [])]
@@ -22,7 +22,7 @@ export const sortScheduleObjects = <T extends ScheduleObject>(
   return arr
 }
 
-const strCompare = (a: ScheduleObject, b: ScheduleObject) => {
+const strCompare = (a: ScheduleItem, b: ScheduleItem) => {
   const aId = a.id ?? ""
   const bId = b.id ?? ""
   return aId.localeCompare(bId, "en")

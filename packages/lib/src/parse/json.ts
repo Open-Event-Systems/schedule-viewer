@@ -21,7 +21,7 @@ import {
   type ParseResult,
   type Profile,
   type ScheduleEvent,
-  type ScheduleObject,
+  type ScheduleItem,
   type Vendor,
 } from "../types.js"
 
@@ -73,7 +73,7 @@ export const occurrenceSchema = omitUndefSchema(
   }),
 )
 
-const baseObjectSchema = z.looseObject({
+const baseItemSchema = z.looseObject({
   type: reqStr,
 })
 
@@ -152,7 +152,7 @@ export const locationSchema = omitUndefSchema(
 )
 
 type ParseTypeMap = {
-  readonly [key: string]: ScheduleObject
+  readonly [key: string]: ScheduleItem
 }
 
 type ParseConfig<M extends ParseTypeMap> = {
@@ -163,7 +163,7 @@ export const makeParser = <M extends ParseTypeMap>(
   config: ParseConfig<M>,
 ): Parser<M[keyof M]> => {
   const parser = (item: unknown): ParseResult<M[keyof M]> => {
-    const asObjResult = baseObjectSchema.safeParse(item)
+    const asObjResult = baseItemSchema.safeParse(item)
     if (!asObjResult.success) {
       return asObjResult
     }

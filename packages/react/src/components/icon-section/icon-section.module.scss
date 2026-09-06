@@ -1,34 +1,52 @@
+@use "../icon/icon.module.scss";
+
 .root {
   --gap: 0.25rem;
-  --font-size: var(--text-fz, var(--mantine-font-size-md));
-  --line-height: var(--text-lh, var(--mantine-line-height-md));
-  --icon-size: calc(var(--font-size) * var(--line-height));
+
+  --icon-size-xs: calc(
+    var(--mantine-font-size-xs) * var(--mantine-line-height-xs)
+  );
+  --icon-size-sm: calc(
+    var(--mantine-font-size-sm) * var(--mantine-line-height-sm)
+  );
+  --icon-size-md: calc(
+    var(--mantine-font-size-md) * var(--mantine-line-height-md)
+  );
+  --icon-size-lg: calc(
+    var(--mantine-font-size-lg) * var(--mantine-line-height-lg)
+  );
+  --icon-size-xl: calc(
+    var(--mantine-font-size-xl) * var(--mantine-line-height-xl)
+  );
 
   display: grid;
   grid-template:
     "icon content" auto
-    / var(--icon-size) auto;
+    / var(--icon-size, var(--icon-size-md)) auto;
   gap: var(--gap);
 
   align-items: start;
 
   @each $size in "xs", "sm", "md", "lg", "xl" {
     &[data-size="#{$size}"] {
-      --font-size: var(--mantine-font-size-#{$size});
-      --line-height: var(--mantine-line-height-#{$size});
+      --icon-size: var(--icon-size-#{$size});
+      --text-fz: var(--mantine-font-size-#{$size});
+      --text-lh: var(--mantine-line-height-#{$size});
     }
   }
+
+  color: var(--color);
 }
 
 .icon {
   grid-area: icon;
-  font-size: var(--icon-size);
+  font-size: var(--icon-size, var(--icon-size-md));
   line-height: 1;
-  height: var(--icon-size);
+  height: var(--icon-size, var(--icon-size-md));
 }
 
 .content {
   grid-area: content;
-  font-size: var(--font-size);
-  line-height: var(--line-height);
+  font-size: var(--text-fz, var(--mantine-font-size-md));
+  line-height: var(--text-lh, var(--mantine-font-size-md));
 }

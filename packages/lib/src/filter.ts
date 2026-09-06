@@ -4,8 +4,60 @@
  */
 
 import type { Dayjs } from "dayjs"
-import type { Interval } from "./types.js"
+import type { Interval, ScheduleItem } from "./types.js"
 import { contains } from "./time.js"
+import { iterToSet } from "./utils.js"
+
+export type FilterSettings = Readonly<{
+  name?: string | null
+  tagFilterMode?: "include" | "exclude" | null
+  disabledTags?: Iterable<string> | null
+  bookmarksFilterSelections?: Iterable<string> | null
+  unvisitedFilterSelections?: Iterable<string> | null
+  hidePastFilter?: Dayjs | null
+  dateFilter?: Interval | null
+}>
+
+/**
+ * Return a filter that applies multiple filter settings.
+ */
+export const makeFilter = (settings: FilterSettings): (item: ScheduleItem) => boolean => {
+  const chain: ((item: ScheduleItem) => boolean)[] = []
+
+  if (settings.bookmarksFilterSelections) {
+    chain.push(makeSelectionsFilter("include", settings.bookmarksFilterSelections))
+  }
+
+  if (settings.unvisitedFilterSelections) {
+    chain.push(makeSelectionsFilter("exclude", settings.unvisitedFilterSelections))
+  }
+
+  if (settings.hidePastFilter) {
+    chain.push(makePastItemFilter(settings.hidePastFilter))
+  }
+
+  if (settings.dateFilter) {
+    chain.push(makeDateFilter(settings.dateFilter))
+  }
+
+  if (settings.tagFilterMode && settings.disabledTags) {
+    chain.push(makeTagFilter(settings.tagFilterMode, settings.disabledTags))
+  }
+
+  if (settings.name) {
+    chain.push(makeNameFilter(settings.name))
+  }
+
+  return (item) => {
+    for (const filter of chain) {
+      if (!filter(item)) {
+        return false
+      }
+    }
+
+    return true
+  }
+}
 
 /**
  * Return a filter for items matching the given search string.
@@ -49,7 +101,7 @@ export const makeSelectionsFilter = (
   mode: "include" | "exclude",
   itemIds?: Iterable<string> | null,
 ): ((item: { readonly id?: string }) => boolean) => {
-  const idSet = new Set(itemIds)
+  const idSet = iterToSet(itemIds)
   if (mode == "include") {
     return (item) => item.id != null && idSet.has(item.id)
   } else {

@@ -15,8 +15,6 @@ import {
 import clsx from "clsx"
 import {
   ItemDetails,
-  type ItemDetailsContactData,
-  type ItemDetailsOccurrenceData,
   type ItemDetailsProps,
 } from "../newdetails/item-details.js"
 
@@ -31,14 +29,15 @@ import {
 } from "../item-buttons/item-buttons.js"
 
 import classes from "./item-card.module.scss"
+import type { ContactViewProps, OccurrenceViewProps } from "../../types.js"
 
 export type ItemCardSize = "sm" | "md"
 
 export type ItemCardProps = Omit<ItemCardRootProps, "children"> & {
   name?: ReactNode
   description?: string
-  occurrences?: Iterable<ItemDetailsOccurrenceData>
-  contacts?: Iterable<string | ItemDetailsContactData>
+  occurrences?: Iterable<OccurrenceViewProps>
+  contacts?: Iterable<string | ContactViewProps>
   tags?: Iterable<string>
   bookmarkCount?: number
   headerImageURL?: string
@@ -51,12 +50,12 @@ export type ItemCardProps = Omit<ItemCardRootProps, "children"> & {
   onSetVisited?: (isVisited: boolean) => void
   onClose?: () => void
   size?: ItemCardSize
-  children?: string
 }
 
 const _ItemCard = (props: ItemCardProps) => {
   const {
     name,
+    description,
     headerImageURL,
     occurrences,
     contacts,
@@ -71,7 +70,6 @@ const _ItemCard = (props: ItemCardProps) => {
     onSetVisited,
     onClose,
     size,
-    children,
     ...other
   } = useProps("ItemCard", null, props)
 
@@ -88,7 +86,7 @@ const _ItemCard = (props: ItemCardProps) => {
           tags={tags}
           size={size}
         />
-        <ItemCard.Description>{children}</ItemCard.Description>
+        <ItemCard.Description>{description}</ItemCard.Description>
       </ItemCard.Body>
       <ItemButtons
         enableFeatures={enableFeatures}

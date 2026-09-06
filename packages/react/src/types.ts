@@ -1,4 +1,53 @@
 import type { Dayjs } from "dayjs"
+import type { MouseEvent } from "react"
+
+export type TagViewProps = Readonly<{
+  value: string
+  label?: string
+  color?: string | Iterable<string>
+  indicator?: string
+  indicatorColor?: string
+  textColor?: string
+  before?: string
+  after?: string
+}>
+
+export type LocationViewProps = Readonly<{
+  name?: string
+  href?: string
+  onClick?: (e: MouseEvent) => void
+}>
+
+export type OccurrenceViewProps = Readonly<{
+  startDate?: Dayjs
+  endDate?: Dayjs
+  locations?: Iterable<string | LocationViewProps>
+}>
+
+export type ContactViewProps = Readonly<{
+  name?: string
+  iconURL?: string
+  href?: string
+  onClick?: (e: MouseEvent) => void
+}>
+
+export type ItemViewProps = Readonly<{
+  href?: string
+  name?: string
+  description?: string
+  occurrences?: Iterable<OccurrenceViewProps>
+  contacts?: Iterable<string | ContactViewProps>
+  tags?: Iterable<string>
+  isBookmarked?: boolean
+  isVisited?: boolean
+  bookmarkCount?: number
+  onSetBookmarked?: (isBookmarked: boolean) => void
+  onSetVisited?: (isVisited: boolean) => void
+  headerImageURL?: string
+}>
+
+
+
 
 /**
  * Tag display configuration entry.

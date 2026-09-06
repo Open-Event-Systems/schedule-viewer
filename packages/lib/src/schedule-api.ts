@@ -1,6 +1,6 @@
 import z from "zod"
 import wretch from "wretch"
-import type { Parser, ScheduleAPI, ScheduleObject } from "./types.js"
+import type { Parser, ScheduleAPI, ScheduleItem } from "./types.js"
 
 const itemsSchema = z.looseObject({
   items: z.array(z.unknown()),
@@ -10,7 +10,7 @@ const itemsSchema = z.looseObject({
  * Make a {@link ScheduleAPI} that returns items parsed from an iterable.
  */
 export const makeParsedScheduleItemsAPI = (
-  parser: Parser<ScheduleObject>,
+  parser: Parser<ScheduleItem>,
   items?: Iterable<unknown> | null,
   options?: {
     name?: string
@@ -19,7 +19,7 @@ export const makeParsedScheduleItemsAPI = (
   const name = options?.name || "data source"
   return {
     async getItems() {
-      const parsed: ScheduleObject[] = []
+      const parsed: ScheduleItem[] = []
 
       let i = 0
 
@@ -45,7 +45,7 @@ export const makeParsedScheduleItemsAPI = (
 /**
  * Make a {@link ScheduleAPI} that returns items from a URL.
  */
-export const makeScheduleFetchAPI = (parser: Parser<ScheduleObject>, url: string) => {
+export const makeScheduleFetchAPI = (parser: Parser<ScheduleItem>, url: string) => {
   return {
     async getItems() {
       const res = await wretch(url).get().json()
@@ -63,7 +63,7 @@ export const composeScheduleAPIs = (...objs: ScheduleAPI[]): ScheduleAPI => {
   return {
     async getItems() {
       const results = await Promise.all(objs.map((o) => o.getItems()))
-      const concat: ScheduleObject[] = []
+      const concat: ScheduleItem[] = []
       results.forEach((res) => {
         concat.push(...res)
       })
