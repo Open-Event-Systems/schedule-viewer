@@ -1,4 +1,4 @@
-import { createRouter } from "../router.js"
+import { createRouter } from "../router/router.js"
 import { RouterProvider } from "@tanstack/react-router"
 import { QueryClient } from "@tanstack/react-query"
 import { useState } from "react"

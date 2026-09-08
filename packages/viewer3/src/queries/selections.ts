@@ -1,6 +1,6 @@
 import type { Selections, SelectionsService, SelectionsStore, SelectionsType } from "@open-event-systems/schedule-lib"
 import { mutationOptions, queryOptions } from "@tanstack/react-query"
-import type { AppContextValue } from "../hooks/app.js"
+import type { AwaitedAppContextValue } from "../hooks/app.js"
 
 export const SelectionsQueryKey = {
   byId: (id: string) => ["selections", id] as const,
@@ -42,8 +42,8 @@ export const SelectionsMutationOption = {
 }
 
 export const SelectionsLoader = {
-  sessionSelections: async (contextPromise: Promise<AppContextValue>, type: SelectionsType) => {
+  sessionSelections: async (contextPromise: Promise<AwaitedAppContextValue>, type: SelectionsType) => {
     const { queryClient, selectionsStore } = await contextPromise
-    return queryClient.fetchQuery(SelectionsQueryOptions.sessionSelections(selectionsStore, type))
+    return queryClient.query({ ...SelectionsQueryOptions.sessionSelections(selectionsStore, type), staleTime: "static" })
   }
 }

@@ -3,15 +3,15 @@ import {
   makeScheduleAPIFromConfig,
   type ViewerConfig,
 } from "../config/config.js"
-import { App } from "../app/app.js"
 import { makeLocalStorageSessionSelectionsStore } from "@open-event-systems/schedule-lib"
 import { createRoot } from "react-dom/client"
 
 import "@mantine/core/styles.css"
 import "@open-event-systems/schedule-react/schedule-react.css"
 import "../styles.scss"
-import type { QueryClient } from "@tanstack/react-query"
-import type { InitialAppContextValue } from "../hooks/app.js"
+import { QueryClient } from "@tanstack/react-query"
+import { createRouter, type SetupFuncReturnValue } from "../router/router.js"
+import { createBrowserHistory, RouterProvider } from "@tanstack/react-router"
 
 const testConfig: ViewerConfig = {
   ...DEFAULT_CONFIG,
@@ -30,21 +30,29 @@ const testConfig: ViewerConfig = {
   ],
 }
 
-const testSetup = (queryClient: QueryClient): InitialAppContextValue => {
+const testSetup = (): SetupFuncReturnValue => {
   const config = testConfig
+  const queryClient = new QueryClient()
+
+  const history = createBrowserHistory()
 
   return {
-    queryClient,
-    config: Promise.resolve(config),
-    scheduleAPI: Promise.resolve(makeScheduleAPIFromConfig(config)),
-    selectionsStore: Promise.resolve(
-      makeLocalStorageSessionSelectionsStore(config.id),
-    ),
+    history,
+    appContext: {
+      queryClient,
+      config: Promise.resolve(config),
+      scheduleAPI: Promise.resolve(makeScheduleAPIFromConfig(config)),
+      selectionsStore: Promise.resolve(
+        makeLocalStorageSessionSelectionsStore(config.id),
+      ),
+    },
   }
 }
 
 const container = document.getElementById("schedule")
 if (container) {
   const root = createRoot(container)
-  root.render(<App setup={testSetup} />)
+  const router = createRouter(testSetup)
+
+  root.render(<RouterProvider router={router} />)
 }

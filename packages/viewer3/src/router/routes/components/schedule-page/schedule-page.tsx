@@ -4,13 +4,13 @@ import {
   SelectionsFilterContainer,
   TagFilterContainer,
   TextFilterContainer,
-} from "../../../components/filter-state/filter-state.js"
+} from "../../../../components/filter-state/filter-state.js"
 import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useCallback, useLayoutEffect, useRef } from "react"
 import {
   FilterDialogStoreContext,
   useCreateFilterDialogStore,
-} from "../../../hooks/filter.js"
+} from "../../../../hooks/filter.js"
 import { useStore } from "zustand"
 import { useShallow } from "zustand/shallow"
 
@@ -52,7 +52,6 @@ export const SchedulePageRoute = () => {
 
   useLayoutEffect(() => {
     if (!filterDialogOpen && prevDialogOpen.current) {
-      console.log("opening", storeState)
       navigate({
         to: ".",
         state: (prev) => ({

@@ -1,6 +1,6 @@
 import type { ScheduleAPI } from "@open-event-systems/schedule-lib"
 import { queryOptions } from "@tanstack/react-query"
-import type { AppContextValue } from "../hooks/app.js"
+import type { AwaitedAppContextValue } from "../hooks/app.js"
 
 export const ScheduleQueryKey = {
   items: ["items"],
@@ -17,8 +17,8 @@ export const ScheduleQueryOptions = {
 } as const
 
 export const ScheduleLoader = {
-  items: async (contextPromise: Promise<AppContextValue>) => {
+  items: async (contextPromise: Promise<AwaitedAppContextValue>) => {
     const { queryClient, scheduleAPI } = await contextPromise
-    return await queryClient.fetchQuery(ScheduleQueryOptions.items(scheduleAPI))
+    return await queryClient.query({ ...ScheduleQueryOptions.items(scheduleAPI), staleTime: "static" })
   }
 } as const
