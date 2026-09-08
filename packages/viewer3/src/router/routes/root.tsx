@@ -1,22 +1,23 @@
 import {
   createRootRouteWithContext,
   createRoute,
+  HeadContent,
   Outlet,
-  useRouteContext,
+  Scripts,
 } from "@tanstack/react-router"
-import { QueryClientProvider } from "@tanstack/react-query"
-import { LoadingRoute } from "./components/loading/loading.js"
-import { schedulePageRoute } from "./schedule-page.js"
 import type { RouterContext } from "../router.js"
+import { LoadingRoute } from "./components/loading/loading.js"
+import schedulePageRoutes from "./schedule-page.js"
+// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: () => {
-    const { queryClient } = useRouteContext({ from: "__root__" })
-
     return (
-      <QueryClientProvider client={queryClient}>
+      <>
+        <HeadContent />
         <Outlet />
-      </QueryClientProvider>
+        <Scripts />
+      </>
     )
   },
 })
@@ -32,4 +33,6 @@ export const contextRoute = createRoute({
   pendingMinMs: 200,
 })
 
-export default rootRoute.addChildren([schedulePageRoute])
+export default rootRoute.addChildren([
+  contextRoute.addChildren([schedulePageRoutes]),
+])
