@@ -1,0 +1,24 @@
+{
+  "id": "http://localhost:5173",
+  "name": "Test Schedule",
+  "description": "A test schedule.",
+  "timeZone": "America/New_York",
+  "dayChangeHour": 6,
+  "tags": [],
+  "items": [
+    {
+      "id": "event-1",
+      "type": "event",
+      "name": "Event 1",
+      "description": "Example event 1.",
+      "startDate": "2027-01-15T12:00:00-05:00",
+      "endDate": "2027-01-15T12:00:00-05:00",
+      "locations": ["Panel Room 1"],
+      "contacts": [
+        {
+          "name": "Example Person"
+        }
+      ]
+    }
+  ]
+}

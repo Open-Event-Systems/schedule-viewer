@@ -1,8 +1,8 @@
 import { createRoute, lazyRouteComponent } from "@tanstack/react-router"
 import { contextRoute } from "./root.js"
-import { pageSearchParamsSchema, type PageSearchParams } from "../../search-params.js"
 import { ScheduleLoader } from "../../queries/schedule.js"
 import { SelectionsLoader } from "../../queries/selections.js"
+import { parseSearchParams } from "../../hooks/filter-location-state.js"
 
 const schedulePageRoutes = createRoute({
   id: "schedule",
@@ -17,8 +17,7 @@ export const indexRoute = createRoute({
 export const schedulePageRoute = createRoute({
   path: "/$pageId",
   getParentRoute: () => schedulePageRoutes,
-  validateSearch: (search): PageSearchParams =>
-    pageSearchParamsSchema.parse(search),
+  validateSearch: parseSearchParams,
   loaderDeps: ({ search }) => {
     return {
       bookmarked: search.bookmarked,

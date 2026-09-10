@@ -78,13 +78,11 @@ export type AddUndef<T extends object> = {
  * Return an object with `undefined` values omitted.
  */
 export const omitUndef = <T extends object>(obj: T): OmitUndef<T> => {
-  const newObj = {} as { -readonly [K in keyof T]: T[K] }
-  const keys = Object.keys(obj) as (keyof T)[]
-
-  for (const key of keys) {
-    const value = obj[key]
-    if (value !== undefined) {
-      newObj[key] = value
+  const newObj = { ...obj }
+  for (const key of Object.keys(newObj)) {
+    const k = key as keyof typeof newObj
+    if (newObj[k] === undefined) {
+      delete newObj[k]
     }
   }
 

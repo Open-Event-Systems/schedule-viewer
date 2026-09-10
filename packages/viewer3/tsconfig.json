@@ -14,5 +14,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
+  "include": ["src", "vite.config.ts", "server.js"],
   "references": [{ "path": "../lib" }, { "path": "../react" }]
 }

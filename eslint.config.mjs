@@ -3,11 +3,20 @@ import pluginJs from "@eslint/js"
 import tseslint from "typescript-eslint"
 import pluginReact from "eslint-plugin-react"
 import storybook from "eslint-plugin-storybook"
+import { globalIgnores } from "eslint/config"
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
+  globalIgnores(["**/config.js"]),
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
-  { languageOptions: { globals: globals.browser } },
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser
+      }
+    }
+  },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,

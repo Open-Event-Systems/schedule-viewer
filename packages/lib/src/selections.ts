@@ -194,6 +194,11 @@ export const makeTrackedSelections = (
 }
 
 /**
+ * Return whether an object is a {@link Selections} instance.
+ */
+export const isSelections = (s: unknown): s is Selections => s instanceof SelectionsImpl
+
+/**
  * Check if a {@link Selections} is a {@link ServerSelections}.
  */
 export const isServerSelections = <T extends Selections>(

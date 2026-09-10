@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "start": "vite",
+    "start:ssr": "node server",
     "build": "vite build --mode=production",
+    "build:ssr:client": "vite build --mode=production --config vite.ssr.config.ts",
+    "build:ssr:server": "vite build --mode=production --config vite.ssr.config.ts --ssr",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "packageManager": "pnpm@10.33.0",
@@ -14,6 +17,7 @@
     "@types/express": "^5.0.6",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^6.0.3",
     "vite": "^8.2.1"
   },
@@ -25,9 +29,11 @@
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-router": "^1.170.32",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.23",
     "express": "^5.2.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "seroval": "^1.6.7",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
   }

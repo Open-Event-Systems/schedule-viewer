@@ -1,0 +1,4 @@
+/**
+ * Type declarations.
+ * @module
+ */

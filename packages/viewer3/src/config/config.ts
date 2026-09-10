@@ -1,3 +1,8 @@
+/**
+ * Viewer configuration settings.
+ * @module
+ */
+
 import { makeParsedScheduleItemsAPI, type ScheduleAPI } from "@open-event-systems/schedule-lib"
 import { parser } from "./parse.js"
 
@@ -6,6 +11,16 @@ export type ViewerConfig = Readonly<{
    * The schedule URL.
    */
   id: string
+
+  /**
+   * The schedule name.
+   */
+  name: string
+
+  /**
+   * The schedule description.
+   */
+  description?: string
 
   /**
    * The event time zone.
@@ -40,6 +55,7 @@ export type TagConfig = Readonly<{
 
 export const DEFAULT_CONFIG = {
   id: "",
+  name: "Event Schedule",
   timeZone: "America/New_York",
   dayChangeHour: 6,
   tags: [],

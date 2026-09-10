@@ -4,289 +4,108 @@ import {
   TagFilter,
   TextFilter,
   type PastEventsFilterProps,
-  type SelectionsFilterOption,
   type SelectionsFilterProps,
-  type TagFilterMode,
   type TagFilterProps,
   type TextFilterProps,
 } from "@open-event-systems/schedule-react"
 import {
-  useLocation,
-  useNavigate,
-  useRouter,
-  useSearch,
-} from "@tanstack/react-router"
-import { useCallback, useEffect, useState, type ChangeEvent } from "react"
-import { useFilterDialogStore } from "../../hooks/filter.js"
-import { useStore } from "zustand"
+  useGetSelectionsFilterStateHref,
+  useSearchState as useLocSearchState,
+  useSelectionsFilterState,
+  useShowPastEventsState as useLocShowPastEventsState,
+  useTagFilterModeState as useLocTagFilterModeState,
+  useDisabledTagsState as useLocDisabledTagsState,
+} from "../../hooks/filter-location-state.js"
+import { useSSRValue } from "../../hooks/app.js"
+import {
+  useSearchState as useDialogSearchState,
+  useFilterDialogOpenState,
+  useShowPastEventsState as useDialogShowPastEventsState,
+  useThrottledSetSearch,
+  useTagFilterModeState as useDialogTagFilterModeState,
+  useDisabledTagsState as useDialogDisabledTagsState,
+} from "../../hooks/filter-dialog.js"
 
 export const SelectionsFilterContainer = (props: SelectionsFilterProps) => {
-  const onlyBookmarked = useSearch({
-    strict: false,
-    select: (search) => search.bookmarked,
-  })
-
-  const onlyUnvisited = useSearch({
-    strict: false,
-    select: (search) => search.unvisited,
-  })
-
-  const router = useRouter()
-
-  const getHref = useCallback(
-    (options: ReadonlySet<SelectionsFilterOption>) => {
-      return router.history.createHref(
-        router.buildLocation({
-          to: ".",
-          search: (prev) => {
-            const updated = { ...prev }
-
-            if (options.has("bookmarked")) {
-              updated.bookmarked = true
-            } else {
-              delete updated.bookmarked
-            }
-
-            if (options.has("unvisited")) {
-              updated.unvisited = true
-            } else {
-              delete updated.unvisited
-            }
-
-            return updated
-          },
-          hash: true,
-        }).href,
-      )
-    },
-    [router],
-  )
-
-  const navigate = useNavigate()
-
-  const onChange = useCallback(
-    (value: ReadonlySet<SelectionsFilterOption>) =>
-      navigate({
-        to: ".",
-        search: (prev) => {
-          const updated = { ...prev }
-
-          if (value.has("bookmarked")) {
-            updated.bookmarked = true
-          } else {
-            delete updated.bookmarked
-          }
-
-          if (value.has("unvisited")) {
-            updated.unvisited = true
-          } else {
-            delete updated.unvisited
-          }
-
-          return updated
-        },
-        replace: true,
-        state: true,
-        hash: true,
-      }),
-    [navigate],
-  )
-
-  const value: SelectionsFilterOption[] = []
-
-  if (onlyBookmarked) {
-    value.push("bookmarked")
-  }
-
-  if (onlyUnvisited) {
-    value.push("unvisited")
-  }
+  const [value, onChange] = useSelectionsFilterState()
+  const getHref = useGetSelectionsFilterStateHref()
 
   return (
     <SelectionsFilter
       {...props}
-      value={value}
+      value={useSSRValue(value, undefined)}
       onChange={onChange}
       getHref={getHref}
     />
   )
 }
 
-export const TextFilterContainer = (
-  props: TextFilterProps & { dialog?: boolean },
-) => {
-  const { dialog, ...other } = props
+export const TextFilterContainer = (props: TextFilterProps) => {
+  const [isDialogOpen] = useFilterDialogOpenState()
+  const [_locSearch, setLocSearch] = useLocSearchState()
+  const [dialogSearch, setDialogSearch] = useDialogSearchState()
 
-  const dialogStore = useFilterDialogStore()
-
-  const dialogSetValue = useStore(dialogStore, (state) => state.setSearch)
-
-  const search = useSearch({
-    strict: false,
-    select: (search) => search.search,
-  })
-
-  const [curValue, setCurValue] = useState(() => search ?? "")
-
-  const navigate = useNavigate()
-
-  const setValue = useCallback(
-    (value: string) =>
-      navigate({
-        to: ".",
-        search: (prev) => {
-          const updated = { ...prev }
-          if (value) {
-            updated.search = value
-          } else {
-            delete updated.search
-          }
-
-          return updated
-        },
-        replace: true,
-        state: true,
-        hash: true,
-      }),
-    [navigate, dialog],
-  )
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setValue(curValue)
-    }, 300)
-
-    return () => {
-      window.clearTimeout(timeout)
-    }
-  }, [curValue, setValue])
+  useThrottledSetSearch(!isDialogOpen, dialogSearch, setLocSearch)
 
   return (
     <TextFilter
-      {...other}
-      value={curValue}
+      {...props}
+      value={useSSRValue(dialogSearch, "")}
       onChange={(e) => {
-        if (dialog) {
-          dialogSetValue(e.target.value)
-        }
-        setCurValue(e.target.value)
+        setDialogSearch(e.target.value)
       }}
     />
   )
 }
 
-export const PastEventsFilterContainer = (
-  props: PastEventsFilterProps & { dialog?: boolean },
-) => {
-  const { dialog, ...other } = props
-
-  const filterDialogStore = useFilterDialogStore()
-
-  const dialogSetPast = useStore(
-    filterDialogStore,
-    (state) => state.setShowPastEvents,
-  )
-
-  const showPast = useSearch({
-    strict: false,
-    select: (search) => search.past,
-  })
-
-  const navigate = useNavigate()
-
-  const onChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (dialog) {
-        dialogSetPast(!e.target.checked)
-      }
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, past: !e.target.checked }),
-        replace: true,
-        state: true,
-        hash: true,
-      })
-    },
-    [navigate, dialog, dialogSetPast],
-  )
-
+export const PastEventsFilterContainer = (props: PastEventsFilterProps) => {
   // TODO: handle page default
 
-  return <PastEventsFilter {...other} checked={!showPast} onChange={onChange} />
+  const [isDialogOpen] = useFilterDialogOpenState()
+  const [locShowPast, setLocShowPast] = useLocShowPastEventsState()
+  const [dialogShowPast, setDialogShowPast] = useDialogShowPastEventsState()
+
+  return (
+    <PastEventsFilter
+      {...props}
+      checked={useSSRValue(
+        !(isDialogOpen ? dialogShowPast : !!locShowPast),
+        true,
+      )}
+      onChange={(e) =>
+        isDialogOpen
+          ? setDialogShowPast(!e.target.checked)
+          : setLocShowPast(!e.target.checked)
+      }
+    />
+  )
 }
 
-export const TagFilterContainer = (
-  props: TagFilterProps & { dialog?: boolean },
-) => {
-  const { dialog, ...other } = props
+export const TagFilterContainer = (props: TagFilterProps) => {
+  const [isDialogOpen] = useFilterDialogOpenState()
 
-  const filterDialogStore = useFilterDialogStore()
+  const [locTagFilterMode, setLocTagFilterMode] = useLocTagFilterModeState()
 
-  const dialogSetFilterMode = useStore(
-    filterDialogStore,
-    (state) => state.setTagFilterMode,
-  )
-  const dialogSetTagsDisabled = useStore(
-    filterDialogStore,
-    (state) => state.setTagsDisabled,
-  )
+  const [dialogTagFilterMode, setDialogTagFilterMode] =
+    useDialogTagFilterModeState()
 
-  const tagFilterMode = useLocation({
-    select: ({ state }) => state.tagFilterMode,
-  })
-  const disabledTags = useLocation({
-    select: ({ state }) => state.disabledTags,
-  })
-
-  const navigate = useNavigate()
-
-  const setMode = useCallback(
-    (mode: TagFilterMode) => {
-      if (dialog) {
-        dialogSetFilterMode(mode)
-      }
-
-      navigate({
-        state: (prev) => ({ ...prev, tagFilterMode: mode }),
-        replace: true,
-        search: true,
-        hash: true,
-      })
-    },
-    [navigate, dialog, dialogSetFilterMode],
-  )
-
-  const setTagsDisabled = useCallback(
-    (tags: string[], disabled: boolean) => {
-      if (dialog) {
-        dialogSetTagsDisabled(tags, disabled)
-      }
-
-      navigate({
-        state: (prev) => {
-          const newSet = new Set(prev.disabledTags)
-          if (disabled) {
-            tags.forEach((t) => newSet.add(t))
-          } else {
-            tags.forEach((t) => newSet.delete(t))
-          }
-          return { ...prev, disabledTags: [...newSet] }
-        },
-        replace: true,
-        search: true,
-        hash: true,
-      })
-    },
-    [navigate, dialog, dialogSetTagsDisabled],
-  )
+  const [locDisabledTags, setLocDisabledTags] = useLocDisabledTagsState()
+  const [dialogDisabledTags, setDialogDisabledTags] =
+    useDialogDisabledTagsState()
 
   return (
     <TagFilter
-      {...other}
-      mode={tagFilterMode}
-      disabledTags={disabledTags}
-      onSetMode={setMode}
-      onSetDisabled={setTagsDisabled}
+      {...props}
+      mode={useSSRValue(
+        isDialogOpen ? dialogTagFilterMode : locTagFilterMode,
+        undefined,
+      )}
+      disabledTags={useSSRValue(
+        isDialogOpen ? dialogDisabledTags : locDisabledTags,
+        undefined,
+      )}
+      onSetMode={isDialogOpen ? setDialogTagFilterMode : setLocTagFilterMode}
+      onSetDisabled={isDialogOpen ? setDialogDisabledTags : setLocDisabledTags}
     />
   )
 }

@@ -5,77 +5,46 @@ import {
   TagFilterContainer,
   TextFilterContainer,
 } from "../../../../components/filter-state/filter-state.js"
-import { useLocation, useNavigate, useRouter } from "@tanstack/react-router"
-import { useCallback, useLayoutEffect, useRef } from "react"
+import { useScheduleItems } from "../../../../hooks/schedule.js"
 import {
   FilterDialogStoreContext,
   useCreateFilterDialogStore,
-} from "../../../../hooks/filter.js"
-import { useStore } from "zustand"
-import { useShallow } from "zustand/shallow"
+  useFilterDialogOpenState,
+  useSyncFilterDialogState,
+} from "../../../../hooks/filter-dialog.js"
+import { useCallback } from "react"
 
 export const SchedulePageRoute = () => {
   const filterDialogStore = useCreateFilterDialogStore()
 
-  const filterDialogOpen = useLocation({
-    select: ({ state }) => state.filterDialogOpen,
-  })
-
-  const navigate = useNavigate()
-
-  const openFilterDialog = useCallback(
-    () =>
-      navigate({
-        to: ".",
-        state: (prev) => ({ ...prev, filterDialogOpen: true }),
-        search: true,
-        hash: true,
-      }),
-    [navigate],
-  )
-
-  const router = useRouter()
-
-  const closeFilterDialog = useCallback(() => router.history.go(-1), [router])
-
-  const storeState = useStore(
-    filterDialogStore,
-    useShallow((state) => ({
-      search: state.search,
-      past: state.past,
-      tagFilterMode: state.tagFilterMode,
-      disabledTags: state.disabledTags,
-    })),
-  )
-
-  const prevDialogOpen = useRef(filterDialogOpen)
-
-  useLayoutEffect(() => {
-    if (!filterDialogOpen && prevDialogOpen.current) {
-      navigate({
-        to: ".",
-        state: (prev) => ({
-          ...prev,
-          disabledTags: [...(storeState.disabledTags ?? [])],
-          tagFilterMode: storeState.tagFilterMode,
-        }),
-        search: (prev) => ({
-          ...prev,
-          search: storeState.search,
-          past: storeState.past,
-        }),
-        hash: true,
-        replace: true,
-      })
-    }
-
-    prevDialogOpen.current = filterDialogOpen
-  }, [navigate, filterDialogOpen, storeState])
-
   return (
     <FilterDialogStoreContext.Provider value={filterDialogStore}>
+      <SchedulePageContainer />
+    </FilterDialogStoreContext.Provider>
+  )
+}
+
+const SchedulePageContainer = () => {
+  const [filterDialogOpen, setFilterDialogOpen] = useFilterDialogOpenState()
+
+  const openFilterDialog = useCallback(
+    () => setFilterDialogOpen(true),
+    [setFilterDialogOpen],
+  )
+  const closeFilterDialog = useCallback(
+    () => setFilterDialogOpen(false),
+    [setFilterDialogOpen],
+  )
+
+  const items = useScheduleItems()
+
+  useSyncFilterDialogState(filterDialogOpen)
+
+  return (
+    <>
+      Items len: {items.length}
       <SchedulePage
-        filterDialogOpen={!!filterDialogOpen}
+        filterDialogOpen={filterDialogOpen}
         onOpenFilterDialog={openFilterDialog}
         onCloseFilterDialog={closeFilterDialog}
         enabledFeatures={[
@@ -101,14 +70,10 @@ export const SchedulePageRoute = () => {
         renderSelectionsFilter={(props) => (
           <SelectionsFilterContainer {...props} />
         )}
-        textFilter={<TextFilterContainer dialog={filterDialogOpen} />}
-        pastEventsFilter={
-          <PastEventsFilterContainer dialog={filterDialogOpen} />
-        }
-        renderTagFilter={(props) => (
-          <TagFilterContainer {...props} dialog={filterDialogOpen} />
-        )}
+        textFilter={<TextFilterContainer />}
+        pastEventsFilter={<PastEventsFilterContainer />}
+        renderTagFilter={(props) => <TagFilterContainer {...props} />}
       />
-    </FilterDialogStoreContext.Provider>
+    </>
   )
 }

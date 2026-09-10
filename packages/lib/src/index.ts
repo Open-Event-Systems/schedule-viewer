@@ -12,6 +12,7 @@ export {
   makeSelections,
   makeServerSelections,
   makeTrackedSelections,
+  isSelections,
   isServerSelections,
   isTrackedSelections,
   parseSelections,

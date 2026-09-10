@@ -13,7 +13,7 @@ import {
 import classes from "./tag-filter.module.scss"
 import { Pill, type PillBoxProps, type PillProps } from "../newpill/pill.js"
 import type { DefaultBoxProps } from "../types.js"
-import { iterToArr } from "@open-event-systems/schedule-lib"
+import { iterToArr, iterToSet } from "@open-event-systems/schedule-lib"
 import type { TagViewProps } from "../../types.js"
 
 export type TagFilterTagData = Readonly<{
@@ -69,13 +69,7 @@ const _TagFilter = (props: TagFilterProps) => {
     ...other
   } = useProps("TagFilter", {}, props)
 
-  const disabledTagsSet = useMemo(() => {
-    if (disabledTags instanceof Set) {
-      return disabledTags
-    } else {
-      return new Set(disabledTags)
-    }
-  }, [disabledTags])
+  const disabledTagsSet = useMemo(() => iterToSet(disabledTags), [disabledTags])
 
   const tagEls = useMemo(() => {
     return iterToArr(tags).map((tag) => {
@@ -228,7 +222,7 @@ export type TagFilterModeSelectProps = {
   tags?: Iterable<string | TagFilterTagData>
   disabledTags?: Iterable<string>
   onSetMode?: (mode: TagFilterMode) => void
-  onSetDisabled?: (tags: string[], enabled: boolean) => void
+  onSetDisabled?: (tags: string[], disabled: boolean) => void
 } & Omit<DefaultBoxProps, "children">
 
 export const TagFilterModeSelect = (props: TagFilterModeSelectProps) => {

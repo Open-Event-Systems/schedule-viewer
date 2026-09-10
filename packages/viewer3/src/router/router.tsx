@@ -1,12 +1,10 @@
-import { MantineProvider, type MantineThemeOverride } from "@mantine/core"
-import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
+import { MantineProvider } from "@mantine/core"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { createRouter as tsCreateRouter } from "@tanstack/react-router"
+import type { JSX, ReactNode } from "react"
 import {
-  createRouter as tsCreateRouter,
-  type RouterHistory,
-} from "@tanstack/react-router"
-import type { ReactNode } from "react"
-import {
+  AppContext,
   awaitAppContext,
   type AppContextValue,
   type AwaitedAppContextValue,
@@ -14,39 +12,32 @@ import {
 import { parseSearch, stringifySearch } from "../search-params.js"
 import routeTree from "./routes/root.js"
 
-export type RouterContext = Readonly<{
-  queryClient: QueryClient
-  appContext: AppContextValue
-  appContextPromise: Promise<AwaitedAppContextValue>
-}>
-
-export type SetupFuncReturnValue = Readonly<{
-  history: RouterHistory
-  appContext: AppContextValue
-  theme?: MantineThemeOverride
-}>
-
-export type SetupFunc = () => SetupFuncReturnValue
-
-export type CreateRouterOptions = Readonly<{
-  basepath?: string
-}>
+export type RouterContext = AppContextValue & {
+  readonly appContextPromise: Promise<AwaitedAppContextValue>
+  readonly scripts?: Iterable<JSX.IntrinsicElements["script"]>
+  readonly links?: Iterable<JSX.IntrinsicElements["link"]>
+}
 
 export const createRouter = (
-  setupFunc: SetupFunc,
-  options?: CreateRouterOptions,
+  appContext: AppContextValue,
+  opts?: {
+    scripts?: Iterable<JSX.IntrinsicElements["script"]>
+    links?: Iterable<JSX.IntrinsicElements["link"]>
+  },
 ) => {
-  const { basepath } = options ?? {}
+  const { basePath, theme } = appContext
+  const { scripts, links } = opts ?? {}
+  const queryClient = appContext.queryClient
 
-  const { history, appContext, theme } = setupFunc()
+  const appContextPromise = awaitAppContext(appContext)
 
   const router = tsCreateRouter({
-    basepath,
-    history,
+    basepath: basePath,
     context: {
-      queryClient: appContext.queryClient,
-      appContext,
-      appContextPromise: awaitAppContext(appContext),
+      ...appContext,
+      appContextPromise,
+      scripts,
+      links,
     },
     routeTree,
     scrollRestoration: true,
@@ -54,14 +45,14 @@ export const createRouter = (
     stringifySearch,
     Wrap: ({ children }: { children: ReactNode }) => {
       return (
-        <>
+        <AppContext.Provider value={appContextPromise}>
           <MantineProvider theme={theme}>
-            <QueryClientProvider client={appContext.queryClient}>
+            <QueryClientProvider client={queryClient}>
               {children}
-              <ReactQueryDevtools client={appContext.queryClient} />
+              <ReactQueryDevtools client={queryClient} />
             </QueryClientProvider>
           </MantineProvider>
-        </>
+        </AppContext.Provider>
       )
     },
   })
