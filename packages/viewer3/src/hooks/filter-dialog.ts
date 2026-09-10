@@ -208,6 +208,14 @@ export const useSyncFilterDialogState = (dialogOpen: boolean) => {
     })
   }, [setLocState, router, dialogStore])
 
+  const firstSync = useRef(false)
+  useEffect(() => {
+    if (!firstSync.current) {
+      syncToStore()
+      firstSync.current = true
+    }
+  }, [syncToStore])
+
   const prevOpen = useRef(dialogOpen)
 
   useEffect(() => {

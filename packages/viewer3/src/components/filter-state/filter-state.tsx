@@ -8,23 +8,23 @@ import {
   type TagFilterProps,
   type TextFilterProps,
 } from "@open-event-systems/schedule-react"
-import {
-  useGetSelectionsFilterStateHref,
-  useSearchState as useLocSearchState,
-  useSelectionsFilterState,
-  useShowPastEventsState as useLocShowPastEventsState,
-  useTagFilterModeState as useLocTagFilterModeState,
-  useDisabledTagsState as useLocDisabledTagsState,
-} from "../../hooks/filter-location-state.js"
 import { useSSRValue } from "../../hooks/app.js"
 import {
-  useSearchState as useDialogSearchState,
-  useFilterDialogOpenState,
-  useShowPastEventsState as useDialogShowPastEventsState,
-  useThrottledSetSearch,
-  useTagFilterModeState as useDialogTagFilterModeState,
   useDisabledTagsState as useDialogDisabledTagsState,
+  useSearchState as useDialogSearchState,
+  useShowPastEventsState as useDialogShowPastEventsState,
+  useTagFilterModeState as useDialogTagFilterModeState,
+  useFilterDialogOpenState,
+  useThrottledSetSearch,
 } from "../../hooks/filter-dialog.js"
+import {
+  useGetSelectionsFilterStateHref,
+  useDisabledTagsState as useLocDisabledTagsState,
+  useSearchState as useLocSearchState,
+  useShowPastEventsState as useLocShowPastEventsState,
+  useTagFilterModeState as useLocTagFilterModeState,
+  useSelectionsFilterState,
+} from "../../hooks/filter-location-state.js"
 
 export const SelectionsFilterContainer = (props: SelectionsFilterProps) => {
   const [value, onChange] = useSelectionsFilterState()
