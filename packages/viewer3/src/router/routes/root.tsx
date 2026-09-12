@@ -1,3 +1,4 @@
+import { useMantineColorScheme } from "@mantine/core"
 import {
   createRootRouteWithContext,
   createRoute,
@@ -6,11 +7,10 @@ import {
   Scripts,
   type AnyRouteMatch,
 } from "@tanstack/react-router"
+import { DehydrateData } from "../../ssr/dehydrate.js"
 import type { RouterContext } from "../router.js"
 import { LoadingRoute } from "./components/loading/loading.js"
 import schedulePageRoutes from "./schedule-page.js"
-import { DehydrateData } from "../../ssr/dehydrate.js"
-import { useMantineColorScheme } from "@mantine/core"
 // import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
@@ -19,6 +19,7 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
       context: { appType, basePath, scripts: ctxScripts, links: ctxLinks },
     },
   }) => {
+    const meta: AnyRouteMatch["meta"] = []
     const links: AnyRouteMatch["links"] = [...(ctxLinks ?? [])]
     const scripts: AnyRouteMatch["scripts"] = [...(ctxScripts ?? [])]
 
@@ -46,11 +47,21 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
       scripts.push({
         src: `${basePath}config.js`,
       })
+
+      meta.push({
+        charSet: "utf-8",
+      })
+
+      meta.push({
+        name: "viewport",
+        content: "width=device-width, initial-scale=1.0",
+      })
     }
 
     return {
       scripts,
       links,
+      meta,
     }
   },
   component: () => {

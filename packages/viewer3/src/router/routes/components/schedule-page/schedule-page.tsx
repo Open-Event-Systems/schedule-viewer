@@ -1,4 +1,15 @@
-import { SchedulePage } from "@open-event-systems/schedule-react"
+import { useFilterDialogOpenState } from "#src/hooks/filter-dialog.js"
+import {
+  LocationFilterActionsContext,
+  useMakeLocationFilterActions,
+  useSyncFilterDialogState,
+} from "#src/hooks/filter-location-state.js"
+import {
+  FilterStoreContext,
+  SchedulePage,
+  useCreateFilterStore,
+} from "@open-event-systems/schedule-react"
+import { useCallback } from "react"
 import {
   PastEventsFilterContainer,
   SelectionsFilterContainer,
@@ -6,21 +17,17 @@ import {
   TextFilterContainer,
 } from "../../../../components/filter-state/filter-state.js"
 import { useScheduleItems } from "../../../../hooks/schedule.js"
-import {
-  FilterDialogStoreContext,
-  useCreateFilterDialogStore,
-  useFilterDialogOpenState,
-  useSyncFilterDialogState,
-} from "../../../../hooks/filter-dialog.js"
-import { useCallback } from "react"
 
 export const SchedulePageRoute = () => {
-  const filterDialogStore = useCreateFilterDialogStore()
+  const locationFilterActions = useMakeLocationFilterActions()
+  const filterStore = useCreateFilterStore()
 
   return (
-    <FilterDialogStoreContext.Provider value={filterDialogStore}>
-      <SchedulePageContainer />
-    </FilterDialogStoreContext.Provider>
+    <LocationFilterActionsContext.Provider value={locationFilterActions}>
+      <FilterStoreContext.Provider value={filterStore}>
+        <SchedulePageContainer />
+      </FilterStoreContext.Provider>
+    </LocationFilterActionsContext.Provider>
   )
 }
 

@@ -4,32 +4,67 @@
  */
 
 import type { Dayjs } from "dayjs"
-import type { Interval, ScheduleItem } from "./types.js"
 import { contains } from "./time.js"
+import type { Interval, ScheduleItem } from "./types.js"
 import { iterToSet } from "./utils.js"
 
-export type FilterSettings = Readonly<{
-  name?: string | null
-  tagFilterMode?: "include" | "exclude" | null
+export type TagFilterMode = "include" | "exclude"
+
+export type MakeFilterOptions = Readonly<{
+  /**
+   * The search string.
+   */
+  search?: string | null
+
+  /**
+   * Whether to exclude disabled tags or include non-disabled tags.
+   */
+  tagFilterMode?: TagFilterMode | null
+
+  /**
+   * The disabled tags.
+   */
   disabledTags?: Iterable<string> | null
+
+  /**
+   * The bookmarked item IDs.
+   */
   bookmarksFilterSelections?: Iterable<string> | null
+
+  /**
+   * The visited item IDs.
+   */
   unvisitedFilterSelections?: Iterable<string> | null
+
+  /**
+   * Hide items ending on or before this date.
+   */
   hidePastFilter?: Dayjs | null
+
+  /**
+   * Only include items beginning in this interval.
+   */
   dateFilter?: Interval | null
 }>
 
 /**
  * Return a filter that applies multiple filter settings.
  */
-export const makeFilter = (settings: FilterSettings): (item: ScheduleItem) => boolean => {
+export const makeFilter = (
+  settings: MakeFilterOptions,
+): ((item: ScheduleItem) => boolean) => {
   const chain: ((item: ScheduleItem) => boolean)[] = []
 
   if (settings.bookmarksFilterSelections) {
-    chain.push(makeSelectionsFilter("include", settings.bookmarksFilterSelections))
+    chain.push(
+      makeSelectionsFilter("include", settings.bookmarksFilterSelections),
+    )
   }
 
   if (settings.unvisitedFilterSelections) {
-    chain.push(makeSelectionsFilter("exclude", settings.unvisitedFilterSelections))
+    chain.push(
+      makeSelectionsFilter("exclude", settings.unvisitedFilterSelections),
+    )
   }
 
   if (settings.hidePastFilter) {
@@ -44,8 +79,8 @@ export const makeFilter = (settings: FilterSettings): (item: ScheduleItem) => bo
     chain.push(makeTagFilter(settings.tagFilterMode, settings.disabledTags))
   }
 
-  if (settings.name) {
-    chain.push(makeNameFilter(settings.name))
+  if (settings.search) {
+    chain.push(makeSearchFilter(settings.search))
   }
 
   return (item) => {
@@ -62,12 +97,12 @@ export const makeFilter = (settings: FilterSettings): (item: ScheduleItem) => bo
 /**
  * Return a filter for items matching the given search string.
  */
-export const makeNameFilter = (
-  name: string,
+export const makeSearchFilter = (
+  search: string,
 ): (<T extends { readonly name?: string }>(
   item: T,
 ) => item is T & { readonly name: string }) => {
-  const lowerName = name.trim().toLowerCase()
+  const lowerName = search.trim().toLowerCase()
   return <T extends { readonly name?: string }>(
     item: T,
   ): item is T & { readonly name: string } =>
@@ -139,7 +174,9 @@ export const makeDateFilter = (
 /**
  * Modify a filter function to work on schedule object occurrences.
  */
-export const toOccurrenceFilter = <T,>(f: (item: T) => boolean): (item: { readonly object: T }) => boolean => {
+export const toOccurrenceFilter = <T>(
+  f: (item: T) => boolean,
+): ((item: { readonly object: T }) => boolean) => {
   return (item: { readonly object: T }) => {
     return f(item.object)
   }
@@ -178,5 +215,38 @@ const iterHas = <T>(value: T, iter?: Iterable<T> | null): boolean => {
       }
     }
     return false
+  }
+}
+
+export type SetDisabledTagsFunc = {
+  (tags?: Iterable<string> | null): void
+  (tags: Iterable<string> | null, disabled: boolean): void
+}
+
+/**
+ * Return a function to update the disabled tags state.
+ * @param updateFunc - A setState like function.
+ */
+export const makeSetDisabledTagsFunc = (
+  updateFunc: (update: (prev?: Iterable<string> | null) => Set<string>) => void,
+): SetDisabledTagsFunc => {
+  return (tags?: Iterable<string> | null, disabled?: boolean) => {
+    updateFunc((prev) => {
+      if (disabled != null) {
+        // partial update
+        const newSet = new Set(prev)
+        for (const tag of tags ?? []) {
+          if (disabled) {
+            newSet.add(tag)
+          } else {
+            newSet.delete(tag)
+          }
+        }
+        return newSet
+      } else {
+        // replace
+        return new Set(prev)
+      }
+    })
   }
 }

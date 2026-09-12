@@ -1,4 +1,8 @@
-import { omitUndef, omitUndefSchema, optional } from "@open-event-systems/schedule-lib"
+import {
+  omitUndef,
+  omitUndefSchema,
+  optional,
+} from "@open-event-systems/schedule-lib"
 import z from "zod"
 import { DEFAULT_CONFIG, type ViewerConfig } from "./config.js"
 
@@ -22,7 +26,6 @@ const configSchema = z.looseObject({
   tags: optional(z.array(omitUndefSchema(tagConfigSchema))),
   items: optional(z.array(z.unknown())),
 })
-
 
 export const parseConfig = (data: unknown): ViewerConfig => {
   const parsed = omitUndef(configSchema.parse(data))

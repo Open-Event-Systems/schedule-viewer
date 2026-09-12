@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "rootDir": "./",
     "outDir": "./dist",
     "composite": true,
     "module": "nodenext",
@@ -13,7 +12,10 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "#src/*": ["./src/*"]
+    }
   },
   "references": [{ "path": "../lib" }],
   "include": ["./src/**/*", "./.storybook/*"]

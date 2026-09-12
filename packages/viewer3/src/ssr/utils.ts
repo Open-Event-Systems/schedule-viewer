@@ -1,8 +1,6 @@
 import type { JSX } from "react/jsx-runtime"
 import type { Manifest } from "vite"
 
-
-
 export const getManifestResources = (
   manifest: Manifest,
   basePath: string,
@@ -21,7 +19,7 @@ export const getManifestResources = (
 
   scripts.push({
     type: "module",
-    src: `${basePath}${chunkInfo.file}`
+    src: `${basePath}${chunkInfo.file}`,
   })
 
   getStyles(links, manifest, basePath, entryPoint)

@@ -1,114 +1,109 @@
+/**
+ * Item filtering tools.
+ * @module
+ */
+
+import type { SelectionsFilterOption } from "#src/components/filters/selections-filter.js"
 import {
-  iterToArr,
-  makeNameFilter,
-  makePastItemFilter,
-  makeSelectionsFilter,
-  makeTagFilter,
-  type ScheduleItem,
+  createOptionalContext,
+  makeUseBoundStore,
+  useRequiredContext,
+} from "#src/utils.js"
+import {
+  makeSetDisabledTagsFunc,
+  type SetDisabledTagsFunc,
+  type TagFilterMode,
 } from "@open-event-systems/schedule-lib"
-import { useMemo } from "react"
-import type { SelectionsFilterOption } from "../components/index.js"
-import type { Dayjs } from "dayjs"
-import dayjs from "dayjs"
+import { useState } from "react"
+import { createStore, type StoreApi } from "zustand"
 
 export type FilterOptions = Readonly<{
-  disabledTags?: Iterable<string> | undefined | null
-  text?: string | undefined | null
-  showPastEvents?: boolean | undefined | null
-  selectionsFilterOptions?: Iterable<SelectionsFilterOption> | undefined | null
-  now?: Dayjs | undefined | null
-  bookmarked?: Iterable<string> | undefined | null
-  visited?: Iterable<string> | undefined | null
+  selectionsFilterOptions?: ReadonlySet<SelectionsFilterOption>
+  search?: string
+  hidePast?: boolean
+  tagFilterMode?: TagFilterMode
+  disabledTags?: ReadonlySet<string>
 }>
 
-export const filterItems = <T extends ScheduleItem>(
-  items?: Iterable<T> | null,
-  options?: FilterOptions,
-): Iterable<T> => {
-  const {
-    disabledTags,
-    text,
-    showPastEvents,
-    selectionsFilterOptions,
-    now,
-    bookmarked,
-    visited,
-  } = options ?? {}
+export type FilterActions = Readonly<{
+  setSelectionsFilterOptions: (
+    options?: Iterable<SelectionsFilterOption> | null,
+  ) => void
+  setSearch: (search?: string | null) => void
+  setHidePast: (hidePast?: boolean | null) => void
+  setTagFilterMode: (tagFilterMode?: TagFilterMode | null) => void
+  setDisabledTags: SetDisabledTagsFunc
+  replaceOptions: (newOptions: FilterOptions) => void
+}>
 
-  const optsArr = iterToArr(selectionsFilterOptions)
-
-  let res = items
-
-  if (optsArr.includes("bookmarked")) {
-    res = iterToArr(res).filter(makeSelectionsFilter("include", bookmarked))
+export const makeFilterActions = (
+  set: (update: (prev: FilterOptions) => FilterOptions) => void,
+): FilterActions => {
+  return {
+    setSelectionsFilterOptions: (options) =>
+      set((prev) => ({ ...prev, selectionsFilterOptions: new Set(options) })),
+    setSearch: (search) =>
+      set((prev) => ({ ...prev, search: search ?? undefined })),
+    setHidePast: (hidePast) =>
+      set((prev) => ({ ...prev, hidePast: hidePast ?? undefined })),
+    setTagFilterMode: (tagFilterMode) =>
+      set((prev) => ({ ...prev, tagFilterMode: tagFilterMode ?? undefined })),
+    setDisabledTags: makeSetDisabledTagsFunc((update) => {
+      set((prev) => {
+        const newVal = update(prev.disabledTags)
+        return { ...prev, disabledTags: newVal }
+      })
+    }),
+    replaceOptions: (newOptions) => {
+      set(() => newOptions)
+    },
   }
-
-  if (optsArr.includes("unvisited")) {
-    res = iterToArr(res).filter(makeSelectionsFilter("exclude", visited))
-  }
-
-  if (disabledTags) {
-    const tagFilter = makeTagFilter("exclude", disabledTags)
-    res = iterToArr(res).filter((it) => !("keywords" in it) || tagFilter(it))
-  }
-
-  if (!showPastEvents) {
-    const pastFilter = makePastItemFilter(now ?? dayjs())
-    res = iterToArr(res).filter((it) => !("startDate" in it) || pastFilter(it))
-  }
-
-  if (text) {
-    res = iterToArr(res).filter(makeNameFilter(text))
-  }
-
-  return iterToArr(res)
 }
 
-export const useFilteredItems = <T extends ScheduleItem>(
-  items?: Iterable<T> | null,
-  options?: FilterOptions,
-): Iterable<T> => {
-  const {
-    disabledTags,
-    text,
-    showPastEvents,
-    selectionsFilterOptions,
-    now,
-    bookmarked,
-    visited,
-  } = options ?? {}
-  const bySelections = useMemo(() => {
-    const optsArr = iterToArr(selectionsFilterOptions)
-    let res = items
-
-    if (optsArr.includes("bookmarked")) {
-      res = iterToArr(res).filter(makeSelectionsFilter("include", bookmarked))
+export const createFilterStore = (
+  initialState?: FilterOptions,
+): StoreApi<FilterOptions & FilterActions> =>
+  createStore<FilterOptions & FilterActions>()((set) => {
+    const updateFunc = (update: (prev: FilterOptions) => FilterOptions) => {
+      set(
+        ({
+          setSelectionsFilterOptions,
+          setSearch,
+          setHidePast,
+          setTagFilterMode,
+          setDisabledTags,
+          replaceOptions,
+          ...prevOpts
+        }) => {
+          const newOpts = update(prevOpts)
+          return {
+            ...newOpts,
+            setSelectionsFilterOptions,
+            setSearch,
+            setHidePast,
+            setTagFilterMode,
+            setDisabledTags,
+            replaceOptions,
+          }
+        },
+        true,
+      )
     }
 
-    if (optsArr.includes("unvisited")) {
-      res = iterToArr(res).filter(makeSelectionsFilter("exclude", visited))
+    return {
+      ...initialState,
+      ...makeFilterActions(updateFunc),
     }
+  })
 
-    return res
-  }, [selectionsFilterOptions, items, bookmarked, visited])
-  const byTag = useMemo(() => {
-    const tagFilter = makeTagFilter("exclude", disabledTags)
-    return disabledTags
-      ? iterToArr(bySelections).filter(
-          (it) => !("keywords" in it) || tagFilter(it),
-        )
-      : bySelections
-  }, [bySelections, disabledTags])
-  const byPast = useMemo(() => {
-    const pastFilter = makePastItemFilter(now ?? dayjs())
-    return !showPastEvents
-      ? iterToArr(byTag).filter((it) => !("startDate" in it) || pastFilter(it))
-      : byTag
-  }, [showPastEvents, byTag, now])
-  const byName = useMemo(
-    () => (text ? iterToArr(byPast).filter(makeNameFilter(text)) : byPast),
-    [text, byPast],
-  )
+export const FilterStoreContext =
+  createOptionalContext<StoreApi<FilterOptions & FilterActions>>()
 
-  return iterToArr(byName)
-}
+export const useCreateFilterStore = (
+  initialData?: FilterOptions,
+): StoreApi<FilterOptions & FilterActions> =>
+  useState(() => createFilterStore(initialData))[0]
+
+export const useFilterStore = makeUseBoundStore(() =>
+  useRequiredContext(FilterStoreContext),
+)

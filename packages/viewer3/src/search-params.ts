@@ -1,5 +1,3 @@
-import z from "zod"
-
 export const parseSearch = (search: string): Record<string, unknown> => {
   if (search[0] == "?") {
     search = search.substring(1)
@@ -50,32 +48,3 @@ export const stringifySearch = (search: Record<string, unknown>): string => {
 
   return paramsStr == "" ? "" : `?${paramsStr}`
 }
-
-
-export type PageSearchParams = Readonly<{
-  view?: string
-  day?: string
-  search?: string
-  past?: boolean
-  bookmarked?: boolean
-  unvisited?: boolean
-}>
-
-const boolSchema = z.codec(
-  z.union([z.literal(["true", "false"]), z.boolean()]),
-  z.boolean(),
-  {
-    decode: (v) => v === true || v == "true",
-    encode: (v) => v ? "true" : "false"
-  }
-)
-
-export const pageSearchParamsSchema = z.object({
-  view: z.optional(z.string()).catch(undefined),
-  day: z.optional(z.string()).catch(undefined),
-  search: z.optional(z.string()).catch(undefined),
-  past: z.optional(boolSchema).catch(undefined),
-  bookmarked: z.optional(boolSchema).catch(undefined),
-  unvisited: z.optional(boolSchema).catch(undefined),
-})
-

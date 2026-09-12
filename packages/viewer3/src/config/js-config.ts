@@ -4,11 +4,15 @@
  */
 
 import type { MantineThemeOverride } from "@mantine/core"
-import { makeLocalStorageSessionSelectionsStore, makeMemoryLocalSelectionsStore, omitUndef } from "@open-event-systems/schedule-lib"
-import type { AppContextValue } from "../hooks/app.js"
-import { makeScheduleAPIFromConfig } from "./config.js"
+import {
+  makeLocalStorageSessionSelectionsStore,
+  makeMemoryLocalSelectionsStore,
+  omitUndef,
+} from "@open-event-systems/schedule-lib"
 import type { QueryClient } from "@tanstack/react-query"
+import type { AppContextValue } from "../hooks/app.js"
 import { ConfigQueryOptions } from "../queries/config.js"
+import { makeScheduleAPIFromConfig } from "./config.js"
 
 export type JSConfig = Readonly<{
   basePath: string
@@ -19,10 +23,6 @@ export type JSConfig = Readonly<{
 
 declare global {
   var ULE_CONFIG: Partial<JSConfig> | undefined
-
-  interface ImportMetaEnv {
-    VITE_SSR_CLIENT?: string
-  }
 }
 
 const getDefaultOrigin = (): string => {
@@ -55,11 +55,13 @@ export const getJSConfig = (jsConfig?: Partial<JSConfig>): JSConfig => {
 export const makeAppContext = (
   jsConfig: JSConfig,
   queryClient: QueryClient,
-  appType: "spa"|"ssr"
+  appType: "spa" | "ssr",
 ): AppContextValue => {
   const fullConfigURL = new URL(jsConfig.configURL, jsConfig.origin).href
 
-  const configPromise = queryClient.query(ConfigQueryOptions.config(fullConfigURL))
+  const configPromise = queryClient.query(
+    ConfigQueryOptions.config(fullConfigURL),
+  )
 
   return {
     appType,
@@ -68,7 +70,9 @@ export const makeAppContext = (
     queryClient,
     config: configPromise,
     theme: jsConfig.theme,
-    scheduleAPI: configPromise.then((config) => makeScheduleAPIFromConfig(config)),
+    scheduleAPI: configPromise.then((config) =>
+      makeScheduleAPIFromConfig(config),
+    ),
     selectionsStore: configPromise.then((config) => {
       // TODO: create based on config
       if (import.meta.env.SSR) {

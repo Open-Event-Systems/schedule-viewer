@@ -10,6 +10,9 @@
     "build:ssr:server": "vite build --mode=production --config vite.ssr.config.ts --ssr",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "imports": {
+    "#src/*": "./src/*"
+  },
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.102.8",

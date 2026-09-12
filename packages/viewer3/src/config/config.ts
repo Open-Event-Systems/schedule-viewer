@@ -3,7 +3,10 @@
  * @module
  */
 
-import { makeParsedScheduleItemsAPI, type ScheduleAPI } from "@open-event-systems/schedule-lib"
+import {
+  makeParsedScheduleItemsAPI,
+  type ScheduleAPI,
+} from "@open-event-systems/schedule-lib"
 import { parser } from "./parse.js"
 
 export type ViewerConfig = Readonly<{
@@ -40,7 +43,6 @@ export type ViewerConfig = Readonly<{
   items: Iterable<unknown>
 }>
 
-
 export type TagConfig = Readonly<{
   value: string
   label?: string
@@ -52,7 +54,6 @@ export type TagConfig = Readonly<{
   after?: string
 }>
 
-
 export const DEFAULT_CONFIG = {
   id: "",
   name: "Event Schedule",
@@ -62,7 +63,9 @@ export const DEFAULT_CONFIG = {
   items: [],
 } as const satisfies ViewerConfig
 
-export const makeScheduleAPIFromConfig = (config: ViewerConfig): ScheduleAPI => {
+export const makeScheduleAPIFromConfig = (
+  config: ViewerConfig,
+): ScheduleAPI => {
   // TODO: support URLs
   return makeParsedScheduleItemsAPI(parser, config.items)
 }

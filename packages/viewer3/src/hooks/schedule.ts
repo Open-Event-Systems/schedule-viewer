@@ -1,4 +1,7 @@
-import type { ScheduleAPI, ScheduleItem } from "@open-event-systems/schedule-lib"
+import type {
+  ScheduleAPI,
+  ScheduleItem,
+} from "@open-event-systems/schedule-lib"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { ScheduleQueryOptions } from "../queries/schedule.js"
 import { useAppContext } from "./app.js"

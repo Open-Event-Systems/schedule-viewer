@@ -1,5 +1,6 @@
 import type { Address } from "@open-event-systems/schedule-lib"
 import { createContext, use, type Context } from "react"
+import { useStore, type StoreApi, type UseBoundStore } from "zustand"
 
 /**
  * Format an {@link Address} to a string.
@@ -34,4 +35,19 @@ export const useRequiredContext = <T>(context: Context<T | undefined>): T => {
     throw new Error(`${context.displayName || "Required context"} not provided`)
   }
   return ctx
+}
+
+/**
+ * Return a {@link useStore} hook for a specific store.
+ */
+export const makeUseBoundStore = <T>(
+  store: StoreApi<T> | (() => StoreApi<T>),
+): UseBoundStore<StoreApi<T>> => {
+  return ((selector) => {
+    if (typeof store == "function") {
+      store = store()
+    }
+
+    return useStore(store, selector)
+  }) as UseBoundStore<StoreApi<T>>
 }

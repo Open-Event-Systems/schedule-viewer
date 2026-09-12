@@ -4,19 +4,27 @@
  */
 
 import { omitUndef } from "@open-event-systems/schedule-lib"
-import type {
-  SelectionsFilterOption,
-  SetDisabledTagsFunc,
-  TagFilterMode,
+import {
+  createOptionalContext,
+  FilterStoreContext,
+  makeFilterActions,
+  makeUseBoundStore,
+  useFilterStore,
+  useRequiredContext,
+  type FilterActions,
+  type FilterOptions,
+  type SelectionsFilterOption,
+  type TagFilterMode,
 } from "@open-event-systems/schedule-react"
 import {
   useLocation,
   useNavigate,
   useRouter,
-  useSearch,
+  type HistoryState,
 } from "@tanstack/react-router"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import z from "zod"
+import { createStore, type StoreApi } from "zustand"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -61,271 +69,193 @@ export const parseSearchParams = (
   return omitUndef(pageSearchParamsSchema.parse(search))
 }
 
-export const useSetSearch = (): ((search: {
-  search?: string | null
-  showPast?: boolean | null
-  selectionsFilterOptions?: Iterable<SelectionsFilterOption> | null
-  tagFilterMode?: TagFilterMode | null
-  disabledTags?: Iterable<string> | null
-}) => void) => {
-  const navigate = useNavigate()
-  return useCallback(
-    (search: {
-      search?: string | null
-      showPast?: boolean | null
-      selectionsFilterOptions?: Iterable<SelectionsFilterOption> | null
-      tagFilterMode?: TagFilterMode | null
-      disabledTags?: Iterable<string> | null
-    }) =>
-      navigate({
-        to: ".",
-        search: (prev) => {
-          let newObj = { ...prev }
-          if (search.search) {
-            newObj.search = search.search
-          } else {
-            delete newObj.search
-          }
+export const LocationFilterActionsContext =
+  createOptionalContext<StoreApi<FilterActions>>()
 
-          if (search.showPast != null) {
-            newObj.past = !!search.showPast
-          } else {
-            delete newObj.past
-          }
-
-          newObj = getSelectionsFilterParams(
-            newObj,
-            search.selectionsFilterOptions,
-          )
-
-          return newObj
-        },
-        state: (prev) => {
-          const newObj = { ...prev }
-
-          if (search.tagFilterMode) {
-            newObj.tagFilterMode = search.tagFilterMode
-          } else {
-            delete newObj.tagFilterMode
-          }
-
-          if (search.disabledTags) {
-            newObj.disabledTags = [...search.disabledTags]
-          } else {
-            delete newObj.disabledTags
-          }
-
-          return newObj
-        },
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-}
-
-export const useTagFilterModeState = (): [
-  TagFilterMode | undefined,
-  (mode: TagFilterMode) => void,
-] => {
-  const navigate = useNavigate()
-  const setState = useCallback(
-    (mode: TagFilterMode) =>
-      navigate({
-        to: ".",
-        state: (prev) => ({ ...prev, tagFilterMode: mode }),
-        search: true,
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-
-  const state = useLocation({
-    select: ({ state }) => state.tagFilterMode,
-  })
-
-  return [state, setState]
-}
-
-export const useDisabledTagsState = (): [
-  ReadonlySet<string>,
-  SetDisabledTagsFunc,
-] => {
-  const navigate = useNavigate()
-  const setState = useCallback(
-    (tags?: Iterable<string> | null, disabled?: boolean) =>
-      navigate({
-        to: ".",
-        state: (prev) => {
-          if (disabled != null) {
-            // partial update
-            const newSet = new Set(prev.disabledTags)
-            for (const tag of tags ?? []) {
-              if (disabled) {
-                newSet.add(tag)
-              } else {
-                newSet.delete(tag)
-              }
-            }
-            return { ...prev, disabledTags: [...newSet] }
-          } else {
-            return { ...prev, disabledTags: [...(tags ?? [])] }
-          }
-        },
-        search: true,
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-
-  const tagsState = useLocation({
-    select: ({ state }) => state.disabledTags,
-    structuralSharing: true,
-  })
-
-  const state = useMemo(() => new Set(tagsState), [tagsState])
-
-  return [state, setState]
-}
-
-export const useSearchState = (): [
-  string | undefined,
-  (search?: string | null) => void,
-] => {
-  const navigate = useNavigate()
-  const setState = useCallback(
-    (search?: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => {
-          const newObj = { ...prev }
-          if (search) {
-            newObj.search = search
-          } else {
-            delete newObj.search
-          }
-          return newObj
-        },
-        state: true,
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-
-  const state = useLocation({ select: ({ search }) => search.search })
-
-  return [state, setState]
-}
-
-export const useShowPastEventsState = (): [
-  boolean | undefined,
-  (show?: boolean | null) => void,
-] => {
-  const navigate = useNavigate()
-  const setState = useCallback(
-    (show?: boolean | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => {
-          const newObj = { ...prev }
-          if (show != null) {
-            newObj.past = show
-          } else {
-            delete newObj.past
-          }
-          return newObj
-        },
-        state: true,
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-
-  const state = useSearch({ strict: false, select: (search) => search.past })
-  return [state, setState]
-}
-
-export const useSelectionsFilterState = (): [
-  ReadonlySet<SelectionsFilterOption>,
-  (options?: Iterable<SelectionsFilterOption> | null) => void,
-] => {
-  const navigate = useNavigate()
-  const setState = useCallback(
-    (options?: Iterable<SelectionsFilterOption> | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => getSelectionsFilterParams(prev, options),
-        state: true,
-        hash: true,
-        replace: true,
-      }),
-    [navigate],
-  )
-
-  const { bookmarked, unvisited } = useSearch({
-    strict: false,
-    structuralSharing: true,
-    select: ({ bookmarked, unvisited }) => ({
-      bookmarked: !!bookmarked,
-      unvisited: !!unvisited,
-    }),
-  })
-
-  const state = useMemo(() => {
-    const set = new Set<SelectionsFilterOption>()
-    if (bookmarked) {
-      set.add("bookmarked")
-    }
-    if (unvisited) {
-      set.add("unvisited")
-    }
-    return set
-  }, [bookmarked, unvisited])
-
-  return [state, setState]
-}
+export const useLocationFilterActions = makeUseBoundStore(() =>
+  useRequiredContext(LocationFilterActionsContext),
+)
 
 export const useGetSelectionsFilterStateHref = (): ((
   options?: Iterable<SelectionsFilterOption> | null,
 ) => string) => {
   const router = useRouter()
+
+  // href will change whenever search or hash changes
+  const hrefData = useLocation({
+    structuralSharing: true,
+    select: ({ hash, searchStr }) => [hash, searchStr],
+  })
+
   return useCallback(
     (options?: Iterable<SelectionsFilterOption> | null) => {
       return router.history.createHref(
         router.buildLocation({
           to: ".",
-          search: (prev) => getSelectionsFilterParams(prev, options),
+          search: (prev) => {
+            const prevOpts = searchToFilterOptions(prev)
+            const newSearch = filterOptionsToSearch({
+              ...prevOpts,
+              selectionsFilterOptions: new Set(options),
+            })
+            return { ...prev, ...newSearch }
+          },
           state: true,
           hash: true,
         }).href,
       )
     },
-    [router],
+    [router, hrefData],
   )
 }
 
-const getSelectionsFilterParams = <T extends PageSearchParams>(
-  prev: T,
-  opts?: Iterable<SelectionsFilterOption> | null,
-): T => {
-  const newObj: { -readonly [K in keyof T]: T[K] } = { ...prev }
-  const optSet = new Set(opts)
+export const useMakeLocationFilterActions = (): StoreApi<FilterActions> => {
+  const navigate = useNavigate()
 
-  if (optSet.has("bookmarked")) {
-    newObj.bookmarked = true
-  } else {
-    delete newObj.bookmarked
+  const store = useMemo(() => {
+    const updateFunc = (update: (prev: FilterOptions) => FilterOptions) => {
+      navigate({
+        to: ".",
+        search: (prev) => {
+          const prevOpts = searchToFilterOptions(prev)
+          const newOpts = update(prevOpts)
+          return { ...prev, ...filterOptionsToSearch(newOpts) }
+        },
+        state: (prev) => {
+          const prevOpts = stateToFilterOptions(prev)
+          const newOpts = update(prevOpts)
+          return { ...prev, ...filterOptionsToState(newOpts) }
+        },
+        hash: true,
+        replace: true,
+      })
+    }
+
+    const filterActions = makeFilterActions(updateFunc)
+
+    return createStore<FilterActions>()(() => ({
+      ...filterActions,
+    }))
+  }, [navigate])
+
+  return store
+}
+
+export const useSyncFilterDialogState = (dialogOpen: boolean) => {
+  const prevOpen = useRef(dialogOpen)
+
+  const router = useRouter()
+  const navigate = useNavigate()
+
+  const setStoreOptions = useFilterStore((state) => state.replaceOptions)
+  const getStoreState = useRequiredContext(FilterStoreContext).getState
+
+  const copyToStore = useCallback(() => {
+    const search = parseSearchParams(router.state.location.search)
+    const searchOpts = searchToFilterOptions(search)
+    const stateOpts = stateToFilterOptions(router.state.location.state)
+    const opts = { ...searchOpts, ...stateOpts }
+    setStoreOptions(opts)
+  }, [router, setStoreOptions])
+
+  const copyToLoc = useCallback(() => {
+    const cur = getStoreState()
+    const search = filterOptionsToSearch(cur)
+    const state = filterOptionsToState(cur)
+    navigate({
+      to: ".",
+      search: (prev) => {
+        return { ...prev, ...search }
+      },
+      state: (prev) => {
+        return { ...prev, ...state }
+      },
+      hash: true,
+      replace: true,
+    })
+  }, [navigate, getStoreState])
+
+  // also copy on first render
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) {
+      first.current = false
+      copyToStore()
+    }
+  }, [copyToStore])
+
+  useEffect(() => {
+    if (dialogOpen && !prevOpen.current) {
+      copyToStore()
+    } else if (!dialogOpen && prevOpen.current) {
+      copyToLoc()
+    }
+
+    prevOpen.current = dialogOpen
+  }, [dialogOpen, copyToStore, copyToLoc])
+}
+
+const searchToFilterOptions = (search: PageSearchParams): FilterOptions => {
+  const opts: { -readonly [K in keyof FilterOptions]: FilterOptions[K] } = {}
+
+  const selectionsFilterOptions = new Set<SelectionsFilterOption>()
+
+  if (search.bookmarked) {
+    selectionsFilterOptions.add("bookmarked")
   }
 
-  if (optSet.has("unvisited")) {
-    newObj.unvisited = true
-  } else {
-    delete newObj.unvisited
+  if (search.unvisited) {
+    selectionsFilterOptions.add("unvisited")
   }
 
-  return newObj
+  opts.selectionsFilterOptions = selectionsFilterOptions
+  opts.search = search.search
+
+  if (search.past != null) {
+    opts.hidePast = !search.past
+  }
+
+  return opts
+}
+
+const stateToFilterOptions = (state: HistoryState): FilterOptions => {
+  return {
+    tagFilterMode: state.tagFilterMode,
+    disabledTags: new Set(state.disabledTags),
+  }
+}
+
+const filterOptionsToSearch = (opts: FilterOptions): PageSearchParams => {
+  const params: {
+    -readonly [K in keyof PageSearchParams]: PageSearchParams[K]
+  } = {
+    bookmarked: undefined,
+    unvisited: undefined,
+    search: undefined,
+  }
+
+  if (opts.selectionsFilterOptions?.has("bookmarked")) {
+    params.bookmarked = true
+  }
+
+  if (opts.selectionsFilterOptions?.has("unvisited")) {
+    params.unvisited = true
+  }
+
+  if (opts.search) {
+    params.search = opts.search
+  }
+
+  if (opts.hidePast != null) {
+    params.past = !opts.hidePast
+  }
+
+  return params
+}
+
+const filterOptionsToState = (opts: FilterOptions): HistoryState => {
+  return {
+    tagFilterMode: opts.tagFilterMode,
+    disabledTags: [...(opts.disabledTags ?? [])],
+  }
 }
