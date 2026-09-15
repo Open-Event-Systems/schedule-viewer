@@ -1,18 +1,19 @@
+import { TagsConfigContext } from "#src/tags.js"
 import { useProps } from "@mantine/core"
-import { Pill, type PillProps } from "../newpill/pill.js"
 import clsx from "clsx"
 import {
+  use,
   useMemo,
   type ComponentPropsWithoutRef,
   type MouseEvent,
   type ReactNode,
 } from "react"
-import type { GetTagViewPropsFunc } from "../../hooks/newitems.js"
 import { ItemCard, type ItemCardProps } from "../item-card/item-card.js"
 import {
   LazyHoverCard,
   type LazyHoverCardProps,
 } from "../lazy-hover-card/lazy-hover-card.js"
+import { Pill, type PillProps } from "../newpill/pill.js"
 
 export type ItemPillProps = PillProps & {
   name?: ReactNode
@@ -20,7 +21,6 @@ export type ItemPillProps = PillProps & {
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
   isBookmarked?: boolean
   tags?: Iterable<string>
-  getTagViewProps?: GetTagViewPropsFunc
   HoverCardProps?: Partial<LazyHoverCardProps>
   ItemCardProps?: Partial<ItemCardProps>
 }
@@ -33,20 +33,14 @@ const _ItemPill = (props: ItemPillProps) => {
     onClick,
     isBookmarked,
     tags,
-    getTagViewProps,
     HoverCardProps,
     ItemCardProps,
     ...other
   } = useProps("ItemPill", null, props)
 
+  const tagsConfig = use(TagsConfigContext)
   const { after, before, color, indicator, indicatorColor, textColor } =
-    useMemo(
-      () =>
-        getTagViewProps
-          ? (getTagViewProps(tags) ?? { value: "" })
-          : { value: "" },
-      [tags, getTagViewProps],
-    )
+    useMemo(() => tagsConfig.getViewProps(...(tags ?? [])), [tagsConfig, tags])
 
   const renderPillRoot = (
     props: ComponentPropsWithoutRef<"div"> & ComponentPropsWithoutRef<"a">,

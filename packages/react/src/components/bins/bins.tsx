@@ -10,15 +10,11 @@ import {
 import clsx from "clsx"
 import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
 
-import classes from "./bins.module.scss"
-import {
-  iterToArr,
-  type Bin,
-  type BinFunc,
-} from "@open-event-systems/schedule-lib"
+import { iterToArr, type Bin } from "@open-event-systems/schedule-lib"
 import type { DefaultBoxProps } from "../types.js"
+import classes from "./bins.module.scss"
 
-export type BinsProps<InT, OutT extends InT = InT> = {
+export type BinsProps<OutT, InT = OutT> = {
   /**
    * The bins.
    */
@@ -27,7 +23,7 @@ export type BinsProps<InT, OutT extends InT = InT> = {
   /**
    * A function that groups items into bins.
    */
-  binFunc?: BinFunc<InT, OutT>
+  binFunc?: (items?: Iterable<InT> | null) => Iterable<Bin<OutT>>
 
   /**
    * The items to group into bins.
@@ -59,7 +55,7 @@ export type BinsProps<InT, OutT extends InT = InT> = {
 /**
  * Renders data grouped into bins.
  */
-const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
+const _Bins = <T,>(props: BinsProps<T>) => {
   const {
     bins: propBins,
     binFunc,
@@ -77,7 +73,7 @@ const _Bins = <InT, OutT extends InT = InT>(props: BinsProps<InT, OutT>) => {
   )
 
   const binEls = useMemo(() => {
-    let bins: readonly Bin<OutT>[]
+    let bins: readonly Bin<T>[]
 
     if (propBins) {
       bins = iterToArr(propBins)

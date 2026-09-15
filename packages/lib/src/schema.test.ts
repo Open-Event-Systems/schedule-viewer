@@ -1,7 +1,12 @@
-import { describe, expect, test } from "vitest"
-import { dayJSSchema, durationSchema, omitUndefSchema, optional, setSchema } from "./schema.js"
 import dayjs from "dayjs"
+import { describe, expect, test } from "vitest"
 import z from "zod"
+import {
+  dayJSSchema,
+  durationSchema,
+  omitUndefSchema,
+  optional,
+} from "./schema.js"
 
 describe("date schemas", () => {
   test("dayjs schema validates type", () => {
@@ -40,14 +45,5 @@ describe("date schemas", () => {
 
     const res = schema.parse({ opt: null })
     expect("opt" in res).toBe(false)
-  })
-
-  test("set schema", () => {
-    const schema = setSchema(z.string())
-    const res = schema.parse(["a", "b"])
-    expect(res).toBeInstanceOf(Set)
-    const items = [...res]
-    items.sort()
-    expect(items).toStrictEqual(["a", "b"])
   })
 })

@@ -1,4 +1,5 @@
-import type { TagFilterTagData, ViewSelectProps } from "./components/index.js"
+import { makeTagsConfig } from "#src/tags.js"
+import type { ViewSelectProps } from "./components/index.js"
 
 export const viewSelectOptions = [
   {
@@ -19,37 +20,34 @@ export const viewSelectOptions = [
   },
 ] as const satisfies ViewSelectProps["data"]
 
-export const tagData = [
-  {
-    value: "main-event",
-    label: "Main Event",
-    before: "⭐",
-    color: "#b15000",
-    textColor: "#fff",
+export const testTagsConfig = makeTagsConfig({
+  tags: {
+    "main-event": {
+      label: "Main Event",
+      before: "⭐",
+      color: "var(--tol-palette-pine)",
+      textColor: "var(--tol-palette-text)",
+    },
+    art: {
+      label: "Art",
+      before: "🎨",
+      color: "var(--tol-palette-teal)",
+      textColor: "var(--tol-palette-text)",
+    },
+    photography: {
+      label: "Photography",
+      before: "📷",
+      color: "var(--tol-palette-purple)",
+      textColor: "var(--tol-palette-text)",
+    },
+    mature: {
+      label: "Mature",
+      indicator: "18+",
+      indicatorColor: "#ff5da9",
+    },
+    "loud-sounds": {
+      label: "Loud Sounds",
+      after: "📢",
+    },
   },
-  {
-    value: "art",
-    label: "Art",
-    before: "🎨",
-    color: "#005f02",
-    textColor: "#fff",
-  },
-  {
-    value: "photography",
-    label: "Photography",
-    before: "📷",
-    color: "#380059",
-    textColor: "#fff",
-  },
-  {
-    value: "mature",
-    label: "Mature",
-    indicator: "18+",
-    indicatorColor: "#ff5da9",
-  },
-  {
-    value: "loud-sounds",
-    label: "Loud Sounds",
-    after: "📢"
-  }
-] as const satisfies readonly TagFilterTagData[]
+})

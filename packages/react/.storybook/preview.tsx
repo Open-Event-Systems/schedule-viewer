@@ -1,10 +1,12 @@
-import type { Preview } from "@storybook/react-vite"
 import { DEFAULT_THEME, MantineProvider } from "@mantine/core"
+import type { Preview } from "@storybook/react-vite"
 
 import "@mantine/core/styles.css"
 
-import { parsedConfig } from "../src/test-data.js"
+import "#src/styles.scss"
+
 import { ScheduleConfigContext } from "../src/hooks/config.js"
+import { parsedConfig } from "../src/test-data.js"
 
 const preview: Preview = {
   parameters: {

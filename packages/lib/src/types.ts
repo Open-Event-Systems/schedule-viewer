@@ -30,12 +30,12 @@ export type Day = Readonly<{
 export type RW<T> = T extends readonly []
   ? []
   : T extends readonly [infer F, ...infer R]
-  ? [RW<F>, ...RW<R>]
-  : T extends readonly (infer R)[]
-  ? RW<R>[]
-  : T extends Readonly<Record<string, unknown>>
-  ? { -readonly [K in keyof T]: RW<T[K]> }
-  : T
+    ? [RW<F>, ...RW<R>]
+    : T extends readonly (infer R)[]
+      ? RW<R>[]
+      : T extends Readonly<Record<string, unknown>>
+        ? { -readonly [K in keyof T]: RW<T[K]> }
+        : T
 
 /**
  * An image.
@@ -67,59 +67,157 @@ export const ScheduleEventStatus = {
   canceled: "EventCancelled",
 } as const
 
-export type ScheduleEventStatus = (typeof ScheduleEventStatus)[keyof typeof ScheduleEventStatus]
+export type ScheduleEventStatus =
+  (typeof ScheduleEventStatus)[keyof typeof ScheduleEventStatus]
 
+/**
+ * Common schedule item properties.
+ */
 export type ScheduleItemBaseProps = Readonly<{
+  /**
+   * A unique id.
+   */
   id: string
+
+  /**
+   * The type.
+   */
   type: string
 
+  /**
+   * The item name.
+   */
   name?: string
-  alternateNames?: readonly string[]
+
+  /**
+   * Alternate names.
+   */
+  alternateNames: readonly string[]
+
+  /**
+   * A description.
+   */
   description?: string
-  images?: readonly Image[]
-  tags?: ReadonlySet<string>
 
-  startDate?: Dayjs
-  endDate?: Dayjs
-  duration?: Duration
-  locations?: readonly string[]
-  occurrences?: readonly Occurrence[]
+  /**
+   * Images related to the item.
+   */
+  images: readonly Image[]
+
+  /**
+   * Tags describing the item.
+   *
+   * These should be identifiers, not necessarily the displayed text.
+   */
+  tags: ReadonlySet<string>
+
+  /**
+   * URLs related to the item.
+   */
+  urls: readonly string[]
 }>
 
-export type Occurrence = Readonly<{
-  id: string
-  startDate?: Dayjs
-  endDate?: Dayjs
-  duration?: Duration
-  locations?: readonly string[]
-}>
+export const ContactRole = {
+  organizer: "organizer",
+  performer: "performer",
+} as const
 
-export type ScheduleEvent = ScheduleItemBaseProps & Readonly<{
-  type: "event"
-  eventStatus?: ScheduleEventStatus
+/**
+ * The role of a contact for an item.
+ */
+export type ContactRole = (typeof ContactRole)[keyof typeof ContactRole]
 
-  organizers?: readonly string[]
-  performers?: readonly string[]
-}>
+/**
+ * A contact for an item.
+ *
+ * Either provides a name or the id of a {@link Profile}.
+ */
+export type Contact = Readonly<
+  {
+    /**
+     * The contact's role.
+     */
+    role: ContactRole
+  } & (
+    | {
+        /** The profile id. */
+        id: string
+        name?: never
+      }
+    | {
+        id?: never
 
-export type Vendor = ScheduleItemBaseProps & Readonly<{
-  type: "vendor"
-  email?: string
-  logo?: Image
-  urls?: readonly string[]
-}>
+        /** A name. */
+        name: string
+      }
+  )
+>
 
-export type Profile = ScheduleItemBaseProps & Readonly<{
-  type: "profile"
-  email?: string
-  logo?: Image
-  urls?: readonly string[]
-}>
+/**
+ * An event.
+ */
+export type ScheduleEvent = ScheduleItemBaseProps &
+  Readonly<{
+    type: "event"
 
-export type Amenity = ScheduleItemBaseProps & Readonly<{
-  type: "amenity",
-}>
+    /**
+     * The status of the event.
+     */
+    eventStatus: ScheduleEventStatus
 
+    /**
+     * Contacts for to an event.
+     */
+    contacts: readonly Contact[]
+  }>
+
+/**
+ * A vendor/exhibitor.
+ */
+export type Vendor = ScheduleItemBaseProps &
+  Readonly<{
+    type: "vendor"
+
+    /**
+     * An email address.
+     */
+    email?: string
+
+    /**
+     * A logo image.
+     */
+    logo?: Image
+  }>
+
+/**
+ * A contact profile.
+ */
+export type Profile = ScheduleItemBaseProps &
+  Readonly<{
+    type: "profile"
+
+    /**
+     * An email address.
+     */
+    email?: string
+
+    /**
+     * A logo image.
+     */
+    logo?: Image
+  }>
+
+/**
+ * An amenity.
+ */
+export type Amenity = ScheduleItemBaseProps &
+  Readonly<{
+    type: "amenity"
+  }>
+
+/**
+ * An address.
+ */
 export type Address = Readonly<{
   streetAddress?: string
   extendedAddress?: string
@@ -130,11 +228,18 @@ export type Address = Readonly<{
   postalCode?: string
 }>
 
-export type Location = ScheduleItemBaseProps & Readonly<{
-  type: "location",
-  address?: Address
-}>
+/**
+ * A location.
+ */
+export type Location = ScheduleItemBaseProps &
+  Readonly<{
+    type: "location"
+    address?: Address
+  }>
 
+/**
+ * Maps type ids to specific types.
+ */
 export interface ScheduleItemTypeMap {
   event: ScheduleEvent
   vendor: Vendor
@@ -145,32 +250,113 @@ export interface ScheduleItemTypeMap {
 
 export type ScheduleItemType = keyof ScheduleItemTypeMap
 
+/**
+ * An item in the schedule.
+ */
 export type ScheduleItem = ScheduleItemTypeMap[keyof ScheduleItemTypeMap]
 
-export type ScheduleItemOccurrence<T extends ScheduleItem = ScheduleItem> = Readonly<{
-  id: string
-  item: T
+/**
+ * Start/end/duration info.
+ */
+export type DateInfo = Readonly<{
   startDate?: Dayjs
   endDate?: Dayjs
   duration?: Duration
-  locations?: readonly string[]
 }>
 
-
-export type ScheduleDataTypeMap<D extends ScheduleItemBaseProps> = {
-  readonly [key: string]: D
-}
-
-export type ScheduleData<D extends ScheduleItemBaseProps, M extends ScheduleDataTypeMap<D>> = Readonly<{
-  items: readonly M[keyof M][]
-  byId: ReadonlyMap<string, M[keyof M]>
-  byType: {
-    readonly [K in keyof M]: {
-      readonly items: readonly M[K][]
-      readonly byId: ReadonlyMap<string, M[K]>
+/**
+ * The location of an item occurrence.
+ *
+ * Either provides a name or the id of a {@link Location}.
+ */
+export type OccurrenceLocation = Readonly<
+  | {
+      /** A {@link Location} id. */
+      id: string
+      name?: never
     }
-  }
-  other: readonly D[]
+  | {
+      id?: never
+
+      /** A location name. */
+      name: string
+    }
+>
+
+/**
+ * An occurrence.
+ */
+export type Occurrence = DateInfo &
+  Readonly<{
+    /**
+     * An identifier for this occurrence.
+     */
+    id: string
+
+    /**
+     * The status of the occurrence.
+     */
+    eventStatus: ScheduleEventStatus
+
+    /**
+     * The locations of the occurrence.
+     */
+    locations: readonly OccurrenceLocation[]
+  }>
+
+/**
+ * An occurrence of a schedule item.
+ */
+export type ScheduleItemOccurrence<T extends ScheduleItem = ScheduleItem> =
+  Occurrence &
+    Readonly<{
+      /**
+       * The {@link ScheduleItem}.
+       */
+      item: T
+    }>
+
+/**
+ * A {@link ScheduleItem} and its occurrences.
+ */
+export type ScheduleItemSeries<T extends ScheduleItem = ScheduleItem> =
+  Readonly<{
+    item: T
+    occurrences: readonly Occurrence[]
+  }>
+
+/**
+ * A series or single occurrence.
+ */
+export type SeriesOrOccurrence<T extends ScheduleItem = ScheduleItem> =
+  | (ScheduleItemSeries<T> & {
+      readonly id?: never
+      readonly eventStatus?: never
+      readonly startDate?: never
+      readonly endDate?: never
+      readonly duration?: never
+      readonly locations?: never
+    })
+  | (ScheduleItemOccurrence<T> & {
+      readonly occurrences?: never
+    })
+
+export type ScheduleItemIndex<T extends ScheduleItem = ScheduleItem> =
+  Readonly<{
+    [Symbol.iterator]: () => Iterator<ScheduleItemSeries<T>>
+    size: number
+    getById: (id: string) => ScheduleItemSeries<T> | undefined
+    getByName: (name: string) => ScheduleItemSeries<T> | undefined
+  }>
+
+export type ScheduleData = Readonly<{
+  [Symbol.iterator]: () => Iterator<ScheduleItemSeries>
+  size: number
+  getById: (id: string) => ScheduleItemSeries | undefined
+  getType: <K extends ScheduleItemType>(
+    type: K,
+  ) => ScheduleItemIndex<ScheduleItemTypeMap[K]>
+  getByName: (name: string) => ScheduleItemSeries | undefined
 }>
 
 export type ParseResult<T> = Readonly<
@@ -184,7 +370,7 @@ export type Parser<T, S = unknown> = (value: S) => ParseResult<T>
  * Fetches schedule items.
  */
 export type ScheduleAPI = Readonly<{
-  getItems(): Promise<readonly ScheduleItem[]>
+  getItems(): Promise<readonly ScheduleItemSeries[]>
 }>
 
 /**

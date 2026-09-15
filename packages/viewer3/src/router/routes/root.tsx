@@ -1,4 +1,6 @@
 import { useMantineColorScheme } from "@mantine/core"
+import { DehydratedData } from "@open-event-systems/schedule-react"
+import { dehydrate } from "@tanstack/react-query"
 import {
   createRootRouteWithContext,
   createRoute,
@@ -7,7 +9,6 @@ import {
   Scripts,
   type AnyRouteMatch,
 } from "@tanstack/react-router"
-import { DehydrateData } from "../../ssr/dehydrate.js"
 import type { RouterContext } from "../router.js"
 import { LoadingRoute } from "./components/loading/loading.js"
 import schedulePageRoutes from "./schedule-page.js"
@@ -65,13 +66,21 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
     }
   },
   component: () => {
-    const { appType } = rootRoute.useRouteContext()
+    const { appType, queryClient, links, scripts } = rootRoute.useRouteContext()
     const scheme = useMantineColorScheme()
     if (appType == "ssr") {
-      let dehydrateQueryClient
+      let dehydratedData
 
       if (import.meta.env.SSR) {
-        dehydrateQueryClient = <DehydrateData />
+        dehydratedData = (
+          <DehydratedData
+            data={{
+              queryClientData: dehydrate(queryClient),
+              links: [...(links ?? [])],
+              scripts: [...(scripts ?? [])],
+            }}
+          />
+        )
       }
 
       return (
@@ -82,7 +91,7 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
           <body>
             <Outlet />
             <Scripts />
-            {dehydrateQueryClient}
+            {dehydratedData}
           </body>
         </html>
       )

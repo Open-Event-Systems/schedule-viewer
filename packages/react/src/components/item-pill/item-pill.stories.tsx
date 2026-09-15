@@ -1,8 +1,9 @@
+import { TagsConfigContext } from "#src/tags.js"
+import { testTagsConfig } from "#src/test-data-new.js"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { ItemPill } from "./item-pill.js"
 import dayjs from "dayjs"
 import { Pill } from "../newpill/pill.js"
-import { makeDefaultGetTagViewPropsFunc } from "../../hooks/newitems.js"
+import { ItemPill } from "./item-pill.js"
 
 const meta: Meta<typeof ItemPill> = {
   component: ItemPill,
@@ -24,28 +25,14 @@ const meta: Meta<typeof ItemPill> = {
       ],
       contacts: ["Person 1"],
     },
-    getTagViewProps: makeDefaultGetTagViewPropsFunc((tag) => {
-      switch (tag) {
-        case "main-event":
-          return {
-            before: "⭐",
-            color: "#006915",
-            textColor: "#ffffff",
-          }
-        case "photography":
-          return {
-            before: "📷",
-            color: "#480044",
-            textColor: "#ffffff",
-          }
-      }
-    }),
   },
   decorators: [
     (Story) => (
-      <Pill.Box>
-        <Story />
-      </Pill.Box>
+      <TagsConfigContext.Provider value={testTagsConfig}>
+        <Pill.Box>
+          <Story />
+        </Pill.Box>
+      </TagsConfigContext.Provider>
     ),
   ],
 }

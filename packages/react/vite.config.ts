@@ -12,8 +12,7 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         preserveModules: true,
-        preserveModulesRoot: ".",
-        entryFileNames: "[name].js",
+        entryFileNames: "src/[name].js",
       },
       external: [/^[^#./]/],
     },

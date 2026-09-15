@@ -1,6 +1,6 @@
-import z from "zod"
 import wretch from "wretch"
-import type { Parser, ScheduleAPI, ScheduleItem } from "./types.js"
+import z from "zod"
+import type { Parser, ScheduleAPI, ScheduleItemSeries } from "./types.js"
 
 const itemsSchema = z.looseObject({
   items: z.array(z.unknown()),
@@ -10,16 +10,16 @@ const itemsSchema = z.looseObject({
  * Make a {@link ScheduleAPI} that returns items parsed from an iterable.
  */
 export const makeParsedScheduleItemsAPI = (
-  parser: Parser<ScheduleItem>,
+  parser: Parser<ScheduleItemSeries>,
   items?: Iterable<unknown> | null,
   options?: {
     name?: string
-  }
+  },
 ): ScheduleAPI => {
   const name = options?.name || "data source"
   return {
     async getItems() {
-      const parsed: ScheduleItem[] = []
+      const parsed: ScheduleItemSeries[] = []
 
       let i = 0
 
@@ -30,27 +30,32 @@ export const makeParsedScheduleItemsAPI = (
         } else {
           console.error(
             `failed to parse item ${i} from ${name}:\n` +
-            `${parseResult.message}`,
-            obj
+              `${parseResult.message}`,
+            obj,
           )
         }
         i++
       }
 
       return parsed
-    }
+    },
   }
 }
 
 /**
  * Make a {@link ScheduleAPI} that returns items from a URL.
  */
-export const makeScheduleFetchAPI = (parser: Parser<ScheduleItem>, url: string) => {
+export const makeScheduleFetchAPI = (
+  parser: Parser<ScheduleItemSeries>,
+  url: string,
+) => {
   return {
     async getItems() {
       const res = await wretch(url).get().json()
       const respBody = itemsSchema.parse(res)
-      const arrAPI = makeParsedScheduleItemsAPI(parser, respBody.items, { name: url })
+      const arrAPI = makeParsedScheduleItemsAPI(parser, respBody.items, {
+        name: url,
+      })
       return await arrAPI.getItems()
     },
   }
@@ -63,7 +68,7 @@ export const composeScheduleAPIs = (...objs: ScheduleAPI[]): ScheduleAPI => {
   return {
     async getItems() {
       const results = await Promise.all(objs.map((o) => o.getItems()))
-      const concat: ScheduleItem[] = []
+      const concat: ScheduleItemSeries[] = []
       results.forEach((res) => {
         concat.push(...res)
       })

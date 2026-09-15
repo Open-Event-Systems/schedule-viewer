@@ -1,9 +1,9 @@
-import globals from "globals"
 import pluginJs from "@eslint/js"
-import tseslint from "typescript-eslint"
 import pluginReact from "eslint-plugin-react"
 import storybook from "eslint-plugin-storybook"
 import { globalIgnores } from "eslint/config"
+import globals from "globals"
+import tseslint from "typescript-eslint"
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -13,9 +13,9 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.browser
-      }
-    }
+        ...globals.browser,
+      },
+    },
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
@@ -33,6 +33,7 @@ export default [
         {
           argsIgnorePattern: "^_",
           caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
           destructuredArrayIgnorePattern: "^_",
         },
       ],

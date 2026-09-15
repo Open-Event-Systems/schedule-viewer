@@ -1,3 +1,4 @@
+import dayjs from "dayjs"
 import { describe, expect, test } from "vitest"
 import {
   binByName,
@@ -6,20 +7,25 @@ import {
   makeTimeBinFunc,
 } from "./bins.js"
 import { parseISO } from "./date.js"
-import dayjs from "dayjs"
 
 describe("bin by name", () => {
   test("basic sorting", () => {
     const items = [
       {
-        id: "B",
-        name: "B",
+        item: {
+          id: "B",
+          name: "B",
+        },
       },
       {
-        name: "AB",
+        item: {
+          name: "AB",
+        },
       },
       {
-        name: "aa",
+        item: {
+          name: "aa",
+        },
       },
     ]
 
@@ -29,10 +35,14 @@ describe("bin by name", () => {
         name: "A",
         items: [
           {
-            name: "aa",
+            item: {
+              name: "aa",
+            },
           },
           {
-            name: "AB",
+            item: {
+              name: "AB",
+            },
           },
         ],
       },
@@ -41,8 +51,10 @@ describe("bin by name", () => {
         name: "B",
         items: [
           {
-            id: "B",
-            name: "B",
+            item: {
+              id: "B",
+              name: "B",
+            },
           },
         ],
       },
@@ -52,10 +64,14 @@ describe("bin by name", () => {
   test("special character handling", () => {
     const items = [
       {
-        name: "!A",
+        item: {
+          name: "!A",
+        },
       },
       {
-        name: "(1)",
+        item: {
+          name: "(1)",
+        },
       },
     ]
 
@@ -65,7 +81,9 @@ describe("bin by name", () => {
         name: "#",
         items: [
           {
-            name: "(1)",
+            item: {
+              name: "(1)",
+            },
           },
         ],
       },
@@ -74,7 +92,9 @@ describe("bin by name", () => {
         name: "A",
         items: [
           {
-            name: "!A",
+            item: {
+              name: "!A",
+            },
           },
         ],
       },
@@ -82,13 +102,13 @@ describe("bin by name", () => {
   })
 
   test("handles missing name", () => {
-    const items = [{}, { name: "" }]
+    const items = [{}, { item: { name: "" } }]
 
     expect([...binByName(items)]).toStrictEqual([
       {
         key: "Other",
         name: "Other",
-        items: [{}, { name: "" }],
+        items: [{}, { item: { name: "" } }],
       },
     ])
   })
@@ -103,14 +123,20 @@ describe("bin by tag", () => {
   test("sort and bins by tags", () => {
     const items = [
       {
-        tags: ["a"],
+        item: {
+          tags: ["a"],
+        },
       },
       {
-        id: "b",
-        tags: ["b"],
+        item: {
+          id: "b",
+          tags: ["b"],
+        },
       },
       {
-        tags: ["a"],
+        item: {
+          tags: ["a"],
+        },
       },
     ]
 
@@ -120,12 +146,12 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ tags: ["a"] }, { tags: ["a"] }],
+        items: [{ item: { tags: ["a"] } }, { item: { tags: ["a"] } }],
       },
       {
         key: "tag-b",
         name: "Tag B",
-        items: [{ id: "b", tags: ["b"] }],
+        items: [{ item: { id: "b", tags: ["b"] } }],
       },
     ])
   })
@@ -133,7 +159,9 @@ describe("bin by tag", () => {
   test("include once per tag", () => {
     const items = [
       {
-        tags: ["a", "b"],
+        item: {
+          tags: ["a", "b"],
+        },
       },
     ]
 
@@ -143,12 +171,12 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ tags: ["a", "b"] }],
+        items: [{ item: { tags: ["a", "b"] } }],
       },
       {
         key: "tag-b",
         name: "Tag B",
-        items: [{ tags: ["a", "b"] }],
+        items: [{ item: { tags: ["a", "b"] } }],
       },
     ])
   })
@@ -156,7 +184,9 @@ describe("bin by tag", () => {
   test("omit missing tags", () => {
     const items = [
       {
-        tags: ["a", "c"],
+        item: {
+          tags: ["a", "c"],
+        },
       },
     ]
 
@@ -166,7 +196,7 @@ describe("bin by tag", () => {
       {
         key: "tag-a",
         name: "Tag A",
-        items: [{ tags: ["a", "c"] }],
+        items: [{ item: { tags: ["a", "c"] } }],
       },
     ])
   })
@@ -174,7 +204,9 @@ describe("bin by tag", () => {
   test("add n/a tag", () => {
     const items = [
       {
-        tags: ["c"],
+        item: {
+          tags: ["c"],
+        },
       },
     ]
 
@@ -184,7 +216,7 @@ describe("bin by tag", () => {
       {
         key: "na",
         name: "N/A",
-        items: [{ tags: ["c"] }],
+        items: [{ item: { tags: ["c"] } }],
       },
     ])
   })
@@ -254,36 +286,34 @@ describe("bin by day", () => {
   test("bin by day", () => {
     const items = [
       {
-        startDate: parseISO("2020-01-01T23:59:59"),
+        startDate: parseISO("2020-01-02T05:59:59"),
       },
       {
-        startDate: parseISO("2020-01-02T00:00:00"),
+        startDate: parseISO("2020-01-02T06:00:00"),
       },
     ]
 
-    const func = makeDayBinFunc()
+    const days = [
+      {
+        key: "20200101",
+        name: "Wednesday, January 1",
+        startDate: parseISO("2020-01-01T06:00:00-05:00"),
+        endDate: parseISO("2020-01-02T06:00:00-05:00"),
+      },
+      {
+        key: "20200102",
+        name: "Thursday, January 2",
+        startDate: parseISO("2020-01-02T06:00:00-05:00"),
+        endDate: parseISO("2020-01-03T06:00:00-05:00"),
+      },
+    ]
+
+    const func = makeDayBinFunc(days)
     const binned = [...func(items)]
     expect(binned.length).toBe(2)
     expect(binned[0]?.key).toBe("20200101")
     expect(binned[0]?.name).toBe("Wednesday, January 1")
     expect(binned[1]?.key).toBe("20200102")
     expect(binned[1]?.name).toBe("Thursday, January 2")
-  })
-
-  test("use day change hour", () => {
-    const items = [
-      {
-        startDate: parseISO("2020-01-01T23:59:59"),
-      },
-      {
-        startDate: parseISO("2020-01-02T00:00:00"),
-      },
-    ]
-
-    const func = makeDayBinFunc(3)
-    const binned = [...func(items)]
-    expect(binned.length).toBe(1)
-    expect(binned[0]?.key).toBe("20200101")
-    expect(binned[0]?.name).toBe("Wednesday, January 1")
   })
 })

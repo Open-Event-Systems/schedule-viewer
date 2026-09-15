@@ -1,85 +1,108 @@
-import { describe, expect, test } from "vitest"
-import { defaultIndexConfig, indexData, toOccurrences } from "./data.js"
-import type { ScheduleItem } from "./types.js"
 import dayjs, { duration } from "dayjs"
 import durationPlugin from "dayjs/plugin/duration.js"
+import { describe, expect, test } from "vitest"
+import { indexScheduleData, toOccurrenceArray } from "./data.js"
+import {
+  ScheduleEventStatus,
+  type ScheduleItemSeries,
+  type ScheduleItemType,
+} from "./types.js"
 
 dayjs.extend(durationPlugin)
 
 describe("data indexing", () => {
   test("indexing works", () => {
-    const items: ScheduleItem[] = [
+    const items: ScheduleItemSeries[] = [
       {
-        id: "e1",
-        type: "event",
-        name: "Example event"
+        item: {
+          id: "e1",
+          type: "event",
+          name: "Example event",
+          alternateNames: [],
+          contacts: [],
+          eventStatus: ScheduleEventStatus.scheduled,
+          images: [],
+          tags: new Set(),
+          urls: [],
+        },
+        occurrences: [],
       },
       {
-        id: "v1",
-        type: "vendor",
-        name: "Example vendor",
+        item: {
+          id: "v1",
+          type: "vendor",
+          name: "Example vendor",
+          alternateNames: [],
+          images: [],
+          tags: new Set(),
+          urls: [],
+        },
+        occurrences: [],
       },
       {
-        id: "a1",
-        type: "amenity",
-        name: "Example amenity"
+        item: {
+          id: "a1",
+          type: "amenity",
+          name: "Example amenity",
+          alternateNames: [],
+          images: [],
+          tags: new Set(),
+          urls: [],
+        },
+        occurrences: [],
       },
-      {
-        id: "o1",
-        type: "misc",
-      } as ScheduleItem
     ]
-    const index = indexData(defaultIndexConfig, items)
+    const index = indexScheduleData(items)
+    const iterItems = [...index]
 
-    expect(index.byId.get("e1")).toBe(items[0])
-    expect(index.byId.get("v1")).toBe(items[1])
-    expect(index.byId.get("a1")).toBe(items[2])
-    expect(index.byType.events.byId.get("e1")).toBe(items[0])
-    expect(index.byType.vendors.byId.get("v1")).toBe(items[1])
-    expect(index.byType.events.byId.get("a1")).toBeUndefined()
-    expect(index.other[0]).toBe(items[3])
+    expect(index.getById("e1")).toBe(items[0])
+    expect(iterItems[0]).toBe(items[0])
+    expect(index.getById("v1")).toBe(items[1])
+    expect(index.getById("a1")).toBe(items[2])
+    expect(index.getType("event").getById("e1")).toBe(items[0])
+    expect(index.getType("event").size).toBe(1)
+    expect(index.getType("vendor").getById("v1")).toBe(items[1])
+    expect(index.getType("event").getById("a1")).toBeUndefined()
+    expect(index.getType("bad" as ScheduleItemType).size).toBe(0)
   })
 
-  test("toOccurrences works", () => {
-    const obj: ScheduleItem = {
-      id: "e1",
-      type: "event",
+  test("toOccurrenceArray works", () => {
+    const obj: ScheduleItemSeries = {
+      item: {
+        id: "e1",
+        type: "event",
+        alternateNames: [],
+        contacts: [],
+        eventStatus: ScheduleEventStatus.scheduled,
+        images: [],
+        tags: new Set(),
+        urls: [],
+      },
       occurrences: [
         {
           id: "e1-o1",
+          eventStatus: ScheduleEventStatus.scheduled,
           startDate: dayjs("2027-01-01T12:00:00-05:00"),
           endDate: dayjs("2027-01-01T13:00:00-05:00"),
-          duration: duration("P1H"),
+          duration: duration("PT1H"),
+          locations: [],
         },
         {
           id: "e1-o2",
+          eventStatus: ScheduleEventStatus.scheduled,
           startDate: dayjs("2027-01-01T14:00:00-05:00"),
           endDate: dayjs("2027-01-01T15:00:00-05:00"),
-          duration: duration("P1H"),
+          duration: duration("PT1H"),
+          locations: [],
         },
-      ]
+      ],
     }
 
-    const occs = toOccurrences(obj)
+    const occs = toOccurrenceArray(obj)
     expect(occs.length).toBe(2)
     expect(occs[0]?.id).toBe("e1-o1")
-    expect(occs[0]?.item).toBe(obj)
+    expect(occs[0]?.item).toBe(obj.item)
     expect(occs[1]?.id).toBe("e1-o2")
-    expect(occs[1]?.item).toBe(obj)
-  })
-
-  test("toOccurrences works (implicit occurrence)", () => {
-    const obj: ScheduleItem = {
-      id: "e1",
-      type: "event",
-      startDate: dayjs("2027-01-01T12:00:00-05:00"),
-      endDate: dayjs("2027-01-01T13:00:00-05:00"),
-      duration: duration("P1H"),
-    }
-
-    const occs = toOccurrences(obj)
-    expect(occs.length).toBe(1)
-    expect(occs[0]?.id).toBe("e1")
-    expect(occs[0]?.item).toBe(obj)
+    expect(occs[1]?.item).toBe(obj.item)
   })
 })

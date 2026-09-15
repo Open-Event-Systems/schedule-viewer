@@ -1,0 +1,35 @@
+@use "sass:color";
+
+// Colorblind friendly color schemes: https://sronpersonalpages.nl/~pault/#sec:qualitative
+$tolPalette: (
+  "blue": #4477bb,
+  "red": #cc4466,
+  "green": #228833,
+  "sapphire": #2255aa,
+  "maroon": #993366,
+  "pine": #006644,
+  "teal": #117788,
+  "purple": #882288,
+  "magenta": #bb4488,
+  "brown": #775500,
+  "grey": #444444,
+);
+
+:root {
+  @each $name, $hex in $tolPalette {
+    $h: color.channel($hex, "hue", $space: hsl);
+    $s: color.channel($hex, "saturation", $space: hsl);
+    $l: color.channel($hex, "lightness", $space: hsl);
+
+    --tol-palette-#{$name}-h: #{$h};
+    --tol-palette-#{$name}-s: #{$s};
+    --tol-palette-#{$name}-l: #{$l};
+    --tol-palette-#{$name}: hsl(
+      var(--tol-palette-#{$name}-h),
+      var(--tol-palette-#{$name}-s),
+      var(--tol-palette-#{$name}-l)
+    );
+  }
+
+  --tol-palette-text: #ffffff;
+}

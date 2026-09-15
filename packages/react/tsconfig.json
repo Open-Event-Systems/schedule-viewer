@@ -12,11 +12,8 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
-    "paths": {
-      "#src/*": ["./src/*"]
-    }
+    "skipLibCheck": true
   },
   "references": [{ "path": "../lib" }],
-  "include": ["./src/**/*", "./.storybook/*"]
+  "include": ["src/**/*", ".storybook/**/*", "vite.config.ts"]
 }

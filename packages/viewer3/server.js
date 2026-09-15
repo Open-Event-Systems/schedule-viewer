@@ -14,11 +14,10 @@ const createServer = async () => {
   if (!isProd) {
     const vite = await import("vite")
     viteServer = await vite.createServer({
-      configFile: "vite.ssr.config.ts",
       server: {
         middlewareMode: true,
       },
-      appType: "custom"
+      appType: "custom",
     })
 
     app.use(viteServer.middlewares)
@@ -33,8 +32,12 @@ const createServer = async () => {
     /**
      * @type {import("./src/ssr/entry-server.js")}
      */
-    const { getJSConfig } = await viteServer.ssrLoadModule("src/ssr/entry-server.tsx")
-    const configJsStr = await fs.readFile("./public/config.js", { encoding: "utf-8" })
+    const { getJSConfig } = await viteServer.ssrLoadModule(
+      "src/ssr/entry-server.tsx",
+    )
+    const configJsStr = await fs.readFile("./public/config.js", {
+      encoding: "utf-8",
+    })
     const ctx = vm.createContext()
     vm.runInContext(configJsStr, ctx)
     jsConfig = getJSConfig(ctx.ULE_CONFIG)
@@ -44,7 +47,9 @@ const createServer = async () => {
      * @type {import("./src/ssr/entry-server.js")}
      */
     const { getJSConfig } = await import("./dist/server/entry-server.js")
-    const configJsStr = await fs.readFile("./dist/client/config.js", { encoding: "utf-8" })
+    const configJsStr = await fs.readFile("./dist/client/config.js", {
+      encoding: "utf-8",
+    })
     const ctx = vm.createContext()
     vm.runInContext(configJsStr, ctx)
     jsConfig = getJSConfig(ctx.ULE_CONFIG)
@@ -57,7 +62,9 @@ const createServer = async () => {
   let manifest = {}
 
   if (isProd) {
-    const manifestData = await import("./dist/client/.vite/manifest.json", { with: { type: "json" } })
+    const manifestData = await import("./dist/client/.vite/manifest.json", {
+      with: { type: "json" },
+    })
     manifest = manifestData.default
 
     app.use(express.static("./dist/client"))
@@ -70,12 +77,13 @@ const createServer = async () => {
     let handleRequest
 
     try {
-
       if (!isProd) {
         /**
          * @type {import("./src/ssr/entry-server.js")}
          */
-        const handlerModule = await viteServer.ssrLoadModule("src/ssr/entry-server.tsx")
+        const handlerModule = await viteServer.ssrLoadModule(
+          "src/ssr/entry-server.tsx",
+        )
         handleRequest = handlerModule.handleRequest
       } else {
         /**
@@ -85,8 +93,13 @@ const createServer = async () => {
         handleRequest = handlerModule.handleRequest
       }
 
-      await handleRequest(jsConfig, manifest, "src/ssr/entry-client.tsx", request, response)
-
+      await handleRequest(
+        jsConfig,
+        manifest,
+        "src/ssr/entry-client.tsx",
+        request,
+        response,
+      )
     } catch (e) {
       if (!isProd) {
         viteServer.ssrFixStacktrace(e)
@@ -94,7 +107,6 @@ const createServer = async () => {
       console.error(e)
       next(e.stack)
     }
-
   })
 
   app.listen(5173)

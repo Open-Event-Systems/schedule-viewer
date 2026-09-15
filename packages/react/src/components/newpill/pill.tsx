@@ -211,7 +211,7 @@ export type PillBoxProps = PillBoxRootProps & {
     root?: string
     item?: string
   }
-  renderItem?: RenderRootFunc<"li">
+  renderItem?: RenderRootFunc
 }
 
 const _PillBox = (props: PillBoxProps) => {
@@ -278,9 +278,7 @@ export const PillBoxItem = (props: PillBoxItemProps) => {
   )
 }
 
-const defaultRenderPillBoxItem: RenderRootFunc<"li"> = (props) => (
-  <li {...props} />
-)
+const defaultRenderPillBoxItem: RenderRootFunc = (props) => <li {...props} />
 
 export const PillBox = Object.assign(_PillBox, {
   Root: PillBoxRoot,

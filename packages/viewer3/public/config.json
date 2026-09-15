@@ -7,16 +7,23 @@
   "tags": [],
   "items": [
     {
-      "id": "event-1",
-      "type": "event",
-      "name": "Event 1",
-      "description": "Example event 1.",
-      "startDate": "2027-01-15T12:00:00-05:00",
-      "endDate": "2027-01-15T12:00:00-05:00",
-      "locations": ["Panel Room 1"],
-      "contacts": [
+      "item": {
+        "id": "event-1",
+        "type": "event",
+        "name": "Event 1",
+        "description": "Example event 1.",
+        "contacts": [
+          {
+            "name": "Example Person"
+          }
+        ]
+      },
+      "occurrences": [
         {
-          "name": "Example Person"
+          "id": "occ-1-event-1",
+          "startDate": "2027-01-15T12:00:00-05:00",
+          "endDate": "2027-01-15T12:00:00-05:00",
+          "locations": [{ "name": "Panel Room 1" }]
         }
       ]
     }

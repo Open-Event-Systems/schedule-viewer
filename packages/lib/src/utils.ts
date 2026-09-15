@@ -1,5 +1,6 @@
+import type { Dayjs } from "dayjs"
 import { sortIntervalsByStartDate } from "./time.js"
-import type { Bounded, Interval, ScheduleItem } from "./types.js"
+import type { Bounded, Interval } from "./types.js"
 
 /**
  * Return whether an interval has both start and end set.
@@ -9,22 +10,40 @@ export const isBounded = <T extends Interval>(t: T): t is Bounded<T> => {
 }
 
 /**
- * Return an array of {@link ScheduleItem} sorted by start date, then ID.
+ * Return an array of occurrences sorted by start date, then
+ * ID.
  */
-export const sortScheduleObjects = <T extends ScheduleItem>(
+export const sortOccurrences = <
+  T extends {
+    readonly startDate?: Dayjs
+    readonly id?: string
+    readonly item?: { readonly id?: string }
+  },
+>(
   items?: Iterable<T> | null,
 ): T[] => {
   const arr = [...(items ?? [])]
 
-  arr.sort(strCompare)
+  arr.sort(idCompare)
 
   sortIntervalsByStartDate(arr)
   return arr
 }
 
-const strCompare = (a: ScheduleItem, b: ScheduleItem) => {
-  const aId = a.id ?? ""
-  const bId = b.id ?? ""
+const idCompare = (
+  a: {
+    readonly startDate?: Dayjs
+    readonly id?: string
+    readonly item?: { readonly id?: string }
+  },
+  b: {
+    readonly startDate?: Dayjs
+    readonly id?: string
+    readonly item?: { readonly id?: string }
+  },
+) => {
+  const aId = a.id ?? a.item?.id ?? ""
+  const bId = b.id ?? b.item?.id ?? ""
   return aId.localeCompare(bId, "en")
 }
 
@@ -46,7 +65,6 @@ export function iterToArr<T>(iterable?: Iterable<T> | null): readonly T[] {
 
 // a singleton empty array is used for referential stability
 iterToArr.empty = [] as const
-
 
 /**
  * Return an iterable as a set.

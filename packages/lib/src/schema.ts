@@ -3,12 +3,11 @@
  * @module
  */
 
-import z from "zod"
-
 import dayjs, { type Dayjs } from "dayjs"
+import { type Duration } from "dayjs/plugin/duration.js"
+import z from "zod"
 import { formatDuration, formatISO, parseDuration, parseISO } from "./date.js"
 import { omitUndef, type OmitUndef } from "./utils.js"
-import { type Duration } from "dayjs/plugin/duration.js"
 
 /**
  * Schema for a {@link Dayjs} instance.
@@ -20,6 +19,7 @@ export const dayJSSchema = z
       ctx.addIssue({
         code: "invalid_type",
         expected: "date",
+        message: "Invalid date",
       })
     }
   })
@@ -33,7 +33,7 @@ export const durationSchema = z
     if (isNaN(arg.asSeconds())) {
       ctx.addIssue({
         code: "custom",
-        message: "Invalid duration"
+        message: "Invalid duration",
       })
     }
   })
@@ -59,26 +59,60 @@ export const isoDurationSchema = z.codec(z.string(), durationSchema, {
  */
 export const optional = <OutT, InT>(
   ofSchema: z.ZodType<OutT, InT>,
-): z.ZodOptional<
-  z.ZodCodec<
-    z.ZodType<OutT | null | undefined, InT | null | undefined>,
-    z.ZodType<OutT | undefined, OutT | null | undefined>
-  >
+): z.ZodCodec<
+  z.ZodOptional<z.ZodNullable<z.ZodType<OutT, InT>>>,
+  z.ZodOptional<z.ZodType<OutT, OutT>>
 > =>
-  z
-    .codec(ofSchema.nullish(), z.custom<OutT | undefined>(), {
-      decode: (v) => {
-        if (v != null) {
-          return v
-        }
-      },
-      encode: (v) => {
-        if (v != null) {
-          return v
-        }
-      },
-    })
-    .optional()
+  z.codec(ofSchema.nullish(), z.custom<OutT>().optional(), {
+    decode: (v) => {
+      if (v != null) {
+        return v
+      }
+    },
+    encode: (v) => {
+      if (v != null) {
+        return v
+      }
+    },
+  })
+
+// export const optional = <OutT, InT>(
+//   ofSchema: z.ZodType<OutT, InT>,
+// ): z.ZodOptional<
+//   z.ZodCodec<
+//     z.ZodType<OutT | null | undefined, InT | null | undefined>,
+//     z.ZodType<OutT | undefined, OutT | null | undefined>
+//   >
+// > =>
+//   z
+//     .codec(ofSchema.nullish(), z.custom<OutT | undefined>(), {
+//       decode: (v) => {
+//         if (v != null) {
+//           return v
+//         }
+//       },
+//       encode: (v) => {
+//         if (v != null) {
+//           return v
+//         }
+//       },
+//     })
+//     .optional()
+
+/**
+ * Like {@link optional} but results in a default value if nullish.
+ */
+export const optionalDefaultSchema = <OutT, InT>(
+  ofSchema: z.ZodType<OutT, InT>,
+  defaultValue: OutT,
+): z.ZodCodec<
+  z.ZodOptional<z.ZodNullable<z.ZodType<OutT, InT>>>,
+  z.ZodType<OutT, OutT>
+> =>
+  z.codec(ofSchema.nullish(), z.custom<OutT>(), {
+    decode: (v) => (v == null ? defaultValue : v),
+    encode: (v) => v,
+  })
 
 /**
  * Omit undefined properties.
@@ -92,74 +126,12 @@ export const omitUndefSchema = <OutT extends object, InT>(
   })
 
 /**
- * Convert between a scalar and array.
+ * Schema that transforms an array to a Set.
  */
-export const scalarToArraySchema = <OutT, InT>(
-  ofSchema: z.ZodType<OutT, InT>,
-): z.ZodOptional<
-  z.ZodCodec<
-    z.ZodType<OutT | undefined, InT | undefined>,
-    z.ZodType<OutT[] | undefined, OutT[] | undefined>
-  >
-> =>
-  z
-    .codec(ofSchema.optional(), z.array(z.custom<OutT>()).optional(), {
-      decode: (v) => {
-        if (v !== undefined) {
-          return [v]
-        }
-      },
-      encode: (v) => {
-        if (v != undefined && v.length > 0) {
-          return v[0]
-        }
-      },
-    })
-    .optional()
-
-/**
- * Schema for a set of a type.
- */
-export const setSchema = <OutT, InT>(
-  ofSchema: z.ZodType<OutT, InT>,
-): z.ZodCodec<z.ZodType<OutT[], InT[]>, z.ZodType<Set<OutT>, Set<OutT>>> =>
-  z.codec(z.array(ofSchema), z.custom<Set<OutT>>(), {
+export const arrToSetSchema = <ArrT, InT>(
+  arrType: z.ZodType<ArrT[], InT>,
+): z.ZodCodec<z.ZodType<ArrT[], InT>, z.ZodType<Set<ArrT>, Set<ArrT>>> =>
+  z.codec(arrType, z.custom<Set<ArrT>>(), {
     decode: (v) => new Set(v),
     encode: (v) => [...v],
   })
-
-/**
- * Preprocesses strings by calling .trim().
- */
-export const trimStrSchema = <OutT, InT>(
-  ofType: z.ZodType<OutT, InT>,
-): z.ZodType<OutT, InT> =>
-  z.codec(z.custom<InT>(), ofType, {
-    decode: (v) => {
-      if (typeof v == "string") {
-        return v.trim() as InT
-      } else {
-        return v
-      }
-    },
-    encode: (v) => {
-      if (typeof v == "string") {
-        return v.trim() as InT
-      } else {
-        return v
-      }
-    },
-  })
-
-/**
- * Preprocesses strings by replacing empty strings with undefined.
- */
-export const optStrSchema = <OutT, InT>(
-  ofType: z.ZodType<OutT, InT>,
-): z.ZodOptional<z.ZodType<OutT | undefined, InT>> =>
-  z
-    .codec(trimStrSchema(z.custom<InT>()), optional(ofType), {
-      decode: (v) => (typeof v == "string" && v ? v : (undefined as InT)),
-      encode: (v) => (typeof v == "string" && v ? v : (undefined as InT)),
-    })
-    .optional()

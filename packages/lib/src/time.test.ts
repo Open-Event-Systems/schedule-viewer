@@ -1,4 +1,5 @@
-import { describe, test, expect } from "vitest"
+import { describe, expect, test } from "vitest"
+import { parseISO } from "./date.js"
 import {
   contains,
   getDay,
@@ -6,7 +7,6 @@ import {
   intersects,
   sortIntervalsByStartDate,
 } from "./time.js"
-import { parseISO } from "./date.js"
 
 describe("time module", () => {
   test.each([

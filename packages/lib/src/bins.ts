@@ -3,9 +3,10 @@
  * @module
  */
 
+import type { Day } from "#src/types.js"
 import { type Dayjs } from "dayjs"
-import { isBounded } from "./utils.js"
 import { contains } from "./time.js"
+import { isBounded, iterToArr } from "./utils.js"
 
 export type Bin<T> = Readonly<{
   key: string
@@ -13,25 +14,21 @@ export type Bin<T> = Readonly<{
   items: Iterable<T>
 }>
 
-export type BinFunc<InT, OutT extends InT = InT> = <T extends InT>(
-  items?: Iterable<T> | null,
-) => Iterable<Bin<OutT & T>>
-
 /**
  * A function to bin items by name.
  */
 export function* binByName<
-  T extends { readonly name?: string },
->(items?: Iterable<T> | null): Generator<Bin<T>, void, void> {
+  T extends { readonly item?: { readonly name?: string } },
+>(objs?: Iterable<T> | null): Generator<Bin<T>, void, void> {
   // first sort by name
   const mapped = []
-  for (const item of items ?? []) {
-    const normName = toAlphaSortable(item.name)
+  for (const obj of objs ?? []) {
+    const normName = toAlphaSortable(obj.item?.name)
     const binKey = getNameBinKey(normName)
     mapped.push({
       normName: normName,
       binKey,
-      item: item,
+      item: obj,
     })
   }
 
@@ -98,8 +95,10 @@ const compareNameBinKey = (a: string, b: string) => {
  * Return a function to bin items by tags.
  */
 export const makeTagBinFunc = (
-  tagData: Iterable<string | Readonly<{ value: string, label?: string }>>,
-): BinFunc<{ readonly tags?: Iterable<string> }> => {
+  tagData: Iterable<string | Readonly<{ value: string; label?: string }>>,
+): (<T extends { readonly item?: { readonly tags?: Iterable<string> } }>(
+  objs?: Iterable<T> | null,
+) => Iterable<Bin<T>>) => {
   const nameByTag = new Map<string, [string, string]>()
   for (const entry of tagData) {
     const { value, label } = typeof entry == "string" ? { value: entry } : entry
@@ -111,13 +110,13 @@ export const makeTagBinFunc = (
   }
 
   return function* <
-    T extends { readonly tags?: Iterable<string> },
-  >(items?: Iterable<T> | null) {
+    T extends { readonly item?: { readonly tags?: Iterable<string> } },
+  >(objs?: Iterable<T> | null) {
     const allItems = []
 
-    for (const item of items ?? []) {
+    for (const obj of objs ?? []) {
       const validTags = Array.from(
-        item.tags ?? [],
+        obj.item?.tags ?? [],
         (t) => [t, nameByTag.get(t)] as const,
       ).filter((t): t is readonly [string, [string, string]] => !!t[1])
       for (const [tag, [name, sortKey]] of validTags) {
@@ -125,7 +124,7 @@ export const makeTagBinFunc = (
           key: `tag-${tag}`,
           sortKey,
           binName: name,
-          item: item,
+          item: obj,
         })
       }
       if (validTags.length == 0) {
@@ -133,7 +132,7 @@ export const makeTagBinFunc = (
           key: "na",
           sortKey: "N/A",
           binName: "N/A",
-          item: item,
+          item: obj,
         })
       }
     }
@@ -181,30 +180,29 @@ const compareTags = (a: string, b: string) => {
  */
 export const makeTimeBinFunc = (
   now: Dayjs,
-): BinFunc<
-  Readonly<{ startDate?: Dayjs; endDate?: Dayjs }>,
-  Readonly<{ startDate: Dayjs; endDate: Dayjs }>
-> => {
-  return function* <T extends Readonly<{ startDate?: Dayjs; endDate?: Dayjs }>>(
-    items?: Iterable<T> | null,
+): (<T>(
+  objs?: Iterable<T & { readonly startDate?: Dayjs }> | null,
+) => Iterable<Bin<T & { readonly startDate: Dayjs }>>) => {
+  return function* <T>(
+    objs?: Iterable<T & { readonly startDate?: Dayjs }> | null,
   ) {
-    const nonNowItems = []
+    const nonNowObjs = []
     const nowBin = {
       key: "now",
       name: "Now",
-      items: new Array<T & { startDate: Dayjs; endDate: Dayjs }>(),
+      items: new Array<T & { readonly startDate: Dayjs }>(),
     }
 
-    for (const item of items ?? []) {
-      if (!isBounded(item)) {
+    for (const obj of objs ?? []) {
+      if (!isBounded(obj)) {
         continue
       }
 
-      if (contains(item, now)) {
+      if (contains(obj, now)) {
         // now items
-        nowBin.items.push(item)
+        nowBin.items.push(obj)
       } else {
-        nonNowItems.push(item)
+        nonNowObjs.push(obj)
       }
     }
 
@@ -214,20 +212,20 @@ export const makeTimeBinFunc = (
 
     let curBin:
       | {
-        key: string
-        keyTime: number
-        name: string
-        items: (T & { startDate: Dayjs; endDate: Dayjs })[]
-      }
+          key: string
+          keyTime: number
+          name: string
+          items: (T & { readonly startDate: Dayjs })[]
+        }
       | undefined
 
-    for (const item of nonNowItems) {
-      if (!isBounded(item)) {
+    for (const obj of nonNowObjs) {
+      if (!isBounded(obj)) {
         continue
       }
 
-      const roundedStart = item.startDate
-        .set("minute", Math.floor(item.startDate.minute() / 5) * 5)
+      const roundedStart = obj.startDate
+        .set("minute", Math.floor(obj.startDate.minute() / 5) * 5)
         .set("second", 0)
         .set("millisecond", 0)
       const keyTime = roundedStart.valueOf()
@@ -244,7 +242,7 @@ export const makeTimeBinFunc = (
         }
       }
 
-      curBin.items.push(item)
+      curBin.items.push(obj)
     }
 
     if (curBin && curBin.items.length > 0) {
@@ -255,64 +253,59 @@ export const makeTimeBinFunc = (
 
 /**
  * Return a function to bin items by day.
- *
- * The items must be sorted by start date.
  */
 export const makeDayBinFunc = (
-  dayChangeHour = 0,
+  days?: Iterable<Day> | null,
   dateFormat = "dddd, MMMM D",
-): BinFunc<Readonly<{ startDate?: Dayjs }>, Readonly<{ startDate: Dayjs }>> => {
-  return function* <T extends Readonly<{ startDate?: Dayjs }>>(
-    items?: Iterable<T> | null,
-  ) {
-    let curBin:
-      | {
+): (<T>(
+  objs?: Iterable<T & { readonly startDate?: Dayjs }> | null,
+) => Iterable<Bin<T & { readonly startDate: Dayjs }>>) => {
+  const daysArr = iterToArr(days)
+  return <T>(objs?: Iterable<T & { readonly startDate?: Dayjs }> | null) => {
+    const bins = {} as {
+      [key: string]: {
         key: string
-        endTime: number
         name: string
-        items: (T & { startDate: Dayjs })[]
+        items: (T & { readonly startDate: Dayjs })[]
       }
-      | undefined
+    }
 
-    for (const item of items ?? []) {
-      if (!hasStart(item)) {
+    for (const obj of objs ?? []) {
+      if (!obj.startDate) {
         continue
       }
 
-      const itemTime = item.startDate.valueOf()
-      if (!curBin || itemTime >= curBin.endTime) {
-        if (curBin && curBin.items.length > 0) {
-          yield curBin
-        }
-
-        const shiftedStart = item.startDate.subtract(dayChangeHour, "hour")
-        const startDate = shiftedStart
-          .set("hour", dayChangeHour)
-          .set("minute", 0)
-          .set("second", 0)
-          .set("millisecond", 0)
-        const endDate = startDate.add(1, "day")
-
-        curBin = {
-          key: startDate.format("YYYYMMDD"),
-          name: startDate.format(dateFormat),
-          endTime: endDate.valueOf(),
-          items: [],
-        }
+      const day = getBinDay(daysArr, obj.startDate)
+      if (!day) {
+        continue
       }
 
-      curBin.items.push(item)
+      let bin = bins[day.key]
+      if (!bin) {
+        bin = {
+          key: day.key,
+          name: day.startDate.format(dateFormat),
+          items: [],
+        }
+        bins[day.key] = bin
+      }
+
+      bin.items.push(obj as T & { readonly startDate: Dayjs })
     }
 
-    if (curBin && curBin.items.length > 0) {
-      yield curBin
-    }
+    const binsArr = [...Object.values(bins)]
+    binsArr.sort((a, b) => a.key.localeCompare(b.key))
+    return binsArr
   }
 }
 
-const hasStart = <T extends { readonly startDate?: Dayjs }>(
-  item: T,
-): item is T & { readonly startDate: Dayjs } => !!item.startDate
+const getBinDay = (days: readonly Day[], date: Dayjs) => {
+  for (const day of days) {
+    if (contains(day, date)) {
+      return day
+    }
+  }
+}
 
 const numPattern = /[0-9]/
 const nonAlphaPattern = /[^A-Z0-9]+/g

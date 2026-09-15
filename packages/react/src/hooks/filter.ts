@@ -10,11 +10,15 @@ import {
   useRequiredContext,
 } from "#src/utils.js"
 import {
+  getDefaultDay,
+  iterToArr,
   makeSetDisabledTagsFunc,
+  type Day,
   type SetDisabledTagsFunc,
   type TagFilterMode,
 } from "@open-event-systems/schedule-lib"
-import { useState } from "react"
+import type { Dayjs } from "dayjs"
+import { useMemo, useState } from "react"
 import { createStore, type StoreApi } from "zustand"
 
 export type FilterOptions = Readonly<{
@@ -107,3 +111,29 @@ export const useCreateFilterStore = (
 export const useFilterStore = makeUseBoundStore(() =>
   useRequiredContext(FilterStoreContext),
 )
+
+/**
+ * Get the selected {@link Day} (or the default day) in a day filter.
+ */
+export const getSelectedDay = (
+  days: Iterable<Day> | null | undefined,
+  key: string | null | undefined,
+  _defaultDay?: Day,
+): Day | undefined => {
+  const daysArr = iterToArr(days)
+  const obj = daysArr.find((d) => d.key == key)
+  return obj ?? _defaultDay
+}
+
+/**
+ * Hook to return the selected {@link Day} or the default day in a day filter.
+ */
+export const useSelectedDay = (
+  days: Iterable<Day> | null | undefined,
+  key: string | null | undefined,
+  now: Dayjs,
+): Day | undefined =>
+  useMemo(() => {
+    const defaultDay = getDefaultDay(days, now)
+    return getSelectedDay(days, key, defaultDay)
+  }, [days, key, now])

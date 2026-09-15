@@ -3,117 +3,119 @@
  * @module
  */
 
-import { type ScheduleItemBaseProps, type ScheduleDataTypeMap, type ScheduleEvent, type Vendor, type Amenity, type Profile, type Location, type ScheduleItem, type ScheduleItemOccurrence } from "./types.js"
-import { omitUndef } from "./utils.js"
+import {
+  type ScheduleData,
+  type ScheduleItem,
+  type ScheduleItemIndex,
+  type ScheduleItemOccurrence,
+  type ScheduleItemSeries,
+  type ScheduleItemType,
+  type ScheduleItemTypeMap,
+} from "./types.js"
 
-type IndexTestFunc<D extends ScheduleItemBaseProps, T extends D> = (obj: D) => obj is T
+/**
+ * Index schedule items.
+ */
+export const indexScheduleItems = <T extends ScheduleItem = ScheduleItem>(
+  objs?: Iterable<ScheduleItemSeries<T>> | null,
+): ScheduleItemIndex<T> => {
+  const byId = new Map<string, ScheduleItemSeries<T>>()
+  const byName = new Map<string, ScheduleItemSeries<T>>()
+  const byAltName = new Map<string, ScheduleItemSeries<T>>()
 
-export type IndexConfig<D extends ScheduleItemBaseProps, M extends ScheduleDataTypeMap<D>> = {
-  readonly [K in keyof M]: IndexTestFunc<D, M[K]>
-}
+  for (const obj of objs ?? []) {
+    byId.set(obj.item.id, obj)
 
-export type IndexResult<D extends ScheduleItemBaseProps, M extends ScheduleDataTypeMap<D>> = {
-  items: M[keyof M][]
-  byId: Map<string, M[keyof M]>
-  byType: {
-    -readonly [K in keyof M]: {
-      items: M[K][]
-      byId: Map<string, M[K]>
+    if (obj.item.name) {
+      byName.set(obj.item.name, obj)
+    }
+
+    for (const altName of obj.item.alternateNames) {
+      if (altName) {
+        byAltName.set(altName, obj)
+      }
     }
   }
-  other: readonly D[]
+
+  return {
+    [Symbol.iterator]: () => byId.values(),
+    size: byId.size,
+    getById: (id) => byId.get(id),
+    getByName: (name) => {
+      const nameRes = byName.get(name)
+      if (nameRes) {
+        return nameRes
+      }
+
+      return byAltName.get(name)
+    },
+  }
 }
 
 /**
- * Index items by ID and type.
+ * Index schedule items by type.
  */
-export const indexData = <D extends ScheduleItemBaseProps, M extends ScheduleDataTypeMap<D>>(
-  config: IndexConfig<D, M>,
-  items?: Iterable<D>,
-): IndexResult<D, M> => {
-  const result = {
-    items: new Array<M[keyof M]>(),
-    byId: new Map<string, M[keyof M]>(),
-    byType: {} as {
-      [K in keyof M]: {
-        items: M[K][]
-        byId: Map<string, M[K]>
+export const indexScheduleData = (
+  objs?: Iterable<ScheduleItemSeries> | null,
+): ScheduleData => {
+  const byType = {} as {
+    [K in ScheduleItemType]?: ScheduleItemSeries[]
+  }
+  const allItems: ScheduleItemSeries[] = []
+
+  for (const obj of objs ?? []) {
+    let byTypeArr = byType[obj.item.type]
+    if (!byTypeArr) {
+      byTypeArr = []
+      byType[obj.item.type] = byTypeArr
+    }
+
+    byTypeArr.push(obj)
+    allItems.push(obj)
+  }
+
+  const fullIndex = indexScheduleItems(allItems)
+
+  const indexesByType = {} as { [K in ScheduleItemType]?: ScheduleItemIndex }
+
+  for (const [key, byTypeArr] of Object.entries(byType)) {
+    indexesByType[key as ScheduleItemType] = indexScheduleItems(byTypeArr)
+  }
+
+  return {
+    ...fullIndex,
+    getType: <K extends ScheduleItemType>(
+      type: K,
+    ): ScheduleItemIndex<ScheduleItemTypeMap[K]> => {
+      const idxByType = indexesByType[type]
+      if (!idxByType) {
+        return emptyIndex
       }
+      return idxByType as ScheduleItemIndex<ScheduleItemTypeMap[K]>
     },
-    other: new Array<D>(),
   }
-
-  let key: keyof M
-  for (key of Object.keys(config)) {
-    result.byType[key] = {
-      items: [],
-      byId: new Map(),
-    }
-  }
-
-  const add = (item: D) => {
-    let key: keyof M
-    let matchedItem
-
-    for (key of Object.keys(config)) {
-      const entry = config[key]
-      if (entry(item)) {
-        const res = result.byType[key]
-        res.items.push(item)
-        res.byId.set(item.id, item)
-        matchedItem = item
-      }
-    }
-
-    if (matchedItem) {
-      result.items.push(matchedItem)
-      result.byId.set(matchedItem.id, matchedItem)
-    } else {
-      result.other.push(item)
-    }
-  }
-
-  for (const item of items ?? []) {
-    add(item)
-  }
-
-  return result
 }
 
-export const defaultIndexConfig = {
-  events: (obj: ScheduleItem): obj is ScheduleEvent => obj.type == "event",
-  vendors: (obj: ScheduleItem): obj is Vendor => obj.type == "vendor",
-  amenities: (obj: ScheduleItem): obj is Amenity => obj.type == "amenity",
-  profiles: (obj: ScheduleItem): obj is Profile => obj.type == "profile",
-  locations: (obj: ScheduleItem): obj is Location => obj.type == "location",
+const emptyIndex = {
+  [Symbol.iterator]: () => [][Symbol.iterator](),
+  size: 0,
+  getById: (): undefined => {},
+  getByName: (): undefined => {},
 } as const
 
 /**
- * Transform a {@link ScheduleItem} into an array of {@link ScheduleItemOccurrence}.
+ * Transform a {@link ScheduleItemSeries} into an array of {@link ScheduleItemOccurrence}.
  */
-export const toOccurrences = <T extends ScheduleItem = ScheduleItem>(obj: T): ScheduleItemOccurrence<T>[] => {
+export const toOccurrenceArray = <T extends ScheduleItem = ScheduleItem>(
+  obj: ScheduleItemSeries<T>,
+): ScheduleItemOccurrence<T>[] => {
   const occs: ScheduleItemOccurrence<T>[] = []
 
-  if (obj.occurrences && obj.occurrences.length > 0) {
-    for (const occ of obj.occurrences) {
-      occs.push(omitUndef({
-        id: occ.id,
-        item: obj,
-        startDate: occ.startDate,
-        endDate: occ.endDate,
-        duration: occ.duration,
-        locations: occ.locations,
-      }))
-    }
-  } else {
-    occs.push(omitUndef({
-      id: obj.id,
-      item: obj,
-      startDate: obj.startDate,
-      endDate: obj.endDate,
-      duration: obj.duration,
-      locations: obj.locations,
-    }))
+  for (const occ of obj.occurrences) {
+    occs.push({
+      ...occ,
+      item: obj.item,
+    })
   }
 
   return occs

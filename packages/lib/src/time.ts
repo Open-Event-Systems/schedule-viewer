@@ -79,7 +79,7 @@ export const getDay = (d: Dayjs, dayChangeHour = 0): Day => {
  * date.
  */
 export const getDays = (
-  items?: Iterable<{ readonly startDate: Dayjs }>,
+  items?: Iterable<{ readonly startDate?: Dayjs }>,
   dayChangeHour?: number,
 ): readonly Day[] => {
   const startDates = []
@@ -128,16 +128,16 @@ export const getDays = (
  * Get the current day from an iterable of days.
  */
 export const getDefaultDay = (
-  days: Iterable<Day>,
+  days: Iterable<Day> | null | undefined,
   now: Dayjs,
 ): Day | undefined => {
-  const daysArr = [...days]
+  const daysArr = [...(days ?? [])]
 
   if (daysArr.length == 0) {
     return
   }
 
-  for (const day of days) {
+  for (const day of daysArr) {
     if (contains(day, now)) {
       return day
     }

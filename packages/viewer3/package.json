@@ -6,8 +6,7 @@
     "start": "vite",
     "start:ssr": "node server",
     "build": "vite build --mode=production",
-    "build:ssr:client": "vite build --mode=production --config vite.ssr.config.ts",
-    "build:ssr:server": "vite build --mode=production --config vite.ssr.config.ts --ssr",
+    "build:ssr": "vite build --mode=production --ssr",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "imports": {

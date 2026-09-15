@@ -1,25 +1,61 @@
-import { Box, useProps } from "@mantine/core"
-import type { ScheduleItem } from "@open-event-systems/schedule-lib"
-import type { DefaultBoxProps } from "@open-event-systems/schedule-react"
-import clsx from "clsx"
+import {
+  PastEventsFilterContainer,
+  SelectionsFilterContainer,
+  TagFilterContainer,
+  TextFilterContainer,
+} from "#src/components/filter-state/filter-state.js"
+import { useFilterDialogOpenState } from "#src/hooks/filter-dialog.js"
+import { useSyncFilterDialogState } from "#src/hooks/filter-location-state.js"
+import { SchedulePage } from "@open-event-systems/schedule-react"
+import { useCallback } from "react"
 
-export type ViewerSchedulePageProps = DefaultBoxProps & {
-  name?: string
-  description?: string
-  items?: Iterable<ScheduleItem>
-}
+export const SchedulePageContainer = () => {
+  const [filterDialogOpen, setFilterDialogOpen] = useFilterDialogOpenState()
 
-export const ViewerSchedulePage = (props: ViewerSchedulePageProps) => {
-  const { className, name, description, items, ...other } = useProps(
-    "ViewerSchedulePage",
-    null,
-    props,
+  const openFilterDialog = useCallback(
+    () => setFilterDialogOpen(true),
+    [setFilterDialogOpen],
+  )
+  const closeFilterDialog = useCallback(
+    () => setFilterDialogOpen(false),
+    [setFilterDialogOpen],
   )
 
+  useSyncFilterDialogState(filterDialogOpen)
+
   return (
-    <Box
-      className={clsx("ViewerSchedulePage-root", className)}
-      {...other}
-    ></Box>
+    <>
+      <SchedulePage
+        filterDialogOpen={filterDialogOpen}
+        onOpenFilterDialog={openFilterDialog}
+        onCloseFilterDialog={closeFilterDialog}
+        enabledFeatures={[
+          "bookmarked-filter",
+          "unvisited-filter",
+          "search",
+          "past-events-filter",
+          "tag-filter",
+          "export",
+          "share",
+          "sync",
+        ]}
+        tags={[
+          {
+            value: "main-event",
+            label: "Main Event",
+          },
+          {
+            value: "photography",
+            label: "Photography",
+          },
+        ]}
+        renderSelectionsFilter={(props) => (
+          <SelectionsFilterContainer {...props} />
+        )}
+        textFilter={<TextFilterContainer />}
+        pastEventsFilter={<PastEventsFilterContainer />}
+        renderTagFilter={(props) => <TagFilterContainer {...props} />}
+      />
+    </>
   )
 }

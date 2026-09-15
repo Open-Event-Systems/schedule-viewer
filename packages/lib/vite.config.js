@@ -1,7 +1,7 @@
 import { defineConfig } from "vite"
 
-import packageJson from "./package.json" with { type: "json" }
 import dtsPlugin from "unplugin-dts/vite"
+import packageJson from "./package.json" with { type: "json" }
 
 const deps = [
   ...Object.keys(packageJson.dependencies),
@@ -12,13 +12,17 @@ export default defineConfig({
   build: {
     target: "esnext",
     lib: {
-      entry: "./src/index.ts",
+      entry: {
+        index: "./src/index.ts",
+        serialization: "./src/serialization.ts",
+        "test-data": "./src/test-data.ts",
+      },
       formats: ["es"],
     },
     rolldownOptions: {
       output: {
         preserveModules: true,
-        entryFileNames: "[name].js",
+        entryFileNames: "src/[name].js",
       },
       external(source) {
         return deps.some((d) => source.startsWith(d))

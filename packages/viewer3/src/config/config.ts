@@ -5,9 +5,10 @@
 
 import {
   makeParsedScheduleItemsAPI,
+  parseScheduleItem,
+  parseScheduleItemSeries,
   type ScheduleAPI,
 } from "@open-event-systems/schedule-lib"
-import { parser } from "./parse.js"
 
 export type ViewerConfig = Readonly<{
   /**
@@ -67,5 +68,8 @@ export const makeScheduleAPIFromConfig = (
   config: ViewerConfig,
 ): ScheduleAPI => {
   // TODO: support URLs
-  return makeParsedScheduleItemsAPI(parser, config.items)
+  return makeParsedScheduleItemsAPI(
+    (data) => parseScheduleItemSeries(parseScheduleItem, data),
+    config.items,
+  )
 }

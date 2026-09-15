@@ -52,40 +52,50 @@ export type MakeFilterOptions = Readonly<{
  */
 export const makeFilter = (
   settings: MakeFilterOptions,
-): ((item: ScheduleItem) => boolean) => {
-  const chain: ((item: ScheduleItem) => boolean)[] = []
+): ((obj: {
+  readonly item?: ScheduleItem
+  readonly startDate?: Dayjs
+  readonly endDate?: Dayjs
+}) => boolean) => {
+  const filterChain: ((obj: {
+    readonly item?: ScheduleItem
+    readonly startDate?: Dayjs
+    readonly endDate?: Dayjs
+  }) => boolean)[] = []
 
   if (settings.bookmarksFilterSelections) {
-    chain.push(
+    filterChain.push(
       makeSelectionsFilter("include", settings.bookmarksFilterSelections),
     )
   }
 
   if (settings.unvisitedFilterSelections) {
-    chain.push(
+    filterChain.push(
       makeSelectionsFilter("exclude", settings.unvisitedFilterSelections),
     )
   }
 
   if (settings.hidePastFilter) {
-    chain.push(makePastItemFilter(settings.hidePastFilter))
+    filterChain.push(makePastItemFilter(settings.hidePastFilter))
   }
 
   if (settings.dateFilter) {
-    chain.push(makeDateFilter(settings.dateFilter))
+    filterChain.push(makeDateFilter(settings.dateFilter))
   }
 
   if (settings.tagFilterMode && settings.disabledTags) {
-    chain.push(makeTagFilter(settings.tagFilterMode, settings.disabledTags))
+    filterChain.push(
+      makeTagFilter(settings.tagFilterMode, settings.disabledTags),
+    )
   }
 
   if (settings.search) {
-    chain.push(makeSearchFilter(settings.search))
+    filterChain.push(makeSearchFilter(settings.search))
   }
 
-  return (item) => {
-    for (const filter of chain) {
-      if (!filter(item)) {
+  return (obj) => {
+    for (const filter of filterChain) {
+      if (!filter(obj)) {
         return false
       }
     }
@@ -99,14 +109,14 @@ export const makeFilter = (
  */
 export const makeSearchFilter = (
   search: string,
-): (<T extends { readonly name?: string }>(
-  item: T,
-) => item is T & { readonly name: string }) => {
+): (<T extends { readonly item?: { readonly name?: string } }>(
+  obj: T,
+) => obj is T & { readonly item: { readonly name: string } }) => {
   const lowerName = search.trim().toLowerCase()
-  return <T extends { readonly name?: string }>(
-    item: T,
-  ): item is T & { readonly name: string } =>
-    !!item.name && item.name.toLowerCase().includes(lowerName)
+  return <T extends { readonly item?: { readonly name?: string } }>(
+    obj: T,
+  ): obj is T & { readonly item: { readonly name: string } } =>
+    !!obj.item?.name && obj.item.name.toLowerCase().includes(lowerName)
 }
 
 /**
@@ -115,16 +125,18 @@ export const makeSearchFilter = (
 export const makeTagFilter = (
   mode: "include" | "exclude",
   tags?: Iterable<string> | null,
-): ((item: { readonly tags?: Iterable<string> }) => boolean) => {
+): ((obj: {
+  readonly item?: { readonly tags?: Iterable<string> }
+}) => boolean) => {
   const tagsArr = [...(tags ?? [])]
 
   if (mode == "include") {
-    return (item) => {
-      return tagsArr.some((inclTag) => iterHas(inclTag, item.tags))
+    return (obj) => {
+      return tagsArr.some((inclTag) => iterHas(inclTag, obj.item?.tags))
     }
   } else {
-    return (item) => {
-      return tagsArr.every((exclTag) => !iterHas(exclTag, item.tags))
+    return (obj) => {
+      return tagsArr.every((exclTag) => !iterHas(exclTag, obj.item?.tags))
     }
   }
 }
@@ -135,12 +147,12 @@ export const makeTagFilter = (
 export const makeSelectionsFilter = (
   mode: "include" | "exclude",
   itemIds?: Iterable<string> | null,
-): ((item: { readonly id?: string }) => boolean) => {
+): ((obj: { readonly item?: { readonly id?: string } }) => boolean) => {
   const idSet = iterToSet(itemIds)
   if (mode == "include") {
-    return (item) => item.id != null && idSet.has(item.id)
+    return (obj) => obj.item?.id != null && idSet.has(obj.item.id)
   } else {
-    return (item) => item.id == null || !idSet.has(item.id)
+    return (obj) => obj.item?.id == null || !idSet.has(obj.item.id)
   }
 }
 
@@ -149,8 +161,8 @@ export const makeSelectionsFilter = (
  */
 export const makePastItemFilter = (
   now: Dayjs,
-): ((item: { readonly endDate?: Dayjs }) => boolean) => {
-  return (item) => !item.endDate || now.isBefore(item.endDate)
+): ((obj: { readonly endDate?: Dayjs }) => boolean) => {
+  return (obj) => !obj.endDate || now.isBefore(obj.endDate)
 }
 
 /**
@@ -158,27 +170,25 @@ export const makePastItemFilter = (
  */
 export const makeDateFilter = (
   range: Interval,
-): (<T extends { readonly startDate?: Dayjs; readonly endDate?: Dayjs }>(
-  item: T,
-) => item is T & { readonly startDate: Dayjs }) => {
-  return <T extends { readonly startDate?: Dayjs; readonly endDate?: Dayjs }>(
-    item: T,
-  ): item is T & { readonly startDate: Dayjs } => {
-    if (!item.startDate) {
+): (<
+  T extends {
+    readonly [key: string]: unknown
+    readonly startDate?: Dayjs
+  },
+>(
+  obj: T,
+) => obj is T & { readonly startDate: Dayjs }) => {
+  return <
+    T extends {
+      readonly startDate?: Dayjs
+    },
+  >(
+    obj: T,
+  ): obj is T & { readonly startDate: Dayjs } => {
+    if (!obj.startDate) {
       return false
     }
-    return contains(range, item.startDate)
-  }
-}
-
-/**
- * Modify a filter function to work on schedule object occurrences.
- */
-export const toOccurrenceFilter = <T>(
-  f: (item: T) => boolean,
-): ((item: { readonly object: T }) => boolean) => {
-  return (item: { readonly object: T }) => {
-    return f(item.object)
+    return contains(range, obj.startDate)
   }
 }
 
@@ -187,19 +197,19 @@ export const toOccurrenceFilter = <T>(
  *
  * Items with no ID are always yielded.
  */
-export function* iterUniqueIds<T extends { readonly id?: string }>(
-  items?: Iterable<T> | null,
-): Generator<T, void, unknown> {
+export function* iterUniqueIds<
+  T extends { readonly item?: { readonly id?: string } },
+>(objs?: Iterable<T> | null): Generator<T, void, unknown> {
   const seenSet = new Set<string>()
-  for (const item of items ?? []) {
-    if (item.id != null && seenSet.has(item.id)) {
+  for (const obj of objs ?? []) {
+    if (obj.item?.id != null && seenSet.has(obj.item.id)) {
       continue
     }
 
-    if (item.id != null) {
-      seenSet.add(item.id)
+    if (obj.item?.id != null) {
+      seenSet.add(obj.item.id)
     }
-    yield item
+    yield obj
   }
 }
 

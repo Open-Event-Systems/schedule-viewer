@@ -5,11 +5,11 @@
 
 import z from "zod"
 import type {
-  ParseResult,
   BaseSelections,
+  ParseResult,
+  Selections,
   ServerSelections,
   TrackedSelections,
-  Selections,
 } from "./types.js"
 
 class SelectionsImpl {
@@ -196,7 +196,8 @@ export const makeTrackedSelections = (
 /**
  * Return whether an object is a {@link Selections} instance.
  */
-export const isSelections = (s: unknown): s is Selections => s instanceof SelectionsImpl
+export const isSelections = (s: unknown): s is Selections =>
+  s instanceof SelectionsImpl
 
 /**
  * Check if a {@link Selections} is a {@link ServerSelections}.
