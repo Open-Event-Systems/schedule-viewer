@@ -4,6 +4,7 @@
     "module": "nodenext",
     "target": "esnext",
     "types": ["vite/client"],
+    "lib": ["DOM", "ESNext", "WebWorker"],
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": false,

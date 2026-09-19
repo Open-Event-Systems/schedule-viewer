@@ -1,6 +1,7 @@
 import react from "@vitejs/plugin-react"
 import path from "path"
 import { defineConfig } from "vite"
+import { VitePWA } from "vite-plugin-pwa"
 
 export default defineConfig(({ isSsrBuild }) => ({
   base: "/",
@@ -25,5 +26,17 @@ export default defineConfig(({ isSsrBuild }) => ({
           },
         },
       },
-  plugins: [react({ compiler: true })],
+  plugins: [
+    react({ compiler: true }),
+    VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src/sw",
+      filename: "sw.ts",
+
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
+    }),
+  ],
 }))

@@ -4,6 +4,11 @@ import "@open-event-systems/schedule-react/schedule-react.css"
 
 import "../styles.scss"
 
+import {
+  makeSWState,
+  registerReloadHandler,
+  SWStateProvider,
+} from "#src/sw/register.js"
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider } from "@tanstack/react-router"
 import { createRoot } from "react-dom/client"
@@ -17,6 +22,14 @@ if (container) {
   const appContext = makeAppContext(jsConfig, queryClient, "spa")
   const router = createRouter(appContext)
 
+  const swState = makeSWState()
+  registerReloadHandler()
+  swState.register(jsConfig.basePath)
+
   const root = createRoot(container)
-  root.render(<RouterProvider router={router} />)
+  root.render(
+    <SWStateProvider value={swState}>
+      <RouterProvider router={router} />
+    </SWStateProvider>,
+  )
 }
