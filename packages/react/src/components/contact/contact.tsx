@@ -6,9 +6,9 @@ import {
   useProps,
   type MantineSize,
 } from "@mantine/core"
-import type { DefaultBoxProps } from "../types.js"
-import type { MouseEvent } from "react"
 import clsx from "clsx"
+import type { MouseEvent } from "react"
+import type { DefaultBoxProps } from "../types.js"
 
 import classes from "./contact.module.scss"
 

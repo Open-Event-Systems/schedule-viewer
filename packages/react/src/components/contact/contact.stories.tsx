@@ -1,6 +1,6 @@
+import { Flex } from "@mantine/core"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Contact } from "./contact.js"
-import { Flex } from "@mantine/core"
 
 const meta: Meta<typeof Contact> = {
   component: Contact,

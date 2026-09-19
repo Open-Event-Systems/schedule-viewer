@@ -1,0 +1,11 @@
+.dropdown {
+  max-width: 500px;
+  max-height: 600px;
+
+  @media (max-width: 484px) {
+    max-width: calc(100vw - var(--mantine-spacing-xs));
+    max-width: calc(100dvw - var(--mantine-spacing-xs));
+  }
+
+  padding: 0;
+}

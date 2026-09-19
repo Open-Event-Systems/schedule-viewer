@@ -1,5 +1,4 @@
 import { queryOptions } from "@tanstack/react-query"
-import { parseConfig } from "../config/schema.js"
 
 export const ConfigQueryKey = {
   config: (url: string) => ["config", url],
@@ -10,10 +9,11 @@ export const ConfigQueryOptions = {
     queryOptions({
       queryKey: ConfigQueryKey.config(url),
       queryFn: async () => {
-        return await fetch(url)
-          .then((res) => res.json())
-          .then((data) => parseConfig(data))
+        const { parseConfig } = await import("#src/config/schema.js")
+        const data = await fetch(url).then((res) => res.json())
+        return parseConfig(data)
       },
+      structuralSharing: false,
       staleTime: Infinity,
     }),
 }

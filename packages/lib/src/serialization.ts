@@ -3,6 +3,7 @@
  * @module
  */
 
+import { indexScheduleData, isScheduleData } from "#src/data.js"
 import {
   formatDuration,
   formatISO,
@@ -14,116 +15,109 @@ import {
   parseSelections,
   unparseSelections,
 } from "#src/selections.js"
-import type { Selections } from "#src/types.js"
-import dayjs, { type Dayjs } from "dayjs"
-import type durationPlugin from "dayjs/plugin/duration.js"
+import type { ScheduleItemSeries } from "#src/types.js"
+import dayjs from "dayjs"
 
-import type { Plugin, SerovalNode } from "seroval"
-
-export const REHYDRATORS_KEY = "f"
-
-type DayjsNode = {
-  s: SerovalNode
+type Node<N> = {
+  d: N
 }
 
-export const dayjsSerovalPlugin = {
-  tag: "dayjs",
-  test: (value) => typeof value == "object" && dayjs.isDayjs(value),
-  parse: {
-    sync: (value, ctx) => {
-      return {
-        s: ctx.parse(formatISO(value)),
-      }
-    },
-    async: async (value, ctx) => {
-      return {
-        s: await ctx.parse(formatISO(value)),
-      }
-    },
-    stream: (value, ctx) => {
-      return {
-        s: ctx.parse(formatISO(value)),
-      }
-    },
-  },
-  serialize: (node, ctx) => {
-    const strVal = ctx.serialize(node.s)
-    return `${REHYDRATORS_KEY}.dayjs(${strVal})`
-  },
-  deserialize: (node, ctx) => {
-    return parseISO(ctx.deserialize(node.s))
-  },
-} as const satisfies Plugin<Dayjs, DayjsNode>
+type SyncSerovalParseContext<N> = Readonly<{
+  parse: <T>(value: T) => N
+}>
 
-export const durationSerovalPlugin = {
-  tag: "duration",
-  test: (value) => typeof value == "object" && dayjs.isDuration(value),
-  parse: {
-    sync: (value, ctx) => {
-      return {
-        s: ctx.parse(formatDuration(value)),
-      }
-    },
-    async: async (value, ctx) => {
-      return {
-        s: await ctx.parse(formatDuration(value)),
-      }
-    },
-    stream: (value, ctx) => {
-      return {
-        s: ctx.parse(formatDuration(value)),
-      }
-    },
-  },
-  serialize: (node, ctx) => {
-    const strVal = ctx.serialize(node.s)
-    return `${REHYDRATORS_KEY}.duration(${strVal})`
-  },
-  deserialize: (node, ctx) => {
-    return parseDuration(ctx.deserialize(node.s))
-  },
-} as const satisfies Plugin<durationPlugin.Duration, DayjsNode>
+type AsyncSerovalParseContext<N> = Readonly<{
+  parse: <T>(value: T) => Promise<N>
+}>
 
-type SelectionsNode = {
-  s: SerovalNode
+type SerovalSerializeContext<N> = Readonly<{
+  serialize: (value: N) => string
+}>
+
+type SerovalPlugin<T, K extends string = string> = Readonly<{
+  tag: K
+  test: (value: unknown) => boolean
+  parse: {
+    sync: <N>(value: T, ctx: SyncSerovalParseContext<N>) => Node<N>
+    async: <N>(value: T, ctx: AsyncSerovalParseContext<N>) => Promise<Node<N>>
+    stream: <N>(value: T, ctx: SyncSerovalParseContext<N>) => Node<N>
+  }
+  serialize: <N>(node: Node<N>, ctx: SerovalSerializeContext<N>) => string
+  deserialize: () => T
+}>
+
+export const HYDRATORS_KEY = "f"
+
+export const makeSerovalPlugin = <T, K extends string>(
+  key: K,
+  test: (value: unknown) => value is T,
+  unstructure: (value: T) => unknown,
+): SerovalPlugin<T, K> => {
+  return {
+    tag: key,
+    test,
+    parse: {
+      sync: <N>(value: T, ctx: SyncSerovalParseContext<N>): Node<N> => {
+        const strVal = ctx.parse(unstructure(value))
+        return { d: strVal }
+      },
+      async: async <N>(
+        value: T,
+        ctx: AsyncSerovalParseContext<N>,
+      ): Promise<Node<N>> => {
+        const strVal = await ctx.parse(unstructure(value))
+        return { d: strVal }
+      },
+      stream: <N>(value: T, ctx: SyncSerovalParseContext<N>): Node<N> => {
+        const strVal = ctx.parse(unstructure(value))
+        return { d: strVal }
+      },
+    },
+    serialize: <N>(node: Node<N>, ctx: SerovalSerializeContext<N>): string => {
+      const strVal = ctx.serialize(node.d)
+      return `${HYDRATORS_KEY}.${key}(${strVal})`
+    },
+    deserialize: () => {
+      throw new Error("Deserialization not implemented")
+    },
+  }
 }
 
-export const selectionsSerovalPlugin = {
-  tag: "selections",
-  test: (value) => typeof value == "object" && isSelections(value),
-  parse: {
-    sync: (value, ctx) => {
-      return {
-        s: ctx.parse(unparseSelections(value)),
-      }
-    },
-    async: async (value, ctx) => {
-      return {
-        s: await ctx.parse(unparseSelections(value)),
-      }
-    },
-    stream: (value, ctx) => {
-      return {
-        s: ctx.parse(unparseSelections(value)),
-      }
-    },
-  },
-  serialize: (node, ctx) => {
-    const val = ctx.serialize(node.s)
-    return `${REHYDRATORS_KEY}.selections(${val})`
-  },
-  deserialize: (node, cxt) => {
-    const res = parseSelections(cxt.deserialize(node.s))
+export const dayjsSerovalPlugin = makeSerovalPlugin(
+  "dayjs",
+  (value) => dayjs.isDayjs(value),
+  (value) => formatISO(value),
+)
+
+export const durationSerovalPlugin = makeSerovalPlugin(
+  "duration",
+  (value) => dayjs.isDuration(value),
+  (value) => formatDuration(value),
+)
+
+export const selectionsSerovalPlugin = makeSerovalPlugin(
+  "selections",
+  (value) => isSelections(value),
+  (value) => unparseSelections(value),
+)
+
+export const scheduleDataSerovalPlugin = makeSerovalPlugin(
+  "scheduleData",
+  (value) => isScheduleData(value),
+  (value) => [...value],
+)
+
+export const defaultHydrators = {
+  dayjs: (v: unknown) => parseISO(v as string),
+  duration: (v: unknown) => parseDuration(v as string),
+  selections: (v: unknown) => {
+    const res = parseSelections(v)
     if (res.success) {
       return res.data
     } else {
       throw res.error
     }
   },
-} as const satisfies Plugin<Selections, SelectionsNode>
-
-export const defaultRehydrators = {
-  dayjs: (v: unknown) => parseISO(v as string),
-  duration: (v: unknown) => parseDuration(v as string),
-  selections: (v: unknown) => parseSelections(v),
-}
+  scheduleData: (v: unknown) =>
+    indexScheduleData(v as Iterable<ScheduleItemSeries> | null),
+} as const

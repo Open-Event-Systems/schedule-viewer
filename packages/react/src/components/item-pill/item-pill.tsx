@@ -13,7 +13,9 @@ import {
   LazyHoverCard,
   type LazyHoverCardProps,
 } from "../lazy-hover-card/lazy-hover-card.js"
-import { Pill, type PillProps } from "../newpill/pill.js"
+import { Pill, type PillProps } from "../pill/pill.js"
+
+import classes from "./item-pill.module.scss"
 
 export type ItemPillProps = PillProps & {
   name?: ReactNode
@@ -54,7 +56,9 @@ const _ItemPill = (props: ItemPillProps) => {
 
   const mergedDropdownProps = useMemo(() => {
     return {
-      p: 0,
+      classNames: {
+        dropdown: classes.dropdown,
+      },
       ...HoverCardProps?.DropdownProps,
     }
   }, [HoverCardProps?.DropdownProps])

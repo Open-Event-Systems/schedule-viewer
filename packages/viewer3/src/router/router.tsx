@@ -1,32 +1,19 @@
+import type { AppContext, AppContextPromise } from "#src/app.js"
 import { MantineProvider } from "@mantine/core"
+import { awaitAppContext } from "@open-event-systems/schedule-react"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRouter as tsCreateRouter } from "@tanstack/react-router"
-import type { JSX, ReactNode } from "react"
-import {
-  AppContext,
-  awaitAppContext,
-  type AppContextValue,
-  type AwaitedAppContextValue,
-} from "../hooks/app.js"
-import { parseSearch, stringifySearch } from "../search-params.js"
+import type { ReactNode } from "react"
 import routeTree from "./routes/root.js"
+import { parseSearch, stringifySearch } from "./search-params.js"
 
-export type RouterContext = AppContextValue & {
-  readonly appContextPromise: Promise<AwaitedAppContextValue>
-  readonly scripts?: Iterable<JSX.IntrinsicElements["script"]>
-  readonly links?: Iterable<JSX.IntrinsicElements["link"]>
+export type RouterContext = AppContext & {
+  readonly appContextPromise: AppContextPromise
 }
 
-export const createRouter = (
-  appContext: AppContextValue,
-  opts?: {
-    scripts?: Iterable<JSX.IntrinsicElements["script"]>
-    links?: Iterable<JSX.IntrinsicElements["link"]>
-  },
-) => {
+export const createRouter = (appContext: AppContext) => {
   const { basePath, theme } = appContext
-  const { scripts, links } = opts ?? {}
   const queryClient = appContext.queryClient
 
   const appContextPromise = awaitAppContext(appContext)
@@ -36,8 +23,6 @@ export const createRouter = (
     context: {
       ...appContext,
       appContextPromise,
-      scripts,
-      links,
     },
     routeTree,
     scrollRestoration: true,
@@ -45,14 +30,12 @@ export const createRouter = (
     stringifySearch,
     Wrap: ({ children }: { children: ReactNode }) => {
       return (
-        <AppContext.Provider value={appContextPromise}>
-          <MantineProvider theme={theme}>
-            <QueryClientProvider client={queryClient}>
-              {children}
-              <ReactQueryDevtools client={queryClient} />
-            </QueryClientProvider>
-          </MantineProvider>
-        </AppContext.Provider>
+        <MantineProvider theme={theme}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+            <ReactQueryDevtools client={queryClient} />
+          </QueryClientProvider>
+        </MantineProvider>
       )
     },
   })

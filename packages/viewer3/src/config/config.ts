@@ -8,7 +8,14 @@ import {
   parseScheduleItem,
   parseScheduleItemSeries,
   type ScheduleAPI,
+  type ScheduleItemType,
 } from "@open-event-systems/schedule-lib"
+import {
+  makeTagsConfig,
+  SchedulePageFeature,
+  ScheduleViewType,
+  type TagsConfig,
+} from "@open-event-systems/schedule-react"
 
 export type ViewerConfig = Readonly<{
   /**
@@ -37,22 +44,84 @@ export type ViewerConfig = Readonly<{
   dayChangeHour: number
 
   /**
-   * Displayed tags.
+   * Displayed tags configuration.
    */
-  tags: Iterable<TagConfig>
+  tags: TagsConfig
+
+  /**
+   * Page configs.
+   */
+  pages: Readonly<Record<string, PageConfig>>
 
   items: Iterable<unknown>
 }>
 
-export type TagConfig = Readonly<{
-  value: string
-  label?: string
-  color?: string | readonly string[]
-  indicator?: string
-  indicatorColor?: string
-  textColor?: string
-  before?: string
-  after?: string
+/**
+ * Individual page configuration.
+ */
+export type PageConfig = Readonly<{
+  id: string
+
+  /**
+   * The page title.
+   */
+  name: string
+
+  /**
+   * The page description.
+   */
+  description?: string
+
+  /**
+   * The item types to include.
+   */
+  types: ReadonlySet<ScheduleItemType>
+
+  /**
+   * Only include items matching these tags, expressed as a sum of products.
+   *
+   * An empty array allows all items.
+   */
+  requireTags: readonly ReadonlySet<string>[]
+
+  /**
+   * Exclude items matching these tags, expressed as a sum of products.
+   */
+  excludeTags: readonly ReadonlySet<string>[]
+
+  /**
+   * View configurations.
+   */
+  views: Readonly<Record<string, ViewConfig>>
+}>
+
+/**
+ * Page view configuration.
+ */
+export type ViewConfig = Readonly<{
+  [key: string]: unknown
+
+  id: string
+
+  /**
+   * The view name.
+   */
+  name: string
+
+  /**
+   * The view type.
+   */
+  type: ScheduleViewType
+
+  /**
+   * Whether items are grouped by day.
+   */
+  byDay: boolean | "filter"
+
+  /**
+   * Enabled features.
+   */
+  features: ReadonlySet<SchedulePageFeature>
 }>
 
 export const DEFAULT_CONFIG = {
@@ -60,7 +129,8 @@ export const DEFAULT_CONFIG = {
   name: "Event Schedule",
   timeZone: "America/New_York",
   dayChangeHour: 6,
-  tags: [],
+  tags: makeTagsConfig({}),
+  pages: {},
   items: [],
 } as const satisfies ViewerConfig
 

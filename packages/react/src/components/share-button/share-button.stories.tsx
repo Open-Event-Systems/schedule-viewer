@@ -1,13 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ShareButton } from "./share-button.js"
 
-const meta: Meta<typeof ShareButton> = {
-  component: ShareButton,
-  parameters: {
-    layout: "centered",
+const meta: Meta<typeof ShareButton.Root> = {
+  component: ShareButton.Root,
+  argTypes: {
+    size: {
+      options: ["xs", "sm", "md", "lg", "xl"],
+      control: "inline-radio",
+    },
+  },
+  args: {
+    size: "md",
   },
 }
 
 export default meta
 
-export const Default: StoryObj<typeof ShareButton> = {}
+export const URL: StoryObj<typeof ShareButton.URL> = {
+  args: {
+    url: "#",
+  },
+  render(args) {
+    return <ShareButton.URL {...args} />
+  },
+}

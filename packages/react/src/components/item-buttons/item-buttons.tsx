@@ -8,11 +8,11 @@ import {
   type MantineSize,
   type TooltipProps,
 } from "@mantine/core"
-import type { DefaultBoxProps } from "../types.js"
 import clsx from "clsx"
+import type { DefaultBoxProps } from "../types.js"
 
 import { iterToSet } from "@open-event-systems/schedule-lib"
-import { ShareButton } from "../newsharebutton/share-button.js"
+import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
 import {
   useCallback,
   useEffect,
@@ -21,7 +21,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react"
-import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
+import { ShareButton } from "../share-button/share-button.js"
 
 import { EyeIcon } from "@phosphor-icons/react/dist/icons/Eye"
 

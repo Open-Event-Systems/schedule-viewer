@@ -1,12 +1,12 @@
 import { ActionIcon, Box, Select, useProps } from "@mantine/core"
-import clsx from "clsx"
-import { useMemo, type MouseEvent } from "react"
 import { iterToArr, type Day } from "@open-event-systems/schedule-lib"
-
-import classes from "./day-filter.module.scss"
 import { CaretLeftIcon } from "@phosphor-icons/react/dist/icons/CaretLeft"
 import { CaretRightIcon } from "@phosphor-icons/react/dist/icons/CaretRight"
+import clsx from "clsx"
+import { useMemo, type MouseEvent } from "react"
 import type { DefaultBoxProps } from "../types.js"
+
+import classes from "./day-filter.module.scss"
 
 export type DayFilterProps = {
   days?: Iterable<Day> | undefined

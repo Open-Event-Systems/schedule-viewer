@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
-import { ItemCard } from "./item-card.js"
-import dayjs from "dayjs"
 import { Box, Button } from "@mantine/core"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import dayjs from "dayjs"
 import { useState } from "react"
 import { LazyHoverCard } from "../lazy-hover-card/lazy-hover-card.js"
+import { ItemCard } from "./item-card.js"
 
 const meta: Meta<typeof ItemCard> = {
   component: ItemCard,
@@ -39,7 +39,7 @@ const meta: Meta<typeof ItemCard> = {
   ],
   args: {
     name: "Example Event",
-    children: "Example event\n\nwith **Markdown** support.",
+    description: "Example event\n\nwith **Markdown** support.",
     tags: ["Main Event", "Photography"],
     bookmarkCount: 17,
     occurrences: [
@@ -118,7 +118,7 @@ export const MaxHeight: StoryObj<typeof ItemCard> = {
   args: {
     headerImageURL:
       "https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-4.png",
-    children:
+    description:
       "Very long description\n\nVery long description\n\nVery long description\n\nVery long description\n\nVery long description",
     mah: 400,
   },

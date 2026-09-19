@@ -7,11 +7,11 @@ import {
   type DividerProps,
   type TitleProps,
 } from "@mantine/core"
+import { iterToArr, type Bin } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
-
-import { iterToArr, type Bin } from "@open-event-systems/schedule-lib"
 import type { DefaultBoxProps } from "../types.js"
+
 import classes from "./bins.module.scss"
 
 export type BinsProps<OutT, InT = OutT> = {

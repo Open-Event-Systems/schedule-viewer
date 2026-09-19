@@ -6,7 +6,12 @@ export default defineConfig({
   build: {
     target: "esnext",
     lib: {
-      entry: "./src/index.ts",
+      entry: {
+        index: "./src/index.ts",
+        server: "./src/server.ts",
+        "test-data-new": "./src/test-data-new.ts",
+        "vite-scripts": "./src/vite-scripts.ts",
+      },
       formats: ["es"],
     },
     rolldownOptions: {
@@ -14,7 +19,7 @@ export default defineConfig({
         preserveModules: true,
         entryFileNames: "src/[name].js",
       },
-      external: [/^[^#./]/],
+      external: [/^[^#/.]/],
     },
   },
   plugins: [

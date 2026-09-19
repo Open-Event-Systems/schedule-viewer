@@ -9,6 +9,18 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
+    },
+    "./server": {
+      "types": "./dist/src/server.d.ts",
+      "default": "./dist/src/server.js"
+    },
+    "./test-data-new": {
+      "types": "./dist/src/test-data-new.d.ts",
+      "default": "./dist/src/test-data-new.js"
+    },
+    "./vite-scripts": {
+      "types": "./dist/src/vite-scripts.d.ts",
+      "default": "./dist/src/vite-scripts.js"
     }
   },
   "imports": {

@@ -1,17 +1,17 @@
-import express from "express"
-import { pipeline } from "node:stream/promises"
-
+import type { OriginString } from "@open-event-systems/schedule-react"
+import { getManifestResources } from "@open-event-systems/schedule-react/server"
+import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider } from "@tanstack/react-router"
 import {
   createRequestHandler,
   renderRouterToStream,
 } from "@tanstack/react-router/ssr/server"
+import express from "express"
+import { pipeline } from "node:stream/promises"
+import { StrictMode } from "react"
+import type { Manifest } from "vite"
 import { makeAppContext, type JSConfig } from "../config/js-config.js"
 import { createRouter } from "../router/router.js"
-import type { Manifest } from "vite"
-import { QueryClient } from "@tanstack/react-query"
-import { getManifestResources } from "./utils.js"
-import { StrictMode } from "react"
 
 export { getJSConfig } from "../config/js-config.js"
 
@@ -22,18 +22,31 @@ export const handleRequest = async (
   request: express.Request,
   response: express.Response,
 ) => {
+  // TODO: double check where to get origin info from
+  const host = request.host
+
+  // TODO: set trusted proxies
+  const origin = `${request.protocol}://${host}` as OriginString
+
   const queryClient = new QueryClient()
-  const appContext = makeAppContext(jsConfig, queryClient, "ssr")
+
   const { links, scripts } = getManifestResources(
     manifest,
     jsConfig.basePath,
     entryPoint,
   )
 
-  const plainRequest = expressRequestToPlainRequest(appContext.origin, request)
+  const appContext = {
+    ...makeAppContext(jsConfig, queryClient, "ssr"),
+    origin,
+    links,
+    scripts,
+  }
+
+  const plainRequest = expressRequestToPlainRequest(origin, request)
 
   const handler = createRequestHandler({
-    createRouter: () => createRouter(appContext, { links, scripts }),
+    createRouter: () => createRouter(appContext),
     request: plainRequest,
   })
 

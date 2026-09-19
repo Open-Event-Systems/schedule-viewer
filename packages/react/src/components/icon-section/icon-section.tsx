@@ -7,9 +7,9 @@ import {
   type CSSProperties,
   type MantineSize,
 } from "@mantine/core"
-import type { DefaultBoxProps, RenderRootFunc } from "../types.js"
 import clsx from "clsx"
 import type { ReactNode } from "react"
+import type { DefaultBoxProps, RenderRootFunc } from "../types.js"
 
 import classes from "./icon-section.module.scss"
 

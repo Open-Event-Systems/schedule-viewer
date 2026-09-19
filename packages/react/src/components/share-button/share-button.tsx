@@ -1,63 +1,123 @@
 import {
   ActionIcon,
-  type ActionIconProps,
   Tooltip,
   useProps,
+  type ActionIconProps,
+  type TooltipProps,
 } from "@mantine/core"
 import { ShareFatIcon } from "@phosphor-icons/react/dist/icons/ShareFat"
 import clsx from "clsx"
-import { useEffect, useMemo, useState } from "react"
+import { type ReactNode } from "react"
+import type { DefaultBoxProps } from "../types.js"
+import { shareURL, useTooltip } from "./hooks.js"
 
-export type ShareButtonProps = {
-  className?: string
+import classes from "./share-button.module.scss"
+
+export type ShareButtonURLProps = ShareButtonRootProps & {
   url?: string
-} & ActionIconProps
+}
 
-export const ShareButton = (props: ShareButtonProps) => {
-  const { className, url, ...other } = useProps("ShareButton", {}, props)
+export const ShareButtonURL = (props: ShareButtonURLProps) => {
+  const { className, url, children, ...other } = useProps(
+    "ShareButtonURL",
+    null,
+    props,
+  )
 
-  const [tooltipOpen, setTooltipOpen] = useState(false)
-
-  const canShare = useMemo(() => {
-    if (typeof navigator == "undefined" || !("share" in navigator)) {
-      return false
-    }
-    return navigator.canShare({ url: url })
-  }, [url])
-
-  useEffect(() => {
-    if (tooltipOpen) {
-      const id = window.setTimeout(() => {
-        setTooltipOpen(false)
-      }, 1500)
-      return () => {
-        window.clearTimeout(id)
-      }
-    }
-  }, [tooltipOpen])
+  const { showTooltip, tooltipOpened, tooltipLabel } = useTooltip()
 
   return (
-    <>
-      <Tooltip label="Copied" opened={tooltipOpen} position="bottom">
-        <ActionIcon
-          className={clsx("ShareButton-button", className)}
-          title="Share"
-          variant="default"
-          onClick={() => {
-            if (!canShare) {
-              if (typeof navigator != "undefined" && "clipboard" in navigator) {
-                navigator.clipboard.writeText(url || window.location.href)
-                setTooltipOpen(true)
+    <ShareButton.Root
+      className={clsx("ShareButton-url", className)}
+      tooltipOpened={tooltipOpened}
+      tooltipLabel={tooltipLabel}
+      onClick={() => {
+        if (url) {
+          const shareRes = shareURL(url)
+          if (shareRes) {
+            shareRes.then((method) => {
+              if (method == "copied") {
+                showTooltip("Copied")
               }
-            } else {
-              navigator.share({ url })
-            }
-          }}
-          {...other}
-        >
-          <ShareFatIcon size={20} />
-        </ActionIcon>
-      </Tooltip>
-    </>
+            })
+          }
+        }
+      }}
+      {...other}
+    >
+      {children || <ShareFatIcon />}
+    </ShareButton.Root>
   )
 }
+
+// export type ShareButtonICalProps = ShareButtonRootProps & {
+//   filename?: string
+//   icsData?:
+//     | string
+//     | null
+//     | Promise<string | null | undefined>
+//     | (() => string | null | undefined | Promise<string | null | undefined>)
+// }
+
+// export const ShareButtonICal = (props: ShareButtonICalProps) => {
+//   const { className,...other } = useProps(
+//     "ShareButtonICal",
+//     { filename: "event.ics" },
+//     props,
+//   )
+//   return (
+//     <ShareButton.Root
+//       className={clsx("ShareButton-ical", className)}
+//       onClick={onClick}
+//       {...other}
+//     >
+//       <CalendarPlusIcon />
+//     </ShareButton.Root>
+//   )
+// }
+
+export type ShareButtonRootProps = ActionIconProps &
+  DefaultBoxProps<"button"> & {
+    tooltipOpened?: boolean
+    tooltipLabel?: ReactNode
+    tooltipPosition?: TooltipProps["position"]
+    TooltipProps?: Partial<TooltipProps>
+  }
+
+export const ShareButtonRoot = (props: ShareButtonRootProps) => {
+  const {
+    className,
+    tooltipOpened,
+    tooltipLabel,
+    tooltipPosition,
+    TooltipProps,
+    children,
+    ...other
+  } = useProps("ShareButtonRoot", { tooltipOpened: false }, props)
+
+  return (
+    <Tooltip
+      label={tooltipLabel}
+      opened={tooltipOpened}
+      position={tooltipPosition}
+      {...TooltipProps}
+    >
+      <ActionIcon
+        className={clsx("ShareButton-root", classes.root, className)}
+        variant="default"
+        {...other}
+      >
+        {children}
+      </ActionIcon>
+    </Tooltip>
+  )
+}
+
+export const ShareButton = Object.assign(
+  {},
+  {
+    Root: ShareButtonRoot,
+    URL: ShareButtonURL,
+    // ICal: ShareButtonICal,
+  },
+)

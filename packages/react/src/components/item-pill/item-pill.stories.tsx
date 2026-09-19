@@ -2,7 +2,7 @@ import { TagsConfigContext } from "#src/tags.js"
 import { testTagsConfig } from "#src/test-data-new.js"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import dayjs from "dayjs"
-import { Pill } from "../newpill/pill.js"
+import { Pill } from "../pill/pill.js"
 import { ItemPill } from "./item-pill.js"
 
 const meta: Meta<typeof ItemPill> = {

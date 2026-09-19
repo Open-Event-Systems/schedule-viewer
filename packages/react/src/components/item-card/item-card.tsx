@@ -12,24 +12,22 @@ import {
   type ModalProps,
   type TitleProps,
 } from "@mantine/core"
-import clsx from "clsx"
-import {
-  ItemDetails,
-  type ItemDetailsProps,
-} from "../newdetails/item-details.js"
-
-import type { DefaultBoxProps } from "../types.js"
-import type { ReactNode } from "react"
-import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
-
+import clsx from "clsx"
+import type { ReactNode } from "react"
+import type { ContactViewProps, OccurrenceViewProps } from "../../types.js"
 import {
   ItemButtons,
   type ItemButtonsFeature,
 } from "../item-buttons/item-buttons.js"
+import {
+  ItemDetails,
+  type ItemDetailsProps,
+} from "../item-details/item-details.js"
+import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
+import type { DefaultBoxProps } from "../types.js"
 
 import classes from "./item-card.module.scss"
-import type { ContactViewProps, OccurrenceViewProps } from "../../types.js"
 
 export type ItemCardSize = "sm" | "md"
 

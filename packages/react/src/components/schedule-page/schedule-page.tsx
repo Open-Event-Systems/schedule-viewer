@@ -1,229 +1,351 @@
-import { Box, useProps, type StackProps } from "@mantine/core"
+import type { TagConfig } from "#src/tags.js"
+import { Badge, Box, Button, useProps, type ButtonProps } from "@mantine/core"
+import { useMediaQuery } from "@mantine/hooks"
+import { FunnelIcon } from "@phosphor-icons/react/dist/icons/Funnel"
 import clsx from "clsx"
-import { type ReactNode } from "@tabler/icons-react"
+import type { ReactNode } from "react"
+import { FilterDialog } from "../filters/filter-dialog.js"
+import type { SelectionsFilterProps } from "../filters/selections-filter.js"
+import type { TagFilterProps } from "../filters/tag-filter.js"
 import {
-  ShareMenu,
   ShareMenuOption,
+  ShareMenuOptionNames,
   type ShareMenuProps,
 } from "../share-menu/share-menu.js"
-import {
-  SelectionsFilter,
-  type SelectionsFilterOption,
-  type SelectionsFilterProps,
-} from "../filters/selections-filter.js"
-
-import { memo, useMemo } from "react"
-import { ViewSelect, type ViewSelectProps } from "../view-select/view-select.js"
+import type { DefaultBoxProps } from "../types.js"
+import type { ViewSelectProps } from "../view-select/view-select.js"
+import { useSchedulePageFeatures } from "./hooks.js"
 
 import classes from "./schedule-page.module.scss"
-import { TextFilter, type TextFilterProps } from "../filters/text-filter.js"
-import {
-  PastEventsFilter,
-  type PastEventsFilterProps,
-} from "../filters/past-events-filter.js"
-import { TagFilter, type TagFilterProps } from "../filters/tag-filter.js"
-import { useMediaQuery } from "@mantine/hooks"
-import type { TagViewProps } from "../../types.js"
-import { iterToArr } from "@open-event-systems/schedule-lib"
 
-export const schedulePageFeatures = [
-  ...Object.values(ShareMenuOption),
-  "search",
-  "tag-filter",
-  "bookmarked-filter",
-  "unvisited-filter",
-  "past-events-filter",
-] as const
+export const SchedulePageFeature = {
+  ...ShareMenuOption,
+  search: "search",
+  tagFilter: "tag-filter",
+  bookmarkedFilter: "bookmarked-filter",
+  unvisitedFilter: "unvisited-filter",
+  pastEventsFilter: "past-events-filter",
+} as const
 
-export type SchedulePageFeature = (typeof schedulePageFeatures)[number]
+export type SchedulePageFeature =
+  (typeof SchedulePageFeature)[keyof typeof SchedulePageFeature]
+
+export const SchedulePageFeatureNames = {
+  ...ShareMenuOptionNames,
+  search: "Search",
+  "tag-filter": "Tag filter",
+  "bookmarked-filter": "Bookmarked filter",
+  "unvisited-filter": "Unvisited filter",
+  "past-events-filter": "Past events filter",
+} as const satisfies { readonly [K in SchedulePageFeature]: string }
 
 export type SchedulePageProps = {
-  viewOptions?: Iterable<Readonly<{ value: string; label: string }>>
-  enableFeatures?: Iterable<SchedulePageFeature>
-  tags?: Iterable<TagViewProps>
-  renderSelectionsFilter?: (props: SelectionsFilterProps) => ReactNode
+  enabledFeatures?: Iterable<SchedulePageFeature>
+
+  viewSelectOptions?: ViewSelectProps["data"]
   renderViewSelect?: (props: ViewSelectProps) => ReactNode
-  renderTextFilter?: (props: TextFilterProps) => ReactNode
-  renderPastEventsFilter?: (props: PastEventsFilterProps) => ReactNode
+
+  renderSelectionsFilter?: (props: SelectionsFilterProps) => ReactNode
+
+  textFilter?: ReactNode
+
+  renderShareMenu?: (props: ShareMenuProps) => ReactNode
+
+  pastEventsFilter?: ReactNode
+
+  tags?: Iterable<string | TagConfig>
   renderTagFilter?: (props: TagFilterProps) => ReactNode
-  renderShare?: (props: ShareMenuProps) => ReactNode
-  renderSchedule?: (props: object) => ReactNode
-} & StackProps
 
-/**
- * Full schedule page component.
- */
-export const SchedulePage = memo((props: SchedulePageProps) => {
+  filterCount?: number
+
+  filterDialogOpen: boolean
+  onCloseFilterDialog: () => void
+  onOpenFilterDialog?: () => void
+} & SchedulePageRootProps
+
+const _SchedulePage = (props: SchedulePageProps) => {
   const {
-    className,
-    viewOptions,
-    enableFeatures,
-    tags,
-    renderSelectionsFilter,
+    children,
+    enabledFeatures,
+    viewSelectOptions,
     renderViewSelect,
-    renderTextFilter,
-    renderPastEventsFilter,
+    renderSelectionsFilter,
+    textFilter,
+    renderShareMenu,
+    pastEventsFilter,
+    tags,
     renderTagFilter,
-    renderShare,
-    renderSchedule,
+    filterCount,
+    filterDialogOpen,
+    onCloseFilterDialog,
+    onOpenFilterDialog,
     ...other
-  } = useProps(
-    "SchedulePage",
-    {
-      enableFeatures: schedulePageFeatures,
-      renderSelectionsFilter: (props: SelectionsFilterProps) => (
-        <SelectionsFilter {...props} />
-      ),
-      renderViewSelect: (props: ViewSelectProps) => <ViewSelect {...props} />,
-      renderTextFilter: (props: TextFilterProps) => <TextFilter {...props} />,
-      renderPastEventsFilter: (props: PastEventsFilterProps) => (
-        <PastEventsFilter {...props} />
-      ),
-      renderTagFilter: (props: TagFilterProps) => <TagFilter {...props} />,
-      renderShare: (props: ShareMenuProps) => <ShareMenu {...props} />,
-      renderSchedule: () => null,
-    } as const,
-    props,
-  )
+  } = useProps("SchedulePage", null, props)
 
-  const viewOptsArr = iterToArr(viewOptions)
-  const enableFeaturesArr = iterToArr(enableFeatures)
-  const selectionsOptsArr: SelectionsFilterOption[] = []
-  const shareOptsArr: ShareMenuOption[] = []
+  const small = useMediaQuery("(max-width: 800px)")
 
-  if (enableFeaturesArr.includes("share")) {
-    shareOptsArr.push("share")
-  }
-  if (enableFeaturesArr.includes("sync")) {
-    shareOptsArr.push("sync")
-  }
-  if (enableFeaturesArr.includes("export")) {
-    shareOptsArr.push("export")
-  }
+  const {
+    shareMenuOptions,
+    selectionsFilterOptions,
+    showPastEventsFilter,
+    showSearch,
+    showSelectionsFilter,
+    showShareMenu,
+    showTagFilter,
+    showViewSelect,
+  } = useSchedulePageFeatures({
+    enabledFeatures,
+    tags,
+    viewSelectOptions,
+  })
 
-  if (enableFeaturesArr.includes("bookmarked-filter")) {
-    selectionsOptsArr.push("bookmarked")
-  }
-  if (enableFeaturesArr.includes("unvisited-filter")) {
-    selectionsOptsArr.push("unvisited")
-  }
-
-  const tagsArr = useMemo(() => iterToArr(tags), [tags])
-
-  const isSmall = useMediaQuery("(max-width: 48rem)")
-  const viewSelect =
-    viewOptsArr.length > 1 &&
+  const viewSelectEl =
+    showViewSelect &&
+    renderViewSelect &&
     renderViewSelect({
-      className: clsx("SchedulePage-viewSelect", classes.viewSelect),
-      data: viewOptsArr,
+      data: viewSelectOptions,
+      size: small ? "xs" : "sm",
+      fixedWidth: small ? false : true,
     })
-  const selectionsFilter =
-    selectionsOptsArr.length > 0 &&
-    renderSelectionsFilter({
-      className: clsx("SchedulePage-bookmarkFilter", classes.bookmarkFilter),
-      enableOptions: selectionsOptsArr,
-    })
-  const shareMenu =
-    shareOptsArr.length > 0 &&
-    renderShare({
-      ButtonProps: {
-        className: clsx("SchedulePage-shareButton", classes.shareButton),
-      },
-      enabledOptions: shareOptsArr,
-    })
-  const textFilter =
-    enableFeaturesArr.includes("search") &&
-    renderTextFilter({
-      className: clsx("SchedulePage-textFilter", classes.textFilter),
-    })
-  const pastEventsFilter =
-    enableFeaturesArr.includes("past-events-filter") &&
-    renderPastEventsFilter({
-      className: clsx("SchedulePage-pastEventsFilter"),
-    })
-  const tagFilter =
-    tagsArr.length > 0 &&
-    enableFeaturesArr.includes("tag-filter") &&
-    renderTagFilter({
-      className: clsx("SchedulePage-tagFilter"),
-      tags: tagsArr,
-    })
-  const schedule = renderSchedule({})
+  const selectionsFilterEl =
+    showSelectionsFilter &&
+    renderSelectionsFilter &&
+    renderSelectionsFilter({ enableOptions: selectionsFilterOptions, small })
+  const shareMenuEl =
+    showShareMenu &&
+    renderShareMenu &&
+    renderShareMenu({ enabledOptions: shareMenuOptions, small })
+  const tagFilterEl =
+    showTagFilter && renderTagFilter && renderTagFilter({ tags })
+  const textFilterEl = showSearch && textFilter
+  const pastEventsFilterEl = showPastEventsFilter && pastEventsFilter
 
   let content
 
-  if (isSmall) {
+  if (small) {
+    const showFilterButton = textFilterEl || pastEventsFilterEl || tagFilterEl
+
     content = (
       <>
-        <Box className={clsx(classes.toolbar)}>
-          {viewSelect}
-          {shareMenu}
-        </Box>
-        {selectionsFilter && (
-          <Box className={clsx(classes.toolbar)}>{selectionsFilter}</Box>
-        )}
-        {textFilter && (
-          <Box className={clsx(classes.toolbar)}>{textFilter}</Box>
-        )}
-        {pastEventsFilter && (
-          <Box className={clsx(classes.toolbar)}>{pastEventsFilter}</Box>
-        )}
-        {tagFilter && <Box className={clsx(classes.toolbar)}>{tagFilter}</Box>}
-        <Box className={clsx("SchedulePage-schedule", classes.schedule)}>
-          {schedule}
-        </Box>
+        <SchedulePage.Toolbar stretch>
+          <SchedulePage.ToolbarRow expandFirst>
+            {viewSelectEl}
+            {!showFilterButton && shareMenuEl}
+          </SchedulePage.ToolbarRow>
+          <SchedulePage.ToolbarRow expandFirst>
+            {selectionsFilterEl}
+          </SchedulePage.ToolbarRow>
+          {showFilterButton && (
+            <SchedulePage.ToolbarRow spaceBetween>
+              <SchedulePage.FilterButton
+                filterCount={filterCount}
+                onClick={onOpenFilterDialog}
+              />
+              {shareMenuEl}
+            </SchedulePage.ToolbarRow>
+          )}
+        </SchedulePage.Toolbar>
+        <SchedulePage.Content>{children}</SchedulePage.Content>
+        <FilterDialog opened={filterDialogOpen} onClose={onCloseFilterDialog}>
+          {textFilterEl}
+          {pastEventsFilterEl}
+          {tagFilterEl}
+        </FilterDialog>
       </>
     )
   } else {
+    let cornerContent
+
+    if (textFilterEl) {
+      cornerContent = (
+        <SchedulePage.ToolbarRow expandFirst>
+          {textFilterEl}
+          {shareMenuEl}
+        </SchedulePage.ToolbarRow>
+      )
+    } else {
+      cornerContent = (
+        <SchedulePage.ToolbarRow rightJustify>
+          {shareMenuEl}
+        </SchedulePage.ToolbarRow>
+      )
+    }
+
     content = (
       <>
-        <Box
-          className={clsx(
-            "SchedulePage-topMenu",
-            classes.topMenu,
-            classes.leftToolbar,
-          )}
-        >
-          {viewSelect}
-          {selectionsFilter}
-        </Box>
-        <Box
-          className={clsx(
-            "SchedulePage-topFilter",
-            classes.topFilter,
-            classes.toolbar,
-          )}
-        >
-          {/* Put either the text filter or the past events filter here, or an empty element to get the spacing right */}
-          {textFilter || pastEventsFilter || <div></div>}
-          {shareMenu}
-        </Box>
-        <Box className={clsx("SchedulePage-filter", classes.filter)}>
-          {/* Past event filter goes here unless it was moved up due to text filter being omitted */}
-          {textFilter ? pastEventsFilter : null}
-          {tagFilter}
-        </Box>
-        <Box
-          component="section"
-          aria-label="schedule items"
-          className={clsx("SchedulePage-schedule", classes.schedule)}
-        >
-          {schedule}
-        </Box>
+        <SchedulePage.Toolbar>
+          <SchedulePage.ToolbarRow>
+            {viewSelectEl}
+            {selectionsFilterEl}
+          </SchedulePage.ToolbarRow>
+        </SchedulePage.Toolbar>
+        {cornerContent && (
+          <SchedulePage.Corner>{cornerContent}</SchedulePage.Corner>
+        )}
+        <SchedulePage.Sidebar>
+          {pastEventsFilterEl}
+          {tagFilterEl}
+        </SchedulePage.Sidebar>
+        <SchedulePage.Content>{children}</SchedulePage.Content>
       </>
     )
   }
 
   return (
+    <SchedulePage.Root small={small} {...other}>
+      {content}
+    </SchedulePage.Root>
+  )
+}
+
+export type SchedulePageRootProps = { small?: boolean } & DefaultBoxProps
+
+export const SchedulePageRoot = (props: SchedulePageRootProps) => {
+  const { className, small, ...other } = useProps(
+    "SchedulePageRoot",
+    null,
+    props,
+  )
+
+  return (
     <Box
-      component="section"
-      aria-label="schedule and settings"
-      className={clsx("SchedulePage-root", classes.root, className)}
+      className={clsx(
+        "SchedulePage-root",
+        classes.root,
+        small && classes.small,
+        className,
+      )}
+      {...other}
+    />
+  )
+}
+
+export type SchedulePageToolbarProps = { stretch?: boolean } & DefaultBoxProps
+
+export const SchedulePageToolbar = (props: SchedulePageToolbarProps) => {
+  const { className, stretch, ...other } = useProps(
+    "SchedulePageToolbar",
+    null,
+    props,
+  )
+
+  return (
+    <Box
+      className={clsx(
+        "SchedulePage-toolbar",
+        classes.toolbar,
+        stretch && classes.stretch,
+        className,
+      )}
+      {...other}
+    />
+  )
+}
+
+export type SchedulePageToolbarRowProps = {
+  expandFirst?: boolean
+  rightJustify?: boolean
+  spaceBetween?: boolean
+} & DefaultBoxProps
+
+export const SchedulePageToolbarRow = (props: SchedulePageToolbarRowProps) => {
+  const { className, expandFirst, rightJustify, spaceBetween, ...other } =
+    useProps("SchedulePageToolbarRow", null, props)
+
+  return (
+    <Box
+      className={clsx(
+        "SchedulePage-toolbarRow",
+        classes.toolbarRow,
+        expandFirst && classes.expandFirst,
+        rightJustify && classes.rightJustify,
+        spaceBetween && classes.spaceBetween,
+        className,
+      )}
+      {...other}
+    />
+  )
+}
+
+export type SchedulePageFilterButtonProps = {
+  filterCount?: number
+} & ButtonProps &
+  DefaultBoxProps<"button">
+
+export const SchedulePageFilterButton = (
+  props: SchedulePageFilterButtonProps,
+) => {
+  const { className, filterCount, ...other } = useProps(
+    "SchedulePageFilterButton",
+    null,
+    props,
+  )
+
+  return (
+    <Button
+      className={clsx("SchedulePage-filterButton", className)}
+      variant="subtle"
+      size="xs"
+      leftSection={<FunnelIcon size={20} />}
+      rightSection={
+        filterCount && filterCount > 0 ? (
+          <Badge circle variant="light">
+            {filterCount}
+          </Badge>
+        ) : undefined
+      }
       {...other}
     >
-      {content}
-    </Box>
+      Filter
+    </Button>
   )
-})
+}
 
-SchedulePage.displayName = "SchedulePage"
+export type SchedulePageSidebarProps = DefaultBoxProps
+
+export const SchedulePageSidebar = (props: SchedulePageSidebarProps) => {
+  const { className, ...other } = useProps("SchedulePageSidebar", null, props)
+
+  return (
+    <Box
+      className={clsx("SchedulePage-sidebar", classes.sidebar, className)}
+      {...other}
+    />
+  )
+}
+
+export type SchedulePageCornerProps = DefaultBoxProps
+
+export const SchedulePageCorner = (props: SchedulePageCornerProps) => {
+  const { className, ...other } = useProps("SchedulePageCorner", null, props)
+
+  return (
+    <Box
+      className={clsx("SchedulePage-corner", classes.corner, className)}
+      {...other}
+    />
+  )
+}
+
+export type SchedulePageContentProps = DefaultBoxProps
+
+export const SchedulePageContent = (props: SchedulePageContentProps) => {
+  const { className, ...other } = useProps("SchedulePageContent", null, props)
+
+  return (
+    <Box
+      className={clsx("SchedulePage-content", classes.content, className)}
+      {...other}
+    />
+  )
+}
+
+export const SchedulePage = Object.assign(_SchedulePage, {
+  Root: SchedulePageRoot,
+  Sidebar: SchedulePageSidebar,
+  Toolbar: SchedulePageToolbar,
+  ToolbarRow: SchedulePageToolbarRow,
+  FilterButton: SchedulePageFilterButton,
+  Corner: SchedulePageCorner,
+  Content: SchedulePageContent,
+})

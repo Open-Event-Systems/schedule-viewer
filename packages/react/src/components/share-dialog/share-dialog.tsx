@@ -1,3 +1,4 @@
+import { ShareButton } from "#src/components/share-button/share-button.js"
 import {
   Alert,
   Box,
@@ -11,7 +12,6 @@ import {
 } from "@mantine/core"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
-import { ShareButton } from "../share-button/share-button.js"
 
 export type ShareDialogProps = ModalProps & {
   shareURL?: string
@@ -84,7 +84,7 @@ export const ShareDialog = (props: ShareDialogProps) => {
           onFocus={(e) => {
             e.target.select()
           }}
-          rightSection={<ShareButton url={shareURL} />}
+          rightSection={<ShareButton.URL url={shareURL} />}
         />
       </Stack>
     </Modal>

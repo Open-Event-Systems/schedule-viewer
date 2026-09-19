@@ -1,12 +1,14 @@
 import "@mantine/core/styles.css"
+
 import "@open-event-systems/schedule-react/schedule-react.css"
+
 import "../styles.scss"
 
+import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider } from "@tanstack/react-router"
 import { createRoot } from "react-dom/client"
-import { createRouter } from "../router/router.js"
 import { getJSConfig, makeAppContext } from "../config/js-config.js"
-import { QueryClient } from "@tanstack/react-query"
+import { createRouter } from "../router/router.js"
 
 const container = document.getElementById("schedule")
 if (container) {

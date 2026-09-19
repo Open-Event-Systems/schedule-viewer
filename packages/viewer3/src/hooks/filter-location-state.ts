@@ -34,8 +34,6 @@ declare module "@tanstack/react-router" {
 }
 
 export type PageSearchParams = Readonly<{
-  view?: string
-  day?: string
   search?: string
   past?: boolean
   bookmarked?: boolean
@@ -52,8 +50,6 @@ const boolSchema = z.codec(
 )
 
 const pageSearchParamsSchema = z.object({
-  view: z.optional(z.string()).catch(undefined),
-  day: z.optional(z.string()).catch(undefined),
   search: z.optional(z.string()).catch(undefined),
   past: z.optional(boolSchema).catch(undefined),
   bookmarked: z.optional(boolSchema).catch(undefined),

@@ -1,4 +1,3 @@
-import { useSSRValue } from "#src/hooks/app.js"
 import {
   useFilterDialogOpenState,
   useThrottledSetSearch,
@@ -13,14 +12,21 @@ import {
   TagFilter,
   TextFilter,
   useFilterStore,
+  useSSRValue,
+  ViewSelect,
   type PastEventsFilterProps,
   type SelectionsFilterOption,
   type SelectionsFilterProps,
   type TagFilterProps,
   type TextFilterProps,
+  type ViewSelectProps,
 } from "@open-event-systems/schedule-react"
 import { useLocation, useSearch } from "@tanstack/react-router"
 import { useMemo } from "react"
+
+export const ViewSelectContainer = (props: ViewSelectProps) => {
+  return <ViewSelect {...props} />
+}
 
 export const SelectionsFilterContainer = (props: SelectionsFilterProps) => {
   const locValueArr = useSearch({

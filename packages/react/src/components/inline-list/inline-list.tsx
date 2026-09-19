@@ -1,9 +1,9 @@
 import { Box, useProps, type CSSProperties } from "@mantine/core"
-import type { DefaultBoxProps } from "../types.js"
 import clsx from "clsx"
+import { Children, isValidElement } from "react"
+import type { DefaultBoxProps } from "../types.js"
 
 import classes from "./inline-list.module.scss"
-import { Children, isValidElement } from "react"
 
 export type InlineListProps = InlineListRootProps
 

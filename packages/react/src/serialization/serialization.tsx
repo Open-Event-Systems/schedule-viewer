@@ -2,57 +2,72 @@
  * SSR serialization utilities.
  * @module
  */
-import { DATA_KEY } from "#src/serialization/deserialization.js"
+import { type Hydrator } from "#src/serialization/deserialization.js"
+import { isTagsConfig, type TagConfig } from "#src/tags.js"
 import {
   dayjsSerovalPlugin,
   durationSerovalPlugin,
-  REHYDRATORS_KEY,
+  HYDRATORS_KEY,
+  makeSerovalPlugin,
+  scheduleDataSerovalPlugin,
   selectionsSerovalPlugin,
 } from "@open-event-systems/schedule-lib/serialization"
-import { useMemo } from "react"
+import type { ReactNode } from "react"
 import {
-  createPlugin,
   serialize as serovalSerialize,
   type Plugin,
   type PluginInfo,
 } from "seroval"
 
-export const defaultPlugins = [
-  createPlugin(dayjsSerovalPlugin),
-  createPlugin(durationSerovalPlugin),
-  createPlugin(selectionsSerovalPlugin),
-]
+export type Dehydrators<M> = Readonly<{
+  [K in keyof M]: Plugin<M[K], PluginInfo> & { tag: K }
+}>
 
-/**
- * Serialize data to a string representing a JS function.
- */
-export const serialize = (
-  data: unknown,
-  plugins?: Iterable<Plugin<unknown, PluginInfo>>,
-): string => {
-  const outStr = serovalSerialize(data, {
-    plugins: plugins ? [...plugins] : defaultPlugins,
-  })
-  return `(${REHYDRATORS_KEY}=>${outStr})`
+export type Dehydrator<D> = {
+  (data: D): string
+} & Readonly<{
+  DehydratedData: (props: { data: D }) => ReactNode
+}>
+
+export const makeDehydrator = <M, D extends Record<string, unknown>, K>(
+  hydrator: Hydrator<M, D, K>,
+  dehydrators: NoInfer<Dehydrators<M>>,
+): Dehydrator<D> => {
+  const plugins: (typeof dehydrators)[keyof typeof dehydrators][] = []
+  for (const value of Object.values(dehydrators)) {
+    plugins.push(value as (typeof dehydrators)[keyof typeof dehydrators])
+  }
+
+  const dehydrate = (data: D): string => {
+    const asStr = serovalSerialize(data, { plugins })
+    return `self["${hydrator.key}"]=(${HYDRATORS_KEY}=>${asStr});document.currentScript.remove()`
+  }
+
+  const DehydratedData = ({ data }: { data: D }) => {
+    return <script suppressHydrationWarning>{dehydrate(data)}</script>
+  }
+
+  dehydrate.DehydratedData = DehydratedData
+
+  return dehydrate
 }
 
-/**
- * Renders a <script> tag containing dehydrated data for the client.
- */
-export const DehydratedData = ({
-  data,
-  plugins,
-  dataKey,
-}: {
-  data?: unknown
-  plugins?: Iterable<Plugin<unknown, PluginInfo>>
-  dataKey?: string
-}) => {
-  dataKey = dataKey || DATA_KEY
-  const jsStr = useMemo(() => {
-    const funcStr = serialize(data, plugins)
-    return `self["${DATA_KEY}"]=${funcStr};document.currentScript.remove()`
-  }, [data, plugins, dataKey])
+export const defaultDehydrators = {
+  dayjs: dayjsSerovalPlugin,
+  duration: durationSerovalPlugin,
+  selections: selectionsSerovalPlugin,
+  scheduleData: scheduleDataSerovalPlugin,
+  tagsConfig: makeSerovalPlugin(
+    "tagsConfig",
+    (value) => isTagsConfig(value),
+    (value) => {
+      const records: Record<string, Partial<TagConfig>> = {}
 
-  return <script suppressHydrationWarning>{jsStr}</script>
-}
+      for (const { value: tagVal, ...other } of value) {
+        records[tagVal] = other
+      }
+
+      return records
+    },
+  ),
+} as const

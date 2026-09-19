@@ -14,6 +14,7 @@ import type {
   OccurrenceViewProps,
 } from "#src/types.js"
 import {
+  indexScheduleData,
   omitUndef,
   type Contact,
   type OccurrenceLocation,
@@ -22,17 +23,8 @@ import {
 } from "@open-event-systems/schedule-lib"
 import { createContext, use, useMemo, type ReactNode } from "react"
 
-const emptyIndex = {
-  [Symbol.iterator]: () => [][Symbol.iterator](),
-  size: 0,
-  getById: (): undefined => {},
-  getByName: (): undefined => {},
-} as const
-
-export const ScheduleDataContext = createContext<ScheduleData>({
-  ...emptyIndex,
-  getType: () => emptyIndex,
-})
+export const ScheduleDataContext =
+  createContext<ScheduleData>(indexScheduleData())
 
 export const useScheduleData = (): ScheduleData => use(ScheduleDataContext)
 

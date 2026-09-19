@@ -1,4 +1,5 @@
 import { Box, Button, Text, useProps, type TextProps } from "@mantine/core"
+import { iterToArr, iterToSet } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import {
   useCallback,
@@ -9,17 +10,11 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react"
-
-import classes from "./tag-filter.module.scss"
-import { Pill, type PillBoxProps, type PillProps } from "../newpill/pill.js"
+import { Pill, type PillBoxProps, type PillProps } from "../pill/pill.js"
 import type { DefaultBoxProps } from "../types.js"
-import { iterToArr, iterToSet } from "@open-event-systems/schedule-lib"
-import type { TagViewProps } from "../../types.js"
 
-export type TagFilterTagData = Readonly<{
-  value: string
-}> &
-  TagViewProps
+import type { TagConfig } from "#src/tags.js"
+import classes from "./tag-filter.module.scss"
 
 export type TagFilterMode = "exclude" | "include"
 
@@ -40,9 +35,9 @@ export type TagFilterProps = {
   disabledTags?: Iterable<string>
 
   /**
-   * A collection of {@link TagFilterTagData} objects representing the displayable tags.
+   * A collection of {@link TagConfig} objects or strings representing the displayable tags.
    */
-  tags?: Iterable<string | TagFilterTagData>
+  tags?: Iterable<string | TagConfig>
 
   /**
    * Handler to set tags disabled/enabled.
@@ -219,7 +214,7 @@ export const TagFilterTag = (props: TagFilterTagProps) => {
 
 export type TagFilterModeSelectProps = {
   mode?: TagFilterMode
-  tags?: Iterable<string | TagFilterTagData>
+  tags?: Iterable<string | TagConfig>
   disabledTags?: Iterable<string>
   onSetMode?: (mode: TagFilterMode) => void
   onSetDisabled?: (tags: string[], disabled: boolean) => void

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { FilterDialog } from "./filter-dialog.js"
-import { TextFilter } from "./text-filter.js"
-import { TagFilter, type TagFilterMode } from "./tag-filter.js"
 import { useState } from "react"
+import { testTagsConfig } from "../../test-data-new.js"
+import { FilterDialog } from "./filter-dialog.js"
 import { PastEventsFilter } from "./past-events-filter.js"
-import { tagData } from "../../test-data-new.js"
+import { TagFilter, type TagFilterMode } from "./tag-filter.js"
+import { TextFilter } from "./text-filter.js"
 
 const meta: Meta<typeof FilterDialog> = {
   component: FilterDialog,
@@ -45,15 +45,22 @@ export const Default: StoryObj<typeof FilterDialog> = {
           label="Filter Tags"
           mode={state.mode}
           disabledTags={state.disabledTags}
-          tags={[...tagData, "Other"]}
-          onSetDisabled={(tag, disabled) => {
+          tags={[...testTagsConfig, "Other"]}
+          onSetDisabled={(tags, disabled) => {
             setState((prev) => {
-              const newSet = new Set(prev.disabledTags)
+              let newSet
 
-              if (disabled) {
-                newSet.add(tag)
+              if (disabled != null) {
+                newSet = new Set(prev.disabledTags)
+                for (const tag of tags) {
+                  if (disabled) {
+                    newSet.add(tag)
+                  } else {
+                    newSet.delete(tag)
+                  }
+                }
               } else {
-                newSet.delete(tag)
+                newSet = new Set(tags)
               }
 
               return { ...prev, disabledTags: newSet }

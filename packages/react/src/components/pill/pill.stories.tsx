@@ -1,53 +1,89 @@
+import { Flex } from "@mantine/core"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { Pills } from "./pills.js"
-import { HoverCard } from "@mantine/core"
+import { Pill } from "./pill.js"
 
-const meta: Meta<typeof Pills.Pill<"li">> = {
-  component: Pills.Pill,
+const meta: Meta<typeof Pill> = {
+  component: Pill,
   decorators: [
     (Story) => (
-      <Pills>
+      <Flex>
         <Story />
-      </Pills>
+      </Flex>
     ),
   ],
 }
 
 export default meta
 
-export const Button: StoryObj<typeof meta> = {
+export const Default: StoryObj<typeof Pill> = {
   args: {
-    children: "Button Pill",
+    children: "Example Event",
   },
 }
 
-export const Anchor: StoryObj<typeof meta> = {
+export const WithIndicator: StoryObj<typeof Pill> = {
   args: {
-    children: "Anchor Pill",
-    onClickBody: (e) => e.preventDefault(),
-    renderBody: (props) => <a {...props} href="/" />,
-  },
-}
-
-export const WithHoverCard: StoryObj<typeof meta> = {
-  args: {
-    children: "Pill With Hover Card",
-    onClickBody: (e) => e.preventDefault(),
-    renderHoverCard: ({ children }) => (
-      <HoverCard>
-        <HoverCard.Target>{children}</HoverCard.Target>
-        <HoverCard.Dropdown>Dropdown content</HoverCard.Dropdown>
-      </HoverCard>
-    ),
-    renderBody: (props) => <a {...props} href="/" />,
-  },
-}
-
-export const WithIndicator: StoryObj<typeof meta> = {
-  args: {
-    children: "Pill With Indicator",
-    onClickBody: (e) => e.preventDefault(),
+    children: "With Indicator",
     indicator: "18+",
-    renderBody: (props) => <a {...props} href="/" />,
+  },
+}
+
+export const WithBeforeAndAfter: StoryObj<typeof Pill> = {
+  args: {
+    children: "With Before/After",
+    before: "⭐",
+    after: "🎟️",
+  },
+}
+
+export const AsLink: StoryObj<typeof Pill> = {
+  args: {
+    children: "As Link",
+    indicator: "18+",
+    renderRoot: (props) => (
+      <a href="#" onClick={(e) => e.preventDefault()} {...props} />
+    ),
+  },
+}
+
+export const AsButton: StoryObj<typeof Pill> = {
+  args: {
+    children: "As Button",
+    indicator: "18+",
+    renderRoot: (props) => <button {...props} type="button" />,
+  },
+}
+
+export const WithColor: StoryObj<typeof Pill> = {
+  args: {
+    children: "With Color",
+    color: "#006c2e",
+    textColor: "#ffffff",
+  },
+}
+
+export const Highlighted: StoryObj<typeof Pill> = {
+  args: {
+    children: "Highlighted",
+    color: "#006c2e",
+    textColor: "#ffffff",
+    highlighted: true,
+  },
+}
+
+export const Disabled: StoryObj<typeof Pill> = {
+  args: {
+    children: "Disabled",
+    color: "#006c2e",
+    textColor: "#ffffff",
+    disabled: true,
+  },
+}
+
+export const WithMultiColors: StoryObj<typeof Pill> = {
+  args: {
+    children: "With Multi Colors",
+    color: ["#006c2e", "#6c2900", "#1d006c"],
+    textColor: "#ffffff",
   },
 }

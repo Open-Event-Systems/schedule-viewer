@@ -1,11 +1,11 @@
-import { forwardRef, useMemo } from "react"
-import markdownit from "markdown-it"
 import {
   type BoxProps,
   createPolymorphicComponent,
   Typography,
 } from "@mantine/core"
 import clsx from "clsx"
+import markdownit from "markdown-it"
+import { forwardRef, useMemo } from "react"
 
 export type MarkdownProps = { children?: string } & BoxProps
 

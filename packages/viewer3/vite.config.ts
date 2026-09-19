@@ -25,5 +25,5 @@ export default defineConfig(({ isSsrBuild }) => ({
           },
         },
       },
-  plugins: [react()],
+  plugins: [react({ compiler: true })],
 }))

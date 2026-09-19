@@ -5,8 +5,8 @@
 
 import type { Dayjs } from "dayjs"
 import { contains } from "./time.js"
-import type { Interval, ScheduleItem } from "./types.js"
-import { iterToSet } from "./utils.js"
+import type { Interval, ScheduleItem, ScheduleItemType } from "./types.js"
+import { iterToArr, iterToSet } from "./utils.js"
 
 export type TagFilterMode = "include" | "exclude"
 
@@ -104,19 +104,38 @@ export const makeFilter = (
   }
 }
 
+type TestFunc<P, A extends P> = <T>(
+  obj: T & Readonly<P>,
+) => obj is T & Readonly<A>
+type ItemTestFunc<P, A extends P> = <T>(
+  obj: T & { readonly item?: Readonly<P> },
+) => obj is T & { readonly item: Readonly<A> }
+
 /**
  * Return a filter for items matching the given search string.
  */
 export const makeSearchFilter = (
   search: string,
-): (<T extends { readonly item?: { readonly name?: string } }>(
-  obj: T,
-) => obj is T & { readonly item: { readonly name: string } }) => {
+): ItemTestFunc<{ name?: string }, { name: string }> => {
   const lowerName = search.trim().toLowerCase()
-  return <T extends { readonly item?: { readonly name?: string } }>(
-    obj: T,
-  ): obj is T & { readonly item: { readonly name: string } } =>
-    !!obj.item?.name && obj.item.name.toLowerCase().includes(lowerName)
+  return ((obj) =>
+    !!obj.item?.name &&
+    obj.item.name.toLowerCase().includes(lowerName)) as ItemTestFunc<
+    { name?: string },
+    { name: string }
+  >
+}
+
+/**
+ * Return a filter for items by type.
+ */
+export const makeItemTypeFilter = <K extends ScheduleItemType>(
+  types: Iterable<K>,
+): ItemTestFunc<{ type?: string }, { type: K }> => {
+  const typeSet = iterToSet<string>(types)
+  return ((obj) =>
+    typeof obj.item?.type == "string" &&
+    typeSet.has(obj.item.type)) as ItemTestFunc<{ type?: string }, { type: K }>
 }
 
 /**
@@ -125,20 +144,39 @@ export const makeSearchFilter = (
 export const makeTagFilter = (
   mode: "include" | "exclude",
   tags?: Iterable<string> | null,
-): ((obj: {
-  readonly item?: { readonly tags?: Iterable<string> }
-}) => boolean) => {
-  const tagsArr = [...(tags ?? [])]
-
+): ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }> => {
   if (mode == "include") {
-    return (obj) => {
-      return tagsArr.some((inclTag) => iterHas(inclTag, obj.item?.tags))
-    }
+    const tagsSet = new Set(tags)
+    return ((obj) => {
+      return iterToArr(obj.item?.tags).some((itemTag) => !tagsSet.has(itemTag))
+    }) as ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }>
   } else {
-    return (obj) => {
+    const tagsArr = [...(tags ?? [])]
+    return ((obj) => {
       return tagsArr.every((exclTag) => !iterHas(exclTag, obj.item?.tags))
-    }
+    }) as ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }>
   }
+}
+
+/**
+ * Return a filter for sum of products tag logic.
+ */
+export const makeTagLogicFilter = (
+  mode: "include" | "exclude",
+  tagSets?: Iterable<Iterable<string>>,
+) => {
+  const products: string[][] = []
+  for (const tagSet of tagSets ?? []) {
+    products.push([...tagSet])
+  }
+
+  return ((obj) => {
+    const itemTagSet = iterToSet(obj.item?.tags)
+    const match = products.some((product) =>
+      product.every((tag) => itemTagSet.has(tag)),
+    )
+    return mode == "include" ? match : !match
+  }) as ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }>
 }
 
 /**
@@ -147,12 +185,20 @@ export const makeTagFilter = (
 export const makeSelectionsFilter = (
   mode: "include" | "exclude",
   itemIds?: Iterable<string> | null,
-): ((obj: { readonly item?: { readonly id?: string } }) => boolean) => {
+): ItemTestFunc<{ id?: string }, { id: string }> => {
   const idSet = iterToSet(itemIds)
   if (mode == "include") {
-    return (obj) => obj.item?.id != null && idSet.has(obj.item.id)
+    return ((obj) =>
+      obj.item?.id != null && idSet.has(obj.item.id)) as ItemTestFunc<
+      { id?: string },
+      { id: string }
+    >
   } else {
-    return (obj) => obj.item?.id == null || !idSet.has(obj.item.id)
+    return ((obj) =>
+      obj.item?.id == null || !idSet.has(obj.item.id)) as ItemTestFunc<
+      { id?: string },
+      { id: string }
+    >
   }
 }
 
@@ -161,8 +207,11 @@ export const makeSelectionsFilter = (
  */
 export const makePastItemFilter = (
   now: Dayjs,
-): ((obj: { readonly endDate?: Dayjs }) => boolean) => {
-  return (obj) => !obj.endDate || now.isBefore(obj.endDate)
+): TestFunc<{ endDate?: Dayjs }, { endDate: Dayjs }> => {
+  return ((obj) => !obj.endDate || now.isBefore(obj.endDate)) as TestFunc<
+    { endDate?: Dayjs },
+    { endDate: Dayjs }
+  >
 }
 
 /**
@@ -170,26 +219,13 @@ export const makePastItemFilter = (
  */
 export const makeDateFilter = (
   range: Interval,
-): (<
-  T extends {
-    readonly [key: string]: unknown
-    readonly startDate?: Dayjs
-  },
->(
-  obj: T,
-) => obj is T & { readonly startDate: Dayjs }) => {
-  return <
-    T extends {
-      readonly startDate?: Dayjs
-    },
-  >(
-    obj: T,
-  ): obj is T & { readonly startDate: Dayjs } => {
+): TestFunc<{ startDate?: Dayjs }, { startDate: Dayjs }> => {
+  return ((obj) => {
     if (!obj.startDate) {
       return false
     }
     return contains(range, obj.startDate)
-  }
+  }) as TestFunc<{ startDate?: Dayjs }, { startDate: Dayjs }>
 }
 
 /**

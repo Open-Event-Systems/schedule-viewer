@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
-import { Bins } from "./bins.js"
 import { List } from "@mantine/core"
 import { iterToArr, type Bin } from "@open-event-systems/schedule-lib"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { Bins } from "./bins.js"
 
 const meta: Meta<typeof Bins> = {
   component: Bins,

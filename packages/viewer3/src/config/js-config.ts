@@ -3,20 +3,26 @@
  * @module
  */
 
+import type { AppContext } from "#src/app.js"
 import type { MantineThemeOverride } from "@mantine/core"
 import {
   makeLocalStorageSessionSelectionsStore,
   makeMemoryLocalSelectionsStore,
   omitUndef,
 } from "@open-event-systems/schedule-lib"
+import {
+  makeAppContext as makeBaseAppContext,
+  type AppType,
+  type BasePathString,
+  type OriginString,
+} from "@open-event-systems/schedule-react"
 import type { QueryClient } from "@tanstack/react-query"
-import type { AppContextValue } from "../hooks/app.js"
 import { ConfigQueryOptions } from "../queries/config.js"
 import { makeScheduleAPIFromConfig } from "./config.js"
 
 export type JSConfig = Readonly<{
-  basePath: string
-  origin: string
+  basePath: BasePathString
+  origin: OriginString
   configURL: string
   theme?: MantineThemeOverride
 }>
@@ -25,16 +31,14 @@ declare global {
   var ULE_CONFIG: Partial<JSConfig> | undefined
 }
 
-const getDefaultOrigin = (): string => {
+const getDefaultOrigin = (): OriginString | undefined => {
   if (typeof window != "undefined") {
-    return window.origin
-  } else {
-    return ""
+    return window.origin as OriginString
   }
 }
 
 export const DEFAULT_JS_CONFIG = {
-  origin: getDefaultOrigin(),
+  origin: getDefaultOrigin() ?? "http://localhost:5173",
   basePath: "/",
   configURL: "/config.json",
 } as const satisfies JSConfig
@@ -55,21 +59,18 @@ export const getJSConfig = (jsConfig?: Partial<JSConfig>): JSConfig => {
 export const makeAppContext = (
   jsConfig: JSConfig,
   queryClient: QueryClient,
-  appType: "spa" | "ssr",
-): AppContextValue => {
+  appType: AppType,
+): AppContext => {
   const fullConfigURL = new URL(jsConfig.configURL, jsConfig.origin).href
 
   const configPromise = queryClient.query(
     ConfigQueryOptions.config(fullConfigURL),
   )
 
-  return {
+  return makeBaseAppContext({
     appType,
-    origin: jsConfig.origin,
-    basePath: jsConfig.basePath,
-    queryClient,
     config: configPromise,
-    theme: jsConfig.theme,
+    queryClient,
     scheduleAPI: configPromise.then((config) =>
       makeScheduleAPIFromConfig(config),
     ),
@@ -81,5 +82,7 @@ export const makeAppContext = (
         return makeLocalStorageSessionSelectionsStore(config.id)
       }
     }),
-  }
+    basePath: jsConfig.basePath,
+    origin: jsConfig.origin,
+  })
 }

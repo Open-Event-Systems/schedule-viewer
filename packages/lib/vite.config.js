@@ -1,12 +1,6 @@
 import { defineConfig } from "vite"
 
 import dtsPlugin from "unplugin-dts/vite"
-import packageJson from "./package.json" with { type: "json" }
-
-const deps = [
-  ...Object.keys(packageJson.dependencies),
-  ...Object.keys(packageJson.peerDependencies),
-]
 
 export default defineConfig({
   build: {
@@ -24,9 +18,7 @@ export default defineConfig({
         preserveModules: true,
         entryFileNames: "src/[name].js",
       },
-      external(source) {
-        return deps.some((d) => source.startsWith(d))
-      },
+      external: [/^[^#/.]/],
     },
   },
   plugins: [
