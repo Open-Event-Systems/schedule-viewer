@@ -42,11 +42,14 @@ const routeApi = getRouteApi(
 export const SchedulePageRoute = () => {
   const locationFilterActions = useMakeLocationFilterActions()
   const filterStore = useCreateFilterStore()
+  const scheduleData = useScheduleData()
 
   return (
     <LocationFilterActionsContext.Provider value={locationFilterActions}>
       <FilterStoreContext.Provider value={filterStore}>
-        <SchedulePageContainer />
+        <ScheduleDataContext.Provider value={scheduleData}>
+          <SchedulePageContainer />
+        </ScheduleDataContext.Provider>
       </FilterStoreContext.Provider>
     </LocationFilterActionsContext.Provider>
   )
@@ -69,8 +72,6 @@ export const SchedulePageContainer = () => {
   )
 
   useSyncFilterDialogState(filterDialogOpen)
-
-  const scheduleData = useScheduleData()
 
   const items = useSchedulePageData(pageConfig)
   const relevantTags = useRelevantTags(items)
@@ -126,35 +127,33 @@ export const SchedulePageContainer = () => {
   )
 
   return (
-    <ScheduleDataContext.Provider value={scheduleData}>
-      <SchedulePage
-        filterDialogOpen={filterDialogOpen}
-        onOpenFilterDialog={openFilterDialog}
-        onCloseFilterDialog={closeFilterDialog}
-        viewSelectOptions={viewSelectOptions}
-        enabledFeatures={viewConfig.features}
-        tags={relevantTags}
-        renderSelectionsFilter={(props) => (
-          <SelectionsFilterContainer {...props} />
-        )}
-        textFilter={<TextFilterContainer />}
-        pastEventsFilter={<PastEventsFilterContainer />}
-        renderTagFilter={(props) => <TagFilterContainer {...props} />}
-        renderViewSelect={renderViewSelect}
-        renderShareMenu={(props) => <ShareMenu {...props} />}
-        filterCount={filterCount}
-      >
-        <ScheduleView
-          type={viewConfig.type}
-          now={now}
-          byDay={viewConfig.byDay}
-          config={viewConfig}
-          days={days}
-          items={filteredOccurrences}
-          onSelectDay={onSetDay}
-          selectedDay={day}
-        />
-      </SchedulePage>
-    </ScheduleDataContext.Provider>
+    <SchedulePage
+      filterDialogOpen={filterDialogOpen}
+      onOpenFilterDialog={openFilterDialog}
+      onCloseFilterDialog={closeFilterDialog}
+      viewSelectOptions={viewSelectOptions}
+      enabledFeatures={viewConfig.features}
+      tags={relevantTags}
+      renderSelectionsFilter={(props) => (
+        <SelectionsFilterContainer {...props} />
+      )}
+      textFilter={<TextFilterContainer />}
+      pastEventsFilter={<PastEventsFilterContainer />}
+      renderTagFilter={(props) => <TagFilterContainer {...props} />}
+      renderViewSelect={renderViewSelect}
+      renderShareMenu={(props) => <ShareMenu {...props} />}
+      filterCount={filterCount}
+    >
+      <ScheduleView
+        type={viewConfig.type}
+        now={now}
+        byDay={viewConfig.byDay}
+        config={viewConfig}
+        days={days}
+        items={filteredOccurrences}
+        onSelectDay={onSetDay}
+        selectedDay={day}
+      />
+    </SchedulePage>
   )
 }

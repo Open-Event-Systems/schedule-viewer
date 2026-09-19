@@ -6,6 +6,7 @@ export * from "#src/ical.js"
 export * from "#src/ld.js"
 export * from "#src/schedule-api.js"
 export * from "#src/schema.js"
+export * from "#src/search.js"
 export * from "#src/selections-api.js"
 export {
   isSelections,

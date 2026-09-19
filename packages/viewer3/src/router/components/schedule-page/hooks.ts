@@ -4,8 +4,9 @@ import { useNow } from "#src/hooks/time.js"
 import {
   getDefaultDay,
   iterToArr,
+  makeIdFilter,
   makeItemTypeFilter,
-  makeSearchFilter,
+  makePastItemFilter,
   makeTagFilter,
   makeTagLogicFilter,
   sortIntervalsByStartDate,
@@ -18,7 +19,11 @@ import {
   type ScheduleItemSeries,
   type Vendor,
 } from "@open-event-systems/schedule-lib"
-import { type ViewSelectProps } from "@open-event-systems/schedule-react"
+import {
+  useSearchIndex,
+  useSearchResults,
+  type ViewSelectProps,
+} from "@open-event-systems/schedule-react"
 import { getRouteApi, useLocation } from "@tanstack/react-router"
 import type { Dayjs } from "dayjs"
 import { useCallback, useMemo } from "react"
@@ -139,11 +144,11 @@ export const useSchedulePageData = (
 ): readonly ScheduleItemSeries<ScheduleEvent | Vendor | Amenity>[] => {
   const data = useScheduleData()
   return useMemo(() => {
-    const standardTypes = (["event", "vendor", "amenity"] as const).filter(
-      (t) => pageConfig.types.has(t),
+    const types = (["event", "vendor", "amenity"] as const).filter((t) =>
+      pageConfig.types.has(t),
     )
 
-    const typeFilter = makeItemTypeFilter(standardTypes)
+    const typeFilter = makeItemTypeFilter(types)
     const otherFilters: ((item: ScheduleItemSeries) => boolean)[] = []
 
     if (pageConfig.requireTags.length > 0) {
@@ -151,7 +156,8 @@ export const useSchedulePageData = (
     }
 
     if (pageConfig.excludeTags.length > 0) {
-      otherFilters.push(makeTagLogicFilter("exclude", pageConfig.requireTags))
+      console.log(pageConfig.excludeTags)
+      otherFilters.push(makeTagLogicFilter("exclude", pageConfig.excludeTags))
     }
 
     return iterToArr(data)
@@ -200,15 +206,22 @@ export const useFilteredItemOccurrences = <T extends ScheduleItem>(
     structuralSharing: true,
   })
 
+  const index = useSearchIndex()
+  const searchResults = useSearchResults(index, search)
+
   return useMemo(() => {
     const filters: ((item: ScheduleItemOccurrence<T>) => boolean)[] = []
 
-    if (search) {
-      filters.push(makeSearchFilter(search))
+    if (searchResults) {
+      filters.push(makeIdFilter(searchResults))
     }
 
     if (disabledTags && disabledTags.length > 0) {
       filters.push(makeTagFilter(tagFilterMode ?? "include", disabledTags))
+    }
+
+    if (allowHidePast && past !== true) {
+      filters.push(makePastItemFilter(now))
     }
 
     // TODO: bookmarked/unvisited
@@ -222,6 +235,7 @@ export const useFilteredItemOccurrences = <T extends ScheduleItem>(
     bookmarked,
     past,
     search,
+    searchResults,
     unvisited,
     occurrences,
   ])

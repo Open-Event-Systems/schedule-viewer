@@ -4,6 +4,7 @@ export * from "#src/components/index.js"
 
 export * from "#src/hooks/filter.js"
 export * from "#src/hooks/items.js"
+export * from "#src/hooks/search.js"
 
 export * from "#src/serialization/deserialization.js"
 

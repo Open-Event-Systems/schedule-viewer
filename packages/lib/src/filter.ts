@@ -5,104 +5,10 @@
 
 import type { Dayjs } from "dayjs"
 import { contains } from "./time.js"
-import type { Interval, ScheduleItem, ScheduleItemType } from "./types.js"
+import type { Interval, ScheduleItemType } from "./types.js"
 import { iterToArr, iterToSet } from "./utils.js"
 
 export type TagFilterMode = "include" | "exclude"
-
-export type MakeFilterOptions = Readonly<{
-  /**
-   * The search string.
-   */
-  search?: string | null
-
-  /**
-   * Whether to exclude disabled tags or include non-disabled tags.
-   */
-  tagFilterMode?: TagFilterMode | null
-
-  /**
-   * The disabled tags.
-   */
-  disabledTags?: Iterable<string> | null
-
-  /**
-   * The bookmarked item IDs.
-   */
-  bookmarksFilterSelections?: Iterable<string> | null
-
-  /**
-   * The visited item IDs.
-   */
-  unvisitedFilterSelections?: Iterable<string> | null
-
-  /**
-   * Hide items ending on or before this date.
-   */
-  hidePastFilter?: Dayjs | null
-
-  /**
-   * Only include items beginning in this interval.
-   */
-  dateFilter?: Interval | null
-}>
-
-/**
- * Return a filter that applies multiple filter settings.
- */
-export const makeFilter = (
-  settings: MakeFilterOptions,
-): ((obj: {
-  readonly item?: ScheduleItem
-  readonly startDate?: Dayjs
-  readonly endDate?: Dayjs
-}) => boolean) => {
-  const filterChain: ((obj: {
-    readonly item?: ScheduleItem
-    readonly startDate?: Dayjs
-    readonly endDate?: Dayjs
-  }) => boolean)[] = []
-
-  if (settings.bookmarksFilterSelections) {
-    filterChain.push(
-      makeSelectionsFilter("include", settings.bookmarksFilterSelections),
-    )
-  }
-
-  if (settings.unvisitedFilterSelections) {
-    filterChain.push(
-      makeSelectionsFilter("exclude", settings.unvisitedFilterSelections),
-    )
-  }
-
-  if (settings.hidePastFilter) {
-    filterChain.push(makePastItemFilter(settings.hidePastFilter))
-  }
-
-  if (settings.dateFilter) {
-    filterChain.push(makeDateFilter(settings.dateFilter))
-  }
-
-  if (settings.tagFilterMode && settings.disabledTags) {
-    filterChain.push(
-      makeTagFilter(settings.tagFilterMode, settings.disabledTags),
-    )
-  }
-
-  if (settings.search) {
-    filterChain.push(makeSearchFilter(settings.search))
-  }
-
-  return (obj) => {
-    for (const filter of filterChain) {
-      if (!filter(obj)) {
-        return false
-      }
-    }
-
-    return true
-  }
-}
 
 type TestFunc<P, A extends P> = <T>(
   obj: T & Readonly<P>,
@@ -112,9 +18,9 @@ type ItemTestFunc<P, A extends P> = <T>(
 ) => obj is T & { readonly item: Readonly<A> }
 
 /**
- * Return a filter for items matching the given search string.
+ * Return a filter for items with names matching the given search string.
  */
-export const makeSearchFilter = (
+export const makeNameFilter = (
   search: string,
 ): ItemTestFunc<{ name?: string }, { name: string }> => {
   const lowerName = search.trim().toLowerCase()
@@ -123,6 +29,20 @@ export const makeSearchFilter = (
     obj.item.name.toLowerCase().includes(lowerName)) as ItemTestFunc<
     { name?: string },
     { name: string }
+  >
+}
+
+/**
+ * Return a filter for items with ids in the given set.
+ */
+export const makeIdFilter = (
+  ids?: Iterable<string> | null,
+): ItemTestFunc<{ id?: string }, { id: string }> => {
+  const idSet = new Set(ids)
+  return ((obj) =>
+    obj.item?.id != null && idSet.has(obj.item.id)) as ItemTestFunc<
+    { id?: string },
+    { id: string }
   >
 }
 
@@ -142,7 +62,7 @@ export const makeItemTypeFilter = <K extends ScheduleItemType>(
  * Return a filter for items based on tags.
  */
 export const makeTagFilter = (
-  mode: "include" | "exclude",
+  mode: TagFilterMode,
   tags?: Iterable<string> | null,
 ): ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }> => {
   if (mode == "include") {
@@ -162,7 +82,7 @@ export const makeTagFilter = (
  * Return a filter for sum of products tag logic.
  */
 export const makeTagLogicFilter = (
-  mode: "include" | "exclude",
+  mode: TagFilterMode,
   tagSets?: Iterable<Iterable<string>>,
 ) => {
   const products: string[][] = []
@@ -233,9 +153,9 @@ export const makeDateFilter = (
  *
  * Items with no ID are always yielded.
  */
-export function* iterUniqueIds<
-  T extends { readonly item?: { readonly id?: string } },
->(objs?: Iterable<T> | null): Generator<T, void, unknown> {
+export function* iterUniqueIds<T>(
+  objs?: Iterable<T & { readonly item?: { readonly id?: string } }> | null,
+): Generator<T, void, unknown> {
   const seenSet = new Set<string>()
   for (const obj of objs ?? []) {
     if (obj.item?.id != null && seenSet.has(obj.item.id)) {

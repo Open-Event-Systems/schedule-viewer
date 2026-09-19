@@ -88,7 +88,7 @@ export const parseConfig = (data: unknown): ViewerConfig => {
       id: pageId,
       types: new Set(pageCfg.types) as Set<ScheduleItemType>,
       requireTags: pageCfg.requireTags.map((t) => new Set(t)),
-      excludeTags: pageCfg.requireTags.map((t) => new Set(t)),
+      excludeTags: pageCfg.excludeTags.map((t) => new Set(t)),
       views,
     }
   }

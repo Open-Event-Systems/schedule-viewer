@@ -39,6 +39,7 @@
     "dayjs": "^1.11.21"
   },
   "dependencies": {
+    "fuse.js": "^7.5.0",
     "ical-generator": "^10.1.0",
     "rrule": "^2.8.1",
     "wretch": "^3.0.7",
