@@ -224,6 +224,9 @@ importers:
       '@open-event-systems/schedule-react':
         specifier: 'workspace:'
         version: link:../react
+      '@phosphor-icons/react':
+        specifier: ^2.1.10
+        version: 2.1.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.103.1(react@19.3.0)

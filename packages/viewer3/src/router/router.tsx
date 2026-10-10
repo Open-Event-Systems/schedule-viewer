@@ -30,7 +30,10 @@ export const createRouter = (appContext: AppContext) => {
     stringifySearch,
     Wrap: ({ children }: { children: ReactNode }) => {
       return (
-        <MantineProvider theme={theme}>
+        <MantineProvider
+          theme={theme}
+          forceColorScheme={appContext.colorScheme}
+        >
           <QueryClientProvider client={queryClient}>
             {children}
             <ReactQueryDevtools client={queryClient} />

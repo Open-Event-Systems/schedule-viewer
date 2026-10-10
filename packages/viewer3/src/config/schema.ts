@@ -54,6 +54,8 @@ const configSchema = z.looseObject({
   id: z.string(),
   name: optional(z.string()),
   description: optional(z.string()),
+  homeURL: optional(z.string()),
+  logoURL: optional(z.string()),
   timeZone: z.string(),
   dayChangeHour: z.int(),
   tags: optional(z.record(z.string(), omitUndefSchema(tagConfigSchema))),

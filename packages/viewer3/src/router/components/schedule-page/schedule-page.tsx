@@ -6,6 +6,7 @@ import {
   TextFilterContainer,
   ViewSelectContainer,
 } from "#src/components/filter-state/filter-state.js"
+import { renderItemPill } from "#src/components/item-pill/item-pill.js"
 import { useFilterDialogOpenState } from "#src/hooks/filter-dialog.js"
 import {
   LocationFilterActionsContext,
@@ -36,7 +37,7 @@ import { getRouteApi } from "@tanstack/react-router"
 import { useCallback, useMemo } from "react"
 
 const routeApi = getRouteApi(
-  "/loading/schedule/schedulePageData/$pageId/{-$viewType}/{-$day}",
+  "/loading/mainLayout/schedule/schedulePageData/$pageId/{-$viewType}/{-$day}",
 )
 
 export const SchedulePageRoute = () => {
@@ -153,6 +154,7 @@ export const SchedulePageContainer = () => {
         items={filteredOccurrences}
         onSelectDay={onSetDay}
         selectedDay={day}
+        renderItemPill={renderItemPill}
       />
     </SchedulePage>
   )

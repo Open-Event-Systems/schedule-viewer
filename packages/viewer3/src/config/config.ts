@@ -34,6 +34,16 @@ export type ViewerConfig = Readonly<{
   description?: string
 
   /**
+   * The home URL.
+   */
+  homeURL?: string
+
+  /**
+   * Logo URL.
+   */
+  logoURL?: string
+
+  /**
    * The event time zone.
    */
   timeZone: string

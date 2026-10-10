@@ -6,11 +6,11 @@ import {
 import { parseSearchParams } from "../../hooks/filter-location-state.js"
 import { ScheduleLoader } from "../../queries/schedule.js"
 import { SelectionsLoader } from "../../queries/selections.js"
-import { contextRoute } from "./root.js"
+import { mainLayoutRoute } from "./root.js"
 
 const schedulePageRoutes = createRoute({
   id: "schedule",
-  getParentRoute: () => contextRoute,
+  getParentRoute: () => mainLayoutRoute,
 })
 
 export const schedulePageDataRoute = createRoute({
@@ -84,9 +84,22 @@ export const schedulePageRoute = createRoute({
     }
 
     return {
+      scheduleTitle: config.name,
       pageConfig,
       viewConfig,
     }
+  },
+  head: ({ loaderData }) => {
+    if (loaderData) {
+      return {
+        meta: [
+          {
+            title: `${loaderData.pageConfig.name} - ${loaderData.scheduleTitle} Schedule`,
+          },
+        ],
+      }
+    }
+    return {}
   },
   component: lazyRouteComponent(
     () => import("../components/schedule-page/schedule-page.js"),

@@ -3,7 +3,7 @@ import path from "path"
 import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
 
-export default defineConfig(({ isSsrBuild }) => ({
+export default defineConfig(({ isSsrBuild, mode }) => ({
   base: "/",
   build: isSsrBuild
     ? {
@@ -32,6 +32,7 @@ export default defineConfig(({ isSsrBuild }) => ({
       strategies: "injectManifest",
       srcDir: "src/sw",
       filename: "sw.ts",
+      injectRegister: mode == "production" ? false : "auto",
 
       devOptions: {
         enabled: true,

@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-router"
 import { LoadingRoute } from "../components/loading/loading.js"
 import type { RouterContext } from "../router.js"
+import itemDetailsRoutes from "./details.js"
 import schedulePageRoutes from "./schedule-page.js"
 // import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
@@ -32,7 +33,10 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
       },
     },
   }) => {
-    const meta: AnyRouteMatch["meta"] = [...(ctxMeta ?? [])]
+    const meta: AnyRouteMatch["meta"] = [
+      { title: "Event Schedule" },
+      ...(ctxMeta ?? []),
+    ]
     const links: AnyRouteMatch["links"] = [...(ctxLinks ?? [])]
     const scripts: AnyRouteMatch["scripts"] = [...(ctxScripts ?? [])]
 
@@ -125,6 +129,17 @@ export const contextRoute = createRoute({
   pendingMinMs: 200,
 })
 
+export const mainLayoutRoute = createRoute({
+  id: "mainLayout",
+  getParentRoute: () => contextRoute,
+  component: lazyRouteComponent(
+    () => import("../components/layout/main-layout.js"),
+    "MainLayoutRoute",
+  ),
+})
+
 export default rootRoute.addChildren([
-  contextRoute.addChildren([schedulePageRoutes]),
+  contextRoute.addChildren([
+    mainLayoutRoute.addChildren([schedulePageRoutes, itemDetailsRoutes]),
+  ]),
 ])

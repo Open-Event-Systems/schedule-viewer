@@ -29,7 +29,7 @@ import type { Dayjs } from "dayjs"
 import { useCallback, useMemo } from "react"
 
 const routeApi = getRouteApi(
-  "/loading/schedule/schedulePageData/$pageId/{-$viewType}/{-$day}",
+  "/loading/mainLayout/schedule/schedulePageData/$pageId/{-$viewType}/{-$day}",
 )
 
 export const useFilterCount = (viewConfig: ViewConfig): number => {

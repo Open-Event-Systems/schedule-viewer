@@ -24,6 +24,7 @@ export type JSConfig = Readonly<{
   basePath: BasePathString
   origin: OriginString
   configURL: string
+  colorScheme: "light" | "dark"
   theme?: MantineThemeOverride
 }>
 
@@ -41,6 +42,7 @@ export const DEFAULT_JS_CONFIG = {
   origin: getDefaultOrigin() ?? "http://localhost:5173",
   basePath: "/",
   configURL: "/config.json",
+  colorScheme: "light",
 } as const satisfies JSConfig
 
 /**
@@ -84,5 +86,7 @@ export const makeAppContext = (
     }),
     basePath: jsConfig.basePath,
     origin: jsConfig.origin,
+    colorScheme: jsConfig.colorScheme,
+    theme: jsConfig.theme,
   })
 }

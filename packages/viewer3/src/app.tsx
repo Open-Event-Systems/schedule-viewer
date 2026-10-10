@@ -18,6 +18,7 @@ export type AppContext = BaseAppContext &
     config: Promise<ViewerConfig>
     scheduleAPI: Promise<ScheduleAPI>
     selectionsStore: Promise<SelectionsStore>
+    colorScheme: "light" | "dark"
     theme?: MantineThemeOverride
   }>
 
