@@ -64,11 +64,20 @@ export const makeItemTypeFilter = <K extends ScheduleItemType>(
 export const makeTagFilter = (
   mode: TagFilterMode,
   tags?: Iterable<string> | null,
+  opts?: {
+    validTags?: Iterable<string>
+  },
 ): ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }> => {
   if (mode == "include") {
+    const validTagsSet =
+      opts?.validTags != null ? new Set(opts?.validTags) : null
+
     const tagsSet = new Set(tags)
     return ((obj) => {
-      return iterToArr(obj.item?.tags).some((itemTag) => !tagsSet.has(itemTag))
+      const preFilteredTags = validTagsSet
+        ? [...(obj.item?.tags ?? [])].filter((t) => validTagsSet.has(t))
+        : obj.item?.tags
+      return iterToArr(preFilteredTags).some((itemTag) => !tagsSet.has(itemTag))
     }) as ItemTestFunc<{ tags?: Iterable<string> }, { tags: Iterable<string> }>
   } else {
     const tagsArr = [...(tags ?? [])]

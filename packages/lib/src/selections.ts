@@ -111,7 +111,7 @@ class TrackedSelectionsImpl extends SelectionsImpl {
   }
 
   add = (...itemIds: string[]) => {
-    const newSet = new Set(itemIds)
+    const newSet = new Set(this)
     const newAdded = new Set(this.added)
     const newDeleted = new Set(this.deleted)
 
@@ -130,7 +130,7 @@ class TrackedSelectionsImpl extends SelectionsImpl {
   }
 
   delete = (...itemIds: string[]) => {
-    const newSet = new Set(itemIds)
+    const newSet = new Set(this)
     const newAdded = new Set(this.added)
     const newDeleted = new Set(this.deleted)
 
