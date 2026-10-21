@@ -3,10 +3,13 @@ import type { Preview } from "@storybook/react-vite"
 
 import "@mantine/core/styles.css"
 
+import {
+  makeScheduleConfig,
+  ScheduleConfigProvider,
+} from "#src/hooks/config.js"
 import "#src/styles.scss"
-
-import { ScheduleConfigContext } from "../src/hooks/config.js"
-import { parsedConfig } from "../src/test-data.js"
+import { testTagsConfig } from "#src/test-data-new.js"
+import { useState } from "react"
 
 const preview: Preview = {
   parameters: {
@@ -20,10 +23,15 @@ const preview: Preview = {
   tags: ["autodocs"],
   decorators: [
     (Story) => {
+      const [cfg] = useState(() =>
+        makeScheduleConfig({
+          tags: testTagsConfig,
+        }),
+      )
       return (
-        <ScheduleConfigContext value={parsedConfig}>
+        <ScheduleConfigProvider value={cfg}>
           <Story />
-        </ScheduleConfigContext>
+        </ScheduleConfigProvider>
       )
     },
     (Story) => {

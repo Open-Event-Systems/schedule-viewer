@@ -1,5 +1,5 @@
 import { ScheduleView } from "#src/components/newschedule/schedule-view.js"
-import { ScheduleDataContext } from "#src/hooks/items.js"
+import { ScheduleDataContext } from "#src/hooks/data.js"
 import { TagsConfigContext } from "#src/tags.js"
 import { testTagsConfig } from "#src/test-data-new.js"
 import {

@@ -1,12 +1,12 @@
+import {
+  ItemPill,
+  type ItemPillProps,
+} from "#src/components/item-pill/item-pill.js"
 import type { ScheduleViewProps } from "#src/components/schedule-view/schedule-view.js"
 import { AgendaView } from "#src/components/schedule-view/views/agenda.js"
 import { CatalogView } from "#src/components/schedule-view/views/catalog.js"
 import { TagsView } from "#src/components/schedule-view/views/tags.js"
 import type { DefaultBoxProps } from "#src/components/types.js"
-import {
-  defaultRenderItemPill,
-  type RenderItemPillFunc,
-} from "#src/hooks/items.js"
 import {
   iterToArr,
   type Bin,
@@ -66,16 +66,20 @@ const _BinnedView = (props: BinnedViewProps & { type: BinnedViewType }) => {
 export const BinnedViewBin = (
   props: DefaultBoxProps<"ul"> & {
     bin: Bin<SeriesOrOccurrence>
-    renderItemPill?: RenderItemPillFunc
+    renderItemPill?: (
+      obj: SeriesOrOccurrence,
+      props: ItemPillProps,
+    ) => ReactNode
   },
 ) => {
   const { bin, renderItemPill, ...other } = props
 
-  const finalRenderItemPill = renderItemPill ?? defaultRenderItemPill
+  const finalRenderItemPill =
+    renderItemPill ?? ItemPill.defaultRenderItemPillForItem
 
   const els = iterToArr(bin.items).map((item) => (
     <Fragment key={"id" in item && item.id ? item.id : item.item.id}>
-      {finalRenderItemPill(item)}
+      {finalRenderItemPill(item, {})}
     </Fragment>
   ))
 

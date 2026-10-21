@@ -26,6 +26,58 @@ export type TagViewProps = Readonly<{
   after?: string
 }>
 
+/**
+ * Return a function to combine multiple tags into a {@link TagViewProps} object.
+ */
+export const makeTagViewPropsFunc = (
+  resolve: (tag: string) => TagConfig | undefined,
+): ((...tags: string[]) => TagViewProps) => {
+  const func = (...tags: string[]) => {
+    const propsArr = tags.map((t) => resolve(t)).filter((c) => !!c)
+
+    const before = propsArr.reduce<string | undefined>(
+      (p, c) => (c.before ? (p || "") + c.before : p),
+      undefined,
+    )
+    const after = propsArr.reduce<string | undefined>(
+      (p, c) => (c.after ? (p || "") + c.after : p),
+      undefined,
+    )
+    const colors = propsArr.map((p) => p.color).filter((c): c is string => !!c)
+    let color
+
+    if (colors.length == 1) {
+      color = colors[0]
+    } else if (colors.length > 1) {
+      color = colors
+    }
+
+    const textColor = propsArr.reduce<string | undefined>(
+      (p, c) => (!p ? c.textColor : p),
+      undefined,
+    )
+    const indicator = propsArr.reduce<string | undefined>(
+      (p, c) => (!p ? c.indicator : p),
+      undefined,
+    )
+    const indicatorColor = propsArr.reduce<string | undefined>(
+      (p, c) => (!p ? c.indicatorColor : p),
+      undefined,
+    )
+
+    return {
+      before,
+      after,
+      color,
+      indicator,
+      indicatorColor,
+      textColor,
+    }
+  }
+
+  return func
+}
+
 class TagsConfigImpl {
   private entries = new Map<string, TagConfig>()
   private byLabel = new Map<string, TagConfig>()

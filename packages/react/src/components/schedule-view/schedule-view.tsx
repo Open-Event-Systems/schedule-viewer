@@ -6,7 +6,6 @@ import {
 import { BinnedView } from "#src/components/schedule-view/binned-view.js"
 import type { DefaultBoxProps, RenderRootFunc } from "#src/components/types.js"
 import { useSelectedDay } from "#src/hooks/filter.js"
-import type { RenderItemPillFunc } from "#src/hooks/items.js"
 import { Box, useProps } from "@mantine/core"
 import {
   iterToArr,
@@ -20,6 +19,7 @@ import clsx from "clsx"
 import type { Dayjs } from "dayjs"
 import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
 
+import type { ItemPillProps } from "#src/components/item-pill/item-pill.js"
 import classes from "./schedule-view.module.scss"
 
 /**
@@ -84,7 +84,7 @@ export type ScheduleViewProps = {
   /**
    * Function to render an item pill.
    */
-  renderItemPill?: RenderItemPillFunc
+  renderItemPill?: (obj: SeriesOrOccurrence, props: ItemPillProps) => ReactNode
 
   /**
    * Function to render the day filter.

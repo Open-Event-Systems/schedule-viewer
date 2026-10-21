@@ -8,14 +8,12 @@ import { ItemPill } from "./item-pill.js"
 const meta: Meta<typeof ItemPill> = {
   component: ItemPill,
   args: {
+    name: "Example Event",
+    description: "Example event description",
+    tags: new Set(["Main Event", "Photography"]),
     href: "#",
     onClick: (e) => e.preventDefault(),
-    name: "Example Event",
-    tags: ["main-event", "photography"],
     ItemCardProps: {
-      name: "Example Event",
-      description: "Example event description",
-      tags: ["Main Event", "Photography"],
       occurrences: [
         {
           startDate: dayjs("2027-01-01T12:00:00-05:00"),
