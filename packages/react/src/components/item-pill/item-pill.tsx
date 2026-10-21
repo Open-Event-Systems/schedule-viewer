@@ -151,6 +151,7 @@ const ItemPillContainer = (
 
   return (
     <ItemPill
+      {...other}
       {...tagViewProps}
       renderItemCard={wrappedRenderItemCard}
       name={item.item.name}
@@ -159,7 +160,6 @@ const ItemPillContainer = (
       tags={item.item.tags}
       href={href}
       onClick={onClick}
-      {...other}
     />
   )
 }
@@ -230,13 +230,13 @@ const ItemCardContainer = (
 
   return (
     <ItemCard
+      {...other}
       name={item.item.name}
       description={item.item.description}
       occurrences={occurrences}
       contacts={contacts}
-      tags={resolvedTags}
       shareURL={itemHref}
-      {...other}
+      tags={resolvedTags}
     />
   )
 }
