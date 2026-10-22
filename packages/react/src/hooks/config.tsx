@@ -48,8 +48,8 @@ export type ScheduleConfig = Readonly<{
   getLocationViewProps: (loc: Location) => LocationViewProps
   getItemHref?: (obj: SeriesOrOccurrence) => string | null | undefined
   onClickItem?: (e: MouseEvent, obj: SeriesOrOccurrence) => void
-  renderItemPill?: (obj: SeriesOrOccurrence, props?: ItemPillProps) => ReactNode
-  renderItemCard?: (obj: SeriesOrOccurrence, props?: ItemCardProps) => ReactNode
+  renderItemPill?: (obj: SeriesOrOccurrence, props: ItemPillProps) => ReactNode
+  renderItemCard?: (obj: SeriesOrOccurrence, props: ItemCardProps) => ReactNode
 }>
 
 export const defaultScheduleConfig = {

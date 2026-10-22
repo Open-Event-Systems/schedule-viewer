@@ -20,6 +20,7 @@ import type { Dayjs } from "dayjs"
 import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
 
 import type { ItemPillProps } from "#src/components/item-pill/item-pill.js"
+import { useScheduleConfig } from "#src/hooks/config.js"
 import classes from "./schedule-view.module.scss"
 
 /**
@@ -114,6 +115,7 @@ export type ScheduleViewType = keyof typeof ScheduleViewType
  * Schedule view component.
  */
 const _ScheduleView = (props: ScheduleViewProps) => {
+  const { renderItemPill: ctxRenderItemPill } = useScheduleConfig()
   const {
     items,
     config,
@@ -166,7 +168,7 @@ const _ScheduleView = (props: ScheduleViewProps) => {
           config={config}
           days={days}
           selectedDay={selectedDay}
-          renderItemPill={renderItemPill}
+          renderItemPill={renderItemPill ?? ctxRenderItemPill}
         />
       </ScheduleView.Root>
     )
@@ -187,7 +189,7 @@ const _ScheduleView = (props: ScheduleViewProps) => {
         config={config}
         days={days}
         selectedDay={selectedDay}
-        renderItemPill={renderItemPill}
+        renderItemPill={renderItemPill ?? ctxRenderItemPill}
       />
     </ScheduleView.Root>
   )

@@ -17,6 +17,7 @@ import type { ViewSelectProps } from "../view-select/view-select.js"
 import { useSchedulePageFeatures } from "./hooks.js"
 
 import classes from "./schedule-page.module.scss"
+import { useScheduleConfig } from "#src/hooks/config.js"
 
 export const SchedulePageFeature = {
   ...ShareMenuOption,
@@ -64,6 +65,8 @@ export type SchedulePageProps = {
 } & SchedulePageRootProps
 
 const _SchedulePage = (props: SchedulePageProps) => {
+  const { tags: tagsFromCtx } = useScheduleConfig()
+
   const {
     children,
     enabledFeatures,
@@ -80,7 +83,7 @@ const _SchedulePage = (props: SchedulePageProps) => {
     onCloseFilterDialog,
     onOpenFilterDialog,
     ...other
-  } = useProps("SchedulePage", null, props)
+  } = useProps("SchedulePage", { tags: tagsFromCtx }, props)
 
   const small = useMediaQuery("(max-width: 800px)")
 

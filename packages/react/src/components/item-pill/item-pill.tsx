@@ -22,6 +22,7 @@ import type { SeriesOrOccurrence } from "@open-event-systems/schedule-lib"
 import classes from "./item-pill.module.scss"
 
 export type ItemPillProps = PillProps & {
+  itemId?: string
   name?: string
   description?: string
   href?: string
@@ -36,6 +37,7 @@ export type ItemPillProps = PillProps & {
 const _ItemPill = (props: ItemPillProps) => {
   const {
     className,
+    itemId,
     name,
     description,
     href,
@@ -82,6 +84,7 @@ const _ItemPill = (props: ItemPillProps) => {
       target={
         <Pill
           className={clsx("ItemPill-root", className)}
+          data-item-id={itemId}
           renderRoot={renderPillRoot}
           highlighted={isBookmarked}
           before={before}
@@ -153,6 +156,7 @@ const ItemPillContainer = (
     <ItemPill
       {...other}
       {...tagViewProps}
+      itemId={item.item.id}
       renderItemCard={wrappedRenderItemCard}
       name={item.item.name}
       description={item.item.description}
@@ -196,6 +200,24 @@ const ItemCardContainer = (
         locations: locs.filter((l): l is string | LocationViewProps => !!l),
       })
     }
+
+    if (item.id != null) {
+      // is a single occurrence, add it to the array
+      const locs = []
+      for (const locEntry of item.locations) {
+        const loc = resolve(data, "location", locEntry)
+        locs.push(
+          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
+        )
+      }
+
+      occs.push({
+        startDate: item.startDate,
+        endDate: item.endDate,
+        locations: locs.filter((l): l is string => !!l),
+      })
+    }
+
     return occs
   }, [item.occurrences, data, resolve, getLocationViewProps])
 
