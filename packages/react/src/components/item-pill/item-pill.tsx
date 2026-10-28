@@ -16,8 +16,7 @@ import {
 } from "../lazy-hover-card/lazy-hover-card.js"
 import { Pill, type PillProps } from "../pill/pill.js"
 
-import { useScheduleConfig } from "#src/hooks/config.js"
-import type { ContactViewProps, LocationViewProps } from "#src/types.js"
+import { useScheduleConfig } from "#src/config.js"
 import type { SeriesOrOccurrence } from "@open-event-systems/schedule-lib"
 import classes from "./item-pill.module.scss"
 
@@ -50,7 +49,7 @@ const _ItemPill = (props: ItemPillProps) => {
     ...other
   } = useProps(
     "ItemPill",
-    { renderItemCard: ItemPill.defaultRenderItemCard },
+    { renderItemCard: ItemCard.defaultRenderItemCard },
     props,
   )
 
@@ -120,7 +119,7 @@ const ItemPillContainer = (
 
   const wrappedRenderItemCard = useCallback(
     (props: ItemCardProps) => {
-      return (renderItemCard ?? ItemPill.defaultRenderItemCardForItem)(
+      return (renderItemCard ?? ItemCard.defaultRenderItemCardForItem)(
         item,
         props,
       )
@@ -168,112 +167,6 @@ const ItemPillContainer = (
   )
 }
 
-const ItemCardContainer = (
-  props: ItemCardProps & { item: SeriesOrOccurrence },
-) => {
-  const { item, ...other } = props
-
-  const {
-    resolveTag,
-    resolve,
-    data,
-    getItemHref,
-    getLocationViewProps,
-    getContactViewProps,
-  } = useScheduleConfig()
-
-  const occurrences = useMemo(() => {
-    const occs = []
-    for (const occ of item.occurrences ?? []) {
-      const locs = []
-
-      for (const locEntry of occ.locations) {
-        const loc = resolve(data, "location", locEntry)
-        locs.push(
-          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
-        )
-      }
-
-      occs.push({
-        startDate: occ.startDate,
-        endDate: occ.endDate,
-        locations: locs.filter((l): l is string | LocationViewProps => !!l),
-      })
-    }
-
-    if (item.id != null) {
-      // is a single occurrence, add it to the array
-      const locs = []
-      for (const locEntry of item.locations) {
-        const loc = resolve(data, "location", locEntry)
-        locs.push(
-          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
-        )
-      }
-
-      occs.push({
-        startDate: item.startDate,
-        endDate: item.endDate,
-        locations: locs.filter((l): l is string => !!l),
-      })
-    }
-
-    return occs
-  }, [item.occurrences, data, resolve, getLocationViewProps])
-
-  const contacts = useMemo(() => {
-    const cts = []
-
-    if (item.item.type == "event") {
-      for (const ct of item.item.contacts) {
-        const profile = resolve(data, "profile", ct)
-        cts.push(profile ? getContactViewProps(profile.item) : ct.name || ct.id)
-      }
-    }
-    return cts.filter((c): c is string | ContactViewProps => !!c)
-  }, [item, data, resolve, getContactViewProps])
-
-  const resolvedTags = useMemo(
-    () =>
-      Array.from(item.item.tags, (t) => resolveTag(t))
-        .map((t) => t?.label)
-        .filter((t): t is string => !!t),
-    [item.item.tags],
-  )
-
-  const itemHref = useMemo(() => {
-    if (getItemHref) {
-      const href = getItemHref(item)
-      if (href) {
-        return href
-      }
-    }
-  }, [item, getItemHref])
-
-  return (
-    <ItemCard
-      {...other}
-      name={item.item.name}
-      description={item.item.description}
-      occurrences={occurrences}
-      contacts={contacts}
-      shareURL={itemHref}
-      tags={resolvedTags}
-    />
-  )
-}
-
-const defaultRenderItemCard = (props: ItemCardProps) => {
-  return <ItemCard {...props} />
-}
-
-const defaultRenderItemCardForItem = (
-  obj: SeriesOrOccurrence,
-  props: ItemCardProps,
-) => {
-  return <ItemCardContainer item={obj} {...props} />
-}
-
 const defaultRenderItemPillForItem = (
   obj: SeriesOrOccurrence,
   props: ItemPillProps,
@@ -282,7 +175,5 @@ const defaultRenderItemPillForItem = (
 }
 
 export const ItemPill = Object.assign(_ItemPill, {
-  defaultRenderItemCard,
-  defaultRenderItemCardForItem,
   defaultRenderItemPillForItem,
 })

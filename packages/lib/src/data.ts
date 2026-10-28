@@ -4,9 +4,8 @@
  */
 
 import {
-  type ScheduleData,
   type ScheduleItem,
-  type ScheduleItemIndex,
+  type ScheduleItemBaseProps,
   type ScheduleItemOccurrence,
   type ScheduleItemSeries,
   type ScheduleItemType,
@@ -14,118 +13,150 @@ import {
 } from "./types.js"
 
 /**
- * Index schedule items.
+ * Indexes {@link ScheduleItemSeries} objects.
  */
-export const indexScheduleItems = <T extends ScheduleItem = ScheduleItem>(
-  objs?: Iterable<ScheduleItemSeries<T>> | null,
-): ScheduleItemIndex<T> => {
-  const byId = new Map<string, ScheduleItemSeries<T>>()
-  const byName = new Map<string, ScheduleItemSeries<T>>()
-  const byAltName = new Map<string, ScheduleItemSeries<T>>()
-
-  for (const obj of objs ?? []) {
-    byId.set(obj.item.id, obj)
-
-    if (obj.item.name) {
-      byName.set(obj.item.name, obj)
-    }
-
-    for (const altName of obj.item.alternateNames) {
-      if (altName) {
-        byAltName.set(altName, obj)
-      }
-    }
-  }
-
-  return {
-    [Symbol.iterator]: () => byId.values(),
-    size: byId.size,
-    getById: (id) => byId.get(id),
-    getByName: (name) => {
-      const nameRes = byName.get(name)
-      if (nameRes) {
-        return nameRes
-      }
-
-      return byAltName.get(name)
-    },
-  }
-}
-
-class IndexImpl {
-  private index: ScheduleItemIndex
-  private byType: Map<ScheduleItemType, ScheduleItemIndex> = new Map()
-  public size: number
-
-  constructor(objs?: Iterable<ScheduleItemSeries> | null) {
-    const byType = {} as {
-      [K in ScheduleItemType]?: ScheduleItemSeries[]
-    }
-    const allItems: ScheduleItemSeries[] = []
-
-    for (const obj of objs ?? []) {
-      let byTypeArr = byType[obj.item.type]
-      if (!byTypeArr) {
-        byTypeArr = []
-        byType[obj.item.type] = byTypeArr
-      }
-
-      byTypeArr.push(obj)
-      allItems.push(obj)
-    }
-
-    this.index = indexScheduleItems(allItems)
-
-    for (const [key, byTypeArr] of Object.entries(byType)) {
-      this.byType.set(key as ScheduleItemType, indexScheduleItems(byTypeArr))
-    }
-
-    this.size = this.index.size
-  }
-
-  [Symbol.iterator] = () => this.index[Symbol.iterator]()
-
-  getById = (id: string) => this.index.getById(id)
-  getByName = (name: string) => this.index.getByName(name)
-  getType = <K extends ScheduleItemType>(
-    type: K,
-  ): ScheduleItemIndex<ScheduleItemTypeMap[K]> =>
-    (this.byType.get(type) as
-      | ScheduleItemIndex<ScheduleItemTypeMap[K]>
-      | undefined) ?? emptyIndex
-}
+export type ItemIndex<T extends ScheduleItemBaseProps = ScheduleItem> =
+  Readonly<{
+    [Symbol.iterator]: () => Iterator<ScheduleItemSeries<T>>
+    entries: readonly ScheduleItemSeries<T>[]
+    count: number
+    getById: (id: string) => ScheduleItemSeries<T> | undefined
+    getByName: (name: string) => ScheduleItemSeries<T> | undefined
+    get: (
+      value: string | { readonly id?: string; readonly name?: string },
+    ) => ScheduleItemSeries<T> | undefined
+  }>
 
 /**
- * Index schedule items by type.
+ * Indexes {@link ScheduleItemSeries} objects by type.
+ */
+export type ScheduleData = ItemIndex &
+  Readonly<{
+    getType: <K extends ScheduleItemType>(
+      type: K,
+    ) => ItemIndex<ScheduleItemTypeMap[K]>
+  }>
+
+class ItemIndexImpl<T extends ScheduleItem = ScheduleItem> {
+  public entries: readonly ScheduleItemSeries<T>[]
+  public count: number
+  private byId = new Map<string, ScheduleItemSeries<T>>()
+  private byName = new Map<string, ScheduleItemSeries<T>>()
+
+  constructor(items?: Iterable<ScheduleItemSeries<T>> | null) {
+    this.entries = [...(items ?? [])]
+    this.count = this.entries.length
+
+    for (const e of this.entries) {
+      this.byId.set(e.item.id, e)
+
+      if (e.item.name) {
+        this.byName.set(e.item.name, e)
+      }
+
+      for (const o of e.item.alternateNames) {
+        this.byName.set(o, e)
+      }
+    }
+  }
+
+  [Symbol.iterator] = () => this.entries[Symbol.iterator]()
+
+  getById = (id: string) => this.byId.get(id)
+  getByName = (name: string) => this.byName.get(name)
+
+  get = (value: string | { readonly id?: string; readonly name?: string }) => {
+    if (typeof value == "string") {
+      const byId = this.byId.get(value)
+      if (byId) {
+        return byId
+      }
+
+      return this.byName.get(value)
+    } else {
+      if (value.id) {
+        const byId = this.byId.get(value.id)
+        if (byId) {
+          return byId
+        }
+      }
+
+      if (value.name) {
+        const byName = this.byName.get(value.name)
+        if (byName) {
+          return byName
+        }
+      }
+    }
+  }
+}
+
+class ScheduleDataImpl extends ItemIndexImpl<ScheduleItem> {
+  private byType = new Map<ScheduleItemType, ItemIndex>()
+  constructor(objs?: Iterable<ScheduleItemSeries<ScheduleItem>> | null) {
+    const typeArrs: { [K in ScheduleItemType]?: ScheduleItemSeries[] } = {}
+
+    const getObjs = function* () {
+      for (const obj of objs ?? []) {
+        let typeArr = typeArrs[obj.item.type]
+        if (!typeArr) {
+          typeArr = []
+          typeArrs[obj.item.type] = typeArr
+        }
+
+        typeArr.push(obj)
+
+        yield obj
+      }
+    }
+
+    super(getObjs())
+
+    for (const [t, arr] of Object.entries(typeArrs)) {
+      this.byType.set(t as ScheduleItemType, indexItems(arr))
+    }
+  }
+
+  getType = <K extends ScheduleItemType>(
+    type: K,
+  ): ItemIndex<ScheduleItemTypeMap[K]> => {
+    const byType = this.byType.get(type)
+    if (byType) {
+      return byType as ItemIndex<ScheduleItemTypeMap[K]>
+    } else {
+      return emptyIndex
+    }
+  }
+}
+
+const emptyIndex = new ItemIndexImpl<never>([])
+
+/**
+ * Test whether an object is a {@link ScheduleData} object.
+ */
+export const isScheduleData = (obj: unknown): obj is ScheduleData =>
+  obj instanceof ScheduleDataImpl
+
+/**
+ * Index an iterable of {@link ScheduleItemSeries} objects by type.
  */
 export const indexScheduleData = (
   objs?: Iterable<ScheduleItemSeries> | null,
-): ScheduleData => new IndexImpl(objs)
-
-const emptyIndex = {
-  [Symbol.iterator]: () => [][Symbol.iterator](),
-  size: 0,
-  getById: (): undefined => {},
-  getByName: (): undefined => {},
-} as const
-
-export const isScheduleData = (obj: unknown): obj is ScheduleData =>
-  obj instanceof IndexImpl
+): ScheduleData => {
+  if (objs instanceof ScheduleDataImpl) {
+    return objs
+  }
+  return new ScheduleDataImpl(objs)
+}
 
 /**
- * Transform a {@link ScheduleItemSeries} into an array of {@link ScheduleItemOccurrence}.
+ * Index an iterable of {@link ScheduleItemSeries} objects.
  */
-export const toOccurrenceArray = <T extends ScheduleItem = ScheduleItem>(
-  obj: ScheduleItemSeries<T>,
-): ScheduleItemOccurrence<T>[] => {
-  const occs: ScheduleItemOccurrence<T>[] = []
-
-  for (const occ of obj.occurrences) {
-    occs.push({
-      ...occ,
-      item: obj.item,
-    })
+export const indexItems = <T extends ScheduleItem>(
+  objs?: Iterable<ScheduleItemSeries<T>> | null,
+): ItemIndex<T> => {
+  if (objs instanceof ItemIndexImpl) {
+    return objs
   }
-
-  return occs
+  return new ItemIndexImpl(objs)
 }

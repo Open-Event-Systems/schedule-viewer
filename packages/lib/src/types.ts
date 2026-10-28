@@ -284,7 +284,7 @@ export type OccurrenceLocation = Readonly<
 >
 
 /**
- * An occurrence.
+ * An occurrence of an item.
  */
 export type Occurrence = DateInfo &
   Readonly<{
@@ -307,19 +307,20 @@ export type Occurrence = DateInfo &
 /**
  * An occurrence of a schedule item.
  */
-export type ScheduleItemOccurrence<T extends ScheduleItem = ScheduleItem> =
-  Occurrence &
-    Readonly<{
-      /**
-       * The {@link ScheduleItem}.
-       */
-      item: T
-    }>
+export type ScheduleItemOccurrence<
+  T extends ScheduleItemBaseProps = ScheduleItem,
+> = Occurrence &
+  Readonly<{
+    /**
+     * The {@link ScheduleItem}.
+     */
+    item: T
+  }>
 
 /**
- * A {@link ScheduleItem} and its occurrences.
+ * A schedule item and its occurrences.
  */
-export type ScheduleItemSeries<T extends ScheduleItem = ScheduleItem> =
+export type ScheduleItemSeries<T extends ScheduleItemBaseProps = ScheduleItem> =
   Readonly<{
     item: T
     occurrences: readonly Occurrence[]
@@ -328,7 +329,7 @@ export type ScheduleItemSeries<T extends ScheduleItem = ScheduleItem> =
 /**
  * A series or single occurrence.
  */
-export type SeriesOrOccurrence<T extends ScheduleItem = ScheduleItem> =
+export type SeriesOrOccurrence<T extends ScheduleItemBaseProps = ScheduleItem> =
   | (ScheduleItemSeries<T> & {
       readonly id?: never
       readonly eventStatus?: never
@@ -340,24 +341,6 @@ export type SeriesOrOccurrence<T extends ScheduleItem = ScheduleItem> =
   | (ScheduleItemOccurrence<T> & {
       readonly occurrences?: never
     })
-
-export type ScheduleItemIndex<T extends ScheduleItem = ScheduleItem> =
-  Readonly<{
-    [Symbol.iterator]: () => Iterator<ScheduleItemSeries<T>>
-    size: number
-    getById: (id: string) => ScheduleItemSeries<T> | undefined
-    getByName: (name: string) => ScheduleItemSeries<T> | undefined
-  }>
-
-export type ScheduleData = Readonly<{
-  [Symbol.iterator]: () => Iterator<ScheduleItemSeries>
-  size: number
-  getById: (id: string) => ScheduleItemSeries | undefined
-  getType: <K extends ScheduleItemType>(
-    type: K,
-  ) => ScheduleItemIndex<ScheduleItemTypeMap[K]>
-  getByName: (name: string) => ScheduleItemSeries | undefined
-}>
 
 export type ParseResult<T> = Readonly<
   | { success: true; data: T; error?: never; message?: never }

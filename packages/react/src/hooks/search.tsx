@@ -3,35 +3,29 @@
  * @module
  */
 
-import { useScheduleConfig } from "#src/hooks/config.js"
-import { createOptionalContext, useRequiredContext } from "#src/utils.js"
-import { type SearchIndex } from "@open-event-systems/schedule-lib"
+import { useScheduleConfig } from "#src/config.js"
 import { useEffect, useRef, useState } from "react"
-
-const SearchIndexContext = createOptionalContext<SearchIndex>()
-export const useSearchIndex = (): SearchIndex =>
-  useRequiredContext(SearchIndexContext)
 
 export const useSearchResults = (
   query?: string | null,
 ): ReadonlySet<string> | undefined => {
   const { searchIndex } = useScheduleConfig()
-  const [results, setResults] = useState<ReadonlySet<string> | undefined>()
+  const [results, setResults] = useState<ReadonlySet<string> | null>(null)
 
-  const searchRef = useRef<string | null | undefined>(query)
-  const resultsRef = useRef<string | null | undefined>(null)
-  searchRef.current = query
+  const searchRef = useRef<string | null>(query || null)
+  searchRef.current = query || null
 
   useEffect(() => {
     if (query) {
       searchIndex(query).then((res) => {
         if (query == searchRef.current) {
-          resultsRef.current = query
           setResults(res)
         }
       })
+    } else {
+      setResults(null)
     }
   }, [searchIndex, query])
 
-  return query && resultsRef.current == searchRef.current ? results : undefined
+  return results ?? undefined
 }

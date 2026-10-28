@@ -3,8 +3,10 @@ import {
   DayFilter,
   type DayFilterProps,
 } from "#src/components/filters/day-filter.js"
+import type { ItemPillProps } from "#src/components/item-pill/item-pill.js"
 import { BinnedView } from "#src/components/schedule-view/binned-view.js"
 import type { DefaultBoxProps, RenderRootFunc } from "#src/components/types.js"
+import { useScheduleConfig } from "#src/config.js"
 import { useSelectedDay } from "#src/hooks/filter.js"
 import { Box, useProps } from "@mantine/core"
 import {
@@ -19,8 +21,6 @@ import clsx from "clsx"
 import type { Dayjs } from "dayjs"
 import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
 
-import type { ItemPillProps } from "#src/components/item-pill/item-pill.js"
-import { useScheduleConfig } from "#src/hooks/config.js"
 import classes from "./schedule-view.module.scss"
 
 /**

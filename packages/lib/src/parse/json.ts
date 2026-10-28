@@ -279,10 +279,33 @@ export const parseScheduleItem = (
  * Parse a {@link ScheduleItemSeries} using the given {@link ScheduleItem}
  * parser.
  */
-export const parseScheduleItemSeries = (
+export function parseScheduleItemSeries(
   itemParser: Parser<ScheduleItem>,
   data: unknown,
-): ParseResult<ScheduleItemSeries> => {
+): ParseResult<ScheduleItemSeries>
+
+/**
+ * Parse a {@link ScheduleItemSeries} using the default parser.
+ */
+export function parseScheduleItemSeries(
+  data: unknown,
+): ParseResult<ScheduleItemSeries>
+
+export function parseScheduleItemSeries(
+  arg0: Parser<ScheduleItem> | unknown,
+  arg1?: unknown,
+): ParseResult<ScheduleItemSeries> {
+  let parser: Parser<ScheduleItem>
+  let data: unknown
+
+  if (typeof arg0 == "function") {
+    parser = arg0 as Parser<ScheduleItem>
+    data = arg1
+  } else {
+    parser = parseScheduleItem
+    data = arg0
+  }
+
   const occResult = scheduleItemSeriesSchema.safeParse(data)
   if (!occResult.success) {
     return {
@@ -291,7 +314,7 @@ export const parseScheduleItemSeries = (
     }
   }
 
-  const parseResult = itemParser(occResult.data.item)
+  const parseResult = parser(occResult.data.item)
   if (!parseResult.success) {
     return parseResult
   }

@@ -1,3 +1,4 @@
+import { useScheduleConfig } from "#src/config.js"
 import type { TagConfig } from "#src/tags.js"
 import { Badge, Box, Button, useProps, type ButtonProps } from "@mantine/core"
 import { useMediaQuery } from "@mantine/hooks"
@@ -17,7 +18,6 @@ import type { ViewSelectProps } from "../view-select/view-select.js"
 import { useSchedulePageFeatures } from "./hooks.js"
 
 import classes from "./schedule-page.module.scss"
-import { useScheduleConfig } from "#src/hooks/config.js"
 
 export const SchedulePageFeature = {
   ...ShareMenuOption,

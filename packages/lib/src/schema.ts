@@ -76,29 +76,6 @@ export const optional = <OutT, InT>(
     },
   })
 
-// export const optional = <OutT, InT>(
-//   ofSchema: z.ZodType<OutT, InT>,
-// ): z.ZodOptional<
-//   z.ZodCodec<
-//     z.ZodType<OutT | null | undefined, InT | null | undefined>,
-//     z.ZodType<OutT | undefined, OutT | null | undefined>
-//   >
-// > =>
-//   z
-//     .codec(ofSchema.nullish(), z.custom<OutT | undefined>(), {
-//       decode: (v) => {
-//         if (v != null) {
-//           return v
-//         }
-//       },
-//       encode: (v) => {
-//         if (v != null) {
-//           return v
-//         }
-//       },
-//     })
-//     .optional()
-
 /**
  * Like {@link optional} but results in a default value if nullish.
  */

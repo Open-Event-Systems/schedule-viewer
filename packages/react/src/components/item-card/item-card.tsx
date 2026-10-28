@@ -14,8 +14,12 @@ import {
 } from "@mantine/core"
 import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
 import clsx from "clsx"
-import type { ReactNode } from "react"
-import type { ContactViewProps, OccurrenceViewProps } from "../../types.js"
+import { useMemo, type ReactNode } from "react"
+import type {
+  ContactViewProps,
+  LocationViewProps,
+  OccurrenceViewProps,
+} from "../../types.js"
 import {
   ItemButtons,
   type ItemButtonsFeature,
@@ -27,6 +31,8 @@ import {
 import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import type { DefaultBoxProps } from "../types.js"
 
+import { useScheduleConfig } from "#src/config.js"
+import type { SeriesOrOccurrence } from "@open-event-systems/schedule-lib"
 import classes from "./item-card.module.scss"
 
 export type ItemCardSize = "sm" | "md"
@@ -48,6 +54,7 @@ export type ItemCardProps = Omit<ItemCardRootProps, "children"> & {
   onSetVisited?: (isVisited: boolean) => void
   onClose?: () => void
   size?: ItemCardSize
+  ItemDetailsProps?: Partial<ItemDetailsProps>
 }
 
 const _ItemCard = (props: ItemCardProps) => {
@@ -68,6 +75,7 @@ const _ItemCard = (props: ItemCardProps) => {
     onSetVisited,
     onClose,
     size,
+    ItemDetailsProps,
     ...other
   } = useProps("ItemCard", null, props)
 
@@ -83,6 +91,7 @@ const _ItemCard = (props: ItemCardProps) => {
           contacts={contacts}
           tags={tags}
           size={size}
+          {...ItemDetailsProps}
         />
         <ItemCard.Description>{description}</ItemCard.Description>
       </ItemCard.Body>
@@ -284,6 +293,111 @@ export const ItemCardModal = (props: ItemCardModalProps) => {
   )
 }
 
+const ItemCardContainer = (
+  props: ItemCardProps & { data: SeriesOrOccurrence },
+) => {
+  const { data, ...other } = props
+
+  const {
+    resolveTag,
+    resolve,
+    getItemHref,
+    getLocationViewProps,
+    getContactViewProps,
+  } = useScheduleConfig()
+
+  const occurrences = useMemo(() => {
+    const occs = []
+    for (const occ of data.occurrences ?? []) {
+      const locs = []
+
+      for (const locEntry of occ.locations) {
+        const loc = resolve("location", locEntry)
+        locs.push(
+          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
+        )
+      }
+
+      occs.push({
+        startDate: occ.startDate,
+        endDate: occ.endDate,
+        locations: locs.filter((l): l is string | LocationViewProps => !!l),
+      })
+    }
+
+    if (data.id != null) {
+      // is a single occurrence, add it to the array
+      const locs = []
+      for (const locEntry of data.locations) {
+        const loc = resolve("location", locEntry)
+        locs.push(
+          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
+        )
+      }
+
+      occs.push({
+        startDate: data.startDate,
+        endDate: data.endDate,
+        locations: locs.filter((l): l is string => !!l),
+      })
+    }
+
+    return occs
+  }, [data.occurrences, data, resolve, getLocationViewProps])
+
+  const contacts = useMemo(() => {
+    const cts = []
+
+    if (data.item.type == "event") {
+      for (const ct of data.item.contacts) {
+        const profile = resolve("profile", ct)
+        cts.push(profile ? getContactViewProps(profile.item) : ct.name || ct.id)
+      }
+    }
+    return cts.filter((c): c is string | ContactViewProps => !!c)
+  }, [data, data, resolve, getContactViewProps])
+
+  const resolvedTags = useMemo(
+    () =>
+      Array.from(data.item.tags, (t) => resolveTag(t))
+        .map((t) => t?.label)
+        .filter((t): t is string => !!t),
+    [data.item.tags],
+  )
+
+  const itemHref = useMemo(() => {
+    if (getItemHref) {
+      const href = getItemHref(data)
+      if (href) {
+        return href
+      }
+    }
+  }, [data, getItemHref])
+
+  return (
+    <ItemCard
+      {...other}
+      name={data.item.name}
+      description={data.item.description}
+      occurrences={occurrences}
+      contacts={contacts}
+      shareURL={itemHref}
+      tags={resolvedTags}
+    />
+  )
+}
+
+const defaultRenderItemCard = (props: ItemCardProps) => {
+  return <ItemCard {...props} />
+}
+
+const defaultRenderItemCardForItem = (
+  data: SeriesOrOccurrence,
+  props: ItemCardProps,
+) => {
+  return <ItemCardContainer data={data} {...props} />
+}
+
 export const ItemCard = Object.assign(_ItemCard, {
   Root: ItemCardRoot,
   Header: ItemCardHeader,
@@ -294,4 +408,6 @@ export const ItemCard = Object.assign(_ItemCard, {
   Details: ItemCardDetails,
   Description: ItemCardDescription,
   Modal: ItemCardModal,
+  defaultRenderItemCard,
+  defaultRenderItemCardForItem,
 })

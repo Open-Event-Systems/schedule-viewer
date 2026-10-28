@@ -73,6 +73,7 @@ export const ItemButtons = (props: ItemButtonsProps) => {
   if (feats.has("share") && url) {
     els.push(
       <ShareButton.URL
+        key="share"
         size={size}
         url={url}
         title="Share"
@@ -95,6 +96,7 @@ export const ItemButtons = (props: ItemButtonsProps) => {
   if (feats.has("bookmark")) {
     els.push(
       <TooltipButton
+        key="bookmark"
         className={classes.button}
         size={size}
         variant={isBookmarked ? "filled" : "default"}
@@ -113,6 +115,7 @@ export const ItemButtons = (props: ItemButtonsProps) => {
   if (feats.has("visited")) {
     els.push(
       <TooltipButton
+        key="visited"
         className={classes.button}
         size={size}
         variant={isVisited ? "filled" : "default"}
@@ -129,7 +132,7 @@ export const ItemButtons = (props: ItemButtonsProps) => {
   }
 
   if (bookmarkCount && bookmarkCount > 0) {
-    els.push(<BookmarkCount count={bookmarkCount} />)
+    els.push(<BookmarkCount key="count" count={bookmarkCount} />)
   }
 
   return (
