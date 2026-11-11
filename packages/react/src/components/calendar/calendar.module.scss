@@ -42,8 +42,7 @@
   &.vertical {
     grid-template:
       "corner headers" auto
-      "times body" minmax(var(--min-height), 1fr)
-      / auto 1fr;
+      "times body" minmax(var(--min-height), 1fr) / auto 1fr;
   }
 
   &.horizontal {

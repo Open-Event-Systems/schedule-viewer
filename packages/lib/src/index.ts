@@ -8,7 +8,6 @@ export * from "#src/ld.js"
 export * from "#src/schedule-api.js"
 export * from "#src/schema.js"
 export * from "#src/search.js"
-export * from "#src/selections-api.js"
 export {
   isSelections,
   isServerSelections,
@@ -24,3 +23,6 @@ export * from "#src/types.js"
 export * from "#src/utils.js"
 
 export * from "#src/parse/json.js"
+
+export * from "#src/selections-api/local.js"
+export * from "#src/selections-api/selections-service.js"

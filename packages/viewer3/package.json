@@ -2,27 +2,15 @@
   "name": "viewer3",
   "version": "0.3.0-alpha",
   "type": "module",
+  "imports": {
+    "#src/*": "./src/*"
+  },
   "scripts": {
     "start": "vite",
     "start:ssr": "node server",
     "build": "vite build --mode=production",
     "build:ssr": "vite build --mode=production --ssr",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "imports": {
-    "#src/*": "./src/*"
-  },
-  "packageManager": "pnpm@10.33.0",
-  "devDependencies": {
-    "@tanstack/react-query-devtools": "^5.102.8",
-    "@tanstack/react-router-devtools": "^1.167.1",
-    "@types/express": "^5.0.6",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxc-transform-react": "^0.150.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.1"
   },
   "dependencies": {
     "@mantine/core": "^9.6.0",
@@ -45,5 +33,17 @@
     "workbox-window": "^7.4.1",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
-  }
+  },
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.102.8",
+    "@tanstack/react-router-devtools": "^1.167.1",
+    "@types/express": "^5.0.6",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxc-transform-react": "^0.150.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  },
+  "packageManager": "pnpm@10.33.0"
 }

@@ -2,8 +2,18 @@
   "name": "@open-event-systems/schedule-lib",
   "version": "0.2.0-alpha",
   "description": "",
+  "files": [
+    "dist/**"
+  ],
   "type": "module",
   "sideEffects": false,
+  "imports": {
+    "#src/*": {
+      "development": "./src/*",
+      "production": "./src/*",
+      "default": "./dist/src/*"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
@@ -12,19 +22,16 @@
     "./serialization": "./dist/src/serialization.js",
     "./test-data": "./dist/src/test-data.js"
   },
-  "imports": {
-    "#src/*": {
-      "development": "./src/*",
-      "production": "./src/*",
-      "default": "./dist/src/*"
-    }
-  },
-  "files": [
-    "dist/**"
-  ],
   "scripts": {
     "test": "vitest",
     "build": "vite build"
+  },
+  "dependencies": {
+    "fuse.js": "^7.5.0",
+    "ical-generator": "^10.1.0",
+    "rrule": "^2.8.1",
+    "wretch": "^3.0.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@typescript/typescript6": "^6.0.2",
@@ -37,12 +44,5 @@
   },
   "peerDependencies": {
     "dayjs": "^1.11.21"
-  },
-  "dependencies": {
-    "fuse.js": "^7.5.0",
-    "ical-generator": "^10.1.0",
-    "rrule": "^2.8.1",
-    "wretch": "^3.0.7",
-    "zod": "^4.3.6"
   }
 }

@@ -12,8 +12,7 @@ export type Interval = Readonly<{
 /**
  * An {@link Interval} with start and end.
  */
-export type Bounded<T extends Interval> = T &
-  Readonly<{ startDate: Dayjs; endDate: Dayjs }>
+export type Bounded<T extends Interval> = T & Readonly<{ startDate: Dayjs; endDate: Dayjs }>
 
 /**
  * An interval representing a day, subject to the day change hour.
@@ -67,8 +66,7 @@ export const ScheduleEventStatus = {
   canceled: "EventCancelled",
 } as const
 
-export type ScheduleEventStatus =
-  (typeof ScheduleEventStatus)[keyof typeof ScheduleEventStatus]
+export type ScheduleEventStatus = (typeof ScheduleEventStatus)[keyof typeof ScheduleEventStatus]
 
 /**
  * Common schedule item properties.
@@ -307,9 +305,7 @@ export type Occurrence = DateInfo &
 /**
  * An occurrence of a schedule item.
  */
-export type ScheduleItemOccurrence<
-  T extends ScheduleItemBaseProps = ScheduleItem,
-> = Occurrence &
+export type ScheduleItemOccurrence<T extends ScheduleItemBaseProps = ScheduleItem> = Occurrence &
   Readonly<{
     /**
      * The {@link ScheduleItem}.
@@ -320,11 +316,10 @@ export type ScheduleItemOccurrence<
 /**
  * A schedule item and its occurrences.
  */
-export type ScheduleItemSeries<T extends ScheduleItemBaseProps = ScheduleItem> =
-  Readonly<{
-    item: T
-    occurrences: readonly Occurrence[]
-  }>
+export type ScheduleItemSeries<T extends ScheduleItemBaseProps = ScheduleItem> = Readonly<{
+  item: T
+  occurrences: readonly Occurrence[]
+}>
 
 /**
  * A series or single occurrence.
@@ -377,7 +372,7 @@ export type BaseSelections = Readonly<{
   /**
    * Return a {@link BaseSelections} object with the given IDs removed.
    */
-  delete: (...itemsIds: string[]) => BaseSelections
+  remove: (...itemsIds: string[]) => BaseSelections
 
   /**
    * Returns whether this object contains exactly the IDs in the given iterable.
@@ -400,7 +395,7 @@ export type TrackedSelections = Omit<BaseSelections, "add" | "delete"> &
   Readonly<{
     base: BaseSelections | ServerSelections
     added: ReadonlySet<string>
-    deleted: ReadonlySet<string>
+    removed: ReadonlySet<string>
 
     /**
      * Return a {@link TrackedSelections} object with the given IDs added.
@@ -410,7 +405,7 @@ export type TrackedSelections = Omit<BaseSelections, "add" | "delete"> &
     /**
      * Return a {@link TrackedSelections} object with the given IDs removed.
      */
-    delete: (...itemsIds: string[]) => TrackedSelections
+    remove: (...itemsIds: string[]) => TrackedSelections
   }>
 
 export type Selections = BaseSelections | ServerSelections | TrackedSelections
@@ -436,7 +431,7 @@ export type SelectionsStore = Readonly<{
 
 export type SelectionsService = SelectionsStore &
   Readonly<{
-    sessionToken: string | null
+    getSessionToken: () => string | null
 
     /**
      * Load the selections.

@@ -31,10 +31,10 @@ describe("selections module", () => {
     expect([...sel3].sort()).toStrictEqual(["a", "b"])
   })
 
-  test("delete", () => {
+  test("remove", () => {
     const sel = makeSelections(["a", "b"])
-    const sel2 = sel.delete("a")
-    const sel3 = sel2.delete("a")
+    const sel2 = sel.remove("a")
+    const sel3 = sel2.remove("a")
 
     expect([...sel2].sort()).toStrictEqual(["b"])
     expect([...sel].sort()).toStrictEqual(["a", "b"])
@@ -59,7 +59,7 @@ describe("selections module", () => {
         items: ["a", "b", "c"],
       },
       added: ["d"],
-      deleted: ["c"],
+      removed: ["c"],
       items: ["a", "b", "d"],
     }
 
