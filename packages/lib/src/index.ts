@@ -26,3 +26,4 @@ export * from "#src/parse/json.js"
 
 export * from "#src/selections-api/local.js"
 export * from "#src/selections-api/selections-service.js"
+export * from "#src/selections-api/sync.js"
