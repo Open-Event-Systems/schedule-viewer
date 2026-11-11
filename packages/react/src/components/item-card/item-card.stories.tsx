@@ -22,10 +22,8 @@ const meta: Meta<typeof ItemCard> = {
               isBookmarked,
               isVisited,
               bookmarkCount: isBookmarked ? 18 : 17,
-              onSetBookmarked: (isBookmarked) =>
-                setState((prev) => ({ ...prev, isBookmarked })),
-              onSetVisited: (isVisited) =>
-                setState((prev) => ({ ...prev, isVisited })),
+              onSetBookmarked: (isBookmarked) => setState((prev) => ({ ...prev, isBookmarked })),
+              onSetVisited: (isVisited) => setState((prev) => ({ ...prev, isVisited })),
             }}
           />
         </Box>
@@ -134,7 +132,11 @@ export const Modal: StoryObj<typeof ItemCard> = {
     withBorder: false,
   },
   render(args) {
-    return <ItemCard.Modal onClose={() => {}} opened {...args} />
+    return (
+      <ItemCard.Modal onClose={() => {}} opened>
+        <ItemCard {...args} />
+      </ItemCard.Modal>
+    )
   },
 }
 

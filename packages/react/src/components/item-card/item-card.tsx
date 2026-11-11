@@ -15,19 +15,9 @@ import {
 import { BookmarkIcon } from "@phosphor-icons/react/dist/icons/Bookmark"
 import clsx from "clsx"
 import { useMemo, type ReactNode } from "react"
-import type {
-  ContactViewProps,
-  LocationViewProps,
-  OccurrenceViewProps,
-} from "../../types.js"
-import {
-  ItemButtons,
-  type ItemButtonsFeature,
-} from "../item-buttons/item-buttons.js"
-import {
-  ItemDetails,
-  type ItemDetailsProps,
-} from "../item-details/item-details.js"
+import type { ContactViewProps, LocationViewProps, OccurrenceViewProps } from "../../types.js"
+import { ItemButtons, type ItemButtonsFeature } from "../item-buttons/item-buttons.js"
+import { ItemDetails, type ItemDetailsProps } from "../item-details/item-details.js"
 import { Markdown, type MarkdownProps } from "../markdown/markdown.js"
 import type { DefaultBoxProps } from "../types.js"
 
@@ -114,20 +104,11 @@ export type ItemCardRootProps = CardProps & {
 }
 
 export const ItemCardRoot = (props: ItemCardRootProps) => {
-  const { className, hasClose, ...other } = useProps(
-    "ItemCardRoot",
-    null,
-    props,
-  )
+  const { className, hasClose, ...other } = useProps("ItemCardRoot", null, props)
 
   return (
     <Card
-      className={clsx(
-        "ItemCard-root",
-        classes.root,
-        hasClose && classes.hasClose,
-        className,
-      )}
+      className={clsx("ItemCard-root", classes.root, hasClose && classes.hasClose, className)}
       {...other}
     />
   )
@@ -138,11 +119,7 @@ export type ItemCardHeaderProps = DefaultBoxProps & {
 }
 
 export const ItemCardHeader = (props: ItemCardHeaderProps) => {
-  const { className, headerImageURL, style, ...other } = useProps(
-    "ItemCardHeader",
-    null,
-    props,
-  )
+  const { className, headerImageURL, style, ...other } = useProps("ItemCardHeader", null, props)
 
   const cssVars: CSSProperties = {}
 
@@ -172,13 +149,7 @@ export type ItemCardTitleProps = TitleProps
 export const ItemCardTitle = (props: ItemCardTitleProps) => {
   const { className, ...other } = useProps("ItemCardTitle", null, props)
 
-  return (
-    <Title
-      className={clsx("ItemCard-title", classes.title, className)}
-      order={4}
-      {...other}
-    />
-  )
+  return <Title className={clsx("ItemCard-title", classes.title, className)} order={4} {...other} />
 }
 
 export type ItemCardBodyProps = DefaultBoxProps
@@ -186,12 +157,7 @@ export type ItemCardBodyProps = DefaultBoxProps
 export const ItemCardBody = (props: ItemCardBodyProps) => {
   const { className, ...other } = useProps("ItemCardBody", null, props)
 
-  return (
-    <Box
-      className={clsx("ItemCard-body", classes.body, className)}
-      {...other}
-    />
-  )
+  return <Box className={clsx("ItemCard-body", classes.body, className)} {...other} />
 }
 
 export type ItemCardDetailsProps = ItemDetailsProps
@@ -199,12 +165,7 @@ export type ItemCardDetailsProps = ItemDetailsProps
 export const ItemCardDetails = (props: ItemCardDetailsProps) => {
   const { className, ...other } = useProps("ItemCardDetails", null, props)
 
-  return (
-    <ItemDetails
-      className={clsx("ItemCard-details", classes.details, className)}
-      {...other}
-    />
-  )
+  return <ItemDetails className={clsx("ItemCard-details", classes.details, className)} {...other} />
 }
 
 export type ItemCardDescriptionProps = MarkdownProps
@@ -213,10 +174,7 @@ export const ItemCardDescription = (props: ItemCardDescriptionProps) => {
   const { className, ...other } = useProps("ItemCardDescription", null, props)
 
   return (
-    <Markdown
-      className={clsx("ItemCard-description", classes.description, className)}
-      {...other}
-    />
+    <Markdown className={clsx("ItemCard-description", classes.description, className)} {...other} />
   )
 }
 
@@ -225,21 +183,10 @@ export type ItemCardBookmarkCountProps = Omit<DefaultBoxProps, "children"> & {
 }
 
 export const ItemCardBookmarkCount = (props: ItemCardBookmarkCountProps) => {
-  const { className, count, ...other } = useProps(
-    "ItemCardBookmarkCount",
-    null,
-    props,
-  )
+  const { className, count, ...other } = useProps("ItemCardBookmarkCount", null, props)
 
   return (
-    <Box
-      className={clsx(
-        "ItemCard-bookmarkCount",
-        classes.bookmarkCount,
-        className,
-      )}
-      {...other}
-    >
+    <Box className={clsx("ItemCard-bookmarkCount", classes.bookmarkCount, className)} {...other}>
       <Box className={classes.bookmarkCountIcon}>
         <BookmarkIcon />
       </Box>
@@ -250,8 +197,7 @@ export const ItemCardBookmarkCount = (props: ItemCardBookmarkCountProps) => {
   )
 }
 
-export type ItemCardCloseButtonProps = CloseButtonProps &
-  DefaultBoxProps<"button">
+export type ItemCardCloseButtonProps = CloseButtonProps & DefaultBoxProps<"button">
 
 export const ItemCardCloseButton = (props: ItemCardCloseButtonProps) => {
   const { className, ...other } = useProps("ItemCardCloseButton", null, props)
@@ -264,47 +210,28 @@ export const ItemCardCloseButton = (props: ItemCardCloseButtonProps) => {
   )
 }
 
-export type ItemCardModalProps = ItemCardProps & {
-  opened: boolean
-  onClose: () => void
-  ModalProps?: Partial<ModalProps>
-}
+export type ItemCardModalProps = ModalProps
 
 export const ItemCardModal = (props: ItemCardModalProps) => {
-  const { className, opened, onClose, ModalProps, ...other } = useProps(
-    "ItemCardModal",
-    null,
-    props,
-  )
+  const { className, ...other } = useProps("ItemCardModal", null, props)
 
   return (
     <Modal
-      opened={opened}
-      onClose={onClose}
       withCloseButton={false}
       className={clsx("ItemCard-modal", className)}
       classNames={{
         body: classes.modalBody,
       }}
-      {...ModalProps}
-    >
-      <ItemCard radius={0} allowClose onClose={onClose} {...other} />
-    </Modal>
+      {...other}
+    />
   )
 }
 
-const ItemCardContainer = (
-  props: ItemCardProps & { data: SeriesOrOccurrence },
-) => {
+const ItemCardContainer = (props: ItemCardProps & { data: SeriesOrOccurrence }) => {
   const { data, ...other } = props
 
-  const {
-    resolveTag,
-    resolve,
-    getItemHref,
-    getLocationViewProps,
-    getContactViewProps,
-  } = useScheduleConfig()
+  const { resolveTag, resolve, getItemHref, getLocationViewProps, getContactViewProps } =
+    useScheduleConfig()
 
   const occurrences = useMemo(() => {
     const occs = []
@@ -313,9 +240,7 @@ const ItemCardContainer = (
 
       for (const locEntry of occ.locations) {
         const loc = resolve("location", locEntry)
-        locs.push(
-          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
-        )
+        locs.push(loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id)
       }
 
       occs.push({
@@ -330,9 +255,7 @@ const ItemCardContainer = (
       const locs = []
       for (const locEntry of data.locations) {
         const loc = resolve("location", locEntry)
-        locs.push(
-          loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id,
-        )
+        locs.push(loc ? getLocationViewProps(loc.item) : locEntry.name || locEntry.id)
       }
 
       occs.push({
@@ -391,10 +314,7 @@ const defaultRenderItemCard = (props: ItemCardProps) => {
   return <ItemCard {...props} />
 }
 
-const defaultRenderItemCardForItem = (
-  data: SeriesOrOccurrence,
-  props: ItemCardProps,
-) => {
+const defaultRenderItemCardForItem = (data: SeriesOrOccurrence, props: ItemCardProps) => {
   return <ItemCardContainer data={data} {...props} />
 }
 
