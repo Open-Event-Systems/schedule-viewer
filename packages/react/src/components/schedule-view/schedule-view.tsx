@@ -19,8 +19,14 @@ import {
 } from "@open-event-systems/schedule-lib"
 import clsx from "clsx"
 import type { Dayjs } from "dayjs"
-import { useMemo, type AllHTMLAttributes, type ReactNode } from "react"
+import {
+  useMemo,
+  type AllHTMLAttributes,
+  type ComponentType,
+  type ReactNode,
+} from "react"
 
+import { GanttView } from "#src/components/schedule-view/views/gantt.js"
 import classes from "./schedule-view.module.scss"
 
 /**
@@ -107,6 +113,7 @@ export const ScheduleViewType = {
   agenda: BinnedView,
   catalog: BinnedView,
   tags: BinnedView,
+  gantt: GanttView,
 } as const
 
 export type ScheduleViewType = keyof typeof ScheduleViewType
@@ -174,7 +181,7 @@ const _ScheduleView = (props: ScheduleViewProps) => {
     )
   }
 
-  const View = ScheduleViewType[type]
+  const View = ScheduleViewType[type] as ComponentType<ScheduleViewProps>
   if (!View) {
     return null
   }
@@ -231,7 +238,7 @@ export const ScheduleViewByDay = (props: ScheduleViewByDayProps) => {
 
   const binFunc = useMemo(() => makeDayBinFunc(days), [days])
 
-  const View = ScheduleViewType[type]
+  const View = ScheduleViewType[type] as ComponentType<ScheduleViewProps>
   if (!View) {
     return null
   }

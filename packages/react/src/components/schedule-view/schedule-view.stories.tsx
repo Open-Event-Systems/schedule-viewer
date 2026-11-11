@@ -1,5 +1,5 @@
-import { ScheduleView } from "#src/components/newschedule/schedule-view.js"
-import { ScheduleDataContext } from "#src/hooks/data.js"
+import { ScheduleView } from "#src/components/schedule-view/schedule-view.js"
+import { makeScheduleConfig, ScheduleConfigProvider } from "#src/config.js"
 import { TagsConfigContext } from "#src/tags.js"
 import { testTagsConfig } from "#src/test-data-new.js"
 import {
@@ -60,12 +60,13 @@ const meta: Meta<typeof ScheduleView> = {
       )
     },
     (Story) => {
+      const config = makeScheduleConfig({ data: testData })
       return (
-        <ScheduleDataContext.Provider value={testData}>
+        <ScheduleConfigProvider value={config}>
           <TagsConfigContext.Provider value={testTagsConfig}>
             <Story />
           </TagsConfigContext.Provider>
-        </ScheduleDataContext.Provider>
+        </ScheduleConfigProvider>
       )
     },
   ],
@@ -110,5 +111,12 @@ export const CatalogByFullDays: StoryObj<typeof ScheduleView> = {
   args: {
     type: "catalog",
     byDay: true,
+  },
+}
+
+export const Gantt: StoryObj<typeof ScheduleView> = {
+  args: {
+    type: "gantt",
+    byDay: "filter",
   },
 }

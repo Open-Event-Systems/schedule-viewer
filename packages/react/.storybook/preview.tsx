@@ -3,10 +3,7 @@ import type { Preview } from "@storybook/react-vite"
 
 import "@mantine/core/styles.css"
 
-import {
-  makeScheduleConfig,
-  ScheduleConfigProvider,
-} from "#src/hooks/config.js"
+import { makeScheduleConfig, ScheduleConfigProvider } from "#src/config.js"
 import "#src/styles.scss"
 import { testTagsConfig } from "#src/test-data-new.js"
 import { useState } from "react"
