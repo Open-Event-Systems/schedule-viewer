@@ -20,8 +20,7 @@
   grid-template:
     "header" minmax(8rem, auto)
     "content" 1fr
-    "footer" minmax(6rem, auto)
-    / minmax(20rem, 75rem);
+    "footer" minmax(6rem, auto) / minmax(20rem, 75rem);
 }
 
 .header {

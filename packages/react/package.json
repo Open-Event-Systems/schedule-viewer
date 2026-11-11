@@ -2,8 +2,18 @@
   "name": "@open-event-systems/schedule-react",
   "version": "0.2.0-alpha",
   "description": "",
+  "files": [
+    "dist/**"
+  ],
   "type": "module",
   "sideEffects": false,
+  "imports": {
+    "#src/*": {
+      "development": "./src/*",
+      "production": "./src/*",
+      "default": "./dist/src/*"
+    }
+  },
   "exports": {
     "./schedule-react.css": "./dist/schedule-react.css",
     ".": {
@@ -23,21 +33,21 @@
       "default": "./dist/src/vite-scripts.js"
     }
   },
-  "imports": {
-    "#src/*": {
-      "development": "./src/*",
-      "production": "./src/*",
-      "default": "./dist/src/*"
-    }
-  },
-  "files": [
-    "dist/**"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "vite build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@tabler/icons-react": "^3.40.0",
+    "@types/qrcode": "^1.5.6",
+    "clsx": "^2.1.1",
+    "markdown-it": "^15.0.2",
+    "qrcode": "^1.5.4",
+    "seroval": "^1.6.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mantine/core": "^9.4.0",
@@ -67,15 +77,5 @@
     "dayjs": "^1.11.21",
     "react": "^19.1.0",
     "zustand": "^5.0.15"
-  },
-  "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
-    "@tabler/icons-react": "^3.40.0",
-    "@types/qrcode": "^1.5.6",
-    "clsx": "^2.1.1",
-    "markdown-it": "^15.0.2",
-    "qrcode": "^1.5.4",
-    "seroval": "^1.6.7",
-    "zod": "^4.3.6"
   }
 }

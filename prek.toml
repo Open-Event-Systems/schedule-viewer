@@ -7,15 +7,13 @@ exclude = { glob = ["pnpm-lock.yaml"] }
 [[repos]]
 repo = "builtin"
 hooks = [
-    { id = "trailing-whitespace" },
-    { id = "end-of-file-fixer" },
-    { id = "check-added-large-files" },
-    { id = "check-yaml" },
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "check-added-large-files" },
+  { id = "check-yaml" },
 ]
 
 [[repos]]
-repo = "https://github.com/mirrors-prettier/mirrors-prettier"
-rev = "v3.8.4"
-hooks = [
-    { id = "prettier"}
-]
+repo = "https://github.com/oxc-project/mirrors-oxfmt"
+rev = "v0.78.0"
+hooks = [{ id = "oxfmt" }]

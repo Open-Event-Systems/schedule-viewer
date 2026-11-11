@@ -1,6 +1,9 @@
 {
   "name": "@open-event-systems/schedule-map",
   "version": "0.2.0-alpha",
+  "files": [
+    "dist/**"
+  ],
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -10,14 +13,17 @@
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist/**"
-  ],
   "scripts": {
     "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@tabler/icons-react": "^3.40.0",
+    "clsx": "^2.1.1",
+    "react-zoom-pan-pinch": "^4.0.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mantine/core": "^9.0.2",
@@ -41,11 +47,5 @@
     "@open-event-systems/schedule-react": "workspace:",
     "dayjs": "^1.11.21",
     "react": "^19.1.0"
-  },
-  "dependencies": {
-    "@tabler/icons-react": "^3.40.0",
-    "clsx": "^2.1.1",
-    "react-zoom-pan-pinch": "^4.0.3",
-    "zod": "^4.3.6"
   }
 }

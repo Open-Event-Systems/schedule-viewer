@@ -17,8 +17,7 @@
   display: grid;
   grid-template:
     "header header" auto
-    "body buttons" minmax(4rem, 1fr)
-    / minmax(auto, 1fr) auto;
+    "body buttons" minmax(4rem, 1fr) / minmax(auto, 1fr) auto;
   gap: var(--gap);
 
   @each $size in "sm", "md" {
@@ -32,8 +31,7 @@
   &.hasClose {
     grid-template:
       "header close" auto
-      "body buttons" minmax(4rem, 1fr)
-      / minmax(auto, 1fr) auto;
+      "body buttons" minmax(4rem, 1fr) / minmax(auto, 1fr) auto;
   }
 }
 

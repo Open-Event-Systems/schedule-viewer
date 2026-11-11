@@ -15,14 +15,14 @@
   display: grid;
   grid-template:
     "toolbar corner" auto
-    "content sidebar" minmax(1rem, 1fr)
-    / minmax(1rem, 1fr) var(--schedule-page-sidebar-width);
+    "content sidebar" minmax(1rem, 1fr) / minmax(1rem, 1fr) var(
+      --schedule-page-sidebar-width
+    );
 
   &.small {
     grid-template:
       "toolbar" auto
-      "content" minmax(1rem, 1fr)
-      / minmax(1rem, 1fr);
+      "content" minmax(1rem, 1fr) / minmax(1rem, 1fr);
   }
 
   gap: 0.5rem;

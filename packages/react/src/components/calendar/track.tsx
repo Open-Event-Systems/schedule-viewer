@@ -1,10 +1,5 @@
 import { Box, useProps, type BoxProps } from "@mantine/core"
-import {
-  createContext,
-  use,
-  type AllHTMLAttributes,
-  type ReactNode,
-} from "react"
+import { createContext, use, type AllHTMLAttributes, type ReactNode } from "react"
 import { useCalendarTrackInsets, useDefaultCalendarRange } from "./hooks.js"
 import clsx from "clsx"
 
@@ -31,8 +26,7 @@ export type TrackProps = BoxProps & {
   dayChangeHour?: number | undefined
   orientation?: "horizontal" | "vertical" | undefined
   children?: ReactNode
-  renderRoot?:
-    ((props: AllHTMLAttributes<HTMLElement>) => ReactNode) | undefined
+  renderRoot?: ((props: AllHTMLAttributes<HTMLElement>) => ReactNode) | undefined
 } & AllHTMLAttributes<HTMLElement>
 
 /**
@@ -51,8 +45,7 @@ const _Track = (props: TrackProps) => {
     ...other
   } = useProps("Track", null, props)
 
-  const { startDate: defaultStart, endDate: defaultEnd } =
-    useDefaultCalendarRange(dayChangeHour)
+  const { startDate: defaultStart, endDate: defaultEnd } = useDefaultCalendarRange(dayChangeHour)
   const start = startProp ?? defaultStart
   const end = endProp ?? defaultEnd
   const orientation = orientationProp ?? "vertical"
@@ -71,9 +64,7 @@ const _Track = (props: TrackProps) => {
       renderRoot={renderRoot}
       {...other}
     >
-      <TrackContext.Provider
-        value={{ startDate: start, endDate: end, orientation }}
-      >
+      <TrackContext.Provider value={{ startDate: start, endDate: end, orientation }}>
         {children}
       </TrackContext.Provider>
     </Box>
@@ -84,14 +75,15 @@ export type TrackItemProps = BoxProps & {
   startDate?: Dayjs | undefined | null
   endDate?: Dayjs | undefined | null
   children?: ReactNode
-  renderRoot?:
-    | ((props: Omit<AllHTMLAttributes<HTMLElement>, "start">) => ReactNode)
-    | undefined
+  renderRoot?: ((props: Omit<AllHTMLAttributes<HTMLElement>, "start">) => ReactNode) | undefined
 } & Omit<AllHTMLAttributes<HTMLElement>, "start">
 
 export const TrackItem = (props: TrackItemProps) => {
-  const { className, startDate, endDate, children, renderRoot, ...other } =
-    useProps("TrackItem", null, props)
+  const { className, startDate, endDate, children, renderRoot, ...other } = useProps(
+    "TrackItem",
+    null,
+    props,
+  )
 
   const ctx = use(TrackContext)
 
@@ -100,12 +92,7 @@ export const TrackItem = (props: TrackItemProps) => {
   }
   const { startDate: trackStart, endDate: trackEnd } = ctx
 
-  const [startInset, endInset] = useCalendarTrackInsets(
-    trackStart,
-    trackEnd,
-    startDate,
-    endDate,
-  )
+  const [startInset, endInset] = useCalendarTrackInsets(trackStart, trackEnd, startDate, endDate)
 
   return (
     <Box
