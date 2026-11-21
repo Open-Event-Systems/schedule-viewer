@@ -6,7 +6,6 @@
 import {
   type ScheduleItem,
   type ScheduleItemBaseProps,
-  type ScheduleItemOccurrence,
   type ScheduleItemSeries,
   type ScheduleItemType,
   type ScheduleItemTypeMap,
@@ -15,26 +14,23 @@ import {
 /**
  * Indexes {@link ScheduleItemSeries} objects.
  */
-export type ItemIndex<T extends ScheduleItemBaseProps = ScheduleItem> =
-  Readonly<{
-    [Symbol.iterator]: () => Iterator<ScheduleItemSeries<T>>
-    entries: readonly ScheduleItemSeries<T>[]
-    count: number
-    getById: (id: string) => ScheduleItemSeries<T> | undefined
-    getByName: (name: string) => ScheduleItemSeries<T> | undefined
-    get: (
-      value: string | { readonly id?: string; readonly name?: string },
-    ) => ScheduleItemSeries<T> | undefined
-  }>
+export type ItemIndex<T extends ScheduleItemBaseProps = ScheduleItem> = Readonly<{
+  [Symbol.iterator]: () => Iterator<ScheduleItemSeries<T>>
+  entries: readonly ScheduleItemSeries<T>[]
+  count: number
+  getById: (id: string) => ScheduleItemSeries<T> | undefined
+  getByName: (name: string) => ScheduleItemSeries<T> | undefined
+  get: (
+    value: string | { readonly id?: string; readonly name?: string },
+  ) => ScheduleItemSeries<T> | undefined
+}>
 
 /**
  * Indexes {@link ScheduleItemSeries} objects by type.
  */
 export type ScheduleData = ItemIndex &
   Readonly<{
-    getType: <K extends ScheduleItemType>(
-      type: K,
-    ) => ItemIndex<ScheduleItemTypeMap[K]>
+    getType: <K extends ScheduleItemType>(type: K) => ItemIndex<ScheduleItemTypeMap[K]>
   }>
 
 class ItemIndexImpl<T extends ScheduleItem = ScheduleItem> {
@@ -117,9 +113,7 @@ class ScheduleDataImpl extends ItemIndexImpl<ScheduleItem> {
     }
   }
 
-  getType = <K extends ScheduleItemType>(
-    type: K,
-  ): ItemIndex<ScheduleItemTypeMap[K]> => {
+  getType = <K extends ScheduleItemType>(type: K): ItemIndex<ScheduleItemTypeMap[K]> => {
     const byType = this.byType.get(type)
     if (byType) {
       return byType as ItemIndex<ScheduleItemTypeMap[K]>
@@ -134,15 +128,12 @@ const emptyIndex = new ItemIndexImpl<never>([])
 /**
  * Test whether an object is a {@link ScheduleData} object.
  */
-export const isScheduleData = (obj: unknown): obj is ScheduleData =>
-  obj instanceof ScheduleDataImpl
+export const isScheduleData = (obj: unknown): obj is ScheduleData => obj instanceof ScheduleDataImpl
 
 /**
  * Index an iterable of {@link ScheduleItemSeries} objects by type.
  */
-export const indexScheduleData = (
-  objs?: Iterable<ScheduleItemSeries> | null,
-): ScheduleData => {
+export const indexScheduleData = (objs?: Iterable<ScheduleItemSeries> | null): ScheduleData => {
   if (objs instanceof ScheduleDataImpl) {
     return objs
   }

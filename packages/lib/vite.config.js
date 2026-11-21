@@ -8,6 +8,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: "./src/index.ts",
+        ical: "./src/ical.ts",
         serialization: "./src/serialization.ts",
         "test-data": "./src/test-data.ts",
       },

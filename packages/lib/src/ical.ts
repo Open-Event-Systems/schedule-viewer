@@ -1,130 +1,230 @@
-// import { RRule, RRuleSet } from "rrule"
-// import type { ScheduleEvent } from "./types.js"
-// import ical, { type ICalEventData } from "ical-generator"
-// import type { Dayjs } from "dayjs"
+import type { ScheduleData } from "#src/data.js"
+import { iterToArr } from "#src/utils.js"
+import type { Dayjs } from "dayjs"
+import dayjs from "dayjs"
+import durationPlugin from "dayjs/plugin/duration.js"
+import tzPlugin from "dayjs/plugin/timezone.js"
+import utcPlugin from "dayjs/plugin/utc.js"
+import ical, { ICalEventStatus, type ICalEventData } from "ical-generator"
+import {
+  ScheduleEventStatus,
+  type Occurrence,
+  type OccurrenceLocation,
+  type ScheduleItemSeries,
+} from "./types.js"
 
-// export type CreateICSOptions = Readonly<{
-//   /**
-//    * Calendar name.
-//    */
-//   name: string
+dayjs.extend(durationPlugin)
+dayjs.extend(utcPlugin)
+dayjs.extend(tzPlugin)
 
-//   /**
-//    * A prefix used to build event UIDs
-//    */
-//   prefix: string
+export type CreateICSOptions = Readonly<{
+  /**
+   * A schedule id.
+   */
+  scheduleId: string
 
-//   /**
-//    * A domain added to event UIDs
-//    */
-//   domain: string
+  /**
+   * The base URL.
+   */
+  baseURL: string
 
-//   /**
-//    * Timezone.
-//    */
-//   timeZone: string
+  /**
+   * The current time.
+   */
+  now: Dayjs
 
-//   /**
-//    * The start date used for events with no explicit start date.
-//    */
-//   defaultStartDate: Dayjs
+  /**
+   * Calendar name.
+   */
+  name: string
 
-//   /**
-//    * The end time used for events with no explicit end date.
-//    */
-//   defaultEndDate: Dayjs
-// }>
+  /**
+   * Timezone.
+   */
+  timeZone: string
 
-// /**
-//  * Create an iCalenar file containing the provided events.
-//  *
-//  * @param itemOccurrences - An iterable of arrays of items, each item being one occurrence
-//  * @param options - Options
-//  */
-// export const createICS = (
-//   itemOccurrences: Iterable<readonly ScheduleEvent[]>,
-//   options: CreateICSOptions,
-// ): string => {
-//   const now = new Date()
+  /**
+   * The start date used for events with no explicit start date.
+   */
+  defaultStartDate?: Dayjs
 
-//   const calendar = ical({
-//     name: options.name,
-//   })
+  /**
+   * The end time used for events with no explicit end date.
+   */
+  defaultEndDate?: Dayjs
+}>
 
-//   for (const occs of itemOccurrences) {
-//     for (const res of processItem(now, occs, options)) {
-//       calendar.createEvent(res)
-//     }
-//   }
+/**
+ * Create an iCalendar file containing the provided events.
+ *
+ * @param data - An iterable of series.
+ * @param options - Options.
+ */
+export const createICS = (
+  entries: Iterable<ScheduleItemSeries> | null | undefined,
+  data: ScheduleData,
+  options: CreateICSOptions,
+): string => {
+  const entriesArr = iterToArr(entries)
+  let defaultStartDate = options.defaultStartDate?.tz(options.timeZone)
+  let defaultEndDate = options.defaultEndDate?.tz(options.timeZone)
 
-//   return calendar.toString()
-// }
+  if (!defaultStartDate || !defaultEndDate) {
+    const { minStartDate, maxEndDate } = getDefaultDates(entriesArr, { timeZone: options.timeZone })
+    if (!defaultStartDate) {
+      defaultStartDate = minStartDate
+    }
 
-// const processItem = (
-//   now: Date,
-//   occurrences: readonly ScheduleEvent[],
-//   options: CreateICSOptions,
-// ): ICalEventData[] => {
-//   const results: ICalEventData[] = []
+    if (!defaultEndDate) {
+      defaultEndDate = maxEndDate
+    }
+  }
 
-//   const firstItem = occurrences[0]!
+  const calendar = ical({
+    name: options.name,
+    timezone: options.timeZone,
+  })
 
-//   const attrs = getEventAttrs(now, firstItem, options)
+  const finalOptions = {
+    ...options,
+    defaultStartDate,
+    defaultEndDate,
+  }
 
-//   results.push(attrs)
+  for (const series of entriesArr) {
+    for (const occData of handleSeries(series, data, finalOptions)) {
+      calendar.createEvent(occData)
+    }
+  }
 
-//   if (occurrences.length > 1) {
-//     const ruleSet = new RRuleSet()
+  return calendar.toString()
+}
 
-//     ruleSet.rrule(
-//       new RRule({
-//         freq: RRule.DAILY,
-//         count: 1,
-//       }),
-//     )
+const handleSeries = (
+  series: ScheduleItemSeries,
+  data: ScheduleData,
+  options: CreateICSOptions & { defaultStartDate: Dayjs; defaultEndDate: Dayjs },
+): ICalEventData[] => {
+  const occDatas = []
 
-//     for (const extraOcc of occurrences.slice(1)) {
-//       if (extraOcc.startDate) {
-//         ruleSet.rdate(extraOcc.startDate.toDate())
+  for (const occ of series.occurrences) {
+    const occData: ICalEventData = {
+      ...getBaseAttrs(series, occ.id, options),
+      ...getOccurrenceAttrs(occ, data, options),
+    }
 
-//         const overrideAttrs = getEventAttrs(now, extraOcc, options)
-//         overrideAttrs.recurrenceId = extraOcc.startDate.toDate()
+    occDatas.push(occData)
+  }
 
-//         results.push(overrideAttrs)
-//       }
-//     }
+  return occDatas
+}
 
-//     attrs.repeating = ruleSet
-//   }
+const getBaseAttrs = (
+  series: ScheduleItemSeries,
+  occurrenceId: string,
+  options: CreateICSOptions,
+): Omit<ICalEventData, "start" | "end"> => {
+  const attrs: Omit<ICalEventData, "start" | "end"> = {
+    id: getUID(options.scheduleId, occurrenceId, options.baseURL),
+    stamp: options.now.utc(),
+    lastModified: options.now.utc(),
+    timezone: options.timeZone,
+  }
 
-//   return results
-// }
+  if (series.item.name) {
+    attrs.summary = series.item.name
+  }
 
-// const getEventAttrs = (
-//   now: Date,
-//   item: ScheduleEvent,
-//   options: CreateICSOptions,
-// ): ICalEventData => {
-//   const attrs: ICalEventData = {
-//     id: `${options.prefix}-${item.id}@${options.domain}`,
-//     start: item.startDate ?? options.defaultStartDate,
-//     end: item.startDate ?? options.defaultEndDate,
-//     lastModified: now,
-//     timezone: options.timeZone,
-//   }
+  if (series.item.description) {
+    attrs.description = series.item.description
+  }
 
-//   if (item.name) {
-//     attrs.summary = item.name
-//   }
+  if ("eventStatus" in series.item) {
+    if (series.item.eventStatus == ScheduleEventStatus.canceled) {
+      attrs.status = ICalEventStatus.CANCELLED
+    } else {
+      attrs.status = ICalEventStatus.CONFIRMED
+    }
+  }
 
-//   if (item.description) {
-//     attrs.description = item.description
-//   }
+  return attrs
+}
 
-//   if (item.location && item.location.length > 0) {
-//     attrs.location = item.location.join(", ")
-//     // TODO: stringify locations properly
-//   }
+const getOccurrenceAttrs = (
+  occ: Occurrence,
+  data: ScheduleData,
+  options: CreateICSOptions & { defaultStartDate: Dayjs; defaultEndDate: Dayjs },
+): ICalEventData => {
+  const startDate = occ.startDate ?? options.defaultStartDate
+  const endDate = occ.endDate ?? options.defaultEndDate
 
-//   return attrs
-// }
+  const attrs: Omit<ICalEventData, "start" | "end"> = {}
+
+  const locs = getLocations(data, occ.locations)
+  if (locs) {
+    attrs.location = { title: locs }
+  }
+
+  return {
+    start: startDate.tz(options.timeZone),
+    end: endDate.tz(options.timeZone),
+    ...attrs,
+  }
+}
+
+const getUID = (scheduleId: string, occurrenceId: string, baseURL: string) => {
+  const urlObj = new URL(scheduleId, baseURL)
+  urlObj.hash = "#" + occurrenceId
+  return urlObj.toString()
+}
+
+const getLocations = (
+  data: ScheduleData,
+  locs: Iterable<OccurrenceLocation>,
+): string | undefined => {
+  const resolved = iterToArr(locs)
+    .map((loc) => getLocation(data, loc))
+    .filter((loc) => loc != null)
+  if (resolved.length > 0) {
+    return resolved.join(", ")
+  }
+}
+
+const getLocation = (data: ScheduleData, loc: OccurrenceLocation): string | undefined => {
+  const res = data.getType("location").get(loc)
+  if (res && res.item.name) {
+    return res.item.name
+  } else if (loc.name) {
+    return loc.name
+  } else {
+    return loc.id
+  }
+}
+
+const getDefaultDates = (
+  data: Iterable<ScheduleItemSeries>,
+  opts: { timeZone: string },
+): { minStartDate: Dayjs; maxEndDate: Dayjs } => {
+  const { timeZone } = opts
+
+  let minStartDate = dayjs()
+    .set("hour", 0)
+    .set("minute", 0)
+    .set("second", 0)
+    .set("millisecond", 0)
+    .tz(timeZone)
+  let maxEndDate = minStartDate.add(1, "day")
+
+  for (const series of data) {
+    for (const occ of series.occurrences) {
+      if (occ.startDate && occ.startDate.isBefore(minStartDate)) {
+        minStartDate = occ.startDate
+      }
+      if (occ.endDate && occ.endDate.isAfter(maxEndDate)) {
+        maxEndDate = occ.endDate
+      }
+    }
+  }
+
+  return { minStartDate: minStartDate.tz(timeZone), maxEndDate: maxEndDate.tz(timeZone) }
+}
