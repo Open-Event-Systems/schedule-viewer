@@ -4,15 +4,15 @@
  */
 
 import type { JSX } from "react/jsx-runtime"
-import type { Manifest } from "vite"
+import type { Manifest, ManifestChunk } from "vite"
 
 /**
  * Get the resources to load from the vite manifest.
  */
-export const getManifestResources = (
-  manifest: Manifest,
+export const getManifestResources = <M extends Manifest>(
+  manifest: M,
   basePath: string,
-  entryPoint: string,
+  entryPoint: keyof M,
 ): {
   scripts: JSX.IntrinsicElements["script"][]
   links: JSX.IntrinsicElements["link"][]
@@ -20,36 +20,52 @@ export const getManifestResources = (
   const scripts: JSX.IntrinsicElements["script"][] = []
   const links: JSX.IntrinsicElements["link"][] = []
 
-  const chunkInfo = manifest[entryPoint]
-  if (!chunkInfo) {
+  const chunk = manifest[entryPoint]
+  if (!chunk) {
     return { scripts, links }
   }
 
   scripts.push({
     type: "module",
-    src: `${basePath}${chunkInfo.file}`,
+    src: getScript(chunk, basePath),
   })
 
-  getStyles(links, manifest, basePath, entryPoint)
+  const styles = new Set<string>()
+
+  getStyles(manifest, chunk, basePath, new Set([entryPoint]), styles)
+
+  for (const style of styles) {
+    links.push({
+      rel: "stylesheet",
+      href: style,
+    })
+  }
 
   return { scripts, links }
 }
 
-const getStyles = (
-  links: JSX.IntrinsicElements["link"][],
-  manifest: Manifest,
+const getScript = (chunk: ManifestChunk, basePath: string): string => `${basePath}${chunk.file}`
+
+const getStyles = <M extends Manifest>(
+  manifest: M,
+  chunk: ManifestChunk,
   basePath: string,
-  chunk: string,
+  seen: Set<keyof M>,
+  styles: Set<string>,
 ) => {
-  const chunkInfo = manifest[chunk]
-  for (const css of chunkInfo?.css ?? []) {
-    links.push({
-      rel: "stylesheet",
-      href: `${basePath}${css}`,
-    })
+  for (const css of chunk.css ?? []) {
+    styles.add(`${basePath}${css}`)
   }
 
-  for (const imp of chunkInfo?.imports ?? []) {
-    getStyles(links, manifest, basePath, imp)
+  const imports = [...(chunk.imports ?? []), ...(chunk.dynamicImports ?? [])]
+
+  for (const imp of imports) {
+    if (!seen.has(imp)) {
+      seen.add(imp)
+      const newChunk = manifest[imp as keyof M]
+      if (newChunk) {
+        getStyles(manifest, newChunk, basePath, seen, styles)
+      }
+    }
   }
 }
